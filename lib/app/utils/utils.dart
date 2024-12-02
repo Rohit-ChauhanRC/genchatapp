@@ -67,7 +67,7 @@ Future<File?> pickVideoFromGallery(BuildContext context) async {
 Future<TenorResult?> pickGIF(BuildContext context) async {
   TenorResult? gif;
 
-  var tenor = Tenor(
+  var tenor = const Tenor(
     apiKey: "AIzaSyA4b8wMGOK6MvrdF36k9d6RrYH5nnE5ExE",
     clientKey: "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",
     locale: 'en_US',
@@ -99,7 +99,7 @@ Future<void> showImagePicker({
                   onGetImage(await pickImageFromGallery(Get.context!));
                   Get.back();
                 },
-                child: Column(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -107,7 +107,7 @@ Future<void> showImagePicker({
                       size: 60,
                       color: messageColor,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     Text(
                       "Gallery",
                       textAlign: TextAlign.center,
@@ -126,7 +126,7 @@ Future<void> showImagePicker({
                   onGetImage(await pickImageFromCamera(Get.context!));
                   Get.back();
                 },
-                child: Column(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -134,7 +134,7 @@ Future<void> showImagePicker({
                       size: 60,
                       color: messageColor,
                     ),
-                    const SizedBox(
+                    SizedBox(
                       height: 10,
                     ),
                     Text(
@@ -184,8 +184,8 @@ void closeSnackbar() {
     Get.back();
   }
 }
+
 bool isEmail(String value) {
-  return RegExp(
-      r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+  return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
       .hasMatch(value);
 }

@@ -5,8 +5,6 @@ import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
 
 class CreateProfileController extends GetxController {
-
-
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
 
   final RxString _profileName = ''.obs;
@@ -34,21 +32,20 @@ class CreateProfileController extends GetxController {
     _email.close();
   }
 
-  void createProfile() async{
+  void createProfile() async {
     String profileNam = profileName;
     String emailId = email;
-    if(profileNam.isNotEmpty && emailId.isNotEmpty) {
+    if (profileNam.isNotEmpty && emailId.isNotEmpty) {
       await validateProfileData();
-    }else{
+    } else {
       showSnackBar(context: Get.context!, content: 'Fill out all the fields');
     }
   }
 
-  Future validateProfileData() async{
+  Future validateProfileData() async {
     if (!createProfileKey!.currentState!.validate()) {
       return null;
     }
     Get.toNamed(Routes.HOME);
-    // await profileCreateAPI();
   }
 }

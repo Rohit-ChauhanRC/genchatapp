@@ -9,11 +9,10 @@ class SplashController extends GetxController {
 
   @override
   void onInit() {
-    print("OnInit Called");
     navigateToHome();
     super.onInit();
-
   }
+
   bool? getIsNumVerified() {
     return sharedPreferenceService.getBool(isNumVerify);
   }
@@ -21,9 +20,9 @@ class SplashController extends GetxController {
   void navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3));
     bool? isVerified = getIsNumVerified();
-    if(isVerified == true){
+    if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE);
-    }else{
+    } else {
       Get.offNamed(Routes.LANDING);
     }
   }

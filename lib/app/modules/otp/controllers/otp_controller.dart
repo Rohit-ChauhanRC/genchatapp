@@ -9,8 +9,6 @@ import '../../../constants/constants.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/shared_preference_service.dart';
 
-
-
 class OtpController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   GlobalKey<FormState>? otpFormKey = GlobalKey<FormState>();
@@ -48,6 +46,7 @@ class OtpController extends GetxController {
     _timer?.cancel();
     super.onClose();
   }
+
   void startTimer() {
     timerValue.value = 60;
     isResendEnabled.value = false;
@@ -86,7 +85,7 @@ class OtpController extends GetxController {
       if (res.statusCode == 200 &&
           a.toString().isNotEmpty &&
           a != "Invalid OTP ?") {
-        saveIsNumVerified(true);
+        saveIsNumVerified(true, a, mobileNumber);
         Get.toNamed(
           Routes.CREATE_PROFILE,
           // arguments: [mobileNumber, a.toString()],
@@ -101,7 +100,9 @@ class OtpController extends GetxController {
     }
   }
 
-  void saveIsNumVerified(bool isNumVerified){
+  void saveIsNumVerified(bool isNumVerified, String uid, String mob) {
     sharedPreferenceService.setBool(isNumVerify, isNumVerified);
+    sharedPreferenceService.setString(userUId, uid);
+    sharedPreferenceService.setString(userMob, mob);
   }
 }

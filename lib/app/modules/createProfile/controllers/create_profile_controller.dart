@@ -1,11 +1,28 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
+import 'package:genchatapp/app/config/firebase_controller/firebase_controller.dart';
+import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
 
 class CreateProfileController extends GetxController {
+  //
+
+  final FirebaseController firebaseController =
+      Get.put<FirebaseController>(FirebaseController());
+
+  final sharedPreferenceService = Get.find<SharedPreferenceService>();
+
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
+
+  final Rx<File?> _image = Rx<File?>(null);
+  File? get image => _image.value;
+  set image(File? img) => _image.value = img;
 
   final RxString _profileName = ''.obs;
   String get profileName => _profileName.value;
@@ -47,5 +64,41 @@ class CreateProfileController extends GetxController {
       return null;
     }
     Get.toNamed(Routes.HOME);
+  }
+
+  void storeUserData() async {
+    var uid = sharedPreferenceService.getString(userUId);
+    var mob = sharedPreferenceService.getString(userMob);
+
+    String photoUrl =
+        'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
+
+    if (image != null) {
+      photoUrl = await firebaseController.storeFileToFirebase(
+        file: image!,
+        path: "profilePic/$uid",
+      );
+
+      var user = UserModel(
+        name: profileName,
+        uid: uid!,
+        profilePic: photoUrl,
+        isOnline: true,
+        phoneNumber: mob!,
+        groupId: [],
+        email: email,
+        fcmToken: "",
+        lastSeen: DateTime.now().microsecondsSinceEpoch.toString(),
+      );
+
+      // createProfile
+
+      // saveLocal(key: userData, data: user);
+      firebaseController.setUserData(uid: uid, user: user).then((onValu) {
+        sharedPreferenceService.setBool(createUserProfile, true);
+        sharedPreferenceService.setBool(isNumVerify, false);
+        Get.offNamed(Routes.HOME);
+      });
+    }
   }
 }

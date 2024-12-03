@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/constants/constants.dart';
 
-void main() {
-  runApp(const MainApp());
+import 'package:get/get.dart';
+
+import 'app/config/theme/app_theme.dart';
+import 'app/routes/app_pages.dart';
+import 'app/services/shared_preference_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final sharedPreferenceService = SharedPreferenceService();
+  await sharedPreferenceService.init();
+  Get.put<SharedPreferenceService>(sharedPreferenceService);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const App());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: appName,
+      initialRoute: AppPages.INITIAL,
+      getPages: AppPages.routes,
+      theme: AppTheme.theme,
     );
   }
 }

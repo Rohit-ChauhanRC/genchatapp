@@ -1,0 +1,130 @@
+import 'package:flutter/material.dart';
+import 'package:genchatapp/app/constants/colors.dart';
+
+import 'package:get/get.dart';
+
+import '../../../constants/constants.dart';
+import '../../../widgets/gradientContainer.dart';
+import '../controllers/verify_phone_number_controller.dart';
+
+class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
+  const VerifyPhoneNumberView({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: appBarColor,
+        title: const Text(
+          verifyPhoneNumber,
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: GradientContainer(
+          child: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Form(
+              key: controller.loginFormKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    verifyNumberTextForShowing,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: blackColor),
+                  ),
+                  const SizedBox(
+                    height: 28,
+                  ),
+                  SizedBox(
+                    width: Get.width * 0.8,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.only(top: 12, bottom: 12),
+                        backgroundColor: whiteColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: const BorderSide(
+                            color: textBarColor,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      onPressed: controller.pickCountry,
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: textBarColor,
+                      ),
+                      iconAlignment: IconAlignment.end,
+                      label: const Text(
+                        chooseACountry,
+                        style: TextStyle(fontSize: 14, color: blackColor),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    width: Get.width * 0.8,
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      onChanged: (v) => controller.mobileNumber = v,
+                      decoration: InputDecoration(
+                          filled: true,
+                          fillColor: whiteColor,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 10, right: 10, top: 14, bottom: 10),
+                            child: Obx(() => controller.country != null
+                                ? Text('+${controller.country!.phoneCode}')
+                                : const SizedBox()),
+                          ),
+                          hintText: 'phone number',
+                          hintStyle: const TextStyle(
+                              color: greyColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w200)),
+                      validator: (value) => value!.length != 10
+                          ? "Please enter valid mobile number!"
+                          : null,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          signed: false, decimal: false),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 26,
+                  ),
+                  Obx(() => controller.circularProgress
+                      ? SizedBox(
+                          width: Get.width * 0.8,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.only(left: 60, right: 60),
+                                backgroundColor: textBarColor),
+                            onPressed: controller.sendPhoneNumber,
+                            child: const Text(
+                              requestOTP,
+                              style: TextStyle(fontSize: 14, color: whiteColor),
+                            ),
+                          ),
+                        )
+                      : const Center(
+                          child: CircularProgressIndicator(
+                            color: textBarColor,
+                          ),
+                        ))
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

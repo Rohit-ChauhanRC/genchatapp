@@ -1,0 +1,54 @@
+{
+	"project_info": {
+		"project_number": "107175299711",
+		"project_id": "genchat-app",
+		"storage_bucket": "genchat-app.appspot.com"
+	},
+	"client": [
+		{
+			"client_info": {
+				"mobilesdk_app_id": "1:107175299711:android:058e0e0beca1f514cf0d4a",
+				"android_client_info": {
+					"package_name": "com.genmak.genchat"
+				}
+			},
+			"oauth_client": [
+				{
+					"client_id": "107175299711-24lbfcj17b9ffhh25a025ophdh9550bk.apps.googleusercontent.com",
+					"client_type": 1,
+					"android_info": {
+						"package_name": "com.genmak.genchat",
+						"certificate_hash": "230c2606b315da5e02f34290e260d92c0a9459d7"
+					}
+				},
+				{
+					"client_id": "107175299711-vn8ftptf96rv41u0f2o1l7ic77j8bc88.apps.googleusercontent.com",
+					"client_type": 3
+				}
+			],
+			"api_key": [
+				{
+					"current_key": "AIzaSyCMWbN_zstcypa9gwEU5zBQQTq5gGqki3E"
+				}
+			],
+			"services": {
+				"appinvite_service": {
+					"other_platform_oauth_client": [
+						{
+							"client_id": "107175299711-vn8ftptf96rv41u0f2o1l7ic77j8bc88.apps.googleusercontent.com",
+							"client_type": 3
+						},
+						{
+							"client_id": "107175299711-tqf2j72ks7g6s884k9320evao30fh5h8.apps.googleusercontent.com",
+							"client_type": 2,
+							"ios_info": {
+								"bundle_id": "com.genmak.genchat"
+							}
+						}
+					]
+				}
+			}
+		}
+	],
+	"configuration_version": "1"
+}

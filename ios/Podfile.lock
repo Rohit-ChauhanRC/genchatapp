@@ -1232,6 +1232,8 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
   - Flutter (1.0.0)
+  - flutter_contacts (0.0.1):
+    - Flutter
   - flutter_sound (9.17.5):
     - Flutter
     - flutter_sound_core (= 9.17.5)
@@ -1387,6 +1389,7 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
+  - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -1435,6 +1438,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: Flutter
+  flutter_contacts:
+    :path: ".symlinks/plugins/flutter_contacts/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
   image_picker_ios:
@@ -1473,6 +1478,7 @@ SPEC CHECKSUMS:
   FirebaseSharedSwift: 302ac5967857ad7e7388b15382d705b8c8d892aa
   FirebaseStorage: 1bf8f80ac3bb02c72844b7350e95e10be7113ef0
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_contacts: edb1c5ce76aa433e20e6cb14c615f4c0b66e0983
   flutter_sound: d8bf9711570f368d74ecf2a408b5162070a0956c
   flutter_sound_core: fd7c34e5789d5d780556c33388fd40ff694d6b4c
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7

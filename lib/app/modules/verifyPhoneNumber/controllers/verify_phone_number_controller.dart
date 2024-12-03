@@ -64,18 +64,20 @@ class VerifyPhoneNumberController extends GetxController {
       return null;
     }
     // Get.toNamed(Routes.OTP,arguments: mobileNumber);
-    await loginCred();
+    await loginCred(mobileNumber, false);
   }
 
-  loginCred() async {
+  loginCred(String? resendOtpMobNum, bool isFromResend) async {
+    String? mobileNum = resendOtpMobNum ?? mobileNumber;
     circularProgress = false;
     try {
       var res = await http.post(
           Uri.parse("http://app.maklife.in:9001/api/user"),
-          body: {"MobileNo": mobileNumber});
+          body: {"MobileNo": mobileNum});
       final a = jsonDecode(res.body);
 
       if (res.statusCode == 200 && a == "OTP Sent !") {
+        isFromResend ? null:
         Get.toNamed(
           Routes.OTP,
           arguments: mobileNumber,

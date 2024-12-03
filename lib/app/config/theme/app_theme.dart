@@ -7,7 +7,7 @@ class AppTheme {
   static ThemeData get theme {
     return ThemeData(
       colorScheme: const ColorScheme.light(
-        primary: appBarColor,
+        primary: textBarColor,
       ),
       appBarTheme: const AppBarTheme(
           centerTitle: true,
@@ -42,6 +42,7 @@ class AppTheme {
         fillColor: whiteColor,
         filled: true,
         isDense: true,
+
         contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),

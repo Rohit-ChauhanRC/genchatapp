@@ -2,15 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:genchatapp/app/modules/verifyPhoneNumber/controllers/verify_phone_number_controller.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../constants/constants.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/shared_preference_service.dart';
+import '../../../utils/utils.dart';
 
 class OtpController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
+  final verifyPhoneNumberController = Get.find<VerifyPhoneNumberController>();
   GlobalKey<FormState>? otpFormKey = GlobalKey<FormState>();
 
   final RxString _mobileNumber = ''.obs;
@@ -64,6 +67,7 @@ class OtpController extends GetxController {
     if (isResendEnabled.value) {
       print("Resending OTP to $mobileNumber...");
       startTimer();
+      verifyPhoneNumberController.loginCred(mobileNumber, true);
     }
   }
 
@@ -71,17 +75,17 @@ class OtpController extends GetxController {
     if (!otpFormKey!.currentState!.validate()) {
       return null;
     }
-    await loginCred();
+    await verifyOTPLoginCred();
   }
 
-  loginCred() async {
+  verifyOTPLoginCred() async {
     circularProgress = false;
     try {
       var res = await http.post(
           Uri.parse("http://app.maklife.in:9001/api/OTPValidation"),
           body: {"MobileNo": mobileNumber, "OTP": otp});
       final a = jsonDecode(res.body);
-
+      // print("MobileNumber:----> $mobileNumber OTP:---> $otp");
       if (res.statusCode == 200 &&
           a.toString().isNotEmpty &&
           a != "Invalid OTP ?") {
@@ -91,12 +95,14 @@ class OtpController extends GetxController {
           // arguments: [mobileNumber, a.toString()],
         );
       } else {
+        showSnackBar(context: Get.context!, content: json.decode(res.body));
         //
         // Utils.showDialog(json.decode(res.body));
       }
       circularProgress = true;
     } catch (e) {
       circularProgress = true;
+      // showSnackBar(context: Get.context!, content: e.toString());
     }
   }
 

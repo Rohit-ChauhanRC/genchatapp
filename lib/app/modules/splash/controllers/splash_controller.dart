@@ -17,11 +17,19 @@ class SplashController extends GetxController {
     return sharedPreferenceService.getBool(isNumVerify);
   }
 
+  bool? getIscreateUserProfile() {
+    return sharedPreferenceService.getBool(createUserProfile);
+  }
+
   void navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3));
     bool? isVerified = getIsNumVerified();
+    bool? isCreatedUserProfile = getIscreateUserProfile();
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE);
+    }
+    if (isCreatedUserProfile == true) {
+      Get.offNamed(Routes.HOME);
     } else {
       Get.offNamed(Routes.LANDING);
     }

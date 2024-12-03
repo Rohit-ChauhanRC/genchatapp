@@ -39,5 +39,47 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>sms</string>
+		<string>tel</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>MyApp does not need this permission</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>MyApp does not need this permission</string>
+	<key>NSCameraUsageDescription</key>
+	<string>App requires camera</string>
+	<key>NSContactsUsageDescription</key>
+	<string>App needs access to the contact list</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MyApp does not need this permission</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow the app to record using your phone's microphone in order to record description for the new parts</string>
+	<key>NSMotionUsageDescription</key>
+	<string>MyApp does not need this permission</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>App needs access to photo library</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>MyApp does not need this permission</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 </dict>
 </plist>

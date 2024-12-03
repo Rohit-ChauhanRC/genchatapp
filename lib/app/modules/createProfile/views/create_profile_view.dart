@@ -31,17 +31,24 @@ class CreateProfileView extends GetView<CreateProfileController> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 140,
-                        width: 140,
-                        decoration: BoxDecoration(
-                          color: greyColor.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(Get.height / 2),
-                          border: Border.all(
-                              color: textBarColor.withOpacity(0.7), width: 1),
+                      InkWell(
+                        onTap: controller.selectImage,
+                        child: Obx(
+                          () => controller.image == null
+                              ? CircleAvatar(
+                                  backgroundColor: greyColor.withOpacity(0.4),
+                                  radius: 64,
+                                  child: const Icon(Icons.add_a_photo,
+                                      size: 80.0, color: greyColor),
+                                )
+                              : CircleAvatar(
+                                  backgroundColor: greyColor.withOpacity(0.4),
+                                  backgroundImage: FileImage(
+                                    controller.image!,
+                                  ),
+                                  radius: 64,
+                                ),
                         ),
-                        child: const Icon(Icons.add_a_photo,
-                            size: 80.0, color: greyColor),
                       ),
                       const SizedBox(
                         height: 20,

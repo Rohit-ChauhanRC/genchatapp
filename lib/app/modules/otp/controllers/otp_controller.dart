@@ -90,7 +90,7 @@ class OtpController extends GetxController {
           a.toString().isNotEmpty &&
           a != "Invalid OTP ?") {
         saveIsNumVerified(true, a, mobileNumber);
-        Get.toNamed(
+        Get.offAllNamed(
           Routes.CREATE_PROFILE,
           // arguments: [mobileNumber, a.toString()],
         );

@@ -17,6 +17,7 @@ class ChatsView extends GetView<ChatsController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
+        centerTitle: false,
         title: const Text(
           'Genchatapp',
           style: TextStyle(

@@ -14,6 +14,7 @@ class UpdatesView extends GetView<UpdatesController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
+        centerTitle: false,
         title: const Text(
           'Updates',
           style: TextStyle(

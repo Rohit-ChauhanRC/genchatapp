@@ -14,6 +14,7 @@ class CallView extends GetView<CallController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
+        centerTitle: false,
         title: Text(
           'Calls',
           style: TextStyle(

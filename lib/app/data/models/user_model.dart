@@ -1,15 +1,18 @@
 import 'dart:convert';
 
 class UserModel {
-  final String uid;
-  final String email;
-  final String name;
-  final String profilePic;
-  final bool isOnline;
-  final String phoneNumber;
-  final List<String> groupId;
-  final String lastSeen;
-  final String fcmToken;
+  // Id id = Isar.;
+
+  String? uid;
+
+  String? email;
+  String? name;
+  String? profilePic;
+  bool? isOnline;
+  String? phoneNumber;
+  List<String>? groupId;
+  String? lastSeen;
+  String? fcmToken;
 
   UserModel({
     required this.name,

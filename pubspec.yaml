@@ -34,6 +34,8 @@ dependencies:
   flutter_contacts: ^1.1.9+2
   isar:
   isar_flutter_libs:
+    # git:
+    #   url: https://github.com/isar-community/isar.git
   # sqflite: ^2.4.1
   # upgrader: ^11.3.0
 

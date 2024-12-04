@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"genchatapp-627b0","appId":"1:658315956807:android:65cb70af166622f3ec5762","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"genchatapp-627b0","appId":"1:658315956807:ios:49e2cb913893cd1bec5762","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"genchatapp-627b0","configurations":{"android":"1:658315956807:android:65cb70af166622f3ec5762","ios":"1:658315956807:ios:49e2cb913893cd1bec5762"}}}}}}
+{
+	"flutter": {
+		"platforms": {
+			"android": {
+				"default": {
+					"projectId": "genchat-app",
+					"appId": "1:107175299711:android:7646082fd5fb3d72cf0d4a",
+					"fileOutput": "android/app/google-services.json"
+				}
+			},
+			"ios": {
+				"default": {
+					"projectId": "genchat-app",
+					"appId": "1:107175299711:ios:b58716ead44f8dbecf0d4a",
+					"uploadDebugSymbols": false,
+					"fileOutput": "ios/Runner/GoogleService-Info.plist"
+				}
+			},
+			"dart": {
+				"lib/firebase_options.dart": {
+					"projectId": "genchat-app",
+					"configurations": {
+						"android": "1:107175299711:android:7646082fd5fb3d72cf0d4a",
+						"ios": "1:107175299711:ios:b58716ead44f8dbecf0d4a"
+					}
+				}
+			}
+		}
+	}
+}

@@ -62,10 +62,16 @@ class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
                         color: textBarColor,
                       ),
                       iconAlignment: IconAlignment.end,
-                      label: const Text(
-                        chooseACountry,
-                        style: TextStyle(fontSize: 14, color: blackColor),
-                      ),
+                      label: Obx(() => controller.country != null
+                          ? Text(
+                              controller.country!.name,
+                              style: const TextStyle(
+                                  fontSize: 14, color: blackColor),
+                            )
+                          : const Text(
+                              chooseACountry,
+                              style: TextStyle(fontSize: 14, color: blackColor),
+                            )),
                     ),
                   ),
                   const SizedBox(height: 15),

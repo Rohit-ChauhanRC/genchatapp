@@ -12,7 +12,6 @@ import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
 
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
 class CreateProfileController extends GetxController {
   //

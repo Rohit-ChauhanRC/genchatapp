@@ -35,17 +35,21 @@ class CreateProfileController extends GetxController {
   String get email => _email.value;
   set email(String email) => _email.value = email;
 
-  List folderList = [
-    "GenchatApp Profile Photos",
-    "GenchatApp Audio",
-    "GenchatApp Video",
-    "GenchatApp GIF",
-    "GenchatApp Images"
+  List<String> folderList = [
+    "Media",
+    "Database",
+    "Backup",
+    "Media/Profiles",
+    "Media/Audio",
+    "Media/Video",
+    "Media/GIF",
+    "Media/Images"
   ];
 
   @override
   void onInit() {
     super.onInit();
+    // createAppFolders();
   }
 
   @override
@@ -60,19 +64,62 @@ class CreateProfileController extends GetxController {
     _email.close();
   }
 
-  void createAppFolder(String folderName) async {
-    final dir = Directory('${(await getApplicationSupportDirectory() //FOR IOS
-        ).path}/$folderName');
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-    }
-    if ((await dir.exists())) {
-    } else {
-      dir.create();
+  // void createAppFolder(String folderName) async {
+  //   final dir = Directory('${(await getApplicationSupportDirectory() //FOR IOS
+  //       ).path}/$folderName');
+  //   var status = await Permission.storage.status;
+  //   if (!status.isGranted) {
+  //     await Permission.storage.request();
+  //   }
+  //   if ((await dir.exists())) {
+  //   } else {
+  //     dir.create();
+  //   }
+  // }
+
+  void createAppFolders() async {
+    print("CreateAppFolder Calls");
+    final appDir = await getApplicationDocumentsDirectory();
+    for (String folderPath in folderList) {
+      print("Call one by one $folderPath");
+      final dir = Directory('${appDir.path}/GenChatApp/$folderPath');
+      var status = await Permission.storage.status;
+      if (!status.isGranted) {
+        print("calling for storage permission $status \n Directory path:---------> $dir");
+        status = await Permission.storage.request();
+        if (!status.isGranted) {
+          print("Storage permission denied. Cannot create folder: $folderPath");
+          showPermissionDeniedDialog();
+          continue; // Skip folder creation if permission is not granted
+        }
+      }
+      if (!(await dir.exists())) {
+        print("creating folders");
+        await dir.create(recursive: true);
+      }
+      // Verify folder creation
+      if (await dir.exists()) {
+        print("Folder created successfully: $dir");
+      } else {
+        print("Failed to create folder: $dir");
+      }
     }
   }
-
+  void showPermissionDeniedDialog() {
+    Get.defaultDialog(
+      title: "Permission Required",
+      content: Text("Storage permission is required to create necessary folders. Please grant the permission in the app settings."),
+      textConfirm: "Open Settings",
+      onConfirm: () async {
+        await openAppSettings();
+        Get.back();
+      },
+      textCancel: "Cancel",
+      onCancel: () {
+        Get.back();
+      },
+    );
+  }
   void selectImage() async {
     showImagePicker(onGetImage: (img) {
       if (img != null) {
@@ -95,7 +142,8 @@ class CreateProfileController extends GetxController {
     if (!createProfileKey!.currentState!.validate()) {
       return null;
     }
-    Get.toNamed(Routes.HOME);
+    // Get.toNamed(Routes.HOME);
+    storeUserData();
   }
 
   void storeUserData() async {

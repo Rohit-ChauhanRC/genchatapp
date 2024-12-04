@@ -105,7 +105,7 @@ Future<void> showImagePicker({
                     Icon(
                       Icons.image,
                       size: 60,
-                      color: messageColor,
+                      color: textBarColor,
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -132,7 +132,7 @@ Future<void> showImagePicker({
                     Icon(
                       Icons.camera,
                       size: 60,
-                      color: messageColor,
+                      color: textBarColor,
                     ),
                     SizedBox(
                       height: 10,

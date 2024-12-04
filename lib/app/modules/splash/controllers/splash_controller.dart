@@ -9,6 +9,8 @@ class SplashController extends GetxController {
 
   @override
   void onInit() {
+    // sharedPreferenceService.setBool(createUserProfile, true);
+    // sharedPreferenceService.setBool(isNumVerify, false);
     navigateToHome();
     super.onInit();
   }
@@ -27,8 +29,7 @@ class SplashController extends GetxController {
     bool? isCreatedUserProfile = getIscreateUserProfile();
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE);
-    }
-    if (isCreatedUserProfile == true) {
+    } else if (isCreatedUserProfile == true) {
       Get.offNamed(Routes.HOME);
     } else {
       Get.offNamed(Routes.LANDING);

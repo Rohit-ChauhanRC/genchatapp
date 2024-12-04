@@ -1,9 +1,11 @@
+import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SharedPreferenceService{
+class SharedPreferenceService {
   late SharedPreferences _prefs;
 
-  Future<void> init() async{
+  Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
 
@@ -47,5 +49,10 @@ class SharedPreferenceService{
   // Clear all preferences
   Future<void> clear() async {
     await _prefs.clear();
+  }
+
+  UserModel getUserDetails() {
+    UserModel user = UserModel.fromJson(getString(userDetail)!);
+    return user;
   }
 }

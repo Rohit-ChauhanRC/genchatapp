@@ -22,3 +22,4 @@ const userUId = "userUId";
 const userMob = "userMob";
 const createUserProfile = "createUserProfile";
 const usersDb = "usersDb";
+const userDetail = "userDetail";

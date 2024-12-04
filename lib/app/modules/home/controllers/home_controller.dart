@@ -13,7 +13,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print(sharedPreferenceService.getUserDetails());
+    print(sharedPreferenceService.getUserDetails().name);
   }
 
   @override

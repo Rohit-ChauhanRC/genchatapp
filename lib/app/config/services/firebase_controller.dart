@@ -12,9 +12,27 @@ class FirebaseController extends GetxController {
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future<void> setUserData(
-      {required String uid, required UserModel user}) async {
-    await firestore.collection("users").doc(uid).set(user.toMap());
+  // final Rx<UserModel> _userModel = Rx<UserModel>(UserModel(
+  //     name: "",
+  //     uid: "",
+  //     profilePic: "",
+  //     isOnline: true,
+  //     phoneNumber: "",
+  //     groupId: []));
+  // UserModel get userModel => _userModel.value;
+  // set userModel(UserModel data) => _userModel.value = data;
+
+  @override
+  void onInit() async {
+    // await readUser();
+
+    super.onInit();
+  }
+
+  Future<void> setUserData({required String uid, required UserModel user}) async {
+    String userJsonString = userModelToJson(user);
+    Map<String, dynamic> userJsonMap = jsonDecode(userJsonString);
+    await firestore.collection("users").doc(uid).set(userJsonMap);
   }
 
   Future<String> storeFileToFirebase(
@@ -27,7 +45,7 @@ class FirebaseController extends GetxController {
 
   Stream<UserModel> getUserData(String userId) {
     return firestore.collection('users').doc(userId).snapshots().map(
-          (event) => UserModel.fromMap(
+          (event) => UserModel.fromJson(
             event.data()!,
           ),
         );

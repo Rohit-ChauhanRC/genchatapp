@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/widgets/user_avatar.dart';
 
 import 'package:get/get.dart';
 
@@ -35,12 +36,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                         onTap: controller.selectImage,
                         child: Obx(
                           () => controller.image == null
-                              ? CircleAvatar(
-                                  backgroundColor: greyColor.withOpacity(0.4),
-                                  radius: 64,
-                                  child: const Icon(Icons.add_a_photo,
-                                      size: 80.0, color: greyColor),
-                                )
+                              ? const UserAvatar()
                               : CircleAvatar(
                                   backgroundColor: greyColor.withOpacity(0.4),
                                   backgroundImage: FileImage(

@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseController extends GetxController {
@@ -45,13 +46,13 @@ class FirebaseController extends GetxController {
     return downloadUrl;
   }
 
-  // Stream<UserModel> getUserData(String userId) {
-  //   return firestore.collection('users').doc(userId).snapshots().map(
-  //         (event) => UserModel.fromMap(
-  //           event.data()!,
-  //         ),
-  //       );
-  // }
+  Stream<UserModel> getUserData(String userId) {
+    return firestore.collection('users').doc(userId).snapshots().map(
+          (event) => UserModel.fromMap(
+            event.data()!,
+          ),
+        );
+  }
 
   // Stream<List<Status>> getStatusData({
   //   required List<Contact> contacts,
@@ -77,7 +78,7 @@ class FirebaseController extends GetxController {
   //       .snapshots()
   //       .map((e) {
   //     for (var i = 0; i < e.docs.length; i++) {
-  //       status.add(Status.fromMap(e.docs[i].data()));
+  //       // status.add(Status.fromMap(e.docs[i].data()));
   //     }
   //     return status;
   //   });
@@ -133,4 +134,30 @@ class FirebaseController extends GetxController {
   //       .doc(messageId)
   //       .set(data.toMap());
   // }
+
+  Future<void> downloadAndStoreFile(String fileUrl) async {
+    try {
+      // Create a reference to the file in Firebase Storage
+      Reference storageRef = FirebaseStorage.instance.refFromURL(fileUrl);
+
+      // Get the file from Firebase Storage
+      final byteData = await storageRef.getData();
+
+      if (byteData != null) {
+        // Get the device's temporary directory to store the file
+        final directory = await getApplicationDocumentsDirectory();
+        // final filePath = '${directory.path}/${basename(storageRef.name)}';
+
+        // Create the file on the device
+        // final file = File(filePath);
+
+        // Write the file data to local storage
+        // await file.writeAsBytes(byteData);
+
+        print('File downloaded and saved locally');
+      }
+    } catch (e) {
+      print('Error downloading or storing file: $e');
+    }
+  }
 }

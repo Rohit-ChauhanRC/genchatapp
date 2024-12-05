@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:genchatapp/app/config/firebase_controller/firebase_controller.dart';
+import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -85,7 +85,8 @@ class CreateProfileController extends GetxController {
       final dir = Directory('${appDir.path}/GenChatApp/$folderPath');
       var status = await Permission.storage.status;
       if (!status.isGranted) {
-        print("calling for storage permission $status \n Directory path:---------> $dir");
+        print(
+            "calling for storage permission $status \n Directory path:---------> $dir");
         status = await Permission.storage.request();
         if (!status.isGranted) {
           print("Storage permission denied. Cannot create folder: $folderPath");
@@ -105,10 +106,12 @@ class CreateProfileController extends GetxController {
       }
     }
   }
+
   void showPermissionDeniedDialog() {
     Get.defaultDialog(
       title: "Permission Required",
-      content: Text("Storage permission is required to create necessary folders. Please grant the permission in the app settings."),
+      content: Text(
+          "Storage permission is required to create necessary folders. Please grant the permission in the app settings."),
       textConfirm: "Open Settings",
       onConfirm: () async {
         await openAppSettings();
@@ -120,6 +123,7 @@ class CreateProfileController extends GetxController {
       },
     );
   }
+
   void selectImage() async {
     showImagePicker(onGetImage: (img) {
       if (img != null) {

@@ -1155,6 +1155,9 @@ PODS:
     - Firebase/Firestore (= 11.4.0)
     - firebase_core
     - Flutter
+  - connectivity_plus (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - emoji_picker_flutter (0.0.1):
     - Flutter
   - Firebase/CoreOnly (11.4.0):
@@ -1384,6 +1387,7 @@ PODS:
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/darwin`)
   - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
@@ -1428,6 +1432,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/darwin"
   emoji_picker_flutter:
     :path: ".symlinks/plugins/emoji_picker_flutter/ios"
   firebase_core:
@@ -1461,6 +1467,7 @@ SPEC CHECKSUMS:
   abseil: d121da9ef7e2ff4cab7666e76c5a3e0915ae08c3
   BoringSSL-GRPC: ca6a8e5d04812fce8ffd6437810c2d46f925eaeb
   cloud_firestore: 8794ea2885e367f0a2096338964ddfd49739b2c7
+  connectivity_plus: 4c41c08fc6d7c91f63bc7aec70ffe3730b04f563
   emoji_picker_flutter: fe2e6151c5b548e975d546e6eeb567daf0962a58
   Firebase: cf1b19f21410b029b6786a54e9764a0cacad3c99
   firebase_core: 9efc3ecf689cdbc90f13f4dc58108c83ea46b266
@@ -1497,6 +1504,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
   video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
 
-PODFILE CHECKSUM: 6ba31b5837d56fb9741ba208bca85937885e2d22
+PODFILE CHECKSUM: 171e9c70b03e9d2be6a4d1d13617dd5bcfcf0f84
 
 COCOAPODS: 1.15.2

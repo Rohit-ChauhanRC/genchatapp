@@ -73,16 +73,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       'isOnline': true,
       'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
     }, SetOptions(merge: true));
-
-    // Set offline status on disconnection
-    // userRef.update({
-    //   'isOnline': false,
-    //   'lastSeen': FieldValue.serverTimestamp()
-    // }).then((_) {
-    //   firebaseController.firestore.runTransaction((transaction) async {
-    //     transaction.set(userRef, {'isOnline': false}, SetOptions(merge: true));
-    //   });
-    // });
   }
 
   Future<void> setUserOffline() async {

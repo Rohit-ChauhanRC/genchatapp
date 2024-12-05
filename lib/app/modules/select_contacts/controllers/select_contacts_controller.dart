@@ -1,19 +1,21 @@
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/data/models/contact_model.dart';
+import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../../../config/services/firebase_controller.dart';
-import '../../../data/models/contact_model.dart';
-import '../../../data/models/user_model.dart';
-import '../../../routes/app_pages.dart';
-import '../../../utils/utils.dart';
 
 class SelectContactsController extends GetxController {
 //
-  final FirebaseController firebaseController = Get.put<FirebaseController>(FirebaseController());
-  final SharedPreferenceService _sharedPreferenceService = Get.find<SharedPreferenceService>();
+  final FirebaseController firebaseController =
+      Get.put<FirebaseController>(FirebaseController());
+  final SharedPreferenceService _sharedPreferenceService =
+      Get.find<SharedPreferenceService>();
   final RxList<ContactModel> _contacts = <ContactModel>[].obs;
   List<ContactModel> get contacts => _contacts;
   set contacts(List<ContactModel> cts) => _contacts.assignAll(cts);
@@ -23,7 +25,7 @@ class SelectContactsController extends GetxController {
   set isContactRefreshed(bool v) => _isContactRefreshed.value = v;
 
   @override
-  void onInit() async{
+  void onInit() async {
     await getContacts();
     super.onInit();
   }
@@ -46,24 +48,30 @@ class SelectContactsController extends GetxController {
             withProperties: true, withPhoto: true);
 
         // Fetch all registered users from Firebase
-        var userCollection = await firebaseController.firestore.collection('users').get();
+        var userCollection =
+            await firebaseController.firestore.collection('users').get();
         Map<String, UserModel> registeredUsers = {};
         for (var document in userCollection.docs) {
           var userData = UserModel.fromJson(document.data());
-          registeredUsers[userData.phoneNumber] = userData;
+          registeredUsers[userData.phoneNumber!] = userData;
           print(registeredUsers);
         }
 
         // Filter contacts to include only registered users and exclude the current user
-         UserModel? userdata = _sharedPreferenceService.getUserDetails();
+        UserModel? userdata = _sharedPreferenceService.getUserDetails();
         String? currentUserPhoneNumber = userdata?.phoneNumber;
 
         List<ContactModel> contactList = [];
         for (var contact in allContacts) {
-          String phoneNumber = contact.phones.isNotEmpty ? contact.phones[0].number.replaceAll(' ', '') : '';
-          if (registeredUsers.containsKey(phoneNumber) && phoneNumber != currentUserPhoneNumber) {
+          String phoneNumber = contact.phones.isNotEmpty
+              ? contact.phones[0].number.replaceAll(' ', '')
+              : '';
+          if (registeredUsers.containsKey(phoneNumber) &&
+              phoneNumber != currentUserPhoneNumber) {
             UserModel? user = registeredUsers[phoneNumber];
-            Uint8List? profilePicBytes = user != null ? await downloadProfilePicture(user.profilePic) : null;
+            Uint8List? profilePicBytes = user != null
+                ? await downloadProfilePicture(user.profilePic!)
+                : null;
             contactList.add(ContactModel(
               fullName: contact.displayName,
               contactNumber: phoneNumber,
@@ -96,13 +104,15 @@ class SelectContactsController extends GetxController {
 
   void selectContact(ContactModel selectedContact, BuildContext context) async {
     try {
-      var userCollection = await firebaseController.firestore.collection('users').get();
+      var userCollection =
+          await firebaseController.firestore.collection('users').get();
       bool isFound = false;
       debugPrint("no: ${selectedContact.contactNumber.toString()}");
 
       for (var document in userCollection.docs) {
         var userData = UserModel.fromJson(document.data());
-        String selectedPhoneNum = selectedContact.contactNumber[0].replaceAll(' ', '');
+        String selectedPhoneNum =
+            selectedContact.contactNumber.replaceAll(' ', '');
         if (selectedPhoneNum == userData.phoneNumber) {
           isFound = true;
           Get.toNamed(Routes.SINGLE_CHAT, arguments: userData);

@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_contacts/contact.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseController extends GetxController {
   final FirebaseStorage firebaseStorage = FirebaseStorage.instance;

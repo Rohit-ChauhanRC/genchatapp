@@ -4,7 +4,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../../../config/firebase_controller/firebase_controller.dart';
+import '../../../config/services/firebase_controller.dart';
 import '../../../data/models/contact_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../routes/app_pages.dart';

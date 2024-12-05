@@ -48,7 +48,7 @@ class FirebaseController extends GetxController {
 
   Stream<UserModel> getUserData(String userId) {
     return firestore.collection('users').doc(userId).snapshots().map(
-          (event) => UserModel.fromMap(
+          (event) => UserModel.fromJson(
             event.data()!,
           ),
         );

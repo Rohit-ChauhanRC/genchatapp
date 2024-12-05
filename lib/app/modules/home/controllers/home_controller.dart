@@ -20,7 +20,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
-    print(sharedPreferenceService.getUserDetails().name);
+    print(sharedPreferenceService.getUserDetails()?.name);
     print(connectivityService.isConnected.value);
     SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
       if (connectivityService.isConnected.value) {
@@ -66,7 +66,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   Future<void> setUserOnline() async {
     final userRef = firebaseController.firestore
         .collection('users')
-        .doc(sharedPreferenceService.getUserDetails().uid);
+        .doc(sharedPreferenceService.getUserDetails()?.uid);
 
     // Set online status
     await userRef.set({
@@ -88,7 +88,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   Future<void> setUserOffline() async {
     final userRef = firebaseController.firestore
         .collection('users')
-        .doc(sharedPreferenceService.getUserDetails().uid);
+        .doc(sharedPreferenceService.getUserDetails()?.uid);
     await userRef.update({
       'isOnline': false,
       'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),

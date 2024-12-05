@@ -1,18 +1,24 @@
+// To parse this JSON data, do
+//
+//     final userModel = userModelFromJson(jsonString);
+
+import 'package:meta/meta.dart';
 import 'dart:convert';
 
+UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
+
+String userModelToJson(UserModel data) => json.encode(data.toJson());
+
 class UserModel {
-  // Id id = Isar.;
-
-  String? uid;
-
-  String? email;
-  String? name;
-  String? profilePic;
-  bool? isOnline;
-  String? phoneNumber;
-  List<String>? groupId;
-  String? lastSeen;
-  String? fcmToken;
+  String name;
+  String uid;
+  String profilePic;
+  bool isOnline;
+  String phoneNumber;
+  List<dynamic> groupId;
+  String email;
+  String lastSeen;
+  String fcmToken;
 
   UserModel({
     required this.name,
@@ -26,62 +32,27 @@ class UserModel {
     required this.fcmToken,
   });
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'name': name,
-      'uid': uid,
-      'profilePic': profilePic,
-      'isOnline': isOnline,
-      'phoneNumber': phoneNumber,
-      'groupId': groupId,
-      'email': email,
-      'lastSeen': lastSeen,
-      'fcmToken': fcmToken,
-    };
-  }
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+    name: json["name"],
+    uid: json["uid"],
+    profilePic: json["profilePic"],
+    isOnline: json["isOnline"],
+    phoneNumber: json["phoneNumber"],
+    groupId: List<dynamic>.from(json["groupId"].map((x) => x)),
+    email: json["email"],
+    lastSeen: json["lastSeen"],
+    fcmToken: json["fcmToken"],
+  );
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      name: map['name'] as String,
-      uid: map['uid'] as String,
-      profilePic: map['profilePic'] as String,
-      isOnline: map['isOnline'] as bool,
-      phoneNumber: map['phoneNumber'] as String,
-      fcmToken: map['fcmToken'] as String,
-      lastSeen: map['lastSeen'] as String,
-      email: map['email'] as String,
-      groupId: List<String>.from(
-        (map['groupId'] as List),
-      ),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory UserModel.fromJson(String source) =>
-      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  UserModel copyWith({
-    String? name,
-    String? uid,
-    String? profilePic,
-    bool? isOnline,
-    String? phoneNumber,
-    String? email,
-    String? lastSeen,
-    String? fcmToken,
-    List<String>? groupId,
-  }) {
-    return UserModel(
-      name: name ?? this.name,
-      uid: uid ?? this.uid,
-      profilePic: profilePic ?? this.profilePic,
-      isOnline: isOnline ?? this.isOnline,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      groupId: groupId ?? this.groupId,
-      email: email ?? this.email,
-      lastSeen: lastSeen ?? this.lastSeen,
-      fcmToken: fcmToken ?? this.fcmToken,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+    "name": name,
+    "uid": uid,
+    "profilePic": profilePic,
+    "isOnline": isOnline,
+    "phoneNumber": phoneNumber,
+    "groupId": List<dynamic>.from(groupId.map((x) => x)),
+    "email": email,
+    "lastSeen": lastSeen,
+    "fcmToken": fcmToken,
+  };
 }

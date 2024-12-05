@@ -31,9 +31,10 @@ class FirebaseController extends GetxController {
     super.onInit();
   }
 
-  Future<void> setUserData(
-      {required String uid, required UserModel user}) async {
-    await firestore.collection("users").doc(uid).set(user.toMap());
+  Future<void> setUserData({required String uid, required UserModel user}) async {
+    String userJsonString = userModelToJson(user);
+    Map<String, dynamic> userJsonMap = jsonDecode(userJsonString);
+    await firestore.collection("users").doc(uid).set(userJsonMap);
   }
 
   Future<String> storeFileToFirebase(

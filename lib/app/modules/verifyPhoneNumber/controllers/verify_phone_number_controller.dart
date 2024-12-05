@@ -89,6 +89,7 @@ class VerifyPhoneNumberController extends GetxController {
       circularProgress = true;
     } catch (e) {
       circularProgress = true;
+      print("API error:-----> $e");
       showSnackBar(context: Get.context!, content: e.toString());
     }
   }

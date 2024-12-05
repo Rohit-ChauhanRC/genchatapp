@@ -176,7 +176,7 @@ class CreateProfileController extends GetxController {
       firebaseController.setUserData(uid: uid, user: user).then((onValu) {
         sharedPreferenceService.setBool(createUserProfile, true);
         sharedPreferenceService.setBool(isNumVerify, false);
-        sharedPreferenceService.setString(userDetail, user.toJson());
+        sharedPreferenceService.setString(userDetail, userModelToJson(user));
         // Future.delayed(const Duration(seconds: 1));
         Get.offNamed(Routes.HOME);
       });

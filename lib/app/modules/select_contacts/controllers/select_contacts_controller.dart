@@ -62,6 +62,8 @@ class SelectContactsController extends GetxController {
         String? currentUserPhoneNumber = userdata?.phoneNumber;
 
         List<ContactModel> contactList = [];
+        Set<String> seenPhoneNumbers = {};
+
         for (var contact in allContacts) {
           String phoneNumber = contact.phones.isNotEmpty
               ? contact.phones[0].number
@@ -69,19 +71,22 @@ class SelectContactsController extends GetxController {
                   .replaceAll("+91", "")
               : '';
           if (registeredUsers.containsKey(phoneNumber) &&
-              phoneNumber != currentUserPhoneNumber) {
+              phoneNumber != currentUserPhoneNumber &&
+              !seenPhoneNumbers.contains(phoneNumber)) {
             UserModel? user = registeredUsers[phoneNumber];
             Uint8List? profilePicBytes = user != null
                 ? await firebaseController.firebaseStorage
                     .refFromURL(user.profilePic!)
                     .getData()
                 : null;
+
             contactList.add(ContactModel(
               fullName: contact.displayName,
               contactNumber: user!.phoneNumber!,
               image: profilePicBytes,
               user: user..name = contact.displayName,
             ));
+            seenPhoneNumbers.add(phoneNumber);
           }
         }
         contacts = contactList;

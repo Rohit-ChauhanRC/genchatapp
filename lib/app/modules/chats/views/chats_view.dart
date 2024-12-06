@@ -50,6 +50,15 @@ class ChatsView extends GetView<ChatsController> {
                       onTap: (){},
                       child: Text(settings, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: blackColor),),
                     )
+                ),
+                PopupMenuItem(
+                    value: logout,
+                    onTap: () async {
+                      await controller.sharedPreferenceService.clear().then((onValue){
+                        Get.offAllNamed(Routes.LANDING);
+                      });
+                    },
+                    child: Text(logout, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: blackColor),)
                 )
               ])
         ],

@@ -1,9 +1,12 @@
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:get/get.dart';
 
-class ChatsController extends GetxController {
-  //TODO: Implement ChatsController
+import '../../../services/shared_preference_service.dart';
 
-  final count = 0.obs;
+class ChatsController extends GetxController {
+  //
+  final SharedPreferenceService sharedPreferenceService = Get.find<SharedPreferenceService>();
+
   @override
   void onInit() {
     super.onInit();
@@ -19,5 +22,9 @@ class ChatsController extends GetxController {
     super.onClose();
   }
 
-  void increment() => count.value++;
+  Future<void> logout() async{
+    await sharedPreferenceService.clear().then((onValue){
+      Get.offAllNamed(Routes.LANDING);
+    });
+  }
 }

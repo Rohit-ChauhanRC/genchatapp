@@ -64,17 +64,21 @@ class SelectContactsController extends GetxController {
         List<ContactModel> contactList = [];
         for (var contact in allContacts) {
           String phoneNumber = contact.phones.isNotEmpty
-              ? contact.phones[0].number.replaceAll(' ', '')
+              ? contact.phones[0].number
+                  .replaceAll(' ', '')
+                  .replaceAll("+91", "")
               : '';
           if (registeredUsers.containsKey(phoneNumber) &&
               phoneNumber != currentUserPhoneNumber) {
             UserModel? user = registeredUsers[phoneNumber];
             Uint8List? profilePicBytes = user != null
-                ? await downloadProfilePicture(user.profilePic!)
+                ? await firebaseController.firebaseStorage
+                    .refFromURL(user.profilePic!)
+                    .getData()
                 : null;
             contactList.add(ContactModel(
-              fullName: contact.displayName,
-              contactNumber: phoneNumber,
+              fullName: user!.name!,
+              contactNumber: user.phoneNumber!,
               image: profilePicBytes,
             ));
           }

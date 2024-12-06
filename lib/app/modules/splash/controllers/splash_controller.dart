@@ -1,4 +1,5 @@
 import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:get/get.dart';
 
@@ -30,6 +31,7 @@ class SplashController extends GetxController {
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE);
     } else if (isCreatedUserProfile == true) {
+      Get.put(ChatsController());
       Get.offNamed(Routes.HOME);
     } else {
       Get.offNamed(Routes.LANDING);

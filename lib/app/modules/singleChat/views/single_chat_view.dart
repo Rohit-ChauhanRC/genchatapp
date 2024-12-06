@@ -13,6 +13,7 @@ class SingleChatView extends GetView<SingleChatController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -82,8 +83,9 @@ class SingleChatView extends GetView<SingleChatController> {
               // Handle menu item selection
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'newGroup',
+                onTap: () {},
                 child: Text(
                   newGroup,
                   style: TextStyle(

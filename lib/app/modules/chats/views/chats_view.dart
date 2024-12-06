@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
+import 'package:genchatapp/app/utils/time_utils.dart';
 import 'package:genchatapp/app/widgets/gradientContainer.dart';
 
 import 'package:get/get.dart';
@@ -28,163 +30,193 @@ class ChatsView extends GetView<ChatsController> {
         ),
         actions: [
           IconButton(
-              onPressed: (){},
-              icon: const Icon(Icons.camera_alt_outlined, color: whiteColor,)
-          ),
+              onPressed: () {},
+              icon: const Icon(
+                Icons.camera_alt_outlined,
+                color: whiteColor,
+              )),
           PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: whiteColor,),
-              offset: Offset(0, 40),
+              icon: const Icon(
+                Icons.more_vert,
+                color: whiteColor,
+              ),
+              offset: const Offset(0, 40),
               color: whiteColor,
               onSelected: (value) {},
               itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: settings,
-                    child: GestureDetector(
-                      onTap: (){},
-                      child: Text(newGroup, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: blackColor),),
-                    )
-                ),
-                PopupMenuItem(
-                    value: settings,
-                    child: GestureDetector(
-                      onTap: (){},
-                      child: Text(settings, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: blackColor),),
-                    )
-                )
-              ])
+                    PopupMenuItem(
+                        value: settings,
+                        child: GestureDetector(
+                          onTap: () async {
+                            // controller.printDta();
+                            await controller.sharedPreferenceService
+                                .clear()
+                                .then((v) {
+                              Future.delayed(const Duration(seconds: 1));
+                              Get.offAllNamed(Routes.LANDING);
+                            });
+                          },
+                          child: const Text(
+                            newGroup,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: blackColor),
+                          ),
+                        )),
+                    PopupMenuItem(
+                        value: settings,
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: const Text(
+                            settings,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: blackColor),
+                          ),
+                        ))
+                  ])
         ],
       ),
       body: GradientContainer(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              child: Column(
-                children: [
-                  // Search Input
-                  TextFormField(
-                    onChanged: (v) {},
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: whiteColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: textBarColor, width: 1),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          color: textBarColor,
-                          width: 1,
-                        ), // Border for enabled state
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          color: textBarColor,
-                          width: 2,
-                        ), // Border for focused state
-                      ),
-                      hintText: 'Search',
-                      hintStyle: const TextStyle(
-                        color: greyColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w200,
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          child: Column(
+            children: [
+              // Search Input
+              TextFormField(
+                onChanged: (v) {},
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: whiteColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: textBarColor, width: 1),
                   ),
-
-                  const SizedBox(height: 10),
-
-                  // Chat List
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(top: 10),
-                      itemCount: 10,
-                      itemBuilder: (context, chatIndex) {
-                        return InkWell(
-                          onTap: (){
-                            Get.toNamed(Routes.SINGLE_CHAT);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Row(
-                              children: [
-                                // Profile Image
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(25),
-                                  child: Image.asset(
-                                    "assets/images/genChatSplash.png",
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-
-                                // Chat Info
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Name",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: blackColor,
-                                        ),
-                                      ),
-                                      Text(
-                                        "you: Hi..",
-                                        softWrap: true,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w300,
-                                          color: blackColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Timestamp
-                                const Text(
-                                  "22/01/2024",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    color: blackColor,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(
+                      color: textBarColor,
+                      width: 1,
+                    ), // Border for enabled state
                   ),
-                ],
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(
+                      color: textBarColor,
+                      width: 2,
+                    ), // Border for focused state
+                  ),
+                  hintText: 'Search',
+                  hintStyle: const TextStyle(
+                    color: greyColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w200,
+                  ),
+                ),
+                keyboardType: TextInputType.text,
               ),
-            ),
-            Positioned(
-                bottom: 26,
-                right: 20,
-                child: FloatingActionButton(
-                  onPressed: (){
-                    Get.toNamed(Routes.SELECT_CONTACTS);
-                  },
-                  child: Icon(Icons.add_comment, color: whiteColor, size: 30,),
-                  backgroundColor: textBarColor,
-                )
-            )
-          ],
+
+              const SizedBox(height: 10),
+
+              // Chat List
+              GetX<ChatsController>(
+                  init: ChatsController(),
+                  builder: (ctc) {
+                    return ctc.contactsList.isNotEmpty
+                        ? Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.only(top: 10),
+                              itemCount: ctc.contactsList.length,
+                              itemBuilder: (context, i) {
+                                ChatConntactModel chatConntactModel =
+                                    ctc.contactsList[i];
+                                return InkWell(
+                                  onTap: () {
+                                    Get.toNamed(Routes.SINGLE_CHAT);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Row(
+                                      children: [
+                                        // Profile Image
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                          child: Image.asset(
+                                            "assets/images/genChatSplash.png",
+                                            width: 50,
+                                            height: 50,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+
+                                        // Chat Info
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                chatConntactModel.name,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: blackColor,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "you: Hi..",
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w300,
+                                                  color: blackColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Timestamp
+                                        Text(
+                                          lastSeenFormatted(chatConntactModel
+                                              .timeSent
+                                              .toString()),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            color: blackColor,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        : const SizedBox.shrink();
+                  }),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Get.toNamed(Routes.SELECT_CONTACTS);
+        },
+        backgroundColor: textBarColor,
+        child: const Icon(
+          Icons.add_comment,
+          color: whiteColor,
+          size: 30,
         ),
       ),
     );
   }
 }
-

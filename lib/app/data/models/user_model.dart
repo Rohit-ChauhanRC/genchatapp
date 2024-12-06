@@ -2,6 +2,7 @@
 //
 //     final userModel = userModelFromJson(jsonString);
 
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'dart:convert';
 
@@ -9,7 +10,7 @@ UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
 
 String userModelToJson(UserModel data) => json.encode(data.toJson());
 
-class UserModel {
+class UserModel extends Equatable {
   String? name;
   String? uid;
   String? profilePic;
@@ -55,4 +56,17 @@ class UserModel {
         "lastSeen": lastSeen,
         "fcmToken": fcmToken,
       };
+
+  @override
+  List<Object?> get props => [
+        name,
+        uid,
+        profilePic,
+        isOnline,
+        phoneNumber,
+        groupId,
+        email,
+        lastSeen,
+        fcmToken
+      ];
 }

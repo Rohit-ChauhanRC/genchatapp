@@ -55,20 +55,20 @@ class SharedPreferenceService {
   // Clear all preferences
   Future<void> clear() async {
     await _prefs.clear();
+    await _prefs.reload();
   }
 
   UserModel? getUserDetails() {
-    if(getString(userDetail) == null || getString(userDetail) == ""){
+    if (getString(userDetail) == null || getString(userDetail) == "") {
       print("UserIsNotEmpty:-----------> ${getString(userDetail)}");
       clear();
       Get.offAllNamed(Routes.LANDING);
-       return null;
-    }else{
+      return null;
+    } else {
       print("UserExits:--------> ${getString(userDetail)}");
       UserModel user = userModelFromJson(getString(userDetail) ?? "");
       print("UserDetails:------> ${json.decode(getString(userDetail) ?? "")}");
       return user;
     }
-
   }
 }

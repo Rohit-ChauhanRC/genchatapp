@@ -13,16 +13,6 @@ class FirebaseController extends GetxController {
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // final Rx<UserModel> _userModel = Rx<UserModel>(UserModel(
-  //     name: "",
-  //     uid: "",
-  //     profilePic: "",
-  //     isOnline: true,
-  //     phoneNumber: "",
-  //     groupId: []));
-  // UserModel get userModel => _userModel.value;
-  // set userModel(UserModel data) => _userModel.value = data;
-
   @override
   void onInit() async {
     // await readUser();

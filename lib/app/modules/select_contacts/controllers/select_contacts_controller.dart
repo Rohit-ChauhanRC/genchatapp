@@ -77,9 +77,10 @@ class SelectContactsController extends GetxController {
                     .getData()
                 : null;
             contactList.add(ContactModel(
-              fullName: user!.name!,
-              contactNumber: user.phoneNumber!,
+              fullName: contact.displayName,
+              contactNumber: user!.phoneNumber!,
               image: profilePicBytes,
+              user: user..name = contact.displayName,
             ));
           }
         }

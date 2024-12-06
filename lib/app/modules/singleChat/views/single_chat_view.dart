@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
-import 'package:genchatapp/app/widgets/user_avatar.dart';
 
 import 'package:get/get.dart';
 
@@ -43,7 +42,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    ctc.userDataModel.value.name ?? "",
+                    ctc.userData.name ?? "",
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 18,

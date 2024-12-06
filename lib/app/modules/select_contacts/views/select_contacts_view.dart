@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 
 import 'package:get/get.dart';
 
@@ -14,18 +15,27 @@ class SelectContactsView extends GetView<SelectContactsController> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: textBarColor,
-        iconTheme: IconThemeData(
-            color: Colors.white
-        ),
+        iconTheme: IconThemeData(color: Colors.white),
         title: ListTile(
-          title: const Text('Select contact', style: TextStyle(
-            fontSize: 18,
-            color: whiteColor,
-            fontWeight: FontWeight.w400,
-          ),),
+          title: const Text(
+            'Select contact',
+            style: TextStyle(
+              fontSize: 18,
+              color: whiteColor,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
           subtitle: Obx(() => controller.contacts.isNotEmpty
-              ? Text('${controller.contacts.length} contacts', style: TextStyle(fontWeight: FontWeight.w200, color: whiteColor, fontSize: 12))
-              : const Text("0  contact", style: TextStyle(fontWeight: FontWeight.w200, color: whiteColor, fontSize: 12))),
+              ? Text('${controller.contacts.length} contacts',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w200,
+                      color: whiteColor,
+                      fontSize: 12))
+              : const Text("0  contact",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w200,
+                      color: whiteColor,
+                      fontSize: 12))),
           // trailing: ,
         ),
         actions: [
@@ -39,7 +49,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
             onPressed: () {
               // controller.isContactRefreshed = false;
               controller.getContacts();
-              },
+            },
             icon: const Icon(
               Icons.refresh,
             ),
@@ -88,43 +98,55 @@ class SelectContactsView extends GetView<SelectContactsController> {
                 ),
                 keyboardType: TextInputType.text,
               ),
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               Expanded(
-                child: Obx(() => controller.contacts.isNotEmpty && controller.isContactRefreshed
+                child: Obx(() => controller.contacts.isNotEmpty &&
+                        controller.isContactRefreshed
                     ? ListView.builder(
-                    itemCount: controller.contacts.length,
-                    itemBuilder: (context, i) {
-                      var contact = controller.contacts[i];
-                      return InkWell(
-                        onTap: () {
-                          controller.selectContact(contact, context);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: ListTile(
-                            title: Text(
-                              contact.fullName,
-                              style: const TextStyle(
-                                fontSize: 18,
+                        itemCount: controller.contacts.length,
+                        itemBuilder: (context, i) {
+                          var contact = controller.contacts[i];
+                          return InkWell(
+                            onTap: () {
+                              // controller.selectContact(contact, context);
+                              Get.toNamed(Routes.SINGLE_CHAT,
+                                  arguments: contact.user);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                title: Text(
+                                  contact.fullName,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                leading: contact.image == null
+                                    ? const SizedBox()
+                                    : CircleAvatar(
+                                        backgroundImage:
+                                            MemoryImage(contact.image!),
+                                        radius: 30,
+                                      ),
+                                subtitle: Text(
+                                  contact.contactNumber.isNotEmpty
+                                      ? contact.contactNumber
+                                      : '',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
                               ),
                             ),
-                            leading: contact.image == null
-                                ? const SizedBox()
-                                : CircleAvatar(
-                              backgroundImage: MemoryImage(contact.image!),
-                              radius: 30,
-                            ),
-                            subtitle: Text(
-                              contact.contactNumber.isNotEmpty ? contact.contactNumber: '',
-                              style: const TextStyle(
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
+                          );
+                        })
+                    : const Center(
+                        child: CircularProgressIndicator(
+                          color: textBarColor,
                         ),
-                      );
-                    })
-                    : const Center(child: CircularProgressIndicator(color: textBarColor,),)),
+                      )),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
@@ -72,5 +73,11 @@ class ChatsController extends GetxController {
     } catch (e) {
       throw e.toString();
     }
+  }
+
+  Future<void> logout() async {
+    await sharedPreferenceService.clear().then((onValue) {
+      Get.offAllNamed(Routes.LANDING);
+    });
   }
 }

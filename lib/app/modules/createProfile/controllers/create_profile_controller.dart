@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -13,6 +14,8 @@ import '../../../utils/utils.dart';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../../chats/controllers/chats_controller.dart';
+
 class CreateProfileController extends GetxController {
   //
 
@@ -27,13 +30,27 @@ class CreateProfileController extends GetxController {
   File? get image => _image.value;
   set image(File? img) => _image.value = img;
 
+  final RxString _photoUrl = ''.obs;
+  String get photoUrl => _photoUrl.value;
+  set photoUrl(String photoUrl) => _photoUrl.value = photoUrl;
+
   final RxString _profileName = ''.obs;
   String get profileName => _profileName.value;
-  set profileName(String profileName) => _profileName.value = profileName;
+  set profileName(String pr) => _profileName.value = pr;
 
   final RxString _email = ''.obs;
   String get email => _email.value;
   set email(String email) => _email.value = email;
+
+  final RxBool _circularProgress = true.obs;
+  bool get circularProgress => _circularProgress.value;
+  set circularProgress(bool v) => _circularProgress.value = v;
+
+
+
+  StreamSubscription<UserModel>? _userDataSubscription;
+  final TextEditingController profileNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   List<String> folderList = [
     "Media",
@@ -49,6 +66,7 @@ class CreateProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    getUserData();
     // createAppFolders();
   }
 
@@ -132,9 +150,28 @@ class CreateProfileController extends GetxController {
     });
   }
 
+  void getUserData() async {
+    var uid = sharedPreferenceService.getString(userUId);
+    if (uid != null) {
+      _userDataSubscription = firebaseController.getUserData(uid).listen((user) {
+
+        profileName = user.name ?? '';
+        email = user.email ?? '';
+
+        profileNameController.text = profileName;
+        emailController.text = email;
+
+        if (user.profilePic != null) {
+          photoUrl = user.profilePic ?? '';
+        }
+        print("Profile Name: $profileName, Email: $email");
+      });
+    }
+  }
+
   void createProfile() async {
-    String profileNam = profileName;
-    String emailId = email;
+    String profileNam = profileNameController.text.trim();
+    String emailId = emailController.text.trim();
     if (profileNam.isNotEmpty && emailId.isNotEmpty) {
       await validateProfileData();
     } else {
@@ -151,26 +188,30 @@ class CreateProfileController extends GetxController {
   }
 
   void storeUserData() async {
+    circularProgress = false;
     var uid = sharedPreferenceService.getString(userUId);
     var mob = sharedPreferenceService.getString(userMob);
 
-    String photoUrl =
-        'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
+    // String photoUrl =
+    //     'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
+    // String photoUrl = "";
+    // if (image != null) {
 
-    if (image != null) {
+    if(image != null){
       photoUrl = await firebaseController.storeFileToFirebase(
         file: image!,
         path: "profilePic/$uid",
       );
+    }
 
       var user = UserModel(
-        name: profileName,
+        name: profileNameController.text.trim(),
         uid: uid!,
         profilePic: photoUrl,
         isOnline: true,
         phoneNumber: mob!,
         groupId: [],
-        email: email,
+        email: emailController.text.trim(),
         fcmToken: "",
         lastSeen: DateTime.now().microsecondsSinceEpoch.toString(),
       );
@@ -181,9 +222,13 @@ class CreateProfileController extends GetxController {
         sharedPreferenceService.setBool(createUserProfile, true);
         sharedPreferenceService.setBool(isNumVerify, false);
         sharedPreferenceService.setString(userDetail, userModelToJson(user));
-        // Future.delayed(const Duration(seconds: 1));
         Get.offNamed(Routes.HOME);
+        circularProgress = true;
+      }).catchError((error) {
+        circularProgress = true;
+        showSnackBar(context: Get.context!, content: 'Failed to update profile');
+        print('Error updating user: $error');
       });
-    }
+    // }
   }
 }

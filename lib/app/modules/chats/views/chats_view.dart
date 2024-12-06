@@ -47,16 +47,8 @@ class ChatsView extends GetView<ChatsController> {
                     PopupMenuItem(
                         value: settings,
                         child: GestureDetector(
-                          onTap: () async {
-                            // controller.printDta();
-                            await controller.sharedPreferenceService
-                                .clear()
-                                .then((v) {
-                              Future.delayed(const Duration(seconds: 1));
-                              Get.offAllNamed(Routes.LANDING);
-                            });
-                          },
-                          child: const Text(
+                          onTap: () {},
+                          child: Text(
                             newGroup,
                             style: TextStyle(
                                 fontSize: 14,
@@ -68,13 +60,29 @@ class ChatsView extends GetView<ChatsController> {
                         value: settings,
                         child: GestureDetector(
                           onTap: () {},
-                          child: const Text(
+                          child: Text(
                             settings,
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: blackColor),
                           ),
+                        )),
+                    PopupMenuItem(
+                        value: logout,
+                        onTap: () async {
+                          await controller.sharedPreferenceService
+                              .clear()
+                              .then((onValue) {
+                            Get.offAllNamed(Routes.LANDING);
+                          });
+                        },
+                        child: Text(
+                          logout,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: blackColor),
                         ))
                   ])
         ],

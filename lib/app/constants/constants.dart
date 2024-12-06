@@ -15,6 +15,7 @@ const createYurProfile = "Create your profile";
 const next = "NEXT";
 const newGroup = "New Group";
 const settings = "Settings";
+const logout = "Logout";
 
 //Shared preferences Keys Names
 const isNumVerify = "isNumberVerified";

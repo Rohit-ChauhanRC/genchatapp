@@ -35,6 +35,10 @@ class CreateProfileController extends GetxController {
   String get email => _email.value;
   set email(String email) => _email.value = email;
 
+  final RxBool _circularProgress = true.obs;
+  bool get circularProgress => _circularProgress.value;
+  set circularProgress(bool v) => _circularProgress.value = v;
+
   List<String> folderList = [
     "Media",
     "Database",
@@ -151,6 +155,7 @@ class CreateProfileController extends GetxController {
   }
 
   void storeUserData() async {
+    circularProgress = false;
     var uid = sharedPreferenceService.getString(userUId);
     var mob = sharedPreferenceService.getString(userMob);
 
@@ -183,6 +188,7 @@ class CreateProfileController extends GetxController {
         sharedPreferenceService.setString(userDetail, userModelToJson(user));
         // Future.delayed(const Duration(seconds: 1));
         Get.offNamed(Routes.HOME);
+        circularProgress = true;
       });
     }
   }

@@ -86,7 +86,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                       const SizedBox(
                         height: 50,
                       ),
-                      SizedBox(
+                      controller.circularProgress ? const Center(child: CircularProgressIndicator(color: textBarColor,),):SizedBox(
                         width: Get.width * 0.8,
                         child: ElevatedButton(
                           onPressed: controller.createProfile,

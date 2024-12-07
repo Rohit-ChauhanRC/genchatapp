@@ -143,7 +143,10 @@ class ChatsView extends GetView<ChatsController> {
                                     ctc.contactsList[i];
                                 return InkWell(
                                   onTap: () {
-                                    Get.toNamed(Routes.SINGLE_CHAT);
+                                    Get.toNamed(Routes.SINGLE_CHAT, arguments: [
+                                      chatConntactModel.uid,
+                                      chatConntactModel.name
+                                    ]);
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 10),

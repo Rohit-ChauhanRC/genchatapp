@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
@@ -16,7 +17,8 @@ class ChatsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    bindStream();
+    // bindStream();
+    bindChatUsersStream();
   }
 
   @override
@@ -33,12 +35,27 @@ class ChatsController extends GetxController {
     contactsList.bindStream(getChatContacts());
   }
 
-  Stream<List<ChatConntactModel>> getChatContacts() {
+  Stream<List<ChatConntactModel>> getChatUsersStream() {
+    UserModel? userdata = sharedPreferenceService.getUserDetails();
+
+    return firebaseController.fetchUsersWithChats(userdata!.uid!);
+  }
+
+  void bindChatUsersStream() {
+    contactsList.bindStream(getChatUsersStream());
+  }
+
+  Stream<List<ChatConntactModel>> getChatContacts() async* {
     UserModel? userdata = sharedPreferenceService.getUserDetails();
 
     // List<ChatConntactModel> contacts = [];
 
     try {
+      Set<String> usersSet = {};
+
+      QuerySnapshot snapshot =
+          await firebaseController.firestore.collection('users').get();
+
       firebaseController.firestore
           .collection('users')
           .doc(userdata!.uid)
@@ -54,22 +71,24 @@ class ChatsController extends GetxController {
                 .get();
             var user = UserModel.fromJson(userData.data()!);
 
-            contactsList.add(
-              ChatConntactModel(
-                name: user.name!,
-                profilePic: user.profilePic!,
-                contactId: chatContact.contactId,
-                timeSent: chatContact.timeSent,
-                lastMessage: chatContact.lastMessage,
-                uid: user.uid!,
-                user: user,
-              ),
-            );
+            if (!usersSet.contains(user.phoneNumber!)) {
+              contactsList.add(
+                ChatConntactModel(
+                  name: user.name!,
+                  profilePic: user.profilePic!,
+                  contactId: chatContact.contactId,
+                  timeSent: chatContact.timeSent,
+                  lastMessage: chatContact.lastMessage,
+                  uid: user.uid!,
+                ),
+              );
+              usersSet.add(user.phoneNumber!);
+            }
           }
         }
         // return contactsList.stream;
       });
-      return contactsList.stream;
+      yield* contactsList.stream;
     } catch (e) {
       throw e.toString();
     }

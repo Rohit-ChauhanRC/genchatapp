@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_contacts/contact.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 
 import 'package:get/get.dart';
@@ -15,7 +14,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: textBarColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: ListTile(
           title: const Text(
             'Select contact',
@@ -27,7 +26,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
           ),
           subtitle: Obx(() => controller.contacts.isNotEmpty
               ? Text('${controller.contacts.length} contacts',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontWeight: FontWeight.w200,
                       color: whiteColor,
                       fontSize: 12))
@@ -98,7 +97,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
                 ),
                 keyboardType: TextInputType.text,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Expanded(
@@ -120,8 +119,10 @@ class SelectContactsView extends GetView<SelectContactsController> {
                         var contact = filteredContacts[i];
                         return InkWell(
                           onTap: () {
-                            Get.toNamed(Routes.SINGLE_CHAT,
-                                arguments: contact.user);
+                            Get.toNamed(Routes.SINGLE_CHAT, arguments: [
+                              contact.user.uid,
+                              contact.fullName
+                            ]);
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),

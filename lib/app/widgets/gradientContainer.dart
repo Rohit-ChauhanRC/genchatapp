@@ -21,7 +21,7 @@ class GradientContainer extends StatelessWidget {
           colors: backgroundGradientColor,
         ),
       ),
-      child: Center(child: child),
+      child: child,
     );
   }
 }

@@ -24,3 +24,4 @@ const userMob = "userMob";
 const createUserProfile = "createUserProfile";
 const usersDb = "usersDb";
 const userDetail = "userDetail";
+const contactsDb = "contactsDb";

@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/bottom_chat_field.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/chat_list.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
 
 import 'package:get/get.dart';
@@ -20,9 +22,9 @@ class SingleChatView extends GetView<SingleChatController> {
         title: GetX<SingleChatController>(builder: (ctc) {
           return Row(
             children: [
-              ctc.userDataModel.value.profilePic != null
+              ctc.receiveruserDataModel.value.profilePic != null
                   ? CachedNetworkImage(
-                      imageUrl: ctc.userDataModel.value.profilePic!,
+                      imageUrl: ctc.receiveruserDataModel.value.profilePic!,
                       imageBuilder: (context, image) {
                         return CircleAvatar(
                             backgroundColor: greyColor.withOpacity(0.4),
@@ -43,7 +45,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    ctc.userData.name ?? "",
+                    ctc.fullname,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 18,
@@ -52,9 +54,9 @@ class SingleChatView extends GetView<SingleChatController> {
                     ),
                   ),
                   Text(
-                    ctc.userDataModel.value.isOnline == true
+                    ctc.receiveruserDataModel.value.isOnline == true
                         ? "Online"
-                        : "last seen ${lastSeenFormatted(ctc.userDataModel.value.lastSeen ?? "").toLowerCase()}",
+                        : "last seen ${lastSeenFormatted(ctc.receiveruserDataModel.value.lastSeen ?? "").toLowerCase()}",
                     style: const TextStyle(
                       fontWeight: FontWeight.w200,
                       color: whiteColor,
@@ -110,11 +112,22 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
         ],
       ),
-      body: const Center(
-        child: Text(
-          'SingleChatView is working',
-          style: TextStyle(fontSize: 20),
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ChatList(
+              singleChatController: controller,
+              firebaseController: controller.firebaseController,
+            ),
+          ),
+          BottomChatField(
+            singleChatController: controller,
+            onTap: () {
+              controller.sendTextMessage();
+              controller.cancelReply();
+            },
+          ),
+        ],
       ),
     );
   }

@@ -1,16 +1,15 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
-import 'package:genchatapp/app/data/models/user_model.dart';
 
 class ChatConntactModel extends Equatable {
   final String name;
   final String profilePic;
   final String contactId;
-  final DateTime timeSent;
+  final dynamic timeSent;
   final String lastMessage;
   final String uid;
-  final UserModel? user;
+  // final UserModel? user;
 
   const ChatConntactModel({
     required this.name,
@@ -19,7 +18,7 @@ class ChatConntactModel extends Equatable {
     required this.timeSent,
     required this.lastMessage,
     required this.uid,
-    this.user,
+    // this.user,
   });
 
   Map<String, dynamic> toMap() {

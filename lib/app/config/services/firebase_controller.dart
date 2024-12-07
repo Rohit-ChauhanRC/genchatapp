@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
+import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -96,33 +98,33 @@ class FirebaseController extends GetxController {
   //   }
   // }
 
-  // Future<void> sendUserMsg(
-  //     {required String reciverId,
-  //     required String currentUid,
-  //     required ChatConntactModel data}) async {
-  //   await firestore
-  //       .collection('users')
-  //       .doc(reciverId)
-  //       .collection("chats")
-  //       .doc(currentUid)
-  //       .set(data.toMap());
-  // }
+  Future<void> sendUserMsg(
+      {required String reciverId,
+      required String currentUid,
+      required ChatConntactModel data}) async {
+    await firestore
+        .collection('users')
+        .doc(reciverId)
+        .collection("chats")
+        .doc(currentUid)
+        .set(data.toMap());
+  }
 
-  // Future<void> setUserMsg({
-  //   required String reciverId,
-  //   required String currentUid,
-  //   required Message data,
-  //   required String messageId,
-  // }) async {
-  //   await firestore
-  //       .collection('users')
-  //       .doc(currentUid)
-  //       .collection("chats")
-  //       .doc(reciverId)
-  //       .collection('messages')
-  //       .doc(messageId)
-  //       .set(data.toMap());
-  // }
+  Future<void> setUserMsg({
+    required String reciverId,
+    required String currentUid,
+    required MessageModel data,
+    required String messageId,
+  }) async {
+    await firestore
+        .collection('users')
+        .doc(currentUid)
+        .collection("chats")
+        .doc(reciverId)
+        .collection('messages')
+        .doc(messageId)
+        .set(data.toMap());
+  }
 
   Future<void> downloadAndStoreFile(String fileUrl) async {
     try {
@@ -148,5 +150,43 @@ class FirebaseController extends GetxController {
     } catch (e) {
       print('Error downloading or storing file: $e');
     }
+  }
+
+  Stream<List<ChatConntactModel>> fetchUsersWithChats(String currentUserId) {
+    return firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('chats')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return ChatConntactModel(
+          uid: data['uid'],
+          name: data['name'],
+          profilePic: data['profilePic'] ?? '',
+          lastMessage: data['lastMessage'] ?? '',
+          timeSent: data['timeSent'] ?? '',
+          contactId: data['contactId'] ?? '',
+        );
+      }).toList();
+    });
+  }
+
+  Stream<List<MessageModel>> listenToMessages(
+      {required String currentUserId, required String receiverId}) {
+    return firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .orderBy('timeSent', descending: false) // Latest messages first
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return MessageModel.fromMap(doc.data());
+      }).toList();
+    });
   }
 }

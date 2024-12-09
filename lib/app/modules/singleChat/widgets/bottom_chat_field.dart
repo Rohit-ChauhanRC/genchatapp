@@ -31,6 +31,7 @@ class BottomChatField extends StatelessWidget {
           children: [
             Expanded(
               child: TextFormField(
+                maxLines: null,
                 focusNode: singleChatController.focusNode,
                 onChanged: (v) {
                   if (v.isNotEmpty) {
@@ -47,31 +48,32 @@ class BottomChatField extends StatelessWidget {
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
-                      width: 100,
+                      width: 20,
                       child: Row(
                         children: [
-                          IconButton(
-                            onPressed: singleChatController
-                                .toggleEmojiKeyboardContainer,
-                            // onPressed: () {},
-                            icon: Obx(
-                                () => singleChatController.isShowEmojiContainer
-                                    ? const Icon(
-                                        Icons.emoji_emotions,
-                                        color: Colors.black,
-                                      )
-                                    : const Icon(
-                                        Icons.keyboard,
-                                        color: Colors.black,
-                                      )),
-                          ),
-                          IconButton(
-                            onPressed: () {
+                          // IconButton(
+                          //   onPressed: singleChatController
+                          //       .toggleEmojiKeyboardContainer,
+                          //   // onPressed: () {},
+                          //   icon: Obx(
+                          //       () => singleChatController.isShowEmojiContainer
+                          //           ? const Icon(
+                          //               Icons.emoji_emotions,
+                          //               color: Colors.black,
+                          //             )
+                          //           : const Icon(
+                          //               Icons.keyboard,
+                          //               color: Colors.black,
+                          //             )),
+                          // ),
+                          InkWell(
+                            onTap: () {
                               // singleChatController.selectGif();
                             },
-                            icon: const Icon(
+                            child: const Icon(
                               Icons.gif,
                               color: Colors.black,
+                              size: 20,
                             ),
                           ),
                         ],

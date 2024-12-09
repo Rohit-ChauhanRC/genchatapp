@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart'; // To get storage paths
 
-import 'users_table.dart';
+import 'message_table.dart';
 
 class DataBaseService {
   Database? _database;
@@ -17,12 +20,18 @@ class DataBaseService {
   }
 
   Future<String> get fullPath async {
+    Directory baseDir;
+
+    // Application documents directory (iOS and others)
+    baseDir = await getApplicationDocumentsDirectory();
     const name = 'genmakgenchat.db';
-    final path = await getDatabasesPath();
-    return join(path, name);
+    // final path = await getDatabasesPath();
+    return join(baseDir.path, 'GenChatApp/Database', name);
+    // return join(path, name);
   }
 
   Future<Database> _initialize() async {
+    print(await fullPath);
     final path = await fullPath;
     var database = await openDatabase(
       path,
@@ -35,7 +44,7 @@ class DataBaseService {
   }
 
   Future<void> create(Database database, int verion) async {
-    // await GenchatUserDB().createTable(database);
+    await MessageTable().createTable(database);
     // await SellDB().createTable(database);
     // await ProfileDB().createTable(database);
   }

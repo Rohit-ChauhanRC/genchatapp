@@ -34,8 +34,8 @@ class ChatList extends StatelessWidget {
         itemCount: singleChatController.messageList.length,
         itemBuilder: (context, index) {
           var messages = singleChatController.messageList[index];
-          if (!messages.isSeen &&
-              messages.recieverid ==
+          if (
+              messages.receieverid ==
                   singleChatController.receiveruserDataModel.value.uid) {
             // singleChatController.setChatMessageSeen(
             //   context,
@@ -60,7 +60,6 @@ class ChatList extends StatelessWidget {
               repliedMessageType: messages.repliedMessageType.type.toEnum(),
               repliedText: messages.repliedMessage.obs,
               username: messages.repliedTo,
-              isSeen: messages.isSeen.obs,
             );
           }
           return SenderMessageCard(

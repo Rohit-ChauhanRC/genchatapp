@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
@@ -24,6 +25,8 @@ class CreateProfileController extends GetxController {
       Get.put<FirebaseController>(FirebaseController());
 
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
+
+  final folder = Get.find<FolderCreation>();
 
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
 
@@ -67,6 +70,7 @@ class CreateProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    folder.createAppFolderStructure();
     getUserData();
     isFromInsideApp = Get.arguments;
     // createAppFolders();
@@ -155,8 +159,8 @@ class CreateProfileController extends GetxController {
   void getUserData() async {
     var uid = sharedPreferenceService.getString(userUId);
     if (uid != null) {
-      _userDataSubscription = firebaseController.getUserData(uid).listen((user) {
-
+      _userDataSubscription =
+          firebaseController.getUserData(uid).listen((user) {
         profileName = user.name ?? '';
         email = user.email ?? '';
 
@@ -199,44 +203,44 @@ class CreateProfileController extends GetxController {
     // String photoUrl = "";
     // if (image != null) {
 
-    if(image != null){
+    if (image != null) {
       photoUrl = await firebaseController.storeFileToFirebase(
         file: image!,
         path: "profilePic/$uid",
       );
     }
 
-      var user = UserModel(
-        name: profileNameController.text.trim(),
-        uid: uid!,
-        profilePic: photoUrl,
-        isOnline: true,
-        phoneNumber: mob!,
-        groupId: [],
-        email: emailController.text.trim(),
-        fcmToken: "",
-        lastSeen: DateTime.now().microsecondsSinceEpoch.toString(),
-      );
+    var user = UserModel(
+      name: profileNameController.text.trim(),
+      uid: uid!,
+      profilePic: photoUrl,
+      isOnline: true,
+      phoneNumber: mob!,
+      groupId: [],
+      email: emailController.text.trim(),
+      fcmToken: "",
+      lastSeen: DateTime.now().microsecondsSinceEpoch.toString(),
+    );
 
-      // createProfile
+    // createProfile
 
-      firebaseController.setUserData(uid: uid, user: user).then((onValu) {
-        sharedPreferenceService.setBool(createUserProfile, true);
-        sharedPreferenceService.setBool(isNumVerify, false);
-        sharedPreferenceService.setString(userDetail, userModelToJson(user));
-        if(isFromInsideApp) {
-          SettingsController settingsController = Get.find<SettingsController>();
-          settingsController.isRefreshed();
-          Get.until((route) => route.settings.name == Routes.SETTINGS);
-        }else{
-          Get.offNamed(Routes.HOME);
-        }
-        circularProgress = true;
-      }).catchError((error) {
-        circularProgress = true;
-        showSnackBar(context: Get.context!, content: 'Failed to update profile');
-        print('Error updating user: $error');
-      });
+    firebaseController.setUserData(uid: uid, user: user).then((onValu) {
+      sharedPreferenceService.setBool(createUserProfile, true);
+      sharedPreferenceService.setBool(isNumVerify, false);
+      sharedPreferenceService.setString(userDetail, userModelToJson(user));
+      if (isFromInsideApp) {
+        SettingsController settingsController = Get.find<SettingsController>();
+        settingsController.isRefreshed();
+        Get.until((route) => route.settings.name == Routes.SETTINGS);
+      } else {
+        Get.offNamed(Routes.HOME);
+      }
+      circularProgress = true;
+    }).catchError((error) {
+      circularProgress = true;
+      showSnackBar(context: Get.context!, content: 'Failed to update profile');
+      print('Error updating user: $error');
+    });
     // }
   }
 }

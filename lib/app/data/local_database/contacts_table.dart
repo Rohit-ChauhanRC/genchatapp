@@ -1,5 +1,4 @@
 import 'package:genchatapp/app/constants/constants.dart';
-import 'package:genchatapp/app/data/models/contact_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 

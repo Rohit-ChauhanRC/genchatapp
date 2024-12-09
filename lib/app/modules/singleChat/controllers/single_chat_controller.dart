@@ -205,14 +205,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     required MessageReply? messageReplied,
   }) async {
     final message = MessageModel(
-      isSent: false,
+      status: MessageStatus.uploading,
       senderId: senderuserData.uid!,
-      recieverid: receiveruserDataModel.value.uid!,
+      receieverid: receiveruserDataModel.value.uid!,
       text: text,
       type: messageEnum,
       timeSent: timeSent,
       messageId: messageId,
-      isSeen: false,
       repliedMessage:
           messageReplied == null ? '' : messageReplied.message.toString(),
       repliedMessageType: messageReplied!.message == null

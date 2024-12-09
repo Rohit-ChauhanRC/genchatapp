@@ -29,4 +29,26 @@ extension ConvertMessage on String {
         return MessageEnum.text;
     }
   }
+
+  MessageStatus toStatusEnum() {
+    switch (this) {
+      case "uploading":
+        return MessageStatus.uploading;
+      case "sent":
+        return MessageStatus.sent;
+      case "delivered":
+        return MessageStatus.delivered;
+      default:
+        return MessageStatus.uploading;
+    }
+  }
+}
+
+enum MessageStatus {
+  uploading("uploading"),
+  sent("sent"),
+  delivered("delivered");
+
+  const MessageStatus(this.type);
+  final String type;
 }

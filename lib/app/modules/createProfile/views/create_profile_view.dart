@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/widgets/gradientContainer.dart';
 import 'package:genchatapp/app/widgets/user_avatar.dart';
@@ -16,7 +17,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: appBarColor,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: controller.isFromInsideApp? true:false,
           title: const Text(
             createYurProfile,
           ),
@@ -37,13 +38,27 @@ class CreateProfileView extends GetView<CreateProfileController> {
                           child: Obx(
                             () => controller.image == null && controller.photoUrl == ""
                                 ? const UserAvatar()
-                                : CircleAvatar(
+                                : controller.image != null
+                                ?CircleAvatar(
                                     backgroundColor: greyColor.withOpacity(0.4),
-                                    backgroundImage: controller.image == null?NetworkImage(controller.photoUrl):FileImage(
+                                    backgroundImage: FileImage(
                                       controller.image!,
                                     ),
                                     radius: 64,
-                                  ),
+                                  ):
+                            CachedNetworkImage(
+                              imageUrl: controller.photoUrl,
+                              imageBuilder: (context, image) {
+                                return CircleAvatar(
+                                    backgroundColor: greyColor.withOpacity(0.4),
+                                    radius: 64,
+                                    backgroundImage: image);
+                              },
+                              placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                            )
                           ),
                         ),
                         const SizedBox(

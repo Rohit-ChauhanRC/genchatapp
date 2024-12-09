@@ -59,7 +59,10 @@ class ChatsView extends GetView<ChatsController> {
                     PopupMenuItem(
                         value: settings,
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            Get.back();
+                            Get.toNamed(Routes.SETTINGS);
+                          },
                           child: Text(
                             settings,
                             style: TextStyle(
@@ -68,22 +71,22 @@ class ChatsView extends GetView<ChatsController> {
                                 color: blackColor),
                           ),
                         )),
-                    PopupMenuItem(
-                        value: logout,
-                        onTap: () async {
-                          await controller.sharedPreferenceService
-                              .clear()
-                              .then((onValue) {
-                            Get.offAllNamed(Routes.LANDING);
-                          });
-                        },
-                        child: Text(
-                          logout,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: blackColor),
-                        ))
+                    // PopupMenuItem(
+                    //     value: logout,
+                    //     onTap: () async {
+                    //       await controller.sharedPreferenceService
+                    //           .clear()
+                    //           .then((onValue) {
+                    //         Get.offAllNamed(Routes.LANDING);
+                    //       });
+                    //     },
+                    //     child: Text(
+                    //       logout,
+                    //       style: TextStyle(
+                    //           fontSize: 14,
+                    //           fontWeight: FontWeight.w400,
+                    //           color: blackColor),
+                    //     ))
                   ])
         ],
       ),

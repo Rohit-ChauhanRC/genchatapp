@@ -14,6 +14,8 @@ import '../modules/otp/bindings/otp_binding.dart';
 import '../modules/otp/views/otp_view.dart';
 import '../modules/select_contacts/bindings/select_contacts_binding.dart';
 import '../modules/select_contacts/views/select_contacts_view.dart';
+import '../modules/settings/bindings/settings_binding.dart';
+import '../modules/settings/views/settings_view.dart';
 import '../modules/singleChat/bindings/single_chat_binding.dart';
 import '../modules/singleChat/views/single_chat_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
@@ -84,6 +86,11 @@ class AppPages {
       name: _Paths.SELECT_CONTACTS,
       page: () => const SelectContactsView(),
       binding: SelectContactsBinding(),
+    ),
+    GetPage(
+      name: _Paths.SETTINGS,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
     ),
   ];
 }

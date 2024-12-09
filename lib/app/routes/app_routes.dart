@@ -14,6 +14,7 @@ abstract class Routes {
   static const CALL = _Paths.CALL;
   static const SINGLE_CHAT = _Paths.SINGLE_CHAT;
   static const SELECT_CONTACTS = _Paths.SELECT_CONTACTS;
+  static const SETTINGS = _Paths.SETTINGS;
 }
 
 abstract class _Paths {
@@ -29,4 +30,5 @@ abstract class _Paths {
   static const CALL = '/call';
   static const SINGLE_CHAT = '/single-chat';
   static const SELECT_CONTACTS = '/select-contacts';
+  static const SETTINGS = '/settings';
 }

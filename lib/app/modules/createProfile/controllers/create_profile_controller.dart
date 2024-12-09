@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -46,7 +47,7 @@ class CreateProfileController extends GetxController {
   bool get circularProgress => _circularProgress.value;
   set circularProgress(bool v) => _circularProgress.value = v;
 
-
+  bool isFromInsideApp = false;
 
   StreamSubscription<UserModel>? _userDataSubscription;
   final TextEditingController profileNameController = TextEditingController();
@@ -67,6 +68,7 @@ class CreateProfileController extends GetxController {
   void onInit() {
     super.onInit();
     getUserData();
+    isFromInsideApp = Get.arguments;
     // createAppFolders();
   }
 
@@ -222,7 +224,13 @@ class CreateProfileController extends GetxController {
         sharedPreferenceService.setBool(createUserProfile, true);
         sharedPreferenceService.setBool(isNumVerify, false);
         sharedPreferenceService.setString(userDetail, userModelToJson(user));
-        Get.offNamed(Routes.HOME);
+        if(isFromInsideApp) {
+          SettingsController settingsController = Get.find<SettingsController>();
+          settingsController.isRefreshed();
+          Get.until((route) => route.settings.name == Routes.SETTINGS);
+        }else{
+          Get.offNamed(Routes.HOME);
+        }
         circularProgress = true;
       }).catchError((error) {
         circularProgress = true;

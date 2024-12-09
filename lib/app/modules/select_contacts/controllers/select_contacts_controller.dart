@@ -16,9 +16,15 @@ class SelectContactsController extends GetxController {
       Get.put<FirebaseController>(FirebaseController());
   final SharedPreferenceService _sharedPreferenceService =
       Get.find<SharedPreferenceService>();
+
+  //
   final RxList<ContactModel> _contacts = <ContactModel>[].obs;
   List<ContactModel> get contacts => _contacts;
   set contacts(List<ContactModel> cts) => _contacts.assignAll(cts);
+
+  final RxString _searchQuery = ''.obs;
+  String get searchQuery => _searchQuery.value;
+  set searchQuery(String query) => _searchQuery.value = query;
 
   final RxBool _isContactRefreshed = true.obs;
   bool get isContactRefreshed => _isContactRefreshed.value;
@@ -38,6 +44,17 @@ class SelectContactsController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+  }
+
+  List<ContactModel> get filteredContacts {
+    if (searchQuery.isEmpty) {
+      return contacts;
+    }
+    return contacts
+        .where((contact) =>
+    contact.fullName.toLowerCase().contains(searchQuery.toLowerCase()) ||
+        contact.contactNumber.contains(searchQuery))
+        .toList();
   }
 
   Future<List<ContactModel>> getContacts() async {

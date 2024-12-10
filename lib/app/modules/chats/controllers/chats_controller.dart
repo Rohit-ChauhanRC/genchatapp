@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -13,6 +14,9 @@ class ChatsController extends GetxController {
   final FirebaseController firebaseController = Get.find();
 
   final RxList<ChatConntactModel> contactsList = <ChatConntactModel>[].obs;
+
+  final ContactsTable contactsTable = ContactsTable();
+
 
   @override
   void onInit() {

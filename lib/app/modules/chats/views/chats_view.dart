@@ -48,7 +48,7 @@ class ChatsView extends GetView<ChatsController> {
                         value: settings,
                         child: GestureDetector(
                           onTap: () {},
-                          child: Text(
+                          child: const Text(
                             newGroup,
                             style: TextStyle(
                                 fontSize: 14,
@@ -63,7 +63,7 @@ class ChatsView extends GetView<ChatsController> {
                             Get.back();
                             Get.toNamed(Routes.SETTINGS);
                           },
-                          child: Text(
+                          child: const Text(
                             settings,
                             style: TextStyle(
                                 fontSize: 14,

@@ -1,10 +1,11 @@
+import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ConnectivityService extends GetxController {
   // RxBool to track connectivity status
   var isConnected = false.obs;
-
+// final singleChatController = Get.find<SingleChatController>();
   // Instance of Connectivity
   final Connectivity _connectivity = Connectivity();
 
@@ -33,6 +34,10 @@ class ConnectivityService extends GetxController {
   // Update the connection status based on the result
   void _updateConnectionStatus(List<ConnectivityResult> result) {
     isConnected.value = !result.contains(ConnectivityResult.none);
+    // Retry unsent messages when connected
+    if (isConnected.value) {
+      SingleChatController().retryPendingMessages();
+    }
   }
 
   @override

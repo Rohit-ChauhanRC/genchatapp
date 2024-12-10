@@ -3,20 +3,21 @@ import 'package:genchatapp/app/constants/message_enum.dart';
 class MessageModel {
   
   final String senderId;
-  final String receieverid;
+  final String receiverId;
   final String text;
   final MessageEnum type;
-  final dynamic timeSent;
+  final DateTime timeSent;
   final String messageId;
   
   final MessageStatus status;
   final String repliedMessage;
   final String repliedTo;
   final MessageEnum repliedMessageType;
+  late final String syncStatus;
 
   MessageModel({
     required this.senderId,
-    required this.receieverid,
+    required this.receiverId,
     required this.text,
     required this.type,
     required this.timeSent,
@@ -26,12 +27,13 @@ class MessageModel {
     required this.repliedTo,
     required this.repliedMessageType,
     required this.status,
+    this.syncStatus = 'pending',
   });
 
   Map<String, dynamic> toMap() {
     return {
       'senderId': senderId,
-      'receieverid': receieverid,
+      'receiverId': receiverId,
       'text': text,
       'type': type.type,
       'timeSent': timeSent.millisecondsSinceEpoch,
@@ -40,13 +42,20 @@ class MessageModel {
       'repliedMessage': repliedMessage,
       'repliedTo': repliedTo,
       'repliedMessageType': repliedMessageType.type,
+      'syncStatus': syncStatus,
     };
   }
 
   factory MessageModel.fromMap(Map<String, dynamic> map) {
+    assert(map['messageId'] != null, "messageId cannot be null");
+    assert(map['senderId'] != null, "senderId cannot be null");
+    assert(map['receiverId'] != null, "receiverId cannot be null");
+
+    // Debugging: Log the map
+    print("Converting map to MessageModel: $map");
     return MessageModel(
       senderId: map['senderId'] ?? '',
-      receieverid: map['receieverid '] ?? '',
+      receiverId: map['receiverId'] ?? '',
       text: map['text'] ?? '',
       type: (map['type'] as String).toEnum(),
       timeSent: DateTime.fromMillisecondsSinceEpoch(map['timeSent']),
@@ -55,6 +64,7 @@ class MessageModel {
       repliedMessage: map['repliedMessage'] ?? '',
       repliedTo: map['repliedTo'] ?? '',
       repliedMessageType: (map['repliedMessageType'] as String).toEnum(),
+      syncStatus: map['syncStatus'] ?? 'pending',
     );
   }
 }

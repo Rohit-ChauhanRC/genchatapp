@@ -9,6 +9,7 @@ class MyMessageCard extends StatelessWidget {
   final String message;
   final String date;
   final MessageEnum type;
+  final MessageStatus status;
   final void Function(DragUpdateDetails)? onLeftSwipe;
   final RxString repliedText;
   final String username;
@@ -19,6 +20,7 @@ class MyMessageCard extends StatelessWidget {
     required this.message,
     required this.date,
     required this.type,
+    required this.status,
     required this.onLeftSwipe,
     required this.repliedText,
     required this.username,
@@ -63,7 +65,9 @@ class MyMessageCard extends StatelessWidget {
                             bottom: 25,
                           ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Reply Preview
                         Obx(() => repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"
                             ? Column(children: [
@@ -108,6 +112,7 @@ class MyMessageCard extends StatelessWidget {
                           padding: const EdgeInsets.only(
                             left: 20,
                           ),
+                          //time
                           child: Text(
                             date,
                             style: const TextStyle(
@@ -119,6 +124,7 @@ class MyMessageCard extends StatelessWidget {
                         const SizedBox(
                           width: 5,
                         ),
+                        // Status Icon
                         // Obx(
                           // () => isSeen.value
                           //     ? const Icon(
@@ -127,12 +133,23 @@ class MyMessageCard extends StatelessWidget {
                           //         color: Colors.blue,
                           //       )
                           //     : 
-                              const Icon(
-                                  Icons.done,
-                                  size: 20,
-                                  color: Colors.white60,
-                                // ),
-                        ),
+                          //     const Icon(
+                          //         Icons.done,
+                          //         size: 20,
+                          //         color: Colors.white60,
+                          //       // ),
+                        // ),
+                        Icon(
+                            status == MessageStatus.uploading
+                                ? Icons.watch_later
+                                : status == MessageStatus.sent
+                                ? Icons.done
+                                : Icons.done_all,
+                            size: 20,
+                            color: status == MessageStatus.delivered
+                                ? Colors.blue
+                                : Colors.white60,
+                          ),
                       ],
                     ),
                   ),

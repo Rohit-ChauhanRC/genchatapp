@@ -113,7 +113,15 @@ class SettingsView extends GetView<SettingsController> {
                           title: "Logout",
                           description: "You have to login again.",
                           icon: Icons.logout_rounded,
-                          onTap: () {}),
+                          onTap: () async {
+                            await controller.homeController.setUserOffline();
+                            await controller.sharedPreferenceService
+                                      .clear()
+                                      .then((onValue) {
+                                        Get.offAllNamed(Routes.LANDING);
+                                  });
+
+                          }),
                     ],
                   ),
                 ),

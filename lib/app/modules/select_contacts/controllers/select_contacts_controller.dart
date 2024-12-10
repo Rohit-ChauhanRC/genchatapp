@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/constants.dart';
@@ -25,6 +26,8 @@ class SelectContactsController extends GetxController {
 
   final ContactsTable contactsTable = ContactsTable();
   final FolderCreation folderCreation = Get.find<FolderCreation>();
+
+  final ConnectivityService connectivityService = Get.find();
 
   //
   final RxList<ContactModel> _contacts = <ContactModel>[].obs;
@@ -76,15 +79,24 @@ class SelectContactsController extends GetxController {
     await _sharedPreferenceService.setBool(contactsSynced, true);
   }
 
-   getContactsFromDB() async {
-   return contacts.assignAll(await contactsTable.fetchAll());
+  getContactsFromDB() async {
+    return contacts.assignAll(await contactsTable.fetchAll());
   }
 
   Future<void> refreshSync() async {
-    await _sharedPreferenceService.setBool(contactsSynced, false);
+    if (connectivityService.isConnected.value) {
+      await _sharedPreferenceService.setBool(contactsSynced, false);
 
-    await contactsTable.deleteTable(); // Clear Local Database
-    await syncContacts(); // Re-sync
+      await contactsTable.deleteTable().then((v) async {
+        await syncContacts(); // Re-sync
+      });
+    } else {
+      // snackbar for internet conectivity
+      showSnackBar(
+          context: Get.context!,
+          content: "Please check your internet connection!");
+    }
+    // Clear Local Database
   }
 
   Future<void> syncContacts() async {
@@ -137,7 +149,7 @@ class SelectContactsController extends GetxController {
                     .getData()
                 : null;
 
-                // Fetch the image from the URL
+            // Fetch the image from the URL
             // final httpClient = HttpClient();
             // final request = await httpClient.getUrl(Uri.parse(user!.profilePic!));
             // final response = await request.close();
@@ -176,7 +188,7 @@ class SelectContactsController extends GetxController {
       debugPrint(e.toString());
       isContactRefreshed = true;
     }
-   await  getContactsFromDB();
+    await getContactsFromDB();
   }
 
   Future<Uint8List?> downloadProfilePicture(String url) async {

@@ -51,9 +51,13 @@ class ContactsTable {
     return e.map((el) => ContactModel.fromMap((el))).toList();
   }
 
-  deleteTable() async {
-    final database = await DataBaseService().database;
+  Future<void> deleteTable() async {
+    final db = await DataBaseService().database;
 
-    database.delete(tableName);
+    // database.delete(tableName);
+    // final db = await database;
+    await db.execute('DROP TABLE IF EXISTS $tableName');
+    await createTable(db);
+    print('Table "$tableName" deleted successfully.');
   }
 }

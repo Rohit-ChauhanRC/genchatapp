@@ -6,7 +6,7 @@ class ChatConntactModel extends Equatable {
   final String name;
   final String profilePic;
   final String contactId;
-  final dynamic timeSent;
+  final DateTime timeSent;
   final String lastMessage;
   final String uid;
   // final UserModel? user;

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as path;
 
 class FolderCreation {
   Future<void> createAppFolderStructure() async {
@@ -14,11 +15,9 @@ class FolderCreation {
       final statusAndroid = await Permission.manageExternalStorage.request();
       if (status.isGranted || statusAndroid.isGranted) {
         final Directory appDir = await getApplicationDocumentsDirectory();
-       
 
         // Define the root folder
-        final String rootFolderPath =
-            '${ appDir.path }/$appName';
+        final String rootFolderPath = '${appDir.path}/$appName';
 
         // Define subfolders
         final List<String> subFolders = [
@@ -60,8 +59,7 @@ class FolderCreation {
     try {
       final Directory appDir = await getApplicationDocumentsDirectory();
 
-      final String subFolderPath =
-          '${appDir.path}/$appName/$subFolder';
+      final String subFolderPath = '${appDir.path}/$appName/$subFolder';
 
       final Directory dir = Directory(subFolderPath);
       if (!await dir.exists()) {
@@ -70,10 +68,19 @@ class FolderCreation {
 
       final File file = File('$subFolderPath/$fileName');
       await file.writeAsBytes(fileBytes);
-      return "$subFolderPath/$fileName";
+      return file.path;
     } catch (e) {
       print("Error saving file: $e");
       return "error!";
     }
+  }
+  String getImageName(String imagePath) {
+    // Get the image file name with extension from the path
+    return path.basename(imagePath); // e.g., "image.jpg"
+  }
+
+  String getImageExtension(String imagePath) {
+    // Get the file extension
+    return path.extension(imagePath); // e.g., ".jpg"
   }
 }

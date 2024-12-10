@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart'; // To get storage paths
 
+import 'contacts_table.dart';
 import 'message_table.dart';
 
 class DataBaseService {
@@ -35,7 +36,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,
@@ -45,7 +46,7 @@ class DataBaseService {
 
   Future<void> create(Database database, int verion) async {
     await MessageTable().createTable(database);
-    // await SellDB().createTable(database);
+    await ContactsTable().createTable(database);
     // await ProfileDB().createTable(database);
   }
 

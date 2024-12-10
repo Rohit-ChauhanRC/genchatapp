@@ -1,4 +1,5 @@
 import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/models/contact_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 
@@ -10,9 +11,9 @@ class ContactsTable {
   CREATE TABLE IF NOT EXISTS $tableName (
     "id" INTEGER ,
     "fullName" TEXT,
-    "contactNumber" TEXT,
+    "contactNumber" TEXT UNIQUE,
     "image" TEXT,
-    "uid" TEXT,
+    "uid" TEXT UNIQUE,
     PRIMARY KEY("id" AUTOINCREMENT)
   );
 """);
@@ -21,32 +22,38 @@ class ContactsTable {
   Future<int> create({
     required String fullName,
     required String contactNumber,
-    String? image,
+    String? imagePath,
     required String uid,
   }) async {
     final database = await DataBaseService().database;
-    return await database.rawInsert(
-      '''
-        INSERT INTO $tableName (fullName,
-       contactNumber,
-       image,
-       uid) VALUES (?,?,?,?)
-      ''',
-      [
-        fullName,
-        contactNumber,
-        image,
-        uid,
-      ],
+
+    return await database.insert(
+      tableName,
+      {
+        "fullName": fullName,
+        "contactNumber": contactNumber,
+        "image": imagePath,
+        "uid": uid
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  //   Future<List<ContactModel>> fetchAll() async {
-  //   final database = await DataBaseService().database;
-  //   final farmers = await database.rawQuery('''
-  //       SELECT * from $tableName
-  //     ''');
+  Future<List<ContactModel>> fetchAll() async {
+    final database = await DataBaseService().database;
+    final e = await database.rawQuery('''
+        SELECT * from $tableName
+      ''');
+    for (var element in e) {
+      print(element.values);
+    }
+    // print(e);
+    return e.map((el) => ContactModel.fromMap((el))).toList();
+  }
 
-  //   return farmers.map((e) => ContactModel.(e)).toList();
-  // }
+  deleteTable() async {
+    final database = await DataBaseService().database;
+
+    database.delete(tableName);
+  }
 }

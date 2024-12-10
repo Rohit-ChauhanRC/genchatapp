@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/config/services/folder_creation.dart';
+import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/contact_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -9,6 +14,7 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 
 class SelectContactsController extends GetxController {
 //
@@ -16,6 +22,9 @@ class SelectContactsController extends GetxController {
       Get.put<FirebaseController>(FirebaseController());
   final SharedPreferenceService _sharedPreferenceService =
       Get.find<SharedPreferenceService>();
+
+  final ContactsTable contactsTable = ContactsTable();
+  final FolderCreation folderCreation = Get.find<FolderCreation>();
 
   //
   final RxList<ContactModel> _contacts = <ContactModel>[].obs;
@@ -32,7 +41,7 @@ class SelectContactsController extends GetxController {
 
   @override
   void onInit() async {
-    await getContacts();
+    await syncContacts();
     super.onInit();
   }
 
@@ -52,12 +61,44 @@ class SelectContactsController extends GetxController {
     }
     return contacts
         .where((contact) =>
-    contact.fullName.toLowerCase().contains(searchQuery.toLowerCase()) ||
-        contact.contactNumber.contains(searchQuery))
+            contact.fullName
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase()) ||
+            contact.contactNumber.contains(searchQuery))
         .toList();
   }
 
-  Future<List<ContactModel>> getContacts() async {
+  Future<bool> hasSyncedContacts() async {
+    return _sharedPreferenceService.getBool(contactsSynced) ?? false;
+  }
+
+  Future<void> setSyncedContacts() async {
+    await _sharedPreferenceService.setBool(contactsSynced, true);
+  }
+
+   getContactsFromDB() async {
+   return contacts.assignAll(await contactsTable.fetchAll());
+  }
+
+  Future<void> refreshSync() async {
+    await _sharedPreferenceService.setBool(contactsSynced, false);
+
+    await contactsTable.deleteTable(); // Clear Local Database
+    await syncContacts(); // Re-sync
+  }
+
+  Future<void> syncContacts() async {
+    final alreadySynced = await hasSyncedContacts();
+
+    if (alreadySynced) {
+      await getContactsFromDB();
+      return; // Skip sync if already done
+    } else {
+      await getContacts();
+    }
+  }
+
+  Future<void> getContacts() async {
     isContactRefreshed = false;
     try {
       if (await FlutterContacts.requestPermission()) {
@@ -71,7 +112,6 @@ class SelectContactsController extends GetxController {
         for (var document in userCollection.docs) {
           var userData = UserModel.fromJson(document.data());
           registeredUsers[userData.phoneNumber!] = userData;
-          print(registeredUsers);
         }
 
         // Filter contacts to include only registered users and exclude the current user
@@ -97,24 +137,46 @@ class SelectContactsController extends GetxController {
                     .getData()
                 : null;
 
-            contactList.add(ContactModel(
-              fullName: contact.displayName,
-              contactNumber: user!.phoneNumber!,
-              image: profilePicBytes,
-              user: user..name = contact.displayName,
-            ));
+                // Fetch the image from the URL
+            // final httpClient = HttpClient();
+            // final request = await httpClient.getUrl(Uri.parse(user!.profilePic!));
+            // final response = await request.close();
+            // final profilePicBytes =
+            //     await consolidateHttpClientResponseBytes(response);
+
+            final String fileName = path.basename(
+                Uri.parse(user!.profilePic!).path); // e.g., "image.jpg"
+
+            final imgePath = await folderCreation.saveFile(
+              fileBytes: profilePicBytes!,
+              fileName: fileName,
+              subFolder: "Images",
+            );
+
+            // contactList.add(ContactModel(
+            //   fullName: contact.displayName,
+            //   contactNumber: user.phoneNumber!,
+            //   image: imgePath,
+            //   userId: user.uid!,
+            // ));
+
+            await contactsTable.create(
+                fullName: contact.displayName,
+                contactNumber: user.phoneNumber!,
+                uid: user.uid!,
+                imagePath: imgePath);
             seenPhoneNumbers.add(phoneNumber);
           }
         }
-        contacts = contactList;
+        // contacts = contactList;
         isContactRefreshed = true;
-        print("All contacts:-----> $contacts");
+        await setSyncedContacts();
       }
     } catch (e) {
       debugPrint(e.toString());
       isContactRefreshed = true;
     }
-    return contacts;
+   await  getContactsFromDB();
   }
 
   Future<Uint8List?> downloadProfilePicture(String url) async {

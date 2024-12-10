@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 
@@ -45,9 +47,10 @@ class SelectContactsView extends GetView<SelectContactsController> {
           //   ),
           // ),
           IconButton(
-            onPressed: () {
+            onPressed: () async{
               // controller.isContactRefreshed = false;
-              controller.getContacts();
+              // controller.getContacts();
+             await controller.refreshSync();
             },
             icon: const Icon(
               Icons.refresh,
@@ -66,30 +69,12 @@ class SelectContactsView extends GetView<SelectContactsController> {
               // Search Input
               TextFormField(
                 onChanged: (value) => controller.searchQuery = value,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   isDense: true,
                   filled: true,
                   fillColor: whiteColor,
-                  // border: OutlineInputBorder(
-                  //   borderRadius: BorderRadius.circular(20),
-                  //   borderSide: BorderSide(color: textBarColor, width: 1),
-                  // ),
-                  // enabledBorder: OutlineInputBorder(
-                  //   borderRadius: BorderRadius.circular(20),
-                  //   borderSide: BorderSide(
-                  //     color: textBarColor,
-                  //     width: 1,
-                  //   ), // Border for enabled state
-                  // ),
-                  // focusedBorder: OutlineInputBorder(
-                  //   borderRadius: BorderRadius.circular(20),
-                  //   borderSide: BorderSide(
-                  //     color: textBarColor,
-                  //     width: 2,
-                  //   ), // Border for focused state
-                  // ),
                   hintText: 'Search',
-                  hintStyle: const TextStyle(
+                  hintStyle: TextStyle(
                     color: greyColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w200,
@@ -119,10 +104,8 @@ class SelectContactsView extends GetView<SelectContactsController> {
                         var contact = filteredContacts[i];
                         return InkWell(
                           onTap: () {
-                            Get.toNamed(Routes.SINGLE_CHAT, arguments: [
-                              contact.user.uid,
-                              contact.fullName
-                            ]);
+                            Get.toNamed(Routes.SINGLE_CHAT,
+                                arguments: [contact.userId, contact.fullName]);
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
@@ -135,13 +118,15 @@ class SelectContactsView extends GetView<SelectContactsController> {
                               ),
                               leading: contact.image == null
                                   ? const CircleAvatar(
-                                child: Icon(Icons.person),
-                              )
-                              : CircleAvatar(
-                                backgroundImage:
-                                MemoryImage(contact.image!),
-                                radius: 30,
-                              ),
+                                      child: Icon(Icons.person),
+                                    )
+                                  : CircleAvatar(
+                                      backgroundImage: Image.file(
+                                        File(contact.image),
+                                        fit: BoxFit.cover,
+                                      ).image,
+                                      radius: 30,
+                                    ),
                               subtitle: Text(
                                 contact.contactNumber.isNotEmpty
                                     ? contact.contactNumber

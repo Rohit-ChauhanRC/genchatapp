@@ -27,3 +27,4 @@ const userDetail = "userDetail";
 const contactsDb = "contactsDb";
 const messageTable = "messageTable";
 const contactsSynced = "contactsSynced";
+const chatConnectTable = "chatConnectTable";

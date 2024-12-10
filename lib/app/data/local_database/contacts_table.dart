@@ -60,4 +60,10 @@ class ContactsTable {
     await createTable(db);
     print('Table "$tableName" deleted successfully.');
   }
+
+   void onUpgrade(Database db, int oldVersion, int newVersion) {
+    // if (oldVersion < newVersion) {
+    //   db.execute("ALTER TABLE $tableName ADD COLUMN newCol TEXT;");
+    // }
+  }
 }

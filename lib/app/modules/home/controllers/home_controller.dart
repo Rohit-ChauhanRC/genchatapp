@@ -12,8 +12,8 @@ import 'package:get/get.dart';
 class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
-  final ConnectivityService connectivityService = Get.find();
-  final FirebaseController firebaseController = Get.find();
+  final  connectivityService = Get.put(ConnectivityService());
+  final  firebaseController = Get.find<FirebaseController>();
 
   final RxInt _currentPageIndex = 0.obs;
   int get currentPageIndex => _currentPageIndex.value;

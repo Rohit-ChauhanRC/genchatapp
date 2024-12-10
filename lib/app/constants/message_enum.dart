@@ -38,6 +38,8 @@ extension ConvertMessage on String {
         return MessageStatus.sent;
       case "delivered":
         return MessageStatus.delivered;
+      case "seen":
+        return MessageStatus.seen;
       default:
         return MessageStatus.uploading;
     }
@@ -47,7 +49,8 @@ extension ConvertMessage on String {
 enum MessageStatus {
   uploading("uploading"),
   sent("sent"),
-  delivered("delivered");
+  delivered("delivered"),
+  seen("seen");
 
   const MessageStatus(this.type);
   final String type;

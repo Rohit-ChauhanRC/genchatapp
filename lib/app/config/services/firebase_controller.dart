@@ -10,6 +10,8 @@ import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../constants/message_enum.dart';
+
 class FirebaseController extends GetxController {
   final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
@@ -189,4 +191,33 @@ class FirebaseController extends GetxController {
       }).toList();
     });
   }
+
+  Future<void> updateMessageStatus({
+    required String currentUserId,
+    required String senderId,
+    required String messageId,
+    required MessageStatus status,
+  }) async {
+    try {
+      await firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('chats')
+          .doc(senderId)
+          .collection('messages')
+          .doc(messageId)
+          .update({'status': status.type});
+      await firestore
+          .collection('users')
+          .doc(senderId)
+          .collection('chats')
+          .doc(currentUserId)
+          .collection('messages')
+          .doc(messageId)
+          .update({'status': status.type});
+    } catch (e) {
+      print("Error updating message status: $e");
+    }
+  }
+
 }

@@ -51,8 +51,8 @@ class ChatList extends StatelessWidget {
           if (messages.senderId == singleChatController.senderuserData.uid) {
             return MyMessageCard(
               message: messages.text.toString(),
-              // date: "DateFormat.Hm().format(messages.timeSent).toString()",
-              date: "",
+              date: DateFormat.Hm().format(messages.timeSent).toString(),
+              // date: "",
               type: messages.type.type.toString().toEnum(),
                 status: messages.status.type.toString().toStatusEnum(),
               onLeftSwipe: (v) {

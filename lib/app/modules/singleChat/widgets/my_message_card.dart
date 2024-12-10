@@ -144,9 +144,11 @@ class MyMessageCard extends StatelessWidget {
                                 ? Icons.watch_later
                                 : status == MessageStatus.sent
                                 ? Icons.done
-                                : Icons.done_all,
+                                : status == MessageStatus.delivered
+                                ? Icons.done_all
+                                :Icons.done_all,
                             size: 20,
-                            color: status == MessageStatus.delivered
+                            color: status == MessageStatus.seen
                                 ? Colors.blue
                                 : Colors.white60,
                           ),

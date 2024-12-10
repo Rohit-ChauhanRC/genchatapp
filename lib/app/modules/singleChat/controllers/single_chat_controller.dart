@@ -96,6 +96,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   @override
   void onReady() {
     super.onReady();
+    markMessagesAsSeen();
   }
 
   @override
@@ -180,7 +181,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     try {
       // Debugging: Log message data
       // print("Syncing message to Firebase: ${message.toMap()}");
-      final newMessage = MessageModel(
+      final sentMessage = message.copyWith(
         senderId: message.senderId,
         receiverId: message.receiverId,
         text: message.text.trim(),
@@ -196,19 +197,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       // users -> sender id -> reciever id -> messages -> message id -> store message
 
       await firebaseController.setUserMsg(
-        currentUid: newMessage.senderId,
-        data: newMessage,
-        messageId: newMessage.messageId,
-        reciverId: newMessage.receiverId
+        currentUid: sentMessage.senderId,
+        data: sentMessage,
+        messageId: sentMessage.messageId,
+        reciverId: sentMessage.receiverId
         // receiveruserDataModel.value.uid!,
       );
+      // Save message in the receiver's chat with 'delivered' status
+      final deliveredMessage = sentMessage.copyWith(status: MessageStatus.delivered);
       // users -> reciever id  -> sender id -> messages -> message id -> store message
       await firebaseController.setUserMsg(
-        currentUid: newMessage.receiverId,
+        currentUid: deliveredMessage.receiverId,
         // receiveruserDataModel.value.uid!,
-        data: newMessage,
-        messageId: newMessage.messageId,
-        reciverId: newMessage.senderId
+        data: deliveredMessage,
+        messageId: deliveredMessage.messageId,
+        reciverId: deliveredMessage.senderId
         // senderuserData.uid!,
       );
 
@@ -216,8 +219,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       await MessageTable().updateSyncStatus(message.messageId, 'sent');
 
       // Update the message status in the UI
-      messageList.firstWhere((msg) => msg.messageId == message.messageId).syncStatus = 'sent';
-      messageList.refresh();
+      final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
+      if (index != -1) {
+        messageList[index] = messageList[index].copyWith(syncStatus: 'sent');
+        messageList.refresh();
+      }
     } catch (e) {
       print("Error syncing message: $e");
     }
@@ -234,6 +240,30 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+
+  void markMessagesAsSeen() async {
+    final currentUserId = senderuserData.uid!;
+    final senderId = id.toString(); // ID of the chat partner
+
+    // Listen to all messages sent by the sender to this user
+    final messages = await firebaseController.listenToMessages(
+      currentUserId: currentUserId,
+      receiverId: senderId,
+    ).first;
+
+    for (var message in messages) {
+      // Update status only for messages not yet marked as 'seen'
+      if (message.status == MessageStatus.delivered && message.receiverId == currentUserId) {
+        await firebaseController.updateMessageStatus(
+          currentUserId: currentUserId,
+          senderId: senderId,
+          messageId: message.messageId,
+          status: MessageStatus.seen,
+        );
+      }
+    }
+  }
+
 
   // void schedulePeriodicSync() {
   //   Timer.periodic(Duration(seconds: 30), (timer) {

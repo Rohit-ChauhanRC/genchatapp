@@ -45,6 +45,35 @@ class MessageModel {
       'syncStatus': syncStatus,
     };
   }
+  // Add the copyWith method
+  MessageModel copyWith({
+    String? senderId,
+    String? receiverId,
+    String? text,
+    MessageEnum? type,
+    DateTime? timeSent,
+    String? messageId,
+    MessageStatus? status,
+    String? repliedMessage,
+    String? repliedTo,
+    MessageEnum? repliedMessageType,
+    String? syncStatus,
+  }) {
+    return MessageModel(
+      senderId: senderId ?? this.senderId,
+      receiverId: receiverId ?? this.receiverId,
+      text: text ?? this.text,
+      type: type ?? this.type,
+      timeSent: timeSent ?? this.timeSent,
+      messageId: messageId ?? this.messageId,
+      status: status ?? this.status,
+      repliedMessage: repliedMessage ?? this.repliedMessage,
+      repliedTo: repliedTo ?? this.repliedTo,
+      repliedMessageType: repliedMessageType ?? this.repliedMessageType,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
+
 
   factory MessageModel.fromMap(Map<String, dynamic> map) {
     assert(map['messageId'] != null, "messageId cannot be null");

@@ -11,7 +11,7 @@ class ChatsController extends GetxController {
   //
 
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
-  final FirebaseController firebaseController = Get.find();
+  final firebaseController = Get.find<FirebaseController>();
 
   final RxList<ChatConntactModel> contactsList = <ChatConntactModel>[].obs;
 

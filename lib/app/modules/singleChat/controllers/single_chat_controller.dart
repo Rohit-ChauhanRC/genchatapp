@@ -21,8 +21,8 @@ import '../../../data/local_database/message_table.dart';
 class SingleChatController extends GetxController with WidgetsBindingObserver {
   //
 
-  final ConnectivityService connectivityService = Get.find();
-  final FirebaseController firebaseController = Get.find();
+  final  connectivityService = Get.find<ConnectivityService>();
+  final  firebaseController = Get.put(FirebaseController());
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final TextEditingController messageController = TextEditingController();

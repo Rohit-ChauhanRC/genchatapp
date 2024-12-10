@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -134,7 +135,7 @@ class ChatsView extends GetView<ChatsController> {
 
               // Chat List
               GetX<ChatsController>(
-                  init: ChatsController(),
+                  init: Get.find<ChatsController>(),
                   builder: (ctc) {
                     return ctc.contactsList.isNotEmpty
                         ? Expanded(

@@ -12,19 +12,14 @@ import 'app/routes/app_pages.dart';
 import 'app/services/shared_preference_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'app/constants/get_di.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final sharedPreferenceService = SharedPreferenceService();
-  await sharedPreferenceService.init();
-  Get.put<SharedPreferenceService>(sharedPreferenceService);
-  Get.put<ConnectivityService>(ConnectivityService());
-  Get.put<FolderCreation>(FolderCreation());
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  Get.put<FirebaseController>(FirebaseController());
+  await di.init();
 
  await DataBaseService().database;
   runApp(const App());

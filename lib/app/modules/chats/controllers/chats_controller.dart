@@ -77,9 +77,19 @@ class ChatsController extends GetxController {
     final stream = getChatUsersStream();
     stream.listen((firebaseContacts) async {
       // Save new data locally
-      await chatConectTable.deleteTable();
+      // await chatConectTable.deleteTable();
       for (var contact in firebaseContacts) {
-        await chatConectTable.insert(contact: contact);
+        ChatConntactModel? ct =
+            await chatConectTable.fetchById(uid: contact.uid);
+        if (ct != null) {
+          await chatConectTable.updateContact(
+              uid: contact.uid,
+              lastMessage: contact.lastMessage,
+              profilePic: contact.lastMessage,
+              timeSent: contact.timeSent.microsecondsSinceEpoch);
+        } else {
+          await chatConectTable.insert(contact: contact);
+        }
       }
 
       // Update the UI list
@@ -130,17 +140,17 @@ class ChatsController extends GetxController {
             fileName: fileName,
             subFolder: "Images",
           );
-          await contactsTable.create(
-              fullName: user.name!,
-              contactNumber: user.phoneNumber!,
-              uid: user.uid!,
-              imagePath: imgePath);
 
-          ContactModel? contactModel =
-              await contactsTable.fetchByUid(user.uid!);
+          // ContactModel? contactModel =
+          //     await contactsTable.fetchByUid(user.uid!);
+          // await contactsTable.create(
+          //     fullName: user.name!,
+          //     contactNumber: user.phoneNumber!,
+          //     uid: user.uid!,
+          //     imagePath: imgePath);
 
           firebaseContacts.add(ChatConntactModel(
-            name: contactModel?.fullName ?? "",
+            name: chatContact.name,
             profilePic: imgePath,
             contactId: chatContact.contactId,
             timeSent: chatContact.timeSent,

@@ -22,7 +22,7 @@ class ChatConectTable {
   }
 
   Future<int> insert({
-   required ChatConntactModel contact,
+    required ChatConntactModel contact,
   }) async {
     final database = await DataBaseService().database;
 
@@ -32,8 +32,6 @@ class ChatConectTable {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-
-   
 
   Future<List<ChatConntactModel>> fetchAll() async {
     final database = await DataBaseService().database;
@@ -47,8 +45,27 @@ class ChatConectTable {
     return e.map((el) => ChatConntactModel.fromMap((el))).toList();
   }
 
+  Future<ChatConntactModel?> fetchById({required String uid}) async {
+    final database = await DataBaseService().database;
+
+    // Query the database with the UID condition
+    final result = await database.query(
+      tableName,
+      where: 'uid = ?', // Add WHERE clause
+      whereArgs: [uid], // Provide arguments for WHERE
+      limit: 1, // Limit to 1 result for efficiency
+    );
+
+    // If a result is found, return the ContactModel, otherwise return null
+    if (result.isNotEmpty) {
+      return ChatConntactModel.fromMap(result.first);
+    }
+
+    return null;
+  }
+
   Future<void> updateContact({
-    required int uid,
+    required String uid,
     String? profilePic,
     String? lastMessage,
     int? timeSent,

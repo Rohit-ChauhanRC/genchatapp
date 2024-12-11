@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -15,7 +13,6 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
 
 class SelectContactsController extends GetxController {
 //
@@ -156,8 +153,13 @@ class SelectContactsController extends GetxController {
             // final profilePicBytes =
             //     await consolidateHttpClientResponseBytes(response);
 
-            final String fileName = path.basename(
-                Uri.parse(user!.profilePic!).path); // e.g., "image.jpg"
+            // final String fileName = path.basename(
+            //     Uri.parse(user!.profilePic!).path); // e.g., "image.jpg"
+            // final now = DateTime.now();
+            // final date =
+            //     "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+            // final fileName = "IMG-$date-GA${user!.uid}.jpg";
+            final fileName = "IMG-GA${user!.uid}.jpg";
 
             final imgePath = await folderCreation.saveFile(
               fileBytes: profilePicBytes!,

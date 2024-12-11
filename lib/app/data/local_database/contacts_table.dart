@@ -50,6 +50,24 @@ class ContactsTable {
     // print(e);
     return e.map((el) => ContactModel.fromMap((el))).toList();
   }
+  Future<ContactModel?> fetchByUid(String uid) async {
+    final database = await DataBaseService().database;
+
+    // Query the database with the UID condition
+    final result = await database.query(
+      tableName,
+      where: 'uid = ?', // Add WHERE clause
+      whereArgs: [uid], // Provide arguments for WHERE
+      limit: 1, // Limit to 1 result for efficiency
+    );
+
+    // If a result is found, return the ContactModel, otherwise return null
+    if (result.isNotEmpty) {
+      return ContactModel.fromMap(result.first);
+    }
+
+    return null; // Return null if no contact is found
+  }
 
   Future<void> updateContact({
     required int uid,

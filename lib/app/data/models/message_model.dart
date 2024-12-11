@@ -81,7 +81,7 @@ class MessageModel {
     assert(map['receiverId'] != null, "receiverId cannot be null");
 
     // Debugging: Log the map
-    print("Converting map to MessageModel: $map");
+    // print("Converting map to MessageModel: $map");
     return MessageModel(
       senderId: map['senderId'] ?? '',
       receiverId: map['receiverId'] ?? '',

@@ -199,25 +199,39 @@ class FirebaseController extends GetxController {
     required MessageStatus status,
   }) async {
     try {
-      await firestore
+      // Use a batch to perform atomic updates
+      WriteBatch batch = firestore.batch();
+
+      // Reference for current user message document
+      DocumentReference currentUserMessageRef = firestore
           .collection('users')
           .doc(currentUserId)
           .collection('chats')
           .doc(senderId)
           .collection('messages')
-          .doc(messageId)
-          .update({'status': status.type});
-      await firestore
+          .doc(messageId);
+
+      // Reference for sender user message document
+      DocumentReference senderMessageRef = firestore
           .collection('users')
           .doc(senderId)
           .collection('chats')
           .doc(currentUserId)
           .collection('messages')
-          .doc(messageId)
-          .update({'status': status.type});
+          .doc(messageId);
+
+      // Update the status in both documents
+      batch.update(currentUserMessageRef, {'status': status.type});
+      batch.update(senderMessageRef, {'status': status.type});
+
+      // Commit the batch
+      await batch.commit();
     } catch (e) {
-      print("Error updating message status: $e");
+      // Log detailed error information
+      print(
+          "Error updating message status: $e. CurrentUserId: $currentUserId, SenderId: $senderId, MessageId: $messageId");
     }
   }
+
 
 }

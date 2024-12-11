@@ -34,10 +34,6 @@ class ConnectivityService extends GetxController {
   // Update the connection status based on the result
   void _updateConnectionStatus(List<ConnectivityResult> result) {
     isConnected.value = !result.contains(ConnectivityResult.none);
-    // Retry unsent messages when connected
-    if (isConnected.value) {
-      SingleChatController().retryPendingMessages();
-    }
   }
 
   @override

@@ -91,6 +91,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     bindStream();
     bindStreamMessages();
     // schedulePeriodicSync();
+    retryPendingMessages();
+    startListeningForConnectivityChanges();
+
   }
 
   @override
@@ -113,7 +116,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Stream<List<MessageModel>> getMessageStream() {
-    retryPendingMessages();
+    // retryPendingMessages();
     return firebaseController.listenToMessages(
         currentUserId: senderuserData.uid!, receiverId: id.toString());
   }
@@ -181,19 +184,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     try {
       // Debugging: Log message data
       // print("Syncing message to Firebase: ${message.toMap()}");
-      final sentMessage = message.copyWith(
-        senderId: message.senderId,
-        receiverId: message.receiverId,
-        text: message.text.trim(),
-        type: MessageEnum.text,
-        timeSent: message.timeSent,
-        messageId: message.messageId,
-        status: MessageStatus.sent,
-        repliedMessage: '',
-        repliedTo: '',
-        repliedMessageType: MessageEnum.text,
-        syncStatus: 'sent',
-      );
+      await _saveDataToContactsSubcollection(
+              message.text,
+              message.timeSent,
+            );
+      final sentMessage = message.copyWith(status: MessageStatus.sent);
       // users -> sender id -> reciever id -> messages -> message id -> store message
 
       await firebaseController.setUserMsg(
@@ -234,9 +229,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     for (var message in unsentMessages) {
       if (connectivityService.isConnected.value) {
-        await _syncMessageToFirebase(message);
+        try {
+          await _syncMessageToFirebase(message);
+        }catch(e){
+          print("Error syncing message: $e");
+        }
       }else{
         print("Message has missing fields: ${message.toMap()}");
+        break;
       }
     }
   }
@@ -263,6 +263,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+
+  void startListeningForConnectivityChanges() {
+      if (connectivityService.isConnected.value) {
+        retryPendingMessages(); // Trigger retries when internet is restored
+      }
+  }
+
 
 
   // void schedulePeriodicSync() {
@@ -297,42 +304,42 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   //   }
   // }
 
-  // _saveDataToContactsSubcollection(
-  //   String text,
-  //   DateTime timeSent,
-  // ) async {
-  //   // users -> reciever user id => chats -> current user id -> set data
-  //   var recieverChatContact = ChatConntactModel(
-  //     uid: senderuserData.uid!,
-  //     name: senderuserData.name!,
-  //     profilePic: senderuserData.profilePic!,
-  //     contactId: senderuserData.uid!,
-  //     timeSent: timeSent,
-  //     lastMessage: text,
-  //   );
-  //
-  //   await firebaseController.sendUserMsg(
-  //     currentUid: senderuserData.uid!,
-  //     data: recieverChatContact,
-  //     reciverId: receiveruserDataModel.value.uid!,
-  //   );
-  //   // users -> current user id  => chats -> reciever user id -> set data
-  //   var senderChatContact = ChatConntactModel(
-  //     uid: receiveruserDataModel.value.uid!,
-  //     name: receiveruserDataModel.value.name!,
-  //     profilePic: receiveruserDataModel.value.profilePic!,
-  //     contactId: receiveruserDataModel.value.uid!,
-  //     timeSent: timeSent,
-  //     lastMessage: text,
-  //   );
-  //
-  //   await firebaseController.sendUserMsg(
-  //     currentUid: receiveruserDataModel.value.uid!,
-  //     data: senderChatContact,
-  //     reciverId: senderuserData.uid!,
-  //   );
-  // }
-  //
+  _saveDataToContactsSubcollection(
+    String text,
+    DateTime timeSent,
+  ) async {
+    // users -> reciever user id => chats -> current user id -> set data
+    var recieverChatContact = ChatConntactModel(
+      uid: senderuserData.uid!,
+      name: senderuserData.name!,
+      profilePic: senderuserData.profilePic!,
+      contactId: senderuserData.uid!,
+      timeSent: timeSent,
+      lastMessage: text,
+    );
+
+    await firebaseController.sendUserMsg(
+      currentUid: senderuserData.uid!,
+      data: recieverChatContact,
+      reciverId: receiveruserDataModel.value.uid!,
+    );
+    // users -> current user id  => chats -> reciever user id -> set data
+    var senderChatContact = ChatConntactModel(
+      uid: receiveruserDataModel.value.uid!,
+      name: receiveruserDataModel.value.name!,
+      profilePic: receiveruserDataModel.value.profilePic!,
+      contactId: receiveruserDataModel.value.uid!,
+      timeSent: timeSent,
+      lastMessage: text,
+    );
+
+    await firebaseController.sendUserMsg(
+      currentUid: receiveruserDataModel.value.uid!,
+      data: senderChatContact,
+      reciverId: senderuserData.uid!,
+    );
+  }
+
   // void _saveMessageToMessageSubcollection({
   //   required String text,
   //   required DateTime timeSent,

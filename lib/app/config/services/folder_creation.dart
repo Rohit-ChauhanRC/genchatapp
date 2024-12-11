@@ -68,12 +68,14 @@ class FolderCreation {
 
       final File file = File('$subFolderPath/$fileName');
       await file.writeAsBytes(fileBytes);
-      return file.path;
+      // return file.path;
+      return "$subFolderPath/$fileName";
     } catch (e) {
       print("Error saving file: $e");
       return "error!";
     }
   }
+
   String getImageName(String imagePath) {
     // Get the image file name with extension from the path
     return path.basename(imagePath); // e.g., "image.jpg"

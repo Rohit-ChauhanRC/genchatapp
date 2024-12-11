@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -160,12 +162,22 @@ class ChatsView extends GetView<ChatsController> {
                                         ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(25),
-                                          child: Image.asset(
-                                            "assets/images/genChatSplash.png",
-                                            width: 50,
-                                            height: 50,
-                                            fit: BoxFit.cover,
-                                          ),
+                                          child: chatConntactModel
+                                                  .profilePic.isEmpty
+                                              ? Image.asset(
+                                                  "assets/images/genChatSplash.png",
+                                                  width: 50,
+                                                  height: 50,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : CircleAvatar(
+                                                  backgroundImage: Image.file(
+                                                    File(chatConntactModel
+                                                        .profilePic),
+                                                    fit: BoxFit.cover,
+                                                  ).image,
+                                                  radius: 30,
+                                                ),
                                         ),
                                         const SizedBox(width: 10),
 
@@ -183,11 +195,11 @@ class ChatsView extends GetView<ChatsController> {
                                                   color: blackColor,
                                                 ),
                                               ),
-                                              const Text(
-                                                "you: Hi..",
+                                              Text(
+                                                chatConntactModel.lastMessage,
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w300,
                                                   color: blackColor,
@@ -199,9 +211,7 @@ class ChatsView extends GetView<ChatsController> {
 
                                         // Timestamp
                                         Text(
-                                          lastSeenFormatted(chatConntactModel
-                                              .timeSent
-                                              .toString()),
+                                          lastSeenFormatted(chatConntactModel.timeSent.microsecondsSinceEpoch.toString()),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,
                                             color: blackColor,

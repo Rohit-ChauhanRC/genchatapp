@@ -5,15 +5,13 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
-import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
-import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../data/local_database/message_table.dart';
@@ -21,8 +19,8 @@ import '../../../data/local_database/message_table.dart';
 class SingleChatController extends GetxController with WidgetsBindingObserver {
   //
 
-  final  connectivityService = Get.find<ConnectivityService>();
-  final  firebaseController = Get.put(FirebaseController());
+  final connectivityService = Get.find<ConnectivityService>();
+  final firebaseController = Get.put(FirebaseController());
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final TextEditingController messageController = TextEditingController();
@@ -196,27 +194,29 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       // users -> sender id -> reciever id -> messages -> message id -> store message
 
       await firebaseController.setUserMsg(
-        currentUid: newMessage.senderId,
-        data: newMessage,
-        messageId: newMessage.messageId,
-        reciverId: newMessage.receiverId
-        // receiveruserDataModel.value.uid!,
-      );
+          currentUid: newMessage.senderId,
+          data: newMessage,
+          messageId: newMessage.messageId,
+          reciverId: newMessage.receiverId
+          // receiveruserDataModel.value.uid!,
+          );
       // users -> reciever id  -> sender id -> messages -> message id -> store message
       await firebaseController.setUserMsg(
-        currentUid: newMessage.receiverId,
-        // receiveruserDataModel.value.uid!,
-        data: newMessage,
-        messageId: newMessage.messageId,
-        reciverId: newMessage.senderId
-        // senderuserData.uid!,
-      );
+          currentUid: newMessage.receiverId,
+          // receiveruserDataModel.value.uid!,
+          data: newMessage,
+          messageId: newMessage.messageId,
+          reciverId: newMessage.senderId
+          // senderuserData.uid!,
+          );
 
       // Update sync status in SQLite
       await MessageTable().updateSyncStatus(message.messageId, 'sent');
 
       // Update the message status in the UI
-      messageList.firstWhere((msg) => msg.messageId == message.messageId).syncStatus = 'sent';
+      messageList
+          .firstWhere((msg) => msg.messageId == message.messageId)
+          .syncStatus = 'sent';
       messageList.refresh();
     } catch (e) {
       print("Error syncing message: $e");
@@ -229,7 +229,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     for (var message in unsentMessages) {
       if (connectivityService.isConnected.value) {
         await _syncMessageToFirebase(message);
-      }else{
+      } else {
         print("Message has missing fields: ${message.toMap()}");
       }
     }

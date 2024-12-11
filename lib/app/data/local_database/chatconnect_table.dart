@@ -1,10 +1,9 @@
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
-import 'package:genchatapp/app/data/models/contact_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 
-class ContactsTable {
+class ChatConectTable {
   final tableName = chatConnectTable;
 
   Future<void> createTable(Database database) async {
@@ -22,29 +21,19 @@ class ContactsTable {
 """);
   }
 
-  Future<int> create({
-    required String name,
-    String? profilePic,
-    required String contactId,
-    int? timeSent,
-    required String uid,
-     String? lastMessage,
+  Future<int> insert({
+   required ChatConntactModel contact,
   }) async {
     final database = await DataBaseService().database;
 
     return await database.insert(
       tableName,
-      {
-        "name": name,
-        "contactId": contactId,
-        "profilePic": profilePic,
-        "uid": uid,
-        "lastMessage": lastMessage,
-        "timeSent": timeSent,
-      },
+      contact.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+   
 
   Future<List<ChatConntactModel>> fetchAll() async {
     final database = await DataBaseService().database;
@@ -60,13 +49,17 @@ class ContactsTable {
 
   Future<void> updateContact({
     required int uid,
-    String? imagePath,
+    String? profilePic,
+    String? lastMessage,
+    int? timeSent,
   }) async {
     final db = await DataBaseService().database;
 
     // Map with new values
     final updatedValues = {
-      'image': imagePath,
+      'profilePic': profilePic,
+      'lastMessage': lastMessage,
+      'timeSent': timeSent,
     };
 
     // Perform the update

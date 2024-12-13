@@ -1,10 +1,12 @@
 import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 
 class MessageTable {
   final tableName = messageTable;
+  final deleteQueueTblName = deleteQueueTable;
 
   Future<void> createTable(Database db) async {
     await db.execute('''
@@ -22,6 +24,15 @@ class MessageTable {
         repliedMessageType TEXT NOT NULL,
         syncStatus TEXT NOT NULL DEFAULT 'pending',
         PRIMARY KEY ("id" AUTOINCREMENT)
+      )
+    ''');
+  }
+
+  Future<void> createDeletionQueueTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $deleteQueueTblName (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        messageId TEXT NOT NULL UNIQUE
       )
     ''');
   }
@@ -54,11 +65,54 @@ class MessageTable {
     }).toList();
   }
 
-  Future<void> updateSyncStatus(String messageId, String syncStatus) async {
+  Future<void> updateSyncStatus(String messageId, String syncStatus, MessageStatus msgStatus) async {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'syncStatus': syncStatus},
+      {'syncStatus': syncStatus,
+        'status': msgStatus.type
+      },
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+  }
+
+  //For delete msg------------>
+
+  Future<void> deleteMessage(String messageId) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName, where: 'messageId = ?', whereArgs: [messageId]);
+  }
+
+  Future<void> markForDeletion(String messageId) async {
+    try {
+      final db = await DataBaseService().database;
+      await db.insert(deleteQueueTblName, {'messageId': messageId},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    } catch (e) {
+      print("Error marking message for deletion: $e");
+    }
+  }
+
+  Future<List<String>> getQueuedDeletions() async {
+    final db = await DataBaseService().database;
+    final result = await db.query(deleteQueueTblName);
+    return result.map((row) => row['messageId'] as String).toList();
+  }
+
+  Future<void> removeQueuedDeletion(String messageId) async {
+    final db = await DataBaseService().database;
+    await db.delete(deleteQueueTblName, where: 'messageId = ?', whereArgs: [messageId]);
+  }
+
+  Future<void> updateMessageContent({
+    required String messageId,
+    required String newText,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'text': newText},
       where: 'messageId = ?',
       whereArgs: [messageId],
     );

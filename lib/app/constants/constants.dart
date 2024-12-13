@@ -26,5 +26,6 @@ const usersDb = "usersDb";
 const userDetail = "userDetail";
 const contactsDb = "contactsDb";
 const messageTable = "messageTable";
+const deleteQueueTable = "deletion_queue";
 const contactsSynced = "contactsSynced";
 const chatConnectTable = "chatConnectTable";

@@ -69,14 +69,25 @@ class SingleChatView extends GetView<SingleChatController> {
           );
         }),
         actions: [
-          InkWell(
-            onTap: () {},
-            child: const Icon(Icons.video_call_outlined, color: whiteColor),
+          Obx(()=> controller.selectedMessages.isNotEmpty
+              ? IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _showDeletePopup(context, controller),
+          ):
+             Row(
+               children: [
+                 InkWell(
+                   onTap: () {},
+                   child: const Icon(Icons.video_call_outlined, color: whiteColor),
+                 ),
+                 InkWell(
+                   onTap: () {},
+                   child: const Icon(Icons.call, color: whiteColor),
+                 ),
+               ],
+             )
           ),
-          InkWell(
-            onTap: () {},
-            child: const Icon(Icons.call, color: whiteColor),
-          ),
+
           PopupMenuButton(
             icon: const Icon(Icons.more_vert, color: whiteColor),
             offset: const Offset(0, 40),
@@ -110,6 +121,7 @@ class SingleChatView extends GetView<SingleChatController> {
               ),
             ],
           ),
+
         ],
       ),
       body: Column(
@@ -129,6 +141,39 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeletePopup(BuildContext context, SingleChatController controller) {
+    final isOnlySenderMessages = controller.selectedMessages
+        .every((msg) => msg.senderId == controller.senderuserData.uid);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text("Delete for Me"),
+              onTap: () {
+                Navigator.pop(context);
+                controller.deleteMessages(deleteForEveryone: false);
+              },
+            ),
+            if (isOnlySenderMessages)
+              ListTile(
+                leading: const Icon(Icons.delete_forever, color: Colors.red),
+                title: const Text("Delete for Everyone"),
+                onTap: () {
+                  Navigator.pop(context);
+                  controller.deleteMessages(deleteForEveryone: true);
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 }

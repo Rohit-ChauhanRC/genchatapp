@@ -81,6 +81,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isOnline: false,
   ).obs;
 
+  final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
+
+  final RxBool _isMsgSelected = false.obs;
+  bool get isMsgSelected => _isMsgSelected.value;
+  set isMsgSelected(bool b) => _isMsgSelected.value = b;
+
+
   @override
   void onInit() {
     super.onInit();
@@ -105,6 +112,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     super.onClose();
+    selectedMessages.clear();
   }
 
   void bindStream() {
@@ -116,7 +124,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Stream<List<MessageModel>> getMessageStream() {
-    // retryPendingMessages();
+    retryPendingMessages();
     return firebaseController.listenToMessages(
         currentUserId: senderuserData.uid!, receiverId: id.toString());
   }
@@ -177,6 +185,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     // Sync to Firebase if connected
     if (connectivityService.isConnected.value) {
       await _syncMessageToFirebase(newMessage);
+      // await retryPendingMessages();
     }
   }
 
@@ -188,7 +197,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
               message.text,
               message.timeSent,
             );
-      final sentMessage = message.copyWith(status: MessageStatus.sent);
+      final sentMessage = message.copyWith(status: MessageStatus.sent,syncStatus: 'sent');
       // users -> sender id -> reciever id -> messages -> message id -> store message
 
       await firebaseController.setUserMsg(
@@ -199,7 +208,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         // receiveruserDataModel.value.uid!,
       );
       // Save message in the receiver's chat with 'delivered' status
-      final deliveredMessage = sentMessage.copyWith(status: MessageStatus.delivered);
+      final deliveredMessage = message.copyWith(status: MessageStatus.delivered, syncStatus: 'sent');
       // users -> reciever id  -> sender id -> messages -> message id -> store message
       await firebaseController.setUserMsg(
         currentUid: deliveredMessage.receiverId,
@@ -211,13 +220,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       );
 
       // Update sync status in SQLite
-      await MessageTable().updateSyncStatus(message.messageId, 'sent');
+      await MessageTable().updateSyncStatus(message.messageId, 'sent', MessageStatus.delivered);
 
       // Update the message status in the UI
       final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
       if (index != -1) {
-        messageList[index] = messageList[index].copyWith(syncStatus: 'sent');
+        messageList[index] = messageList[index].copyWith(syncStatus: 'sent', status: MessageStatus.delivered);
         messageList.refresh();
+        print(messageList.last);
       }
     } catch (e) {
       print("Error syncing message: $e");
@@ -237,6 +247,23 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       }else{
         print("Message has missing fields: ${message.toMap()}");
         break;
+      }
+    }
+
+    // Retry pending deletions
+    final queuedDeletions = await MessageTable().getQueuedDeletions();
+    for (var messageId in queuedDeletions) {
+      if (connectivityService.isConnected.value) {
+        try {
+          await firebaseController.deleteMessage(
+            currentUid: senderuserData.uid!,
+            receiverId: id,
+            messageId: messageId,
+          );
+          await MessageTable().removeQueuedDeletion(messageId);
+        } catch (e) {
+          print("Error syncing deletion: $e");
+        }
       }
     }
   }
@@ -264,12 +291,91 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void startListeningForConnectivityChanges() {
-      if (connectivityService.isConnected.value) {
-        retryPendingMessages(); // Trigger retries when internet is restored
+  void startListeningForConnectivityChanges() async{
+    ever(connectivityService.isConnected, (bool isConnected) {
+      if (isConnected) {
+        retryPendingMessages();
       }
+    });
   }
 
+  Future<void> deleteMessages({required bool deleteForEveryone}) async {
+    if (selectedMessages.isEmpty) return;
+
+    try {
+      for (var message in selectedMessages) {
+        if (deleteForEveryone) {
+          // Delete for everyone
+          final placeholderMessage = message.copyWith(
+            text: "This message was deleted",
+            type: MessageEnum.deleted,
+          );
+
+          // Update the message for both sender and receiver in Firebase
+          await firebaseController.setUserMsg(
+            currentUid: message.senderId,
+            data: placeholderMessage,
+            messageId: message.messageId,
+            reciverId: message.receiverId,
+          );
+
+          await firebaseController.setUserMsg(
+            currentUid: message.receiverId,
+            data: placeholderMessage,
+            messageId: message.messageId,
+            reciverId: message.senderId,
+          );
+
+          // Update the message content locally in SQLite
+          await MessageTable().updateMessageContent(
+            messageId: message.messageId,
+            newText: "This message was deleted",
+          );
+
+          // Update the message in the UI
+          final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
+          if (index != -1) {
+            messageList[index] = placeholderMessage;
+            messageList.refresh();
+          }
+        } else {
+          // Delete for me (local deletion only)
+          await MessageTable().deleteMessage(message.messageId);
+          messageList.removeWhere((msg) => msg.messageId == message.messageId);
+
+          // Optionally, queue deletion for Firebase if offline
+          if (connectivityService.isConnected.value) {
+            await firebaseController.deleteMessage(
+              currentUid: senderuserData.uid!,
+              receiverId: id,
+              messageId: message.messageId,
+            );
+          } else {
+            await MessageTable().markForDeletion(message.messageId);
+          }
+        }
+      }
+      selectedMessages.clear();
+    } catch (e) {
+      print("Error deleting messages: $e");
+    }
+  }
+
+
+  void toggleMessageSelection(MessageModel message) {
+    if (selectedMessages.contains(message)) {
+      selectedMessages.remove(message);
+      print("Message removed from list:------> $message");
+    } else {
+      selectedMessages.add(message);
+      print("Message added from list:------> $message");
+    }
+    selectedMessages.refresh();
+  }
+
+  void clearSelectedMessages() {
+    selectedMessages.clear();
+  }
 
 
   // void schedulePeriodicSync() {

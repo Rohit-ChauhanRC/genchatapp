@@ -17,8 +17,8 @@ class DisplayTextImageGIF extends StatelessWidget {
     bool isPlaying = false;
     // final AudioPlayer audioPlayer = AudioPlayer();
 
-    return type == MessageEnum.text
-        ? Text(
+    return type == MessageEnum.text || type == MessageEnum.deleted
+        ? SelectableText(
             message,
             style: const TextStyle(
               fontSize: 16,

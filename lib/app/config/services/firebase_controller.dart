@@ -233,5 +233,35 @@ class FirebaseController extends GetxController {
     }
   }
 
+  Future<void> deleteMessage({
+    required String currentUid,
+    required String receiverId,
+    required String messageId,
+  }) async {
+    try {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUid)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+
+    // Also delete from the receiver's chat if necessary
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(receiverId)
+        .collection('chats')
+        .doc(currentUid)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+  }catch(e){
+      // Log detailed error information
+      print("Error updating message status: $e. CurrentUserId: $currentUid, ReceiverId: $receiverId, MessageId: $messageId");
+    }
+
+  }
 
 }

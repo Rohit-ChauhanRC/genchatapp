@@ -49,6 +49,7 @@ class DataBaseService {
     await MessageTable().createTable(database);
     await ContactsTable().createTable(database);
     await ChatConectTable().createTable(database);
+    await MessageTable().createDeletionQueueTable(database);
     // await ProfileDB().createTable(database);
   }
 

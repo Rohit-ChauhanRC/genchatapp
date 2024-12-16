@@ -34,13 +34,13 @@ class SenderMessageCard extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width - 45,
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
           child: Card(
             elevation: 1,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            color: Colors.blue,
+                RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.zero,topRight: Radius.circular(8), bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8))),
+            color: whiteColor,
             margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
             child: Stack(
               children: [
@@ -102,7 +102,7 @@ class SenderMessageCard extends StatelessWidget {
                     date,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey[600],
+                      color: greyMsgColor,
                     ),
                   ),
                 ),

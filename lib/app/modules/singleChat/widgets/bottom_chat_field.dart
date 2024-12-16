@@ -44,7 +44,7 @@ class BottomChatField extends StatelessWidget {
                 controller: singleChatController.messageController,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: greyColor,
+                  fillColor: whiteColor,
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
@@ -72,7 +72,7 @@ class BottomChatField extends StatelessWidget {
                             },
                             child: const Icon(
                               Icons.gif,
-                              color: Colors.black,
+                              color: greyMsgColor,
                               size: 20,
                             ),
                           ),
@@ -91,7 +91,7 @@ class BottomChatField extends StatelessWidget {
                           },
                           icon: const Icon(
                             Icons.camera_alt,
-                            color: Colors.black,
+                            color: greyMsgColor,
                           ),
                         ),
                         IconButton(
@@ -101,7 +101,7 @@ class BottomChatField extends StatelessWidget {
                           },
                           icon: const Icon(
                             Icons.attach_file,
-                            color: Colors.black,
+                            color: greyMsgColor,
                           ),
                         ),
                       ],
@@ -110,10 +110,7 @@ class BottomChatField extends StatelessWidget {
                   hintText: 'Type a message!',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20.0),
-                    borderSide: const BorderSide(
-                      width: 0,
-                      style: BorderStyle.none,
-                    ),
+                    borderSide: BorderSide.none
                   ),
                   contentPadding: const EdgeInsets.all(10),
                 ),
@@ -122,7 +119,7 @@ class BottomChatField extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
               child: CircleAvatar(
-                backgroundColor: greyColor,
+                backgroundColor: textBarColor,
                 radius: 25,
                 child: Obx(() => GestureDetector(
                       onTap: () async {

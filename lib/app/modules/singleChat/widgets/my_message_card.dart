@@ -39,22 +39,27 @@ class MyMessageCard extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width - 45,
+              minWidth: 130,
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
             child: Card(
               elevation: 1,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              color: greyColor,
+                  borderRadius: BorderRadius.only(
+                      topLeft:Radius.circular(8),
+                      topRight:  Radius.zero,
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8))),
+              color: mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
-                  Container(
+                  Padding(
                     // width: Get.width - 70,
                     padding: type == MessageEnum.text
                         ? const EdgeInsets.only(
                             left: 10,
-                            right: 50,
+                            right: 40,
                             top: 5,
                             bottom: 20,
                           )
@@ -117,7 +122,7 @@ class MyMessageCard extends StatelessWidget {
                             date,
                             style: const TextStyle(
                               fontSize: 13,
-                              color: Colors.white60,
+                              color: greyMsgColor,
                             ),
                           ),
                         ),
@@ -139,7 +144,7 @@ class MyMessageCard extends StatelessWidget {
                           //         color: Colors.white60,
                           //       // ),
                         // ),
-                        Icon(
+                        type != MessageEnum.deleted ?Icon(
                             status == MessageStatus.uploading
                                 ? Icons.watch_later
                                 : status == MessageStatus.sent
@@ -150,8 +155,8 @@ class MyMessageCard extends StatelessWidget {
                             size: 20,
                             color: status == MessageStatus.seen
                                 ? Colors.blue
-                                : Colors.white60,
-                          ),
+                                : greyMsgColor,
+                          ):const SizedBox.shrink(),
                       ],
                     ),
                   ),

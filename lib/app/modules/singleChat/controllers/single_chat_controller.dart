@@ -504,6 +504,17 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       showEmojiContainer();
     }
   }
+  void onMessageSwipe({
+    required String message,
+    required bool isMe,
+    required MessageEnum messageEnum,
+  }) {
+    messageReply = MessageReply(
+      message: message,
+      isMe: isMe,
+      messageEnum: messageEnum.type.toEnum(),
+    );
+  }
 
   void showKeyboard() => focusNode.requestFocus();
   void hideKeyboard() => focusNode.unfocus();

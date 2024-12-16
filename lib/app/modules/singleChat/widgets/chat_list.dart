@@ -6,6 +6,7 @@ import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../constants/colors.dart';
 import 'my_message_card.dart';
 import 'sender_message_card.dart';
 
@@ -64,11 +65,11 @@ class ChatList extends StatelessWidget {
               child: Obx((){
                 bool isMsgSelected = singleChatController.selectedMessages.contains(messages);
                 return Container(
-                  color: isMsgSelected ? Colors.blue.withOpacity(0.3) : Colors.transparent,
+                  color: isMsgSelected ? mySideBgColor.withOpacity(0.3) : Colors.transparent,
                   child: messages.senderId == singleChatController.senderuserData.uid ?
                   MyMessageCard(
                     message: messages.text.toString(),
-                    date: DateFormat.Hm().format(messages.timeSent).toString(),
+                    date: DateFormat('hh:mm a').format(messages.timeSent),
                     // date: "",
                     type: messages.type.type.toString().toEnum(),
                     status: messages.status.type.toString().toStatusEnum(),
@@ -88,7 +89,7 @@ class ChatList extends StatelessWidget {
                   // }
                   SenderMessageCard(
                     message: messages.text.toString(),
-                    date: DateFormat.Hm().format(messages.timeSent).toString(),
+                    date: DateFormat('hh:mm a').format(messages.timeSent),
                     type: messages.type.type.toString().toEnum(),
                     onRightSwipe: (v) {
                       singleChatController.isRepUpdate = true;

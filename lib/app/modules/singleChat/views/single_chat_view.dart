@@ -40,30 +40,33 @@ class SingleChatView extends GetView<SingleChatController> {
               const SizedBox(
                 width: 10,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    ctc.fullname,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: whiteColor,
-                      fontWeight: FontWeight.w400,
+              SizedBox(
+                width: Get.width * 0.32,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ctc.fullname,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: whiteColor,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                  Text(
-                    ctc.receiveruserDataModel.value.isOnline == true
-                        ? "Online"
-                        : "last seen ${lastSeenFormatted(ctc.receiveruserDataModel.value.lastSeen ?? "").toLowerCase()}",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w200,
-                      color: whiteColor,
-                      fontSize: 12,
+                    Text(
+                      ctc.receiveruserDataModel.value.isOnline == true
+                          ? "Online"
+                          : "last seen ${lastSeenFormatted(ctc.receiveruserDataModel.value.lastSeen ?? "").toLowerCase()}", maxLines: 2,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w200,
+                        color: whiteColor,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           );
@@ -71,7 +74,7 @@ class SingleChatView extends GetView<SingleChatController> {
         actions: [
           Obx(()=> controller.selectedMessages.isNotEmpty
               ? IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: whiteColor),
             onPressed: () => _showDeletePopup(context, controller),
           ):
              Row(
@@ -80,6 +83,7 @@ class SingleChatView extends GetView<SingleChatController> {
                    onTap: () {},
                    child: const Icon(Icons.video_call_outlined, color: whiteColor),
                  ),
+                 SizedBox(width: 10,),
                  InkWell(
                    onTap: () {},
                    child: const Icon(Icons.call, color: whiteColor),

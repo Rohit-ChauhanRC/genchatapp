@@ -48,7 +48,7 @@ class ChatList extends StatelessWidget {
           //   //   messages.messageId,
           //   // );
           // }
-            singleChatController.isMsgSelected = singleChatController.selectedMessages.contains(messages);
+          //   singleChatController.isMsgSelected = singleChatController.selectedMessages.contains(messages);
           // if (messages.senderId == singleChatController.senderuserData.uid) {
             return InkWell(
               onLongPress: () {
@@ -61,45 +61,49 @@ class ChatList extends StatelessWidget {
                   print("selected tap");
                 }
               },
-              child: Container(
-                color: singleChatController.isMsgSelected ? Colors.blue.withOpacity(0.3) : Colors.transparent,
-                child: messages.senderId == singleChatController.senderuserData.uid ?
-                MyMessageCard(
-                  message: messages.text.toString(),
-                  date: DateFormat.Hm().format(messages.timeSent).toString(),
-                  // date: "",
-                  type: messages.type.type.toString().toEnum(),
+              child: Obx((){
+                bool isMsgSelected = singleChatController.selectedMessages.contains(messages);
+                return Container(
+                  color: isMsgSelected ? Colors.blue.withOpacity(0.3) : Colors.transparent,
+                  child: messages.senderId == singleChatController.senderuserData.uid ?
+                  MyMessageCard(
+                    message: messages.text.toString(),
+                    date: DateFormat.Hm().format(messages.timeSent).toString(),
+                    // date: "",
+                    type: messages.type.type.toString().toEnum(),
                     status: messages.status.type.toString().toStatusEnum(),
-                  onLeftSwipe: (v) {
-                    // singleChatController.isRepUpdate = true;
+                    onLeftSwipe: (v) {
+                      // singleChatController.isRepUpdate = true;
 
-                    // singleChatController.onMessageSwipe(
-                    //   isMe: true,
-                    //   message: messages.text.toString(),
-                    //   messageEnum: messages.type,
-                    // );
-                  },
-                  repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                  repliedText: messages.repliedMessage.obs,
-                  username: messages.repliedTo,
-                ):
-                          // }
-                           SenderMessageCard(
-                message: messages.text.toString(),
-                date: DateFormat.Hm().format(messages.timeSent).toString(),
-                type: messages.type.type.toString().toEnum(),
-                onRightSwipe: (v) {
-                  singleChatController.isRepUpdate = true;
-                  // singleChatController.onMessageSwipe(
-                  //   isMe: false,
-                  //   message: messages.text.toString(),
-                  //   messageEnum: messages.type,
-                  // );
-                },
-                repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                repliedText: messages.repliedMessage.obs,
-                username: messages.repliedTo,
-                          ),
+                      // singleChatController.onMessageSwipe(
+                      //   isMe: true,
+                      //   message: messages.text.toString(),
+                      //   messageEnum: messages.type,
+                      // );
+                    },
+                    repliedMessageType: messages.repliedMessageType.type.toEnum(),
+                    repliedText: messages.repliedMessage.obs,
+                    username: messages.repliedTo,
+                  ):
+                  // }
+                  SenderMessageCard(
+                    message: messages.text.toString(),
+                    date: DateFormat.Hm().format(messages.timeSent).toString(),
+                    type: messages.type.type.toString().toEnum(),
+                    onRightSwipe: (v) {
+                      singleChatController.isRepUpdate = true;
+                      // singleChatController.onMessageSwipe(
+                      //   isMe: false,
+                      //   message: messages.text.toString(),
+                      //   messageEnum: messages.type,
+                      // );
+                    },
+                    repliedMessageType: messages.repliedMessageType.type.toEnum(),
+                    repliedText: messages.repliedMessage.obs,
+                    username: messages.repliedTo,
+                  ),
+                );
+              }
               ),
             );
         },

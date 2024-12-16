@@ -83,10 +83,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
 
-  final RxBool _isMsgSelected = false.obs;
-  bool get isMsgSelected => _isMsgSelected.value;
-  set isMsgSelected(bool b) => _isMsgSelected.value = b;
-
 
   @override
   void onInit() {

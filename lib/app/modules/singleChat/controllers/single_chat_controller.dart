@@ -82,6 +82,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
   late Stream<List<MessageModel>> messageStream;
+  late StreamSubscription<List<MessageModel>> messageSubscription;
 
   @override
   void onInit() {
@@ -90,14 +91,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     id = Get.arguments[0];
     fullname = Get.arguments[1];
-    bindStream();
 
-    bindMessageStream();
-    startListeningForConnectivityChanges();
   }
 
   @override
   void onReady() {
+    bindStream();
+
+    bindMessageStream();
+    startListeningForConnectivityChanges();
     super.onReady();
   }
 
@@ -105,11 +107,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void onClose() {
     super.onClose();
     selectedMessages.clear();
+    messageSubscription.cancel();
   }
 
   void bindMessageStream() {
     messageStream = getMessageStream();
-    messageStream.listen((messages) {
+    messageSubscription = messageStream.listen((messages) {
       messageList.assignAll(messages);
     });
   }
@@ -160,7 +163,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     ever(connectivityService.isConnected, (bool isConnected) async {
       if (isConnected) {
         await syncFirebaseMessagesToLocal();
-        retryPendingMessages();
       }
     });
   }
@@ -273,8 +275,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final senderId = messages.senderId.toString(); // ID of the chat partner
 
     // Update status only for messages not yet marked as 'seen'
-    if ((messages.status == MessageStatus.delivered ||
-            messages.status == MessageStatus.sent) &&
+    if (messages.status == MessageStatus.delivered &&
         messages.receiverId == currentUserId) {
       await firebaseController.updateMessageStatus(
         currentUserId: currentUserId,

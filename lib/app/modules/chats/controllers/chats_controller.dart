@@ -85,7 +85,7 @@ class ChatsController extends GetxController {
           await chatConectTable.updateContact(
               uid: contact.uid,
               lastMessage: contact.lastMessage,
-              profilePic: contact.lastMessage,
+              profilePic: contact.profilePic,
               timeSent: contact.timeSent.microsecondsSinceEpoch);
         } else {
           await chatConectTable.insert(contact: contact);
@@ -205,7 +205,7 @@ class ChatsController extends GetxController {
               contactsList.add(
                 ChatConntactModel(
                   name: user.name!,
-                  profilePic: user.profilePic!,
+                  profilePic: chatContact.profilePic,
                   contactId: chatContact.contactId,
                   timeSent: chatContact.timeSent,
                   lastMessage: chatContact.lastMessage,
@@ -225,6 +225,7 @@ class ChatsController extends GetxController {
   }
 
   Future<void> logout() async {
+    db.closeDb();
     await sharedPreferenceService.clear().then((onValue) {
       Get.offAllNamed(Routes.LANDING);
     });

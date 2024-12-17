@@ -91,7 +91,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     id = Get.arguments[0];
     fullname = Get.arguments[1];
-
   }
 
   @override
@@ -204,8 +203,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   Future<void> _syncMessageToFirebase(MessageModel message) async {
     try {
       await _saveDataToContactsSubcollection(message);
-      final sentMessage =
-          message.copyWith(status: MessageStatus.sent, syncStatus: 'sent');
+      final sentMessage = message.copyWith(
+          status: receiveruserDataModel.value.isOnline!
+              ? MessageStatus.delivered
+              : MessageStatus.sent,
+          syncStatus: 'sent');
 
       await firebaseController.setUserMsg(
           currentUid: sentMessage.senderId,
@@ -276,12 +278,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     // Update status only for messages not yet marked as 'seen'
     if (messages.status == MessageStatus.delivered &&
-        messages.receiverId == currentUserId) {
+        messages.receiverId == senderuserData.uid) {
       await firebaseController.updateMessageStatus(
-        currentUserId: currentUserId,
+        currentUserId: senderuserData.uid!,
         senderId: senderId,
         messageId: messages.messageId,
-        status: MessageStatus.seen,
+        status: receiveruserDataModel.value.isOnline!
+            ? MessageStatus.seen
+            : messages.status,
       );
     }
   }

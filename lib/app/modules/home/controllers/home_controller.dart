@@ -12,8 +12,8 @@ import 'package:get/get.dart';
 class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
-  final  connectivityService = Get.put(ConnectivityService());
-  final  firebaseController = Get.find<FirebaseController>();
+  final connectivityService = Get.put(ConnectivityService());
+  final firebaseController = Get.find<FirebaseController>();
 
   final RxInt _currentPageIndex = 0.obs;
   int get currentPageIndex => _currentPageIndex.value;
@@ -60,7 +60,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-        await setUserOffline();
+        if (!connectivityService.isConnected.value) {
+          await setUserOffline();
+        }
 
         break;
       default:

@@ -82,7 +82,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   ).obs;
 
   final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
-
+  late Stream<List<MessageModel>> messageStream;
 
   @override
   void onInit() {
@@ -91,10 +91,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     id = Get.arguments[0];
     fullname = Get.arguments[1];
-    bindStream();
-    bindStreamMessages();
-    // schedulePeriodicSync();
-    retryPendingMessages();
+    // bindStream();
+    // bindStreamMessages();
+    // // schedulePeriodicSync();
+
+    bindMessageStream();
+    // retryPendingMessages();
     startListeningForConnectivityChanges();
 
   }
@@ -102,7 +104,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   @override
   void onReady() {
     super.onReady();
-    markMessagesAsSeen();
+
   }
 
   @override
@@ -111,19 +113,84 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     selectedMessages.clear();
   }
 
+  //New bindStream methods--------------------->
+  /// Bind the stream to the message list
+  void bindMessageStream() {
+    messageStream = getMessageStream();
+    messageStream.listen((messages) {
+      messageList.assignAll(messages);
+    });
+  }
+
+  /// Get a stream of messages based on connectivity
+  Stream<List<MessageModel>> getMessageStream() async* {
+    if (connectivityService.isConnected.value) {
+      // If connected, listen to Firebase stream
+      yield* firebaseController.listenToMessages(
+        currentUserId: senderuserData.uid!,
+        receiverId: id.toString(),
+      ).asyncMap((firebaseMessages) async {
+        // Sync Firebase messages to local database
+        // markMessagesAsSeen();
+        for (var message in firebaseMessages) {
+          markMessagesAsSeen(message);
+          // MessageModel msg = MessageModel(senderId: message.senderId, receiverId: message.receiverId, text:message.text, type:message.type, timeSent: message.timeSent, messageId:message.messageId, repliedMessage:message.repliedMessage, repliedTo: message.repliedTo, repliedMessageType:message.repliedMessageType, status: MessageStatus.seen,syncStatus: "sent");
+          await MessageTable().insertOrUpdateMessage(message);
+        }
+        return firebaseMessages;
+      });
+    } else {
+      // If not connected, yield messages from local database
+      yield await MessageTable().fetchMessages(
+        senderId: senderuserData.uid!,
+        receiverId: id.toString(),
+      );
+    }
+  }
+
+  /// Sync Firebase messages to local database
+  Future<void> syncFirebaseMessagesToLocal() async {
+    try {
+      final firebaseMessages = await firebaseController.fetchAllMessages(
+        currentUserId: senderuserData.uid!,
+        receiverId: id.toString(),
+      );
+
+      for (var message in firebaseMessages) {
+        await MessageTable().insertOrUpdateMessage(message);
+      }
+
+      messageList.assignAll(firebaseMessages);
+    } catch (e) {
+      print("Error syncing Firebase messages to local: $e");
+    }
+  }
+
+  /// Retry pending messages or perform synchronization on connectivity changes
+  void startListeningForConnectivityChanges() {
+    ever(connectivityService.isConnected, (bool isConnected) async {
+      if (isConnected) {
+        await syncFirebaseMessagesToLocal();
+        retryPendingMessages();
+      }
+    });
+  }
+
+  //MARK:<--------------->end<---------------------->
+
   void bindStream() {
     receiveruserDataModel.bindStream(firebaseController.getUserData(id));
   }
 
-  void bindStreamMessages() {
-    messageList.bindStream(getMessageStream());
-  }
+  // void bindStreamMessages() {
+  //   messageList.bindStream(getMessageStream());
+  // }
 
-  Stream<List<MessageModel>> getMessageStream() {
-    retryPendingMessages();
-    return firebaseController.listenToMessages(
-        currentUserId: senderuserData.uid!, receiverId: id.toString());
-  }
+  // Stream<List<MessageModel>> getMessageStream() {
+  //   retryPendingMessages();
+  //   return firebaseController.listenToMessages(
+  //       currentUserId: senderuserData.uid!, receiverId: id.toString());
+  // }
 
   // Future<void> sendTextMessage() async {
   //   if (isShowSendButton && messageController.text.trim().isNotEmpty) {
@@ -219,12 +286,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       await MessageTable().updateSyncStatus(message.messageId, 'sent', MessageStatus.delivered);
 
       // Update the message status in the UI
-      final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
-      if (index != -1) {
-        messageList[index] = messageList[index].copyWith(syncStatus: 'sent', status: MessageStatus.delivered);
-        messageList.refresh();
-        print(messageList.last);
-      }
+      // final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
+      // if (index != -1) {
+      //   messageList[index] = messageList[index].copyWith(syncStatus: 'sent', status: MessageStatus.delivered);
+      //   messageList.refresh();
+      //   print(messageList.last);
+      // }
     } catch (e) {
       print("Error syncing message: $e");
     }
@@ -264,36 +331,48 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void markMessagesAsSeen() async {
-    final currentUserId = senderuserData.uid!;
-    final senderId = id.toString(); // ID of the chat partner
+  void markMessagesAsSeen(MessageModel messages) async {
+    final currentUserId = messages.receiverId;
+    final senderId = messages.senderId.toString(); // ID of the chat partner
 
     // Listen to all messages sent by the sender to this user
-    final messages = await firebaseController.listenToMessages(
-      currentUserId: currentUserId,
-      receiverId: senderId,
-    ).first;
+    // final messages = await firebaseController.listenToMessages(
+    //   currentUserId: currentUserId,
+    //   receiverId: senderId,
+    // ).first;
 
-    for (var message in messages) {
+    // for (var message in messages) {
       // Update status only for messages not yet marked as 'seen'
-      if (message.status == MessageStatus.delivered && message.receiverId == currentUserId) {
+      if ((messages.status == MessageStatus.delivered || messages.status == MessageStatus.sent) && messages.receiverId == currentUserId) {
         await firebaseController.updateMessageStatus(
           currentUserId: currentUserId,
           senderId: senderId,
-          messageId: message.messageId,
+          messageId: messages.messageId,
           status: MessageStatus.seen,
         );
-      }
+
+        // Update sync status in SQLite
+        // await MessageTable().updateSyncStatus(message.messageId, 'sent', MessageStatus.seen);
+
+        // Update the message status in the UI
+        // final index = messageList.indexWhere((msg) => msg.messageId == message.messageId);
+        // if (index != -1) {
+        //   messageList[index] = messageList[index].copyWith(syncStatus: 'sent', status: MessageStatus.seen);
+        //   messageList.refresh();
+        //   print(messageList.last);
+        // }
+
+
     }
   }
 
-  void startListeningForConnectivityChanges() async{
-    ever(connectivityService.isConnected, (bool isConnected) {
-      if (isConnected) {
-        retryPendingMessages();
-      }
-    });
-  }
+  // void startListeningForConnectivityChanges() async{
+  //   ever(connectivityService.isConnected, (bool isConnected) {
+  //     if (isConnected) {
+  //       retryPendingMessages();
+  //     }
+  //   });
+  // }
 
   Future<void> deleteMessages({required bool deleteForEveryone}) async {
     if (selectedMessages.isEmpty) return;

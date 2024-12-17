@@ -192,6 +192,37 @@ class FirebaseController extends GetxController {
     });
   }
 
+  Future<List<MessageModel>> fetchAllMessages({
+    required String currentUserId,
+    required String receiverId
+  }) async{
+    try{
+      final messagesCollection = firestore.collection('users')
+          .doc(currentUserId).collection('chats').doc(receiverId).collection('messages');
+      final querySnapshot = await messagesCollection.orderBy('timeSent', descending: false).get();
+      final messages = querySnapshot.docs.map((doc){
+        return MessageModel.fromMap(doc.data());
+      }).toList();
+      return messages;
+    }catch(e){
+      print('Error fetching messages: $e');
+      return [];
+    }
+    // return firestore
+    //     .collection('users')
+    //     .doc(currentUserId)
+    //     .collection('chats')
+    //     .doc(receiverId)
+    //     .collection('messages')
+    //     .orderBy('timeSent', descending: false) // Latest messages first
+    //     .snapshots()
+    //     .map((snapshot) {
+    //   return snapshot.docs.map((doc) {
+    //     return MessageModel.fromMap(doc.data());
+    //   }).toList();
+    // });
+  }
+
   Future<void> updateMessageStatus({
     required String currentUserId,
     required String senderId,

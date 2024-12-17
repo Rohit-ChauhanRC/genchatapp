@@ -37,6 +37,31 @@ class MessageTable {
     ''');
   }
 
+  Future<void> insertOrUpdateMessage(MessageModel message) async {
+    final existingMessage = await getMessageById(message.messageId);
+    if (existingMessage == null) {
+      await insertMessage(message);
+    } else {
+      await updateMessage(message);
+    }
+  }
+
+  Future<List<MessageModel>> fetchMessages({
+    required String senderId,
+    required String receiverId,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+      '(senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+      orderBy: 'timeSent ASC',
+    );
+
+    return result.map((map) => MessageModel.fromMap(map)).toList();
+  }
+
   Future<void> insertMessage(MessageModel message) async {
     final db = await DataBaseService().database;
 
@@ -47,7 +72,34 @@ class MessageTable {
     );
   }
 
-  Future<List<MessageModel>> fetchUnsentMessages() async {
+  Future<int> updateMessage(MessageModel message) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      message.toMap(),
+      where: 'messageId = ?',
+      whereArgs: [message.messageId],
+    );
+  }
+
+  /// Retrieve a message by its ID
+  Future<MessageModel?> getMessageById(String messageId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+
+    if (result.isNotEmpty) {
+      return MessageModel.fromMap(result.first);
+    }
+    return null;
+  }
+
+
+
+Future<List<MessageModel>> fetchUnsentMessages() async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -118,19 +170,7 @@ class MessageTable {
     );
   }
 
-  // Future<List<MessageModel>> fetchMessages(
-  //     String senderId, String receiverId) async {
-  //   final db = await DataBaseService().database;
-  //   final result = await db.query(
-  //     tableName,
-  //     where:
-  //         '(senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?)',
-  //     whereArgs: [senderId, receiverId, receiverId, senderId],
-  //     orderBy: 'timestamp ASC',
-  //   );
-  //
-  //   return result.map((map) => MessageModel.fromMap(map)).toList();
-  // }
+
   //
   // // Update message status
   // Future<void> updateMessageStatus(String messageId, String status) async {

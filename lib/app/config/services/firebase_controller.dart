@@ -251,10 +251,24 @@ class FirebaseController extends GetxController {
           .collection('messages')
           .doc(messageId);
 
-      // Update the status in both documents
-      batch.update(currentUserMessageRef, {'status': status.type});
-      batch.update(senderMessageRef, {'status': status.type});
+      // Verify both documents exist before updating
+      final currentUserDoc = await currentUserMessageRef.get();
+      final senderUserDoc = await senderMessageRef.get();
 
+      if (!currentUserDoc.exists) {
+        print("Current user's message document does not exist: $messageId");
+      }
+      if (!senderUserDoc.exists) {
+        print("Sender's message document does not exist: $messageId");
+      }
+
+      // Update the status in both documents
+      if (currentUserDoc.exists) {
+        batch.update(currentUserMessageRef, {'status': status.type});
+      }
+      if (senderUserDoc.exists) {
+        batch.update(senderMessageRef, {'status': status.type});
+      }
       // Commit the batch
       await batch.commit();
     } catch (e) {

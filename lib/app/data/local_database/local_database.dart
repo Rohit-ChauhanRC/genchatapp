@@ -60,4 +60,8 @@ class DataBaseService {
     // SellDB().onUpgrade(database, oldVersion, newVersion);
     // ProfileDB().onUpgrade(database, oldVersion, newVersion);
   }
+
+  void closeDb() {
+    _database!.close();
+  }
 }

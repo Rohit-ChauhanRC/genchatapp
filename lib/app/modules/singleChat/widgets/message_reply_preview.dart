@@ -49,7 +49,7 @@ class MessageReplyPreview extends StatelessWidget {
                           size: 16,
                         ),
                         onTap: () {
-                          // singleChatController.cancelReply();
+                          singleChatController.cancelReply();
                         },
                       )
                     : const SizedBox(),

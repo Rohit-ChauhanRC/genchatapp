@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../constants/colors.dart';
@@ -24,7 +25,7 @@ class ChatList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (singleChatController.messageList.isEmpty) {
-        return const SizedBox();
+        return loadingWidget(text: "Fetching data please wait....");
       }
       SchedulerBinding.instance.addPostFrameCallback((_) {
         // singleChatController.scrollController.jumpTo(
@@ -76,11 +77,11 @@ class ChatList extends StatelessWidget {
                     onLeftSwipe: (v) {
                       // singleChatController.isRepUpdate = true;
 
-                      // singleChatController.onMessageSwipe(
-                      //   isMe: true,
-                      //   message: messages.text.toString(),
-                      //   messageEnum: messages.type,
-                      // );
+                      singleChatController.onMessageSwipe(
+                        isMe: true,
+                        message: messages.text.toString(),
+                        messageEnum: messages.type,
+                      );
                     },
                     repliedMessageType: messages.repliedMessageType.type.toEnum(),
                     repliedText: messages.repliedMessage.obs,
@@ -93,11 +94,11 @@ class ChatList extends StatelessWidget {
                     type: messages.type.type.toString().toEnum(),
                     onRightSwipe: (v) {
                       singleChatController.isRepUpdate = true;
-                      // singleChatController.onMessageSwipe(
-                      //   isMe: false,
-                      //   message: messages.text.toString(),
-                      //   messageEnum: messages.type,
-                      // );
+                      singleChatController.onMessageSwipe(
+                        isMe: false,
+                        message: messages.text.toString(),
+                        messageEnum: messages.type,
+                      );
                     },
                     repliedMessageType: messages.repliedMessageType.type.toEnum(),
                     repliedText: messages.repliedMessage.obs,

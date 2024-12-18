@@ -189,3 +189,24 @@ bool isEmail(String value) {
   return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
       .hasMatch(value);
 }
+
+Widget loadingWidget({required String text}){
+  return Center(
+    child: Container(
+        padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
+        height: 150,
+        width: 150,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+            color: mySideBgColor,
+            borderRadius: BorderRadius.circular(20)
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircularProgressIndicator(color: textBarColor ),
+            Text(text, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: blackColor),),
+          ],
+        )),
+  );
+}

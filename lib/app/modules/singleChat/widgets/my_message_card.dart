@@ -75,18 +75,20 @@ class MyMessageCard extends StatelessWidget {
                         // Reply Preview
                         Obx(() => repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"
-                            ? Column(children: [
+                            ? Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
                                 Text(
-                                  username,
+                                  username, textAlign: TextAlign.start,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green),
+                                      color: blackColor),
                                 ),
                                 const SizedBox(height: 3),
                                 Container(
                                   padding: const EdgeInsets.all(10),
-                                  decoration: const BoxDecoration(
-                                    color: greyColor,
+                                  decoration:  BoxDecoration(
+                                    color: replyColor.withOpacity(0.67),
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(
                                         5,

@@ -115,6 +115,7 @@ class SettingsView extends GetView<SettingsController> {
                           icon: Icons.logout_rounded,
                           onTap: () async {
                             await controller.homeController.setUserOffline();
+                            controller.db.closeDb();
                             await controller.sharedPreferenceService
                                       .clear()
                                       .then((onValue) {

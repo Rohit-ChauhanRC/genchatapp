@@ -6,10 +6,13 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/local_database/local_database.dart';
 import '../routes/app_pages.dart';
 
 class SharedPreferenceService {
   late SharedPreferences _prefs;
+
+  final DataBaseService db = Get.find<DataBaseService>();
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -61,6 +64,7 @@ class SharedPreferenceService {
   UserModel? getUserDetails() {
     if (getString(userDetail) == null || getString(userDetail) == "") {
       print("UserIsNotEmpty:-----------> ${getString(userDetail)}");
+      db.closeDb();
       clear();
       Get.offAllNamed(Routes.LANDING);
       return null;

@@ -26,7 +26,7 @@ class BottomChatField extends StatelessWidget {
                 singleChatController.messageReply.message != "null" &&
                 singleChatController.messageReply.message.toString().isNotEmpty
             ? MessageReplyPreview()
-            : const SizedBox()),
+            : const SizedBox.shrink()),
         Row(
           children: [
             Expanded(
@@ -68,7 +68,7 @@ class BottomChatField extends StatelessWidget {
                           // ),
                           InkWell(
                             onTap: () {
-                              // singleChatController.selectGif();
+                              singleChatController.selectGif();
                             },
                             child: const Icon(
                               Icons.gif,
@@ -87,7 +87,7 @@ class BottomChatField extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: () {
-                            // singleChatController.selectImage();
+                            singleChatController.selectImage();
                           },
                           icon: const Icon(
                             Icons.camera_alt,
@@ -97,7 +97,7 @@ class BottomChatField extends StatelessWidget {
                         IconButton(
                           onPressed: () {
                             // singleChatController.selectVideo();
-                            // singleChatController.cancelReply();
+                            singleChatController.cancelReply();
                           },
                           icon: const Icon(
                             Icons.attach_file,
@@ -153,7 +153,7 @@ class BottomChatField extends StatelessWidget {
                   },
                 ),
               )
-            : const SizedBox()),
+            : const SizedBox.shrink()),
       ],
     );
   }

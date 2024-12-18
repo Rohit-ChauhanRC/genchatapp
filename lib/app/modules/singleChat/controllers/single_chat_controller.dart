@@ -13,9 +13,11 @@ import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../data/local_database/message_table.dart';
+import '../../../utils/utils.dart';
 
 class SingleChatController extends GetxController with WidgetsBindingObserver {
   //
@@ -184,9 +186,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       timeSent: timeSent,
       messageId: messageId,
       status: MessageStatus.uploading,
-      repliedMessage: '',
-      repliedTo: '',
-      repliedMessageType: MessageEnum.text,
+      repliedMessage: messageReply == null
+          ? '' : messageReply.message.toString(),
+      repliedTo: messageReply.message == null ? '' :
+      messageReply.isMe!
+          ? senderuserData.name ?? ""
+          : receiveruserDataModel.value.name ?? "",
+      repliedMessageType: messageReply.message == null
+          ? MessageEnum.text
+          : messageReply.messageEnum!,
       syncStatus: 'pending',
     );
 
@@ -194,6 +202,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     messageList.add(newMessage);
     messageController.clear();
+    await cancelReply();
 
     if (connectivityService.isConnected.value) {
       await _syncMessageToFirebase(newMessage);
@@ -364,7 +373,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        print("Message added from list:------> $message");
+        print("Message added to list:------> $message");
       }
     }
     selectedMessages.refresh();
@@ -413,6 +422,26 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       message: null,
     );
   }
+
+  void selectImage() async {
+    showImagePicker(onGetImage: (img) {
+      if (img != null) {
+        // sendFileMessage(
+        //   file: img,
+        //   messageEnum: MessageEnum.image,
+        // );
+      }
+    });
+  }
+
+  void selectGif() async {
+    TenorResult? gif = await pickGIF(Get.context!);
+    if (gif != null) {
+      // sendGIFMessage(
+      //   context: Get.context!,
+      //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
+      // );
+    }}
 
   void toggleEmojiKeyboardContainer() {
     if (isShowEmojiContainer) {

@@ -15,3 +15,4 @@ const messageColor = Color.fromRGBO(5, 96, 98, 1);
 const bgColor = Color.fromRGBO(218, 227, 232, 1);
 const mySideBgColor = Color(0xFF4BD6FF);
 const greyMsgColor = Color(0xFF5B5B5B);
+const replyColor = Color(0xFFB8EAFF);

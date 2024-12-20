@@ -1,4 +1,6 @@
 // import 'package:audioplayers/audioplayers.dart';
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -57,8 +59,11 @@ class DisplayTextImageGIF extends StatelessWidget {
             //         ? CachedNetworkImage(
             //             imageUrl: message,
             //           )
-            : CachedNetworkImage(
-                imageUrl: message,
-              );
+            : ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+        child: Image.file(File(message), fit: BoxFit.cover, filterQuality: FilterQuality.medium,height: 200, width: 300,));
+    // CachedNetworkImage(
+    //             imageUrl: message,
+    //           );
   }
 }

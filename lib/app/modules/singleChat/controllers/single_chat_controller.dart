@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../config/services/folder_creation.dart';
 import '../../../data/local_database/message_table.dart';
 import '../../../utils/utils.dart';
 
@@ -25,6 +27,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final connectivityService = Get.find<ConnectivityService>();
   final firebaseController = Get.put(FirebaseController());
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
+  final FolderCreation folderCreation = Get.find<FolderCreation>();
 
   final TextEditingController messageController = TextEditingController();
 
@@ -196,6 +199,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           ? MessageEnum.text
           : messageReply.messageEnum!,
       syncStatus: 'pending',
+       filePath: '',
+       fileUrl: '',
+       fileSize: 0,
+       thumbnailPath: '',
     );
 
     await MessageTable().insertMessage(newMessage);
@@ -249,7 +256,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     for (var message in unsentMessages) {
       if (connectivityService.isConnected.value) {
         try {
-          await _syncMessageToFirebase(message);
+          if (message.type == MessageEnum.text) {
+            await _syncMessageToFirebase(message);
+          }
+          else if (message.type != MessageEnum.text && message.fileUrl == null) {
+            final file = File(message.filePath ?? '');
+            final fileUrl = await uploadFileToServer(file, message.type.toString());
+            message = message.copyWith(fileUrl: fileUrl);
+
+            await _syncMessageToFirebase(message);
+          }
         } catch (e) {
           if (kDebugMode) {
             print("Error syncing message: $e");
@@ -257,7 +273,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         }
       } else {
         if (kDebugMode) {
-          print("Message has missing fields: ${message.toMap()}");
+          print("No connectivity, unable to sync message: ${message.toMap()}");
         }
         break;
       }
@@ -423,15 +439,128 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
   }
 
-  void selectImage() async {
+  void selectFile(String fileType) async {
+    File? selectedFile;
+
+    if (fileType == 'image') {
+      selectedFile = await pickImage();
+    } else if (fileType == 'video') {
+      // selectedFile = await pickVideo();
+    } else if (fileType == 'audio') {
+      // selectedFile = await pickAudio();
+    } else if (fileType == 'document') {
+      // selectedFile = await pickDocument();
+    }
+
+    if (selectedFile != null) {
+      sendFileMessage(file: selectedFile, messageEnum: fileType.toEnum());
+    }
+  }
+
+
+
+  Future<void> sendFileMessage({
+    required File file,
+    required MessageEnum messageEnum,
+  }) async {
+    final messageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    final fileType = messageEnum.toString().split('.').last;
+    final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+    try {
+      // Save file locally
+      final localFilePath = await saveFileLocally(file, fileType, fileExtension);
+
+      // Upload file to the server
+      final fileUrl = await uploadFileToServer(file, fileType);
+
+      final newMessage = MessageModel(
+        senderId: senderuserData.uid!,
+        receiverId: id.toString(),
+        text: fileType,
+        type: messageEnum,
+        timeSent: timeSent,
+        messageId: messageId,
+        status: MessageStatus.uploading,
+        repliedMessage: messageReply == null
+            ? '' : messageReply.message.toString(),
+        repliedTo: messageReply.message == null ? '' :
+        messageReply.isMe!
+            ? senderuserData.name ?? ""
+            : receiveruserDataModel.value.name ?? "",
+        repliedMessageType: messageReply.message == null
+            ? MessageEnum.text
+            : messageReply.messageEnum!,
+        syncStatus: 'pending',
+        fileUrl: fileUrl,
+        filePath: localFilePath,
+        fileSize: 0,
+        thumbnailPath: ""
+      );
+
+      // Save message locally
+      await MessageTable().insertMessage(newMessage);
+      messageList.add(newMessage);
+
+      // Sync message with Firebase if online
+      if (connectivityService.isConnected.value) {
+        await _syncMessageToFirebase(newMessage.copyWith(
+          status: receiveruserDataModel.value.isOnline!
+              ? MessageStatus.delivered
+              : MessageStatus.sent,
+        ));
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
+    }
+  }
+
+  Future<String> uploadFileToServer(File file, String fileType) async {
+    try {
+      final fileName = 'GENCHAT_$fileType${senderuserData.uid}_${DateTime.now().millisecondsSinceEpoch}';
+      final serverPath = 'chat/$fileType/${senderuserData.uid!}/$fileName';
+
+      // Upload file to Firebase Storage or server
+      final uploadTask = firebaseController.firebaseStorage.ref(serverPath).putFile(file);
+      final snapshot = await uploadTask;
+      final fileUrl = await snapshot.ref.getDownloadURL();
+      print("FileURL from server:-----------------> $fileUrl");
+
+      return fileUrl; // Return public file URL
+    } catch (e) {
+      throw Exception("File upload failed: $e");
+    }
+  }
+
+  Future<String> saveFileLocally(File file, String fileType, String fileExtension) async {
+    final fileName = "GENCHAT_$fileType-${senderuserData.uid}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+    final filePath = await folderCreation.saveFileFromFile(
+      sourceFile: file,
+      fileName: fileName,
+      subFolder: fileType,
+    );
+    print("FileName for saving locally:----------------> $fileName");
+    print("FilePath for saving locally:----------------> $filePath");
+    return filePath;
+  }
+
+
+  Future<File?> pickImage() async {
+    Completer<File?> completer = Completer<File?>();
     showImagePicker(onGetImage: (img) {
       if (img != null) {
         // sendFileMessage(
         //   file: img,
         //   messageEnum: MessageEnum.image,
         // );
+        completer.complete(img);
+      }else{
+        completer.complete(null);
       }
     });
+    return completer.future;
   }
 
   void selectGif() async {

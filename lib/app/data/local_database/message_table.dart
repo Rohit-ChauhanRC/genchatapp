@@ -23,6 +23,10 @@ class MessageTable {
         repliedTo TEXT NOT NULL,
         repliedMessageType TEXT NOT NULL,
         syncStatus TEXT NOT NULL DEFAULT 'pending',
+        filePath TEXT NOT NULL,
+        fileUrl TEXT NOT NULL,
+        fileSize INTEGER NOT NULL,
+        thumbnailPath TEXT NOT NULL,
         PRIMARY KEY ("id" AUTOINCREMENT)
       )
     ''');

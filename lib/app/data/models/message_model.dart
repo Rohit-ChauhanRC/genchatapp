@@ -15,6 +15,11 @@ class MessageModel {
   final MessageEnum repliedMessageType;
   late final String syncStatus;
 
+  final String? filePath; // Local file path
+  final String? fileUrl; // Firebase storage URL
+  final int? fileSize; // File size in bytes
+  final String? thumbnailPath; // Thumbnail for videos/GIFs
+
   MessageModel({
     required this.senderId,
     required this.receiverId,
@@ -28,6 +33,10 @@ class MessageModel {
     required this.repliedMessageType,
     required this.status,
     this.syncStatus = 'pending',
+    this.filePath,
+    this.fileUrl,
+    this.fileSize,
+    this.thumbnailPath,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +52,10 @@ class MessageModel {
       'repliedTo': repliedTo,
       'repliedMessageType': repliedMessageType.type,
       'syncStatus': syncStatus,
+      'filePath': filePath,
+      'fileUrl': fileUrl,
+      'fileSize': fileSize,
+      'thumbnailPath': thumbnailPath,
     };
   }
   // Add the copyWith method
@@ -58,6 +71,10 @@ class MessageModel {
     String? repliedTo,
     MessageEnum? repliedMessageType,
     String? syncStatus,
+    String? filePath,
+    String? fileUrl,
+    int? fileSize,
+    String? thumbnailPath,
   }) {
     return MessageModel(
       senderId: senderId ?? this.senderId,
@@ -71,6 +88,10 @@ class MessageModel {
       repliedTo: repliedTo ?? this.repliedTo,
       repliedMessageType: repliedMessageType ?? this.repliedMessageType,
       syncStatus: syncStatus ?? this.syncStatus,
+      filePath: filePath ?? this.filePath,
+      fileUrl: fileUrl ?? this.fileUrl,
+      fileSize: fileSize ?? this.fileSize,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
     );
   }
 
@@ -94,6 +115,10 @@ class MessageModel {
       repliedTo: map['repliedTo'] ?? '',
       repliedMessageType: (map['repliedMessageType'] as String).toEnum(),
       syncStatus: map['syncStatus'] ?? 'pending',
+      filePath: map['filePath'] ?? '',
+      fileUrl: map['fileUrl']?? '',
+      fileSize: map['fileSize'] ?? 0,
+      thumbnailPath: map['thumbnailPath'] ?? '',
     );
   }
 }

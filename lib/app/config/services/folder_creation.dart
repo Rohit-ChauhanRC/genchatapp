@@ -76,6 +76,35 @@ class FolderCreation {
     }
   }
 
+  Future<String> saveFileFromFile({
+    required String subFolder,
+    required String fileName,
+    required File sourceFile,
+  }) async {
+    try {
+      final Directory appDir = await getApplicationDocumentsDirectory();
+
+      final String subFolderPath = '${appDir.path}/$appName/$subFolder';
+
+      final Directory dir = Directory(subFolderPath);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      final File destinationFile = File('$subFolderPath/$fileName');
+
+      // Copy the file to the destination
+      await sourceFile.copy(destinationFile.path);
+      print("Destination File Path:---------> ${destinationFile.path}");
+      return destinationFile.path;
+    } catch (e) {
+      print("Error saving file: $e");
+      return "error!";
+    }
+  }
+
+
+
   String getImageName(String imagePath) {
     // Get the image file name with extension from the path
     return path.basename(imagePath); // e.g., "image.jpg"

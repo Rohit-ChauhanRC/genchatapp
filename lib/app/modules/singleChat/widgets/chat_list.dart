@@ -69,7 +69,9 @@ class ChatList extends StatelessWidget {
                   color: isMsgSelected ? mySideBgColor.withOpacity(0.3) : Colors.transparent,
                   child: messages.senderId == singleChatController.senderuserData.uid ?
                   MyMessageCard(
-                    message: messages.text.toString(),
+                    message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
+                        ?messages.text.toString()
+                        :messages.filePath.toString(),
                     date: DateFormat('hh:mm a').format(messages.timeSent),
                     // date: "",
                     type: messages.type.type.toString().toEnum(),
@@ -79,7 +81,9 @@ class ChatList extends StatelessWidget {
 
                       singleChatController.onMessageSwipe(
                         isMe: true,
-                        message: messages.text.toString(),
+                        message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
+                            ?messages.text.toString()
+                            :messages.filePath.toString(),
                         messageEnum: messages.type,
                       );
                     },
@@ -89,14 +93,18 @@ class ChatList extends StatelessWidget {
                   ):
                   // }
                   SenderMessageCard(
-                    message: messages.text.toString(),
+                    message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
+                        ?messages.text.toString()
+                        :messages.filePath.toString(),
                     date: DateFormat('hh:mm a').format(messages.timeSent),
                     type: messages.type.type.toString().toEnum(),
                     onRightSwipe: (v) {
                       singleChatController.isRepUpdate = true;
                       singleChatController.onMessageSwipe(
                         isMe: false,
-                        message: messages.text.toString(),
+                        message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
+                            ?messages.text.toString()
+                            :messages.filePath.toString(),
                         messageEnum: messages.type,
                       );
                     },

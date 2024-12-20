@@ -24,8 +24,16 @@ class ChatList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (singleChatController.messageList.isEmpty) {
+      if(singleChatController.isLoading){
         return loadingWidget(text: "Fetching data please wait....");
+      }
+      if (singleChatController.messageList.isEmpty) {
+        return Center(
+          child: Text(
+            "No messages yet!",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        );
       }
       SchedulerBinding.instance.addPostFrameCallback((_) {
         // singleChatController.scrollController.jumpTo(

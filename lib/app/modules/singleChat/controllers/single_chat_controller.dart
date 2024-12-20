@@ -63,6 +63,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get isRecorderInit => _isRecorderInit.value;
   set isRecorderInit(bool b) => _isRecorderInit.value = b;
 
+  final RxBool _isLoading = true.obs;
+  bool get isLoading => _isLoading.value;
+  set isLoading(bool b) => _isLoading.value = b;
+
   final RxList<MessageModel> messageList = <MessageModel>[].obs;
 
   final Rx<FlutterSoundRecorder> soundRecorder = FlutterSoundRecorder().obs;
@@ -101,6 +105,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     id = Get.arguments[0];
     fullname = Get.arguments[1];
     getRootFolder();
+    _startLoadingTimer();
   }
 
   @override
@@ -117,6 +122,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.onClose();
     selectedMessages.clear();
     messageSubscription.cancel();
+  }
+
+  void _startLoadingTimer() {
+    Timer(Duration(seconds: 3), () {
+      isLoading = false; // Stop loading after 3 seconds
+    });
   }
 
   Future<void> getRootFolder() async{

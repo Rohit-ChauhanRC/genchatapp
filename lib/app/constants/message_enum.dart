@@ -1,11 +1,11 @@
 enum MessageEnum {
   text('text'),
-  image('image'),
-  audio('audio'),
-  video('video'),
-  gif('gif'),
+  image('images'),
+  audio('audios'),
+  video('videos'),
+  gif('gifs'),
   deleted('deleted'),
-  document('document');
+  document('documents');
 
   const MessageEnum(this.type);
   final String type;
@@ -17,17 +17,17 @@ enum MessageEnum {
 extension ConvertMessage on String {
   MessageEnum toEnum() {
     switch (this) {
-      case 'audio':
+      case 'audios':
         return MessageEnum.audio;
-      case 'image':
+      case 'images':
         return MessageEnum.image;
       case 'text':
         return MessageEnum.text;
-      case 'gif':
+      case 'gifs':
         return MessageEnum.gif;
-      case 'video':
+      case 'videos':
         return MessageEnum.video;
-      case 'document':
+      case 'documents':
         return MessageEnum.document;
       case 'deleted':
         return MessageEnum.deleted;

@@ -15,7 +15,7 @@ class MessageModel {
   final MessageEnum repliedMessageType;
   late final String syncStatus;
 
-  final String? filePath; // Local file path
+  String? filePath; // Local file path
   final String? fileUrl; // Firebase storage URL
   final int? fileSize; // File size in bytes
   final String? thumbnailPath; // Thumbnail for videos/GIFs

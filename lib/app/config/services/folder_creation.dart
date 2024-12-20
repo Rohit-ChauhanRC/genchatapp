@@ -5,6 +5,7 @@ import 'package:genchatapp/app/constants/constants.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
 
 class FolderCreation {
   Future<void> createAppFolderStructure() async {
@@ -113,5 +114,54 @@ class FolderCreation {
   String getImageExtension(String imagePath) {
     // Get the file extension
     return path.extension(imagePath); // e.g., ".jpg"
+  }
+
+  Future<String> getRootFolderPath() async{
+    final directory = await getApplicationDocumentsDirectory();
+
+    final filePath = "${directory.path}/$appName/";
+    print('RootFolderPath:---------> $filePath');
+    return filePath;
+  }
+
+  Future<String?> checkAndHandleFile({
+    required String fileName,
+    required String messageType,
+    required String fileUrl
+  }) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+
+      final filePath = "${directory.path}/$appName/$fileName";
+
+      if (await File(filePath).exists()) {
+        return filePath;
+      } else {
+        final downloadedFilePath = await _downloadFile(fileUrl, filePath);
+        return downloadedFilePath;
+      }
+    } catch (e) {
+      print("Error checking file existence: $e");
+      return null;
+    }
+  }
+
+  Future<String?> _downloadFile(String url, String savePath) async {
+    try {
+      // Perform the file download
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final file = File(savePath);
+        await file.writeAsBytes(response.bodyBytes); // Save the file
+        print("File downloaded to $savePath");
+        return savePath;
+      } else {
+        print("Failed to download file: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error downloading file: $e");
+      return null;
+    }
   }
 }

@@ -81,6 +81,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   String get fullname => _fullname.value;
   set fullname(String str) => _fullname.value = str;
 
+  final RxString _rootPath = "".obs;
+  String get rootPath => _rootPath.value;
+  set rootPath(String str) => _rootPath.value = str;
+
   Rx<UserModel> receiveruserDataModel = UserModel(
     isOnline: false,
   ).obs;
@@ -96,6 +100,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     id = Get.arguments[0];
     fullname = Get.arguments[1];
+    getRootFolder();
   }
 
   @override
@@ -112,6 +117,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.onClose();
     selectedMessages.clear();
     messageSubscription.cancel();
+  }
+
+  Future<void> getRootFolder() async{
+    rootPath = await folderCreation.getRootFolderPath();
   }
 
   void bindMessageStream() {
@@ -131,6 +140,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       )
           .asyncMap((firebaseMessages) async {
         for (var message in firebaseMessages) {
+          if (message.filePath != null && message.filePath!.isNotEmpty && message.type != null && message.fileUrl != null && message.fileUrl!.isNotEmpty) {
+            await folderCreation.checkAndHandleFile(
+              fileName: message.filePath!,
+              messageType: message.type.type,
+              fileUrl: message.fileUrl!,
+            );
+          }
           markMessagesAsSeen(message);
           await MessageTable().insertOrUpdateMessage(message);
         }
@@ -442,13 +458,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void selectFile(String fileType) async {
     File? selectedFile;
 
-    if (fileType == 'image') {
+    if (fileType == MessageEnum.image.type) {
       selectedFile = await pickImage();
-    } else if (fileType == 'video') {
+    } else if (fileType == MessageEnum.video.type) {
       // selectedFile = await pickVideo();
-    } else if (fileType == 'audio') {
+    } else if (fileType == MessageEnum.audio.type) {
       // selectedFile = await pickAudio();
-    } else if (fileType == 'document') {
+    } else if (fileType == MessageEnum.document.type) {
       // selectedFile = await pickDocument();
     }
 
@@ -465,7 +481,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }) async {
     final messageId = const Uuid().v1();
     final timeSent = DateTime.now();
-    final fileType = messageEnum.toString().split('.').last;
+    final fileType = messageEnum.type.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
     try {
       // Save file locally
@@ -535,15 +551,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<String> saveFileLocally(File file, String fileType, String fileExtension) async {
+    final subFolderName = fileType.toTitleCase;
     final fileName = "GENCHAT_$fileType-${senderuserData.uid}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
     final filePath = await folderCreation.saveFileFromFile(
       sourceFile: file,
       fileName: fileName,
-      subFolder: fileType,
+      subFolder: subFolderName,
     );
     print("FileName for saving locally:----------------> $fileName");
     print("FilePath for saving locally:----------------> $filePath");
-    return filePath;
+    return '$subFolderName/$fileName';
   }
 
 

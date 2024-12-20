@@ -1,6 +1,7 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
 import 'package:get/get.dart';
@@ -88,7 +89,7 @@ class BottomChatField extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: () {
-                            singleChatController.selectFile("image");
+                            singleChatController.selectFile(MessageEnum.image.type);
                           },
                           icon: const Icon(
                             Icons.camera_alt,

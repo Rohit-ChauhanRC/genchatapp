@@ -1,3 +1,4 @@
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -17,17 +18,17 @@ class SplashController extends GetxController {
   }
 
   bool? getIsNumVerified() {
-    return sharedPreferenceService.getBool(isNumVerify);
+    return sharedPreferenceService.getBool(UserDefaultsKeys.isNumVerify);
   }
 
-  bool? getIscreateUserProfile() {
-    return sharedPreferenceService.getBool(createUserProfile);
+  bool? getIsCreateUserProfile() {
+    return sharedPreferenceService.getBool(UserDefaultsKeys.createUserProfile);
   }
 
   void navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3));
     bool? isVerified = getIsNumVerified();
-    bool? isCreatedUserProfile = getIscreateUserProfile();
+    bool? isCreatedUserProfile = getIsCreateUserProfile();
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE, arguments: false);
     } else if (isCreatedUserProfile == true) {

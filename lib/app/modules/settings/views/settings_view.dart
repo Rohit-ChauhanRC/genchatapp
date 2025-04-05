@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 
@@ -44,7 +44,7 @@ class SettingsView extends GetView<SettingsController> {
                           child: Row(
                             children: [
                               CachedNetworkImage(
-                                imageUrl: controller.userData.profilePic ?? "",
+                                imageUrl: controller.userData.displayPictureUrl ?? "",
                                 imageBuilder: (context, image) {
                                   return CircleAvatar(
                                       backgroundColor: greyColor.withOpacity(0.4),

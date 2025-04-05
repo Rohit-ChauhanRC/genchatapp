@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
-import 'package:genchatapp/app/widgets/user_avatar.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
+import 'package:genchatapp/app/common/widgets/user_avatar.dart';
 
 import 'package:get/get.dart';
 
@@ -103,11 +103,11 @@ class CreateProfileView extends GetView<CreateProfileController> {
                         const SizedBox(
                           height: 50,
                         ),
-                        Obx(() => !controller.circularProgress ? const Center(child: CircularProgressIndicator(color: textBarColor,),):
+                        Obx(() => controller.circularProgress ? const Center(child: CircularProgressIndicator(color: textBarColor,),):
                         SizedBox(
                           width: Get.width * 0.8,
                           child: ElevatedButton(
-                          onPressed: controller.createProfile,
+                          onPressed: controller.updateProfile,
                           child: const Text(
                             next,
                             style: TextStyle(fontSize: 14, color: whiteColor),

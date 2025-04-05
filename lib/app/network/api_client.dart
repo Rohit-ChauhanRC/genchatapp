@@ -1,25 +1,28 @@
 import 'package:dio/dio.dart';
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:get/instance_manager.dart';
 import 'api_interceptor.dart';
 import 'api_endpoints.dart';
 
 class ApiClient {
   late Dio dio;
+  final sharedPrefrence = Get.find<SharedPreferenceService>();
 
   ApiClient() {
     dio = Dio(BaseOptions(
       baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
     ));
 
-    // dio.interceptors.add(ApiInterceptor());
+    dio.interceptors.add(ApiInterceptor(sharedPrefrence, this)); // ✅ Pass `this`
   }
 
-  /// GET Request
   Future<Response> get(String url, {Map<String, dynamic>? queryParams}) async {
     try {
       Response response = await dio.get(url, queryParameters: queryParams);
@@ -29,7 +32,6 @@ class ApiClient {
     }
   }
 
-  /// POST Request
   Future<Response> post(String url, dynamic data) async {
     try {
       Response response = await dio.post(url, data: data);
@@ -39,7 +41,6 @@ class ApiClient {
     }
   }
 
-  /// PUT Request
   Future<Response> put(String url, dynamic data) async {
     try {
       Response response = await dio.put(url, data: data);
@@ -49,7 +50,6 @@ class ApiClient {
     }
   }
 
-  /// DELETE Request
   Future<Response> delete(String url) async {
     try {
       Response response = await dio.delete(url);
@@ -59,17 +59,21 @@ class ApiClient {
     }
   }
 
-  /// Multipart Request
   Future<Response> uploadFile(String url, FormData formData) async {
     try {
-      Response response = await dio.post(url, data: formData);
+      Response response = await dio.post(url, data: formData, options: Options(
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "multipart/form-data",
+          "Authorization": "Bearer ${getAccessToken()}",
+        },
+      ));
       return response;
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// Error Handling
   String _handleError(dynamic error) {
     if (error is DioException) {
       switch (error.type) {
@@ -78,15 +82,23 @@ class ApiClient {
         case DioExceptionType.receiveTimeout:
           return "Receive Timeout!";
         case DioExceptionType.badResponse:
-          return "Error: ${error.response?.data['message'] ?? 'Something went wrong'}";
+          final responseData = error.response?.data;
+          if (responseData is Map && responseData.containsKey('message')) {
+            return responseData['message'];
+          }
+          return "Error: ${responseData ?? 'Something went wrong'}";
         case DioExceptionType.cancel:
           return "Request Cancelled!";
         case DioExceptionType.unknown:
         default:
           return "Unexpected Error Occurred!";
       }
-    } else {
-      return "Something went wrong!";
     }
+    return "Something went wrong!";
+  }
+
+  String? getAccessToken() {
+    return sharedPrefrence.getString(UserDefaultsKeys.accessToken);
   }
 }
+

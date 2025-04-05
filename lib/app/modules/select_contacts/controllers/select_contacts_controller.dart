@@ -1,277 +1,92 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:genchatapp/app/config/services/connectivity_service.dart';
-import 'package:genchatapp/app/config/services/firebase_controller.dart';
-import 'package:genchatapp/app/config/services/folder_creation.dart';
-import 'package:genchatapp/app/constants/constants.dart';
-import 'package:genchatapp/app/data/local_database/contacts_table.dart';
-import 'package:genchatapp/app/data/models/contact_model.dart';
-import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
-import 'package:genchatapp/app/services/shared_preference_service.dart';
-import 'package:genchatapp/app/utils/utils.dart';
+
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+
+import '../../../data/models/new_models/response_model/contact_response_model.dart';
+import '../../../data/repositories/select_contacts/select_contact_repository.dart';
+
 
 class SelectContactsController extends GetxController {
-//
-  final FirebaseController firebaseController =
-      Get.put<FirebaseController>(FirebaseController());
-  final SharedPreferenceService _sharedPreferenceService =
-      Get.find<SharedPreferenceService>();
+  final IContactRepository contactRepository = Get.find<IContactRepository>();
 
-  final ContactsTable contactsTable = ContactsTable();
-  final FolderCreation folderCreation = Get.find<FolderCreation>();
 
-  final ConnectivityService connectivityService = Get.find();
-
-  //
-  final RxList<ContactModel> _contacts = <ContactModel>[].obs;
-  List<ContactModel> get contacts => _contacts;
-  set contacts(List<ContactModel> cts) => _contacts.assignAll(cts);
-
-  final RxString _searchQuery = ''.obs;
-  String get searchQuery => _searchQuery.value;
-  set searchQuery(String query) => _searchQuery.value = query;
-
-  final RxBool _isContactRefreshed = true.obs;
+  final RxBool _isContactRefreshed = false.obs;
   bool get isContactRefreshed => _isContactRefreshed.value;
   set isContactRefreshed(bool v) => _isContactRefreshed.value = v;
 
+  final RxList<UserList> _contacts = <UserList>[].obs;
+  List<UserList> get contacts => _contacts;
+  set contacts(List<UserList> value) => _contacts.assignAll(value);
+
+  final RxString _searchQuery = ''.obs;
+  String get searchQuery => _searchQuery.value;
+  set searchQuery(String value) => _searchQuery.value = value;
+
+  List<UserList> get filteredContacts {
+    if (searchQuery.isEmpty) return contacts;
+    return contacts.where((contact) {
+      final name = contact.name?.toLowerCase() ?? '';
+      final number = contact.phoneNumber ?? '';
+      return name.contains(searchQuery.toLowerCase()) || number.contains(searchQuery);
+    }).toList();
+  }
+
   @override
-  void onInit() async {
-    await syncContacts();
+  void onInit() {
     super.onInit();
-  }
-
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  List<ContactModel> get filteredContacts {
-    if (searchQuery.isEmpty) {
-      return contacts;
-    }
-    return contacts
-        .where((contact) =>
-            contact.fullName
-                .toLowerCase()
-                .contains(searchQuery.toLowerCase()) ||
-            contact.contactNumber.contains(searchQuery))
-        .toList();
-  }
-
-  Future<bool> hasSyncedContacts() async {
-    return _sharedPreferenceService.getBool(contactsSynced) ?? false;
-  }
-
-  Future<void> setSyncedContacts() async {
-    await _sharedPreferenceService.setBool(contactsSynced, true);
-  }
-
-  getContactsFromDB() async {
-    return contacts.assignAll(await contactsTable.fetchAll());
+    refreshSync();
   }
 
   Future<void> refreshSync() async {
-    if (connectivityService.isConnected.value) {
-      await _sharedPreferenceService.setBool(contactsSynced, false);
-
-      await contactsTable.deleteTable().then((v) async {
-        await syncContacts(); // Re-sync
-      });
-    } else {
-      // snackbar for internet conectivity
-      showSnackBar(
-          context: Get.context!,
-          content: "Please check your internet connection!");
-    }
-    // Clear Local Database
+    _isContactRefreshed.value = false;
+    await syncContactsWithServer();
+    _isContactRefreshed.value = true;
   }
 
-  Future<void> syncContacts() async {
-    final alreadySynced = await hasSyncedContacts();
-
-    if (alreadySynced) {
-      await getContactsFromDB();
-      return; // Skip sync if already done
-    } else {
-      await getContacts();
-    }
-  }
-
-  Future<void> getContacts() async {
-    isContactRefreshed = false;
+  Future<void> syncContactsWithServer() async {
     try {
       if (await FlutterContacts.requestPermission()) {
-        List<Contact> allContacts = await FlutterContacts.getContacts(
-            withProperties: true, withPhoto: true);
+        final phoneContacts = await FlutterContacts.getContacts(withProperties: true);
 
-        // Fetch all registered users from Firebase
-        var userCollection =
-            await firebaseController.firestore.collection('users').get();
-        Map<String, UserModel> registeredUsers = {};
-        for (var document in userCollection.docs) {
-          var userData = UserModel.fromJson(document.data());
-          registeredUsers[userData.phoneNumber!] = userData;
-        }
-
-        // Filter contacts to include only registered users and exclude the current user
-        UserModel? userdata = _sharedPreferenceService.getUserDetails();
-        String? currentUserPhoneNumber = userdata?.phoneNumber;
-
-        List<ContactModel> contactList = [];
-        Set<String> seenPhoneNumbers = {};
-
-        for (var contact in allContacts) {
-          String phoneNumber = contact.phones.isNotEmpty
-              ? contact.phones[0].number
-                  .replaceAll(' ', '')
-                  .replaceAll("+91", "")
-              : '';
-          if (registeredUsers.containsKey(phoneNumber) &&
-              phoneNumber != currentUserPhoneNumber &&
-              !seenPhoneNumbers.contains(phoneNumber)) {
-            UserModel? user = registeredUsers[phoneNumber];
-            Uint8List? profilePicBytes = user != null
-                ? await firebaseController.firebaseStorage
-                    .refFromURL(user.profilePic!)
-                    .getData()
-                : null;
-
-            // Fetch the image from the URL
-            // final httpClient = HttpClient();
-            // final request = await httpClient.getUrl(Uri.parse(user!.profilePic!));
-            // final response = await request.close();
-            // final profilePicBytes =
-            //     await consolidateHttpClientResponseBytes(response);
-
-            // final String fileName = path.basename(
-            //     Uri.parse(user!.profilePic!).path); // e.g., "image.jpg"
-            // final now = DateTime.now();
-            // final date =
-            //     "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
-            // final fileName = "IMG-$date-GA${user!.uid}.jpg";
-            final fileName = "IMG-GA${user!.uid}.jpg";
-
-            final imgePath = await folderCreation.saveFile(
-              fileBytes: profilePicBytes!,
-              fileName: fileName,
-              subFolder: "Images",
-            );
-
-            // contactList.add(ContactModel(
-            //   fullName: contact.displayName,
-            //   contactNumber: user.phoneNumber!,
-            //   image: imgePath,
-            //   userId: user.uid!,
-            // ));
-
-            await contactsTable.create(
-                fullName: contact.displayName,
-                contactNumber: user.phoneNumber!,
-                uid: user.uid!,
-                imagePath: imgePath);
-            seenPhoneNumbers.add(phoneNumber);
+        // Create a map of phoneNumber => displayName from local contacts
+        final Map<String, String> localContactMap = {};
+        for (var contact in phoneContacts) {
+          if (contact.phones.isNotEmpty) {
+            final rawNumber = contact.phones.first.number;
+            final sanitizedNumber = rawNumber
+                .replaceAll(RegExp(r'[\s\-\(\)]'), '')
+                .replaceAll('+91', ''); // Normalize
+            localContactMap[sanitizedNumber] = contact.displayName;
           }
         }
-        // contacts = contactList;
-        isContactRefreshed = true;
-        await setSyncedContacts();
+
+        final phoneNumbers = localContactMap.keys.toList();
+
+        // Fetch registered users from API
+        final serverUsers = await contactRepository.fetchAppUsersFromContacts(phoneNumbers);
+
+        // Assign local name to each registered user
+        final List<UserList> enrichedUsers = serverUsers.map((user) {
+          final number = user.phoneNumber?.replaceAll('+91', '') ?? '';
+          final localName = localContactMap[number] ?? user.name ?? 'Unknown';
+          return user.copyWith(name: localName);
+        }).toList();
+
+        contacts = enrichedUsers;
       }
     } catch (e) {
-      debugPrint(e.toString());
-      isContactRefreshed = true;
-    }
-    await getContactsFromDB();
-  }
-
-  Future<Uint8List?> downloadProfilePicture(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-    return null;
-  }
-
-  void selectContact(ContactModel selectedContact, BuildContext context) async {
-    try {
-      var userCollection =
-          await firebaseController.firestore.collection('users').get();
-      bool isFound = false;
-      debugPrint("no: ${selectedContact.contactNumber.toString()}");
-
-      for (var document in userCollection.docs) {
-        var userData = UserModel.fromJson(document.data());
-        String selectedPhoneNum =
-            selectedContact.contactNumber.replaceAll(' ', '');
-        if (selectedPhoneNum == userData.phoneNumber) {
-          isFound = true;
-          Get.toNamed(Routes.SINGLE_CHAT, arguments: userData);
-        }
-      }
-
-      if (!isFound) {
-        showSnackBar(
-          context: context,
-          content: 'This number does not exist on this app.',
-        );
-      }
-    } catch (e) {
-      showSnackBar(context: context, content: e.toString());
+      debugPrint('Error fetching contacts: $e');
     }
   }
 
-  // Future<List<Contact>> getContacts() async {
-  //   try {
-  //     if (await FlutterContacts.requestPermission()) {
-  //       contacts = await FlutterContacts.getContacts(
-  //           withProperties: true, withPhoto: true);
-  //     }
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //   }
-  //   return contacts;
-  // }
-  //
-  // void selectContact(Contact selectedContact, BuildContext context) async {
-  //   try {
-  //     var userCollection =
-  //     await firebaseController.firestore.collection('users').get();
-  //     bool isFound = false;
-  //     debugPrint("no: ${selectedContact.phones[0].number.toString()}");
-  //
-  //     for (var document in userCollection.docs) {
-  //       var userData = UserModel.fromMap(document.data());
-  //       String selectedPhoneNum = selectedContact.phones[0].number.replaceAll(
-  //         ' ',
-  //         '',
-  //       );
-  //       if (selectedPhoneNum == userData.phoneNumber) {
-  //         isFound = true;
-  //         // Get.toNamed(Routes.SINGLE_CHAT, arguments: userData);
-  //       }
-  //     }
-  //
-  //     if (!isFound) {
-  //       showSnackBar(
-  //         context: context,
-  //         content: 'This number does not exist on this app.',
-  //       );
-  //     }
-  //   } catch (e) {
-  //     showSnackBar(context: context, content: e.toString());
-  //   }
-  // }
+  void selectContact(UserList user) {
+    // Navigate to chat or do any action with selected contact
+    Get.toNamed(Routes.SINGLE_CHAT, arguments: user); // Adjust route as needed
+  }
+
+
 }
+

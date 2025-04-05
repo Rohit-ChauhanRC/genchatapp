@@ -6,7 +6,7 @@ import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:get/get.dart';
 
 import '../../../constants/colors.dart';
-import '../../../widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import '../controllers/select_contacts_controller.dart';
 
 class SelectContactsView extends GetView<SelectContactsController> {
@@ -105,32 +105,27 @@ class SelectContactsView extends GetView<SelectContactsController> {
                         return InkWell(
                           onTap: () {
                             Get.toNamed(Routes.SINGLE_CHAT,
-                                arguments: [contact.userId, contact.fullName]);
+                                arguments: [contact.userId, contact.name]);
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ListTile(
                               title: Text(
-                                contact.fullName,
+                                contact.name ?? "No Name",
                                 style: const TextStyle(
                                   fontSize: 18,
                                 ),
                               ),
-                              leading: contact.image == null
+                              leading: contact.displayPictureUrl == null
                                   ? const CircleAvatar(
                                       child: Icon(Icons.person),
                                     )
                                   : CircleAvatar(
-                                      backgroundImage: Image.file(
-                                        File(contact.image),
-                                        fit: BoxFit.cover,
-                                      ).image,
+                                      backgroundImage: NetworkImage(contact.displayPictureUrl!),
                                       radius: 30,
                                     ),
                               subtitle: Text(
-                                contact.contactNumber.isNotEmpty
-                                    ? contact.contactNumber
-                                    : '',
+                                contact.phoneNumber ?? '',
                                 style: const TextStyle(
                                   fontSize: 14,
                                 ),

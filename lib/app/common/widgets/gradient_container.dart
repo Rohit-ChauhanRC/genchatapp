@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/constants/colors.dart';
-import 'package:get/get.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 
 class GradientContainer extends StatelessWidget {
   final Widget child;
 
   const GradientContainer({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
+
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+
     return Container(
-      height: Get.height,
+      height: size.height,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: backgroundGradientColor,
+          colors: AppColors.backgroundGradient,
         ),
       ),
       child: child,

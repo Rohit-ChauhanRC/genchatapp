@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/constants/colors.dart';
+
+import 'app_colors.dart';
 
 class AppTheme {
   //  AppTheme._();
 
   static ThemeData get theme {
     return ThemeData(
-      colorScheme: const ColorScheme.light(
-        primary: textBarColor,
+      colorScheme: ColorScheme.light(
+        primary: AppColors.textBarColor,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme:  AppBarTheme(
           centerTitle: true,
           // backgroundColor: AppColors.buttonColor,
           titleTextStyle: TextStyle(
-            color: textBarColor,
+            color: AppColors.textBarColor,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
           actionsIconTheme: IconThemeData(
-            color: whiteColor,
+            color: AppColors.whiteColor,
           ),
           iconTheme: IconThemeData(
-            color: textBarColor,
+            color: AppColors.textBarColor,
           )),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: textBarColor,
+          backgroundColor: AppColors.textBarColor,
           textStyle: const TextStyle(
             color: Colors.white,
             // fontSize: MediaQuery.of(Get.context!).size.width > 720
@@ -36,37 +37,37 @@ class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(
-            color: greyColor, fontSize: 14, fontWeight: FontWeight.w200),
-        errorStyle: const TextStyle(color: redColor),
-        fillColor: whiteColor,
+        hintStyle:  TextStyle(
+            color: AppColors.greyColor, fontSize: 14, fontWeight: FontWeight.w200),
+        errorStyle:  TextStyle(color: AppColors.redColor),
+        fillColor: AppColors.whiteColor,
         filled: true,
         isDense: true,
 
         contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: textBarColor,
+          borderSide: BorderSide(
+            color: AppColors.textBarColor,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: textBarColor,
+          borderSide: BorderSide(
+            color: AppColors.textBarColor,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: textBarColor,
+          borderSide: BorderSide(
+            color: AppColors.textBarColor,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: redColor,
+          borderSide: BorderSide(
+            color: AppColors.redColor,
             width: 2,
           ),
         ),

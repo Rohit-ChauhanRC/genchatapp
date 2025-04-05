@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 

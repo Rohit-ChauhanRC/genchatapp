@@ -6,7 +6,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 
@@ -45,34 +45,32 @@ class ChatsView extends GetView<ChatsController> {
               ),
               offset: const Offset(0, 40),
               color: whiteColor,
-              onSelected: (value) {},
+              onSelected: (value) {
+                if (value == settings) {
+                  Get.back();
+                  Get.toNamed(Routes.SETTINGS);
+                } else if (value == newGroup) {
+                  Get.toNamed(Routes.SELECT_CONTACTS);
+                }
+              },
               itemBuilder: (context) => [
                     PopupMenuItem(
-                        value: settings,
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            newGroup,
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: blackColor),
-                          ),
+                        value: newGroup,
+                        child: const Text(
+                          newGroup,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: blackColor),
                         )),
                     PopupMenuItem(
                         value: settings,
-                        child: GestureDetector(
-                          onTap: () {
-                            Get.back();
-                            Get.toNamed(Routes.SETTINGS);
-                          },
-                          child: const Text(
-                            settings,
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: blackColor),
-                          ),
+                        child: const Text(
+                          settings,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: blackColor),
                         )),
                     // PopupMenuItem(
                     //     value: logout,

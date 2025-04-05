@@ -19,6 +19,8 @@ void main() async {
   runApp(const App());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -26,6 +28,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       title: appName,
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,

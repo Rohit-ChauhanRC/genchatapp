@@ -24,13 +24,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     controllerInit();
-    print(sharedPreferenceService.getUserDetails()?.name);
-    print(connectivityService.isConnected.value);
+    // print(sharedPreferenceService.getUserDetails()?.name);
+    // print(connectivityService.isConnected.value);
     SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
       if (connectivityService.isConnected.value) {
-        await setUserOnline();
+        // await setUserOnline();
       } else {
-        await setUserOffline();
+        // await setUserOffline();
       }
     });
     WidgetsBinding.instance.addObserver(this);
@@ -53,7 +53,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         if (connectivityService.isConnected.value) {
-          await setUserOnline();
+          // await setUserOnline();
         }
 
         break;
@@ -61,7 +61,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
         if (!connectivityService.isConnected.value) {
-          await setUserOffline();
+          // await setUserOffline();
         }
 
         break;
@@ -82,13 +82,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> setUserOffline() async {
-    final userRef = firebaseController.firestore
-        .collection('users')
-        .doc(sharedPreferenceService.getUserDetails()?.uid);
-    await userRef.update({
-      'isOnline': false,
-      'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
-    });
+    // final userRef = firebaseController.firestore
+    //     .collection('users')
+    //     .doc(sharedPreferenceService.getUserDetails()?.uid);
+    // await userRef.update({
+    //   'isOnline': false,
+    //   'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
+    // });
   }
 
   void controllerInit() {

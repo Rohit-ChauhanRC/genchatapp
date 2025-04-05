@@ -2,13 +2,18 @@ import 'dart:convert';
 
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_number_response_model.dart';
+import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
+import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import '../../../utils/utils.dart';
 
 class VerifyPhoneNumberController extends GetxController {
 
+  final AuthRepository authRepository;
+
+  VerifyPhoneNumberController({required this.authRepository});
 
   GlobalKey<FormState>? loginFormKey = GlobalKey<FormState>();
 
@@ -20,7 +25,7 @@ class VerifyPhoneNumberController extends GetxController {
   Country? get country => _country.value;
   set country(Country? c) => _country.value = c;
 
-  final RxBool _circularProgress = true.obs;
+  final RxBool _circularProgress = false.obs;
   bool get circularProgress => _circularProgress.value;
   set circularProgress(bool v) => _circularProgress.value = v;
 
@@ -37,8 +42,8 @@ class VerifyPhoneNumberController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    _country.close();
-    _mobileNumber.close();
+    // _country.close();
+    // _mobileNumber.close();
   }
 
   void pickCountry() {
@@ -50,47 +55,53 @@ class VerifyPhoneNumberController extends GetxController {
   }
 
   void sendPhoneNumber() async {
-    String phoneNumber = mobileNumber.trim();
-    if (country != null && phoneNumber.isNotEmpty) {
-      // Get.toNamed(Routes.OTP);
-      await login();
-    } else {
-      showSnackBar(context: Get.context!, content: 'Fill out all the fields');
+    print("sendPhoneNumber clicked"); // Debugging
+    try {
+      String phoneNumber = mobileNumber.trim();
+      if (country != null && phoneNumber.isNotEmpty) {
+        await login();
+      } else {
+        showSnackBar(context: Get.context!, content: 'Please select a country and enter a valid phone number.');
+      }
+    } catch (e) {
+      print("Error in sendPhoneNumber: $e");
+      showSnackBar(context: Get.context!, content: 'Something went wrong: $e');
     }
   }
 
   Future login() async {
     if (!loginFormKey!.currentState!.validate()) {
+      print("Form validation failed");
       return null;
     }
     // Get.toNamed(Routes.OTP,arguments: mobileNumber);
+
+    print("Form validation passed");
     await loginCred(mobileNumber, false);
   }
 
-  loginCred(String? resendOtpMobNum, bool isFromResend) async {
-    String? mobileNum = resendOtpMobNum ?? mobileNumber;
-    circularProgress = false;
-    try {
-      var res = await http.post(
-          Uri.parse("http://app.maklife.in:9001/api/user"),
-          body: {"MobileNo": mobileNum});
-      final a = jsonDecode(res.body);
+  Future<void> loginCred(String resendOtpMobNum, bool isFromResend) async{
+    try{
+      String? mobileNum = resendOtpMobNum ?? mobileNumber;
+      String? countryCode = country?.phoneCode;
+      circularProgress = true;
+      final response = await authRepository.sendOtp(mobileNum, countryCode ?? "");
+      if(response != null && response.statusCode == 200){
+        final getVerifyNumberResponse = VerifyNumberResponseModel.fromJson(response.data);
+        if(getVerifyNumberResponse.status == true){
+          if (!isFromResend) {
+            Get.toNamed(Routes.OTP, arguments: [mobileNumber,countryCode]);
+          }
 
-      if (res.statusCode == 200 && a == "OTP Sent !") {
-        isFromResend ? null:
-        Get.toNamed(
-          Routes.OTP,
-          arguments: mobileNumber,
-        );
-      } else {
-        //
-        showSnackBar(context: Get.context!, content: json.decode(res.body));
+        }else{
+          showAlertMessage(getVerifyNumberResponse.message.toString());
+        }
       }
-      circularProgress = true;
     } catch (e) {
-      circularProgress = true;
-      print("API error:-----> $e");
-      showSnackBar(context: Get.context!, content: e.toString());
+      print("Error in loginCred: $e");
+      showAlertMessage("Something went wrong: $e");
+    } finally{
+      circularProgress = false;
     }
   }
 }

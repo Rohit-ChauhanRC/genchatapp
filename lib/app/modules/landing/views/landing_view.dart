@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../../../constants/colors.dart';
 import '../../../constants/constants.dart';
-import '../../../widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import '../controllers/landing_controller.dart';
 
 class LandingView extends GetView<LandingController> {

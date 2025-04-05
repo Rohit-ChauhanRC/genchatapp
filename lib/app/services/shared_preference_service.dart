@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -72,6 +74,21 @@ class SharedPreferenceService {
       print("UserExits:--------> ${getString(userDetail)}");
       UserModel user = userModelFromJson(getString(userDetail) ?? "");
       print("UserDetails:------> ${json.decode(getString(userDetail) ?? "")}");
+      return user;
+    }
+  }
+
+  UserData? getUserData() {
+    if (getString(UserDefaultsKeys.userDetail) == null || getString(UserDefaultsKeys.userDetail) == "") {
+      print("UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
+      db.closeDb();
+      clear();
+      Get.offAllNamed(Routes.LANDING);
+      return null;
+    } else {
+      // print("UserExits:--------> ${getString(UserDefaultsKeys.userDetail)}");
+      UserData user = userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
+      // print("UserDetails:------> ${json.decode(getString(UserDefaultsKeys.userDetail) ?? "")}");
       return user;
     }
   }

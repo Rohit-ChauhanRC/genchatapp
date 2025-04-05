@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 
 import '../../../constants/constants.dart';
-import '../../../widgets/gradientContainer.dart';
 import '../controllers/verify_phone_number_controller.dart';
 
 class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
@@ -95,9 +95,13 @@ class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
                               color: greyColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w200)),
-                      validator: (value) => value!.length != 10
-                          ? "Please enter valid mobile number!"
-                          : null,
+                      validator: (value) {
+                        String phone = value!.trim();
+                        if (phone.isEmpty || phone.length < 10) {
+                          return "Please enter a valid mobile number!";
+                        }
+                        return null;
+                      },
                       keyboardType: const TextInputType.numberWithOptions(
                           signed: false, decimal: false),
                     ),
@@ -105,7 +109,7 @@ class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
                   const SizedBox(
                     height: 26,
                   ),
-                  Obx(() => controller.circularProgress
+                  Obx(() => !controller.circularProgress
                       ? SizedBox(
                           width: Get.width * 0.8,
                           child: ElevatedButton(

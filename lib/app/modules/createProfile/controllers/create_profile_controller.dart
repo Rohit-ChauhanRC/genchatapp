@@ -4,14 +4,16 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
-import 'package:genchatapp/app/constants/constants.dart';
-import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../common/user_defaults/user_defaults_keys.dart';
+import '../../../data/models/new_models/response_model/verify_otp_response_model.dart';
 import '../../../routes/app_pages.dart';
+import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +23,9 @@ import '../../chats/controllers/chats_controller.dart';
 class CreateProfileController extends GetxController {
   //
 
+  final ProfileRepository profileRepository;
+
+  CreateProfileController({required this.profileRepository});
   final FirebaseController firebaseController =
       Get.put<FirebaseController>(FirebaseController());
 
@@ -46,13 +51,13 @@ class CreateProfileController extends GetxController {
   String get email => _email.value;
   set email(String email) => _email.value = email;
 
-  final RxBool _circularProgress = true.obs;
+  final RxBool _circularProgress = false.obs;
   bool get circularProgress => _circularProgress.value;
   set circularProgress(bool v) => _circularProgress.value = v;
 
   bool isFromInsideApp = false;
 
-  StreamSubscription<UserModel>? _userDataSubscription;
+  // StreamSubscription<UserModel>? _userDataSubscription;
   final TextEditingController profileNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
@@ -157,90 +162,108 @@ class CreateProfileController extends GetxController {
   }
 
   void getUserData() async {
-    var uid = sharedPreferenceService.getString(userUId);
-    if (uid != null) {
-      _userDataSubscription =
-          firebaseController.getUserData(uid).listen((user) {
-        profileName = user.name ?? '';
-        email = user.email ?? '';
+    UserData? userData = sharedPreferenceService.getUserData();
 
-        profileNameController.text = profileName;
-        emailController.text = email;
+    print("📢 Fetched User Data: $userData"); // Debugging Log
 
-        if (user.profilePic != null) {
-          photoUrl = user.profilePic ?? '';
+    profileName = userData?.name ?? "";
+    email = userData?.email ?? '';
+
+    profileNameController.text = profileName;
+    emailController.text = email;
+
+    photoUrl = userData?.displayPictureUrl ?? '';
+
+    print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
+  }
+
+  Future<void> updateProfile() async {
+    if (!createProfileKey!.currentState!.validate()) return;
+
+    circularProgress = true;
+    update();
+
+    try {
+      String? uploadedImageUrl;
+      File? processedImage;
+
+      /// ✅ Step 1: Upload Image if Changed
+      if (image != null) {
+        processedImage = image!;
+        final uploadResponse = await profileRepository.uploadProfilePicture(processedImage);
+
+        if (uploadResponse?.statusCode == 200) {
+          final result = VerifyOtpResponseModel.fromJson(uploadResponse!.data);
+          if (result.status == true) {
+            final user = result.data?.userData;
+            uploadedImageUrl = user?.displayPictureUrl;
+            print("✅ Profile picture uploaded: $uploadedImageUrl");
+
+            if (user != null) {
+              await sharedPreferenceService.setString(UserDefaultsKeys.userDetail, userDataToJson(user));
+            }
+          }
+        } else {
+          showAlertMessage('Failed to upload profile picture.');
+          return;
         }
-        print("Profile Name: $profileName, Email: $email");
-      });
-    }
-  }
-
-  void createProfile() async {
-    String profileNam = profileNameController.text.trim();
-    String emailId = emailController.text.trim();
-    if (profileNam.isNotEmpty && emailId.isNotEmpty) {
-      await validateProfileData();
-    } else {
-      showSnackBar(context: Get.context!, content: 'Fill out all the fields');
-    }
-  }
-
-  Future validateProfileData() async {
-    if (!createProfileKey!.currentState!.validate()) {
-      return null;
-    }
-    // Get.toNamed(Routes.HOME);
-    storeUserData();
-  }
-
-  void storeUserData() async {
-    circularProgress = false;
-    var uid = sharedPreferenceService.getString(userUId);
-    var mob = sharedPreferenceService.getString(userMob);
-
-    // String photoUrl =
-    //     'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
-    // String photoUrl = "";
-    // if (image != null) {
-
-    if (image != null) {
-      photoUrl = await firebaseController.storeFileToFirebase(
-        file: image!,
-        path: "profilePic/$uid",
-      );
-    }
-
-    var user = UserModel(
-      name: profileNameController.text.trim(),
-      uid: uid!,
-      profilePic: photoUrl,
-      isOnline: true,
-      phoneNumber: mob!,
-      groupId: [],
-      email: emailController.text.trim(),
-      fcmToken: "",
-      lastSeen: DateTime.now().microsecondsSinceEpoch.toString(),
-    );
-
-    // createProfile
-
-    firebaseController.setUserData(uid: uid, user: user).then((onValu) {
-      sharedPreferenceService.setBool(createUserProfile, true);
-      sharedPreferenceService.setBool(isNumVerify, false);
-      sharedPreferenceService.setString(userDetail, userModelToJson(user));
-      if (isFromInsideApp) {
-        SettingsController settingsController = Get.find<SettingsController>();
-        settingsController.isRefreshed();
-        Get.until((route) => route.settings.name == Routes.SETTINGS);
-      } else {
-        Get.offNamed(Routes.HOME);
       }
-      circularProgress = true;
-    }).catchError((error) {
-      circularProgress = true;
-      showSnackBar(context: Get.context!, content: 'Failed to update profile');
-      print('Error updating user: $error');
-    });
-    // }
+
+      /// ✅ Step 2: Check if Name/Email Changed
+      final storedUserData = sharedPreferenceService.getUserData();
+      final nameChanged = profileNameController.text.trim() != storedUserData?.name;
+      final emailChanged = emailController.text.trim() != storedUserData?.email;
+
+      if (!nameChanged && !emailChanged) {
+        navigateBack();
+        return;
+      }
+
+      /// ✅ Step 3: Update User Details
+      final updateResponse = await profileRepository.updateUserDetails(
+        name: profileNameController.text.trim(),
+        email: emailController.text.trim(),
+      );
+
+      if (updateResponse?.statusCode == 200) {
+        final result = VerifyOtpResponseModel.fromJson(updateResponse!.data);
+        if (result.status == true) {
+          final user = result.data?.userData;
+          uploadedImageUrl = user?.displayPictureUrl;
+          print("✅ Profile updated successfully: $uploadedImageUrl");
+
+          if (user != null) {
+            await sharedPreferenceService.setString(UserDefaultsKeys.userDetail, userDataToJson(user));
+          }
+
+          showAlertMessage('Profile updated successfully!');
+          navigateBack();
+        } else {
+          showAlertMessage('Failed to update profile.');
+        }
+      } else {
+        showAlertMessage('Failed to update profile.');
+      }
+    } catch (e) {
+      print("🔥 Error updating profile: $e");
+      showAlertMessage('Something went wrong. Please try again.');
+    } finally {
+      circularProgress = false;
+      update(); // if you're using GetBuilder or Obx
+    }
+  }
+
+
+  /// ✅ Navigate Back Based on Where the User Came From
+  void navigateBack() {
+    if (isFromInsideApp) {
+      SettingsController settingsController = Get.find<SettingsController>();
+      settingsController.isRefreshed();
+      Get.until((route) => route.settings.name == Routes.SETTINGS);
+    } else {
+      sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
+      sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
+      Get.offNamed(Routes.HOME);
+    }
   }
 }

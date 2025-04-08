@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import '../config/services/connectivity_service.dart';
 import '../config/services/firebase_controller.dart';
 import '../config/services/folder_creation.dart';
+import '../config/services/socket_service.dart';
 import '../data/repositories/select_contacts/select_contact_repository.dart';
 import '../modules/otp/controllers/otp_controller.dart';
 import '../modules/select_contacts/controllers/select_contacts_controller.dart';
@@ -21,6 +22,8 @@ init() async {
   Get.lazyPut(() => FolderCreation());
   Get.lazyPut(() => FirebaseController());
   Get.lazyPut(() => DataBaseService());
+  Get.lazyPut<SocketService>(() => SocketService());
+
   // Initialize SharedPreferenceService
   final sharedPreferenceService = SharedPreferenceService();
   await sharedPreferenceService.init();

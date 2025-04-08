@@ -104,8 +104,9 @@ class SelectContactsView extends GetView<SelectContactsController> {
                         var contact = filteredContacts[i];
                         return InkWell(
                           onTap: () {
-                            Get.toNamed(Routes.SINGLE_CHAT,
-                                arguments: [contact.userId, contact.name]);
+                            // Get.toNamed(Routes.SINGLE_CHAT,
+                            //     arguments: [contact.userId, contact.name]);
+                            controller.selectContact(contact);
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),

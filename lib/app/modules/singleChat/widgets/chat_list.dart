@@ -15,11 +15,11 @@ class ChatList extends StatelessWidget {
   const ChatList({
     super.key,
     required this.singleChatController,
-    required this.firebaseController,
+    // required this.firebaseController,
   });
 
   final SingleChatController singleChatController;
-  final FirebaseController firebaseController;
+  // final FirebaseController firebaseController;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,7 @@ class ChatList extends StatelessWidget {
                 bool isMsgSelected = singleChatController.selectedMessages.contains(messages);
                 return Container(
                   color: isMsgSelected ? mySideBgColor.withOpacity(0.3) : Colors.transparent,
-                  child: messages.senderId == singleChatController.senderuserData.uid ?
+                  child: messages.senderId == singleChatController.senderuserData!.userId.toString() ?
                   MyMessageCard(
                     message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
                         ?messages.text.toString()

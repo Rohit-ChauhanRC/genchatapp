@@ -1,16 +1,13 @@
-import 'dart:io';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/routes/app_pages.dart';
-
 import 'package:get/get.dart';
-
 import '../../../constants/colors.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import '../controllers/select_contacts_controller.dart';
 
 class SelectContactsView extends GetView<SelectContactsController> {
   const SelectContactsView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,16 +37,8 @@ class SelectContactsView extends GetView<SelectContactsController> {
           // trailing: ,
         ),
         actions: [
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: const Icon(
-          //     Icons.search,
-          //   ),
-          // ),
           IconButton(
             onPressed: () async{
-              // controller.isContactRefreshed = false;
-              // controller.getContacts();
              await controller.refreshSync();
             },
             icon: const Icon(
@@ -63,8 +52,6 @@ class SelectContactsView extends GetView<SelectContactsController> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           child: Column(
-            // mainAxisAlignment: MainAxisAlignment.start,
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Search Input
               TextFormField(
@@ -104,27 +91,38 @@ class SelectContactsView extends GetView<SelectContactsController> {
                         var contact = filteredContacts[i];
                         return InkWell(
                           onTap: () {
-                            // Get.toNamed(Routes.SINGLE_CHAT,
-                            //     arguments: [contact.userId, contact.name]);
                             controller.selectContact(contact);
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ListTile(
                               title: Text(
-                                contact.name ?? "No Name",
+                                contact.localName ?? "No Name",
                                 style: const TextStyle(
                                   fontSize: 18,
                                 ),
                               ),
                               leading: contact.displayPictureUrl == null
                                   ? const CircleAvatar(
-                                      child: Icon(Icons.person),
-                                    )
-                                  : CircleAvatar(
-                                      backgroundImage: NetworkImage(contact.displayPictureUrl!),
-                                      radius: 30,
-                                    ),
+                                child: Icon(Icons.person),
+                                radius: 30,
+                              )
+                                  : CachedNetworkImage(
+                                imageUrl: contact.displayPictureUrl!,
+                                imageBuilder: (context, imageProvider) => CircleAvatar(
+                                  backgroundImage: imageProvider,
+                                  radius: 30,
+                                ),
+                                placeholder: (context, url) => const CircleAvatar(
+                                  radius: 30,
+                                  child: CircularProgressIndicator(),
+                                ),
+                                errorWidget: (context, url, error) => const CircleAvatar(
+                                  radius: 30,
+                                  child: Icon(Icons.error),
+                                ),
+                              ),
+
                               subtitle: Text(
                                 contact.phoneNumber ?? '',
                                 style: const TextStyle(

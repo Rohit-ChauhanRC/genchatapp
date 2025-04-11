@@ -41,6 +41,7 @@ class UserList {
   int? countryCode;
   String? phoneNumber;
   String? name;
+  String? localName;
   String? email;
   String? userDescription;
   int? isOnline;
@@ -53,6 +54,7 @@ class UserList {
     this.countryCode,
     this.phoneNumber,
     this.name,
+    this.localName,
     this.email,
     this.userDescription,
     this.isOnline,
@@ -66,6 +68,7 @@ class UserList {
     countryCode: json["countryCode"],
     phoneNumber: json["phoneNumber"],
     name: json["name"],
+    localName: json["localName"],
     email: json["email"],
     userDescription: json["userDescription"],
     isOnline: json["isOnline"],
@@ -79,6 +82,7 @@ class UserList {
     "countryCode": countryCode,
     "phoneNumber": phoneNumber,
     "name": name,
+    "localName": localName,
     "email": email,
     "userDescription": userDescription,
     "isOnline": isOnline,
@@ -87,11 +91,44 @@ class UserList {
     "isBlocked": isBlocked,
   };
 
+  factory UserList.fromMap(Map<String, dynamic> map) {
+    return UserList(
+      userId: map["userId"],
+      countryCode: map["countryCode"],
+      phoneNumber: map["phoneNumber"],
+      name: map["name"],
+      localName: map["localName"],
+      email: map["email"],
+      userDescription: map["userDescription"],
+      isOnline: map["isOnline"],
+      displayPicture: map["displayPicture"],
+      displayPictureUrl: map["displayPictureUrl"],
+      isBlocked: map["isBlocked"],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "userId": userId,
+      "countryCode": countryCode,
+      "phoneNumber": phoneNumber,
+      "name": name,
+      "localName": localName,
+      "email": email,
+      "userDescription": userDescription,
+      "isOnline": isOnline,
+      "displayPicture": displayPicture,
+      "displayPictureUrl": displayPictureUrl,
+      "isBlocked": isBlocked,
+    };
+  }
+
   UserList copyWith({
     int? userId,
     int? countryCode,
     String? phoneNumber,
     String? name,
+    String? localName,
     String? email,
     String? userDescription,
     int? isOnline,
@@ -104,6 +141,7 @@ class UserList {
       countryCode: countryCode ?? this.countryCode,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       name: name ?? this.name,
+      localName: localName ?? this.localName,
       email: email ?? this.email,
       userDescription: userDescription ?? this.userDescription,
       isOnline: isOnline ?? this.isOnline,

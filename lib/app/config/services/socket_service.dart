@@ -45,6 +45,11 @@ class SocketService extends GetxService {
       // TODO: Update message status in DB
     });
 
+    _socket.on('group-message-acknowledgement', (data) {
+      print('✅ Group Message Ack: $data');
+      // TODO: Update message status in DB
+    });
+
     _socket.on('custom-error', (data) {
       print('🚫 Custom Error: $data');
     });

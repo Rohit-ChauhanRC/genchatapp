@@ -2,15 +2,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
+import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
 
+import '../../../config/services/connectivity_service.dart';
+import '../../../data/local_database/contacts_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/repositories/select_contacts/select_contact_repository.dart';
 
 
 class SelectContactsController extends GetxController {
   final IContactRepository contactRepository = Get.find<IContactRepository>();
+  final ContactsTable contactsTable = ContactsTable();
+  final ConnectivityService connectivityService = Get.find<ConnectivityService>();
+
+
 
 
   final RxBool _isContactRefreshed = false.obs;
@@ -28,7 +35,7 @@ class SelectContactsController extends GetxController {
   List<UserList> get filteredContacts {
     if (searchQuery.isEmpty) return contacts;
     return contacts.where((contact) {
-      final name = contact.name?.toLowerCase() ?? '';
+      final name = contact.localName?.toLowerCase() ?? '';
       final number = contact.phoneNumber ?? '';
       return name.contains(searchQuery.toLowerCase()) || number.contains(searchQuery);
     }).toList();
@@ -37,10 +44,27 @@ class SelectContactsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    refreshSync();
+    // contactsTable.deleteTable();
+    loadInitialContacts();
+  }
+
+  Future<void> loadInitialContacts() async {
+    final localContacts = await contactsTable.fetchAll();
+    if (localContacts.isNotEmpty) {
+      contacts = localContacts;
+      _isContactRefreshed.value = true;
+    } else {
+      await refreshSync(); // First-time fetch from API
+    }
   }
 
   Future<void> refreshSync() async {
+
+    if (!connectivityService.isConnected.value) {
+     showAlertMessage("No Internet Connection!\nPlease check your connection and try again.");
+      return;
+    }
+
     _isContactRefreshed.value = false;
     await syncContactsWithServer();
     _isContactRefreshed.value = true;
@@ -51,42 +75,43 @@ class SelectContactsController extends GetxController {
       if (await FlutterContacts.requestPermission()) {
         final phoneContacts = await FlutterContacts.getContacts(withProperties: true);
 
-        // Create a map of phoneNumber => displayName from local contacts
         final Map<String, String> localContactMap = {};
         for (var contact in phoneContacts) {
           if (contact.phones.isNotEmpty) {
             final rawNumber = contact.phones.first.number;
-            final sanitizedNumber = rawNumber
+            final sanitized = rawNumber
                 .replaceAll(RegExp(r'[\s\-\(\)]'), '')
-                .replaceAll('+91', ''); // Normalize
-            localContactMap[sanitizedNumber] = contact.displayName;
+                .replaceAll(RegExp(r'^\+91'), '')
+                .replaceAll(RegExp(r'^0'), '');
+            localContactMap[sanitized] = contact.displayName;
           }
         }
 
         final phoneNumbers = localContactMap.keys.toList();
-
-        // Fetch registered users from API
         final serverUsers = await contactRepository.fetchAppUsersFromContacts(phoneNumbers);
 
-        // Assign local name to each registered user
-        final List<UserList> enrichedUsers = serverUsers.map((user) {
-          final number = user.phoneNumber?.replaceAll('+91', '') ?? '';
-          final localName = localContactMap[number] ?? user.name ?? 'Unknown';
-          return user.copyWith(name: localName);
+        final enrichedUsers = serverUsers.map((user) {
+          final userNumber = user.phoneNumber
+              ?.replaceAll(RegExp(r'[\s\-\(\)]'), '')
+              .replaceAll(RegExp(r'^\+91'), '')
+              .replaceAll(RegExp(r'^0'), '');
+
+          final localName = localContactMap[userNumber ?? ''] ?? ''; // leave empty if not found
+
+          return user.copyWith(localName: localName); // only assign localName
         }).toList();
 
+        await contactsTable.createBulk(enrichedUsers);
         contacts = enrichedUsers;
       }
     } catch (e) {
-      debugPrint('Error fetching contacts: $e');
+      debugPrint('Error syncing contacts: $e');
     }
   }
 
   void selectContact(UserList user) {
-    // Navigate to chat or do any action with selected contact
-    Get.toNamed(Routes.SINGLE_CHAT, arguments: user); // Adjust route as needed
+    Get.toNamed(Routes.SINGLE_CHAT, arguments: user);
   }
-
 
 }
 

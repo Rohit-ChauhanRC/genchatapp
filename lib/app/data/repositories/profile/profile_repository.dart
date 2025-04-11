@@ -35,6 +35,8 @@ class ProfileRepository {
     String fileName = imageFile.path.split('/').last;
     String mimeType = getImageMimeType(imageFile);
 
+    print("FileName: $fileName\nFileType: $mimeType\nImagePath: ${imageFile.path} ");
+
     FormData buildFormData() {
       return FormData.fromMap({
         "display-picture": MultipartFile.fromFileSync(

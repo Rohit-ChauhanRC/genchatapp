@@ -2,12 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
+import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/contact_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -16,6 +18,7 @@ import 'package:get/get.dart';
 class ChatsController extends GetxController {
   //
 
+  final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final firebaseController = Get.find<FirebaseController>();
 
@@ -29,21 +32,22 @@ class ChatsController extends GetxController {
 
   final ContactsTable contactsTable = ContactsTable();
 
-  final RxList<ContactModel> _contacts = <ContactModel>[].obs;
-  List<ContactModel> get contacts => _contacts;
-  set contacts(List<ContactModel> cts) => _contacts.assignAll(cts);
+  final RxList<UserList> _contacts = <UserList>[].obs;
+  List<UserList> get contacts => _contacts;
+  set contacts(List<UserList> cts) => _contacts.assignAll(cts);
 
   @override
   void onInit() {
-    loadLocalContacts();
-    bindChatUsersStream();
+    // loadLocalContacts();
+    // bindChatUsersStream();
     super.onInit();
     // bindStream();
+    connectSocket();
   }
 
   @override
   void onReady() {
-    bindChatUsersStream();
+    // bindChatUsersStream();
 
     super.onReady();
   }
@@ -51,6 +55,11 @@ class ChatsController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+  }
+
+  void connectSocket() async{
+    String? userId = sharedPreferenceService.getUserData()?.userId.toString();
+    await socketService.initSocket(userId!);
   }
 
   getContactsFromDB() async {

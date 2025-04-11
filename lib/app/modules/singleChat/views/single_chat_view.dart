@@ -22,9 +22,9 @@ class SingleChatView extends GetView<SingleChatController> {
         title: GetX<SingleChatController>(builder: (ctc) {
           return Row(
             children: [
-              ctc.receiveruserDataModel.value.profilePic != null
+              ctc.receiverUserData?.displayPictureUrl != null
                   ? CachedNetworkImage(
-                      imageUrl: ctc.receiveruserDataModel.value.profilePic!,
+                      imageUrl: ctc.receiverUserData?.displayPictureUrl ?? "",
                       imageBuilder: (context, image) {
                         return CircleAvatar(
                             backgroundColor: greyColor.withOpacity(0.4),
@@ -47,7 +47,7 @@ class SingleChatView extends GetView<SingleChatController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      ctc.fullname,
+                      '${ctc.receiverUserData?.localName}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,
@@ -56,9 +56,11 @@ class SingleChatView extends GetView<SingleChatController> {
                       ),
                     ),
                     Text(
-                      ctc.receiveruserDataModel.value.isOnline == true
+                      ctc.receiverUserData?.isOnline == 1
                           ? "Online"
-                          : "last seen ${lastSeenFormatted(ctc.receiveruserDataModel.value.lastSeen ?? "").toLowerCase()}", maxLines: 2,
+                          : "last seen "
+                          // "${lastSeenFormatted(ctc.receiverUserData. ?? "").toLowerCase()}"
+                          "", maxLines: 2,
                       style: const TextStyle(
                         fontWeight: FontWeight.w200,
                         color: whiteColor,
@@ -133,7 +135,7 @@ class SingleChatView extends GetView<SingleChatController> {
           Expanded(
             child: ChatList(
               singleChatController: controller,
-              firebaseController: controller.firebaseController,
+              // firebaseController: controller.firebaseController,
             ),
           ),
           BottomChatField(
@@ -150,7 +152,7 @@ class SingleChatView extends GetView<SingleChatController> {
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {
     final isOnlySenderMessages = controller.selectedMessages
-        .every((msg) => msg.senderId == controller.senderuserData.uid);
+        .every((msg) => msg.senderId == controller.senderuserData!.userId.toString());
 
     showModalBottomSheet(
       context: context,
@@ -163,7 +165,7 @@ class SingleChatView extends GetView<SingleChatController> {
               title: const Text("Delete for Me"),
               onTap: () {
                 Navigator.pop(context);
-                controller.deleteMessages(deleteForEveryone: false);
+                // controller.deleteMessages(deleteForEveryone: false);
               },
             ),
             if (isOnlySenderMessages)
@@ -172,7 +174,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 title: const Text("Delete for Everyone"),
                 onTap: () {
                   Navigator.pop(context);
-                  controller.deleteMessages(deleteForEveryone: true);
+                  // controller.deleteMessages(deleteForEveryone: true);
                 },
               ),
           ],

@@ -19,12 +19,13 @@ class SingleChatView extends GetView<SingleChatController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: GetX<SingleChatController>(builder: (ctc) {
+        title: Obx(()  {
+          final user = controller.receiverUserData;
           return Row(
             children: [
-              ctc.receiverUserData?.displayPictureUrl != null
+              user?.displayPictureUrl != null
                   ? CachedNetworkImage(
-                      imageUrl: ctc.receiverUserData?.displayPictureUrl ?? "",
+                      imageUrl: user?.displayPictureUrl ?? "",
                       imageBuilder: (context, image) {
                         return CircleAvatar(
                             backgroundColor: greyColor.withOpacity(0.4),
@@ -47,7 +48,7 @@ class SingleChatView extends GetView<SingleChatController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${ctc.receiverUserData?.localName}',
+                      '${user?.localName}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,
@@ -56,7 +57,7 @@ class SingleChatView extends GetView<SingleChatController> {
                       ),
                     ),
                     Text(
-                      ctc.receiverUserData?.isOnline == 1
+                      user?.isOnline == 1
                           ? "Online"
                           : "last seen "
                           // "${lastSeenFormatted(ctc.receiverUserData. ?? "").toLowerCase()}"

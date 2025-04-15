@@ -53,6 +53,33 @@ class ContactsTable {
     return result.map((e) => UserList.fromMap(e)).toList();
   }
 
+  Future<void> updateUserOnlineStatus(int userId, int isOnline) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'isOnline': isOnline},
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<UserList?> getUserById(int userId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'userId = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return UserList.fromMap(result.first);
+    } else {
+      return null;
+    }
+  }
+
+
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;
     await db.execute('DROP TABLE IF EXISTS $tableName');

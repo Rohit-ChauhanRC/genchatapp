@@ -19,6 +19,8 @@ import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../config/services/folder_creation.dart';
+import '../../../config/services/socket_service.dart';
+import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
 import '../../../utils/utils.dart';
 
@@ -29,6 +31,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   // final firebaseController = Get.put(FirebaseController());
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final FolderCreation folderCreation = Get.find<FolderCreation>();
+  final ContactsTable contactsTable = ContactsTable();
+  final socketService = Get.find<SocketService>();
 
   final TextEditingController messageController = TextEditingController();
 
@@ -78,9 +82,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   UserList? get senderuserData => _senderuserData.value;
   set senderuserData(UserList? userData) => _senderuserData.value = (userData);
 
-  final Rx<UserList?> _receiverUserData = UserList().obs;
+  final Rx<UserList?> _receiverUserData = Rx<UserList?>(null);
   UserList? get receiverUserData => _receiverUserData.value;
-  set receiverUserData(UserList? userData) => _receiverUserData.value = (userData);
+  set receiverUserData(UserList? userData) {
+    print("receiverUserData updated: ${userData?.isOnline}");
+    _receiverUserData.value = (userData);
+  }
 
   final RxString _id = "".obs;
   String get id => _id.value;
@@ -102,13 +109,19 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   late Stream<List<MessageModel>> messageStream;
   late StreamSubscription<List<MessageModel>> messageSubscription;
 
+  late StreamSubscription<UserList?> receiverUserSubscription;
+
   @override
-  void onInit() {
+  void onInit() async{
     super.onInit();
     // senderuserData sharedPreferenceService.getUserData() as UserList;
 
-    receiverUserData = Get.arguments;
-    print("reciverName:----> ${receiverUserData?.localName}");
+    UserList? user = Get.arguments;
+    var params = {"recipientId": user?.userId};
+    socketService.checkUserOnline(params);
+    receiverUserData = user;
+    bindReceiverUserStream(user?.userId ?? 0);
+    print("reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
     // fullname = Get.arguments[1];
     getRootFolder();
     _startLoadingTimer();
@@ -128,7 +141,24 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.onClose();
     selectedMessages.clear();
     // messageSubscription.cancel();
+    receiverUserSubscription.cancel();
   }
+
+  void bindReceiverUserStream(int userId) {
+    receiverUserSubscription = getReceiverStream(userId).listen((user) {
+      if (user != null) {
+        receiverUserData = user;
+      }
+    });
+  }
+
+  Stream<UserList?> getReceiverStream(int userId) async* {
+    yield* Stream.periodic(const Duration(seconds: 1), (_) async {
+      return await contactsTable.getUserById(userId);
+    }).asyncMap((event) async => await event);
+  }
+
+
 
   void _startLoadingTimer() {
     Timer(Duration(seconds: 3), () {

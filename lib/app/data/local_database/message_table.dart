@@ -8,30 +8,24 @@ class MessageTable {
   final tableName = messageTable;
   final deleteQueueTblName = deleteQueueTable;
 
+  // Create message table
   Future<void> createTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $tableName (
-        id INTEGER ,
-        messageId TEXT NOT NULL UNIQUE,
-        senderId TEXT NOT NULL,
-        receiverId TEXT NOT NULL,
-        text TEXT NOT NULL,
-        type TEXT NOT NULL,
-        timeSent INTEGER NOT NULL,
-        status TEXT NOT NULL,
-        repliedMessage TEXT NOT NULL,
-        repliedTo TEXT NOT NULL,
-        repliedMessageType TEXT NOT NULL,
-        syncStatus TEXT NOT NULL DEFAULT 'pending',
-        filePath TEXT NOT NULL,
-        fileUrl TEXT NOT NULL,
-        fileSize INTEGER NOT NULL,
-        thumbnailPath TEXT NOT NULL,
-        PRIMARY KEY ("id" AUTOINCREMENT)
+        messageId INTEGER,
+        clientSystemMessageId TEXT UNIQUE,
+        senderId INTEGER,
+        recipientId INTEGER,
+        message TEXT,
+        state INTEGER,
+        messageSentFromDeviceTime TEXT,
+        createdAt TEXT,
+        syncStatus TEXT
       )
     ''');
   }
 
+  // Create deletion queue table
   Future<void> createDeletionQueueTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $deleteQueueTblName (
@@ -41,8 +35,9 @@ class MessageTable {
     ''');
   }
 
+  // Insert or update a message based on messageId
   Future<void> insertOrUpdateMessage(MessageModel message) async {
-    final existingMessage = await getMessageById(message.messageId);
+    final existingMessage = await getMessageById(message.messageId.toString());
     if (existingMessage == null) {
       await insertMessage(message);
     } else {
@@ -50,22 +45,24 @@ class MessageTable {
     }
   }
 
+  // Fetch messages between sender & receiver
   Future<List<MessageModel>> fetchMessages({
-    required String senderId,
-    required String receiverId,
+    required int senderId,
+    required int receiverId,
   }) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
       where:
-      '(senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?)',
+      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, receiverId, receiverId, senderId],
-      orderBy: 'timeSent ASC',
+      orderBy: 'messageSentFromDeviceTime ASC',
     );
 
     return result.map((map) => MessageModel.fromMap(map)).toList();
   }
 
+  // Insert a new message
   Future<void> insertMessage(MessageModel message) async {
     final db = await DataBaseService().database;
 
@@ -76,6 +73,7 @@ class MessageTable {
     );
   }
 
+  // Update message by messageId
   Future<int> updateMessage(MessageModel message) async {
     final db = await DataBaseService().database;
     return await db.update(
@@ -86,7 +84,7 @@ class MessageTable {
     );
   }
 
-  /// Retrieve a message by its ID
+  // Get message by messageId
   Future<MessageModel?> getMessageById(String messageId) async {
     final db = await DataBaseService().database;
     final result = await db.query(
@@ -101,9 +99,8 @@ class MessageTable {
     return null;
   }
 
-
-
-Future<List<MessageModel>> fetchUnsentMessages() async {
+  // Fetch messages not yet synced
+  Future<List<MessageModel>> fetchUnsentMessages() async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -111,35 +108,31 @@ Future<List<MessageModel>> fetchUnsentMessages() async {
       whereArgs: ['pending'],
     );
 
-    // Debugging: Log the result
-    // print("Fetched unsent messages: $result");
-
-    return result.map((map) {
-      // Debugging: Log individual message maps
-      // print("Mapping unsent message: $map");
-      return MessageModel.fromMap(map);
-    }).toList();
+    return result.map((map) => MessageModel.fromMap(map)).toList();
   }
 
-  Future<void> updateSyncStatus(String messageId, String syncStatus, MessageStatus msgStatus) async {
+  // Update syncStatus and state by messageId
+  Future<void> updateSyncStatus(
+      String messageId, SyncStatus syncStatus, MessageState state) async {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'syncStatus': syncStatus,
-        'status': msgStatus.type
+      {
+        'syncStatus': syncStatus.value,
+        'state': state.value,
       },
       where: 'messageId = ?',
       whereArgs: [messageId],
     );
   }
 
-  //For delete msg------------>
-
+  // Delete a message
   Future<void> deleteMessage(String messageId) async {
     final db = await DataBaseService().database;
     await db.delete(tableName, where: 'messageId = ?', whereArgs: [messageId]);
   }
 
+  // Add to deletion queue
   Future<void> markForDeletion(String messageId) async {
     try {
       final db = await DataBaseService().database;
@@ -150,12 +143,14 @@ Future<List<MessageModel>> fetchUnsentMessages() async {
     }
   }
 
+  // Get all queued deletions
   Future<List<String>> getQueuedDeletions() async {
     final db = await DataBaseService().database;
     final result = await db.query(deleteQueueTblName);
     return result.map((row) => row['messageId'] as String).toList();
   }
 
+  // Remove from deletion queue
   Future<void> removeQueuedDeletion(String messageId) async {
     final db = await DataBaseService().database;
     await db.delete(deleteQueueTblName, where: 'messageId = ?', whereArgs: [messageId]);
@@ -168,7 +163,7 @@ Future<List<MessageModel>> fetchUnsentMessages() async {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'text': newText},
+      {'message': newText},
       where: 'messageId = ?',
       whereArgs: [messageId],
     );

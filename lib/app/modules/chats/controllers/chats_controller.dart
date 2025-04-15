@@ -59,7 +59,9 @@ class ChatsController extends GetxController {
 
   void connectSocket() async{
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    await socketService.initSocket(userId!);
+    if(!socketService.isConnected){
+      await socketService.initSocket(userId!);
+    }
   }
 
   getContactsFromDB() async {

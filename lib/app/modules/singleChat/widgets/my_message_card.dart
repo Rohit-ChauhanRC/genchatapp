@@ -9,11 +9,11 @@ class MyMessageCard extends StatelessWidget {
   final String message;
   final String date;
   final MessageEnum type;
-  final MessageStatus status;
+  final MessageState status;
   final void Function(DragUpdateDetails)? onLeftSwipe;
-  final RxString repliedText;
-  final String username;
-  final MessageEnum repliedMessageType;
+  // final RxString repliedText;
+  // final String username;
+  // final MessageEnum repliedMessageType;
 
   const MyMessageCard({
     super.key,
@@ -22,9 +22,9 @@ class MyMessageCard extends StatelessWidget {
     required this.type,
     required this.status,
     required this.onLeftSwipe,
-    required this.repliedText,
-    required this.username,
-    required this.repliedMessageType,
+    // required this.repliedText,
+    // required this.username,
+    // required this.repliedMessageType,
   });
 
   @override
@@ -46,8 +46,8 @@ class MyMessageCard extends StatelessWidget {
               elevation: 1,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
-                      topLeft:Radius.circular(8),
-                      topRight:  Radius.zero,
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.zero,
                       bottomLeft: Radius.circular(8),
                       bottomRight: Radius.circular(8))),
               color: mySideBgColor,
@@ -73,36 +73,36 @@ class MyMessageCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Reply Preview
-                        Obx(() => repliedText.value.isNotEmpty &&
-                                repliedText.value != "null"
-                            ? Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                                Text(
-                                  username, textAlign: TextAlign.start,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: blackColor),
-                                ),
-                                const SizedBox(height: 3),
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration:  BoxDecoration(
-                                    color: replyColor.withOpacity(0.67),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(
-                                        5,
-                                      ),
-                                    ),
-                                  ),
-                                  child: DisplayTextImageGIF(
-                                    message: repliedText.value,
-                                    type: repliedMessageType,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                              ])
-                            : const SizedBox()),
+                        // Obx(() => repliedText.value.isNotEmpty &&
+                        //         repliedText.value != "null"
+                        //     ? Column(
+                        //     mainAxisAlignment: MainAxisAlignment.start,
+                        //     children: [
+                        //         Text(
+                        //           username, textAlign: TextAlign.start,
+                        //           style: const TextStyle(
+                        //               fontWeight: FontWeight.bold,
+                        //               color: blackColor),
+                        //         ),
+                        //         const SizedBox(height: 3),
+                        //         Container(
+                        //           padding: const EdgeInsets.all(10),
+                        //           decoration:  BoxDecoration(
+                        //             color: replyColor.withOpacity(0.67),
+                        //             borderRadius: BorderRadius.all(
+                        //               Radius.circular(
+                        //                 5,
+                        //               ),
+                        //             ),
+                        //           ),
+                        //           child: DisplayTextImageGIF(
+                        //             message: repliedText.value,
+                        //             type: repliedMessageType,
+                        //           ),
+                        //         ),
+                        //         const SizedBox(height: 8),
+                        //       ])
+                        //     : const SizedBox()),
                         DisplayTextImageGIF(
                           message: message,
                           type: type,
@@ -133,32 +133,35 @@ class MyMessageCard extends StatelessWidget {
                         ),
                         // Status Icon
                         // Obx(
-                          // () => isSeen.value
-                          //     ? const Icon(
-                          //         Icons.done_all,
-                          //         size: 20,
-                          //         color: Colors.blue,
-                          //       )
-                          //     : 
-                          //     const Icon(
-                          //         Icons.done,
-                          //         size: 20,
-                          //         color: Colors.white60,
-                          //       // ),
+                        // () => isSeen.value
+                        //     ? const Icon(
+                        //         Icons.done_all,
+                        //         size: 20,
+                        //         color: Colors.blue,
+                        //       )
+                        //     :
+                        //     const Icon(
+                        //         Icons.done,
+                        //         size: 20,
+                        //         color: Colors.white60,
+                        //       // ),
                         // ),
-                        type != MessageEnum.deleted ?Icon(
-                            status == MessageStatus.uploading
-                                ? Icons.watch_later
-                                : status == MessageStatus.sent
-                                ? Icons.done
-                                : status == MessageStatus.delivered
-                                ? Icons.done_all
-                                :Icons.done_all,
-                            size: 20,
-                            color: status == MessageStatus.seen
-                                ? Colors.blue
-                                : greyMsgColor,
-                          ):const SizedBox.shrink(),
+                        // type != MessageState.deleted
+                        //     ?
+                        Icon(
+                          status == MessageState.unsent
+                              ? Icons.watch_later
+                              : status == MessageState.sent
+                                  ? Icons.done
+                                  : status == MessageState.delivered
+                                      ? Icons.done_all
+                                      : Icons.done_all,
+                          size: 20,
+                          color: status == MessageState.read
+                              ? Colors.blue
+                              : greyMsgColor,
+                        )
+                        // : const SizedBox.shrink(),
                       ],
                     ),
                   ),

@@ -1,27 +1,25 @@
-
-
 import '../../../../constants/message_enum.dart';
 
 class NewMessageModel {
   final int? messageId;
-  final String clientSystemMessageId;
-  final int senderId;
-  final int recipientId;
-  final String message;
-  final MessageState state;
-  final String messageSentFromDeviceTime;
-  final String createdAt;
-  final SyncStatus syncStatus;
+  final String? clientSystemMessageId;
+  final int? senderId;
+  final int? recipientId;
+  final String? message;
+  final MessageState? state;
+  final String? messageSentFromDeviceTime;
+  final String? createdAt;
+  final SyncStatus? syncStatus;
 
   NewMessageModel({
     this.messageId,
-    required this.clientSystemMessageId,
-    required this.senderId,
-    required this.recipientId,
-    required this.message,
+    this.clientSystemMessageId,
+    this.senderId,
+    this.recipientId,
+    this.message,
     this.state = MessageState.sent,
-    required this.messageSentFromDeviceTime,
-    required this.createdAt,
+    this.messageSentFromDeviceTime,
+    this.createdAt,
     this.syncStatus = SyncStatus.pending,
   });
 
@@ -46,10 +44,36 @@ class NewMessageModel {
       'senderId': senderId,
       'recipientId': recipientId,
       'message': message,
-      'state': state.value,
+      'state': state!.value,
       'messageSentFromDeviceTime': messageSentFromDeviceTime,
       'createdAt': createdAt,
-      'syncStatus': syncStatus.value,
+      'syncStatus': syncStatus!.value,
     };
+  }
+
+  NewMessageModel copyWith({
+    final int? messageId,
+    final String? clientSystemMessageId,
+    final int? senderId,
+    final int? recipientId,
+    final String? message,
+    final MessageState? state,
+    final String? messageSentFromDeviceTime,
+    final String? createdAt,
+    final SyncStatus? syncStatus,
+  }) {
+    return NewMessageModel(
+      clientSystemMessageId:
+          clientSystemMessageId ?? this.clientSystemMessageId,
+      message: message ?? this.message,
+      messageId: messageId ?? this.messageId,
+      senderId: senderId ?? this.senderId,
+      recipientId: recipientId ?? this.recipientId,
+      state: state ?? this.state,
+      messageSentFromDeviceTime:
+          messageSentFromDeviceTime ?? this.messageSentFromDeviceTime,
+      createdAt: createdAt ?? this.createdAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
   }
 }

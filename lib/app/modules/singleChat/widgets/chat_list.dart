@@ -24,9 +24,9 @@ class ChatList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if(singleChatController.isLoading){
-        return loadingWidget(text: "Fetching data please wait....");
-      }
+      // if (singleChatController.isLoading) {
+      //   return loadingWidget(text: "Fetching data please wait....");
+      // }
       if (singleChatController.messageList.isEmpty) {
         return Center(
           child: Text(
@@ -60,70 +60,68 @@ class ChatList extends StatelessWidget {
           // }
           //   singleChatController.isMsgSelected = singleChatController.selectedMessages.contains(messages);
           // if (messages.senderId == singleChatController.senderuserData.uid) {
-            return InkWell(
-              onLongPress: () {
-                singleChatController.toggleMessageSelection(messages);
-                print("selected Multiple Taps");
-              },
-              onTap: () {
-                if (singleChatController.selectedMessages.isNotEmpty) {
-                  singleChatController.toggleMessageSelection(messages);
-                  print("selected tap");
-                }
-              },
-              child: Obx((){
-                bool isMsgSelected = singleChatController.selectedMessages.contains(messages);
-                return Container(
-                  color: isMsgSelected ? mySideBgColor.withOpacity(0.3) : Colors.transparent,
-                  child: messages.senderId == singleChatController.senderuserData!.userId.toString() ?
-                  MyMessageCard(
-                    message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
-                        ?messages.text.toString()
-                        :messages.filePath.toString(),
-                    date: DateFormat('hh:mm a').format(messages.timeSent),
-                    // date: "",
-                    type: messages.type.type.toString().toEnum(),
-                    status: messages.status.type.toString().toStatusEnum(),
-                    onLeftSwipe: (v) {
-                      // singleChatController.isRepUpdate = true;
+          return InkWell(
+            onLongPress: () {
+              // singleChatController.toggleMessageSelection(messages);
+              print("selected Multiple Taps");
+            },
+            onTap: () {
+              // if (singleChatController.selectedMessages.isNotEmpty) {
+              //   singleChatController.toggleMessageSelection(messages);
+              //   print("selected tap");
+              // }
+            },
+            child: Obx(() {
+              bool isMsgSelected =
+                  singleChatController.selectedMessages.contains(messages);
+              return Container(
+                color: isMsgSelected
+                    ? mySideBgColor.withOpacity(0.3)
+                    : Colors.transparent,
+                child: messages.senderId ==
+                        singleChatController.senderuserData!.userId
+                    ? MyMessageCard(
+                        message: messages.message!,
+                        date: DateFormat('hh:mm a').format(DateTime.parse(
+                            messages.messageSentFromDeviceTime!)),
+                        // date: "",
+                        type: MessageEnum.text,
+                        status: messages.state!,
+                        onLeftSwipe: (v) {
+                          // singleChatController.isRepUpdate = true;
 
-                      singleChatController.onMessageSwipe(
-                        isMe: true,
-                        message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
-                            ?messages.text.toString()
-                            :messages.filePath.toString(),
-                        messageEnum: messages.type,
-                      );
-                    },
-                    repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                    repliedText: messages.repliedMessage.obs,
-                    username: messages.repliedTo,
-                  ):
-                  // }
-                  SenderMessageCard(
-                    message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
-                        ?messages.text.toString()
-                        :messages.filePath.toString(),
-                    date: DateFormat('hh:mm a').format(messages.timeSent),
-                    type: messages.type.type.toString().toEnum(),
-                    onRightSwipe: (v) {
-                      singleChatController.isRepUpdate = true;
-                      singleChatController.onMessageSwipe(
-                        isMe: false,
-                        message: messages.type == MessageEnum.text || messages.type == MessageEnum.deleted
-                            ?messages.text.toString()
-                            :messages.filePath.toString(),
-                        messageEnum: messages.type,
-                      );
-                    },
-                    repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                    repliedText: messages.repliedMessage.obs,
-                    username: messages.repliedTo,
-                  ),
-                );
-              }
-              ),
-            );
+                          singleChatController.onMessageSwipe(
+                            isMe: true,
+                            message: messages.message!,
+                            messageEnum: MessageEnum.text,
+                          );
+                        },
+                        // repliedMessageType: messages.repliedMessageType.type.toEnum(),
+                        // repliedText: messages.repliedMessage.obs,
+                        // username: messages.repliedTo,
+                      )
+                    :
+                    // }
+                    SenderMessageCard(
+                        message: messages.message.toString(),
+                        date: DateFormat('hh:mm a').format(DateTime.parse(
+                            messages.messageSentFromDeviceTime!)),
+                        type: MessageEnum.text,
+                        onRightSwipe: (v) {
+                          // singleChatController.isRepUpdate = true;
+                          // singleChatController.onMessageSwipe(
+                          //   isMe: false,
+                          //   message: messages.message!,
+                          //   messageEnum: MessageEnum.text,
+                          // );
+                        },
+                        // repliedMessageType: messages.repliedMessageType.type.toEnum(),
+                        // repliedText: messages.repliedMessage.obs,
+                        // username: messages.repliedTo,
+                      ),
+              );
+            }),
+          );
         },
       );
     });

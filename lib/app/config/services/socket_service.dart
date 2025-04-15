@@ -1,3 +1,6 @@
+import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/local_database/message_table.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -9,6 +12,8 @@ class SocketService extends GetxService {
   IO.Socket get socket => _socket;
 
   final ContactsTable contactsTable = ContactsTable();
+
+  final MessageTable messageTable = MessageTable();
 
   final RxBool _isConnected = false.obs;
   bool get isConnected => _isConnected.value;
@@ -42,11 +47,44 @@ class SocketService extends GetxService {
     // Add your custom events here
     _socket.on('message-event', (data) {
       print('📩 Message received: $data');
-      // TODO: Insert to local SQLite DB
+      //
+      messageTable.insertMessage(NewMessageModel(
+          message: data["message"],
+          senderId: data["senderId"],
+          messageId: data["messageId"],
+          recipientId: data["recipientId"],
+          messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          state: MessageState.delivered));
     });
 
-    _socket.on('message-acknowledgement', (data) {
+    _socket.on('message-acknowledgement', (data) async {
       print('✅ Message Ack: $data');
+      if (data["state"] == 1) {
+        NewMessageModel? newModel = await messageTable
+            .getMessageByClientID(data["clientSystemMessageId"].toString());
+        if (newModel != null) {
+          newModel = newModel.copyWith(
+              state: MessageState.sent, messageId: data["messageId"]);
+          messageTable.updateAckMessage(
+              data["clientSystemMessageId"].toString(), newModel);
+        }
+      } else if (data["state"] == 2) {
+        NewMessageModel? newModel =
+            await messageTable.getMessageById(data["messageId"]);
+        if (newModel != null) {
+          messageTable.updateMessage(newModel.copyWith(
+              state: MessageState.delivered, messageId: data["messageId"]));
+        }
+      } else if (data["state"] == 3) {
+        NewMessageModel? newModel =
+            await messageTable.getMessageById(data["messageId"]);
+        if (newModel != null) {
+          newModel.copyWith(
+              state: MessageState.read, messageId: data["messageId"]);
+
+          messageTable.updateMessage(newModel);
+        }
+      }
       // TODO: Update message status in DB
     });
 
@@ -55,16 +93,16 @@ class SocketService extends GetxService {
       // TODO: Update message status in DB
     });
 
-    _socket.on('user-connection-status', (data) async{
+    _socket.on('user-connection-status', (data) async {
       print('✅ user connection status: $data');
-      final int userId = int.parse(data['userId']) ;
+      final int userId = int.parse(data['userId']);
       final int isOnline = data['isOnline'] ? 1 : 0;
 
       // Update local DB
       await contactsTable.updateUserOnlineStatus(userId, isOnline);
     });
 
-    _socket.on('typing', (data){
+    _socket.on('typing', (data) {
       print('✅ user is typing: $data');
     });
 
@@ -73,11 +111,23 @@ class SocketService extends GetxService {
     });
   }
 
-  void sendMessage(Map<String, dynamic> data) {
-    _socket.emit('message-event', data);
+  void sendMessage(NewMessageModel data) {
+    // messageTable.insertMessage(data).then((v) {
+    _socket.emit('message-event', data.toMap());
+    // });
+    // Future.delayed(Duration(seconds: 1));
   }
 
-  void checkUserOnline(Map<String, dynamic> data){
+  void sendMessageSeen(int messageId) {
+    // messageTable.insertMessage(data).then((v) {
+    _socket.emit('message-seen', {
+      "messageId": messageId,
+    });
+    // });
+    // Future.delayed(Duration(seconds: 1));
+  }
+
+  void checkUserOnline(Map<String, dynamic> data) {
     _socket.emit('user-connection-status', data);
   }
 

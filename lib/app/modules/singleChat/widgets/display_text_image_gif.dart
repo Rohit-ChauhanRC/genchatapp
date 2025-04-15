@@ -16,14 +16,14 @@ import '../../../constants/constants.dart';
 class DisplayTextImageGIF extends StatelessWidget {
   final String message;
   final MessageEnum type;
-   DisplayTextImageGIF({
+  DisplayTextImageGIF({
     Key? key,
     required this.message,
     required this.type,
   }) : super(key: key);
 
-
-  final SingleChatController singleChatController = Get.find<SingleChatController>();
+  final SingleChatController singleChatController =
+      Get.find<SingleChatController>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +31,16 @@ class DisplayTextImageGIF extends StatelessWidget {
     // final AudioPlayer audioPlayer = AudioPlayer();
     var rootFolderPath = singleChatController.rootPath;
 
-    print("FullFolderPath:--------->${rootFolderPath+message}");
+    // print("FullFolderPath:--------->${rootFolderPath+message}");
     return type == MessageEnum.text || type == MessageEnum.deleted
         ? SelectableText(
             message,
-            style:  TextStyle(
-              fontSize: 16, fontStyle: type == MessageEnum.deleted?FontStyle.italic: FontStyle.normal,color: type == MessageEnum.deleted ? greyMsgColor:blackColor
-            ),
+            style: TextStyle(
+                fontSize: 16,
+                fontStyle: type == MessageEnum.deleted
+                    ? FontStyle.italic
+                    : FontStyle.normal,
+                color: type == MessageEnum.deleted ? greyMsgColor : blackColor),
           )
         : type == MessageEnum.audio
             ? StatefulBuilder(builder: (context, setState) {
@@ -72,8 +75,14 @@ class DisplayTextImageGIF extends StatelessWidget {
             //             imageUrl: message,
             //           )
             : ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-        child: Image.file(File('$rootFolderPath$message'), fit: BoxFit.cover, filterQuality: FilterQuality.medium,height: 200, width: 300,));
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(
+                  File('$rootFolderPath$message'),
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.medium,
+                  height: 200,
+                  width: 300,
+                ));
     // CachedNetworkImage(
     //             imageUrl: message,
     //           );

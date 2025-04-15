@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/modules/call/controllers/call_controller.dart';
 import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
@@ -15,6 +16,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   final connectivityService = Get.put(ConnectivityService());
   final firebaseController = Get.find<FirebaseController>();
 
+  final socketService = Get.find<SocketService>();
+
   final RxInt _currentPageIndex = 0.obs;
   int get currentPageIndex => _currentPageIndex.value;
   set currentPageIndex(int currentPageIndex) =>
@@ -24,6 +27,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     controllerInit();
+    connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
     // print(connectivityService.isConnected.value);
     SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
@@ -54,19 +58,29 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.resumed:
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
+          connectSocket();
         }
 
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-        if (!connectivityService.isConnected.value) {
-          // await setUserOffline();
-        }
+        disConnectSocket();
 
         break;
       default:
     }
+  }
+
+  void connectSocket() async {
+    String? userId = sharedPreferenceService.getUserData()?.userId.toString();
+    if (!socketService.isConnected) {
+      await socketService.initSocket(userId!);
+    }
+  }
+
+  void disConnectSocket() async {
+    socketService.disposeSocket();
   }
 
   Future<void> setUserOnline() async {

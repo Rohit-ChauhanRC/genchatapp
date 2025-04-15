@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 
@@ -36,8 +38,8 @@ class MessageTable {
   }
 
   // Insert or update a message based on messageId
-  Future<void> insertOrUpdateMessage(MessageModel message) async {
-    final existingMessage = await getMessageById(message.messageId.toString());
+  Future<void> insertOrUpdateMessage(NewMessageModel message) async {
+    final existingMessage = await getMessageById(message.messageId!);
     if (existingMessage == null) {
       await insertMessage(message);
     } else {
@@ -46,25 +48,27 @@ class MessageTable {
   }
 
   // Fetch messages between sender & receiver
-  Future<List<MessageModel>> fetchMessages({
-    required int senderId,
+  Future<List<NewMessageModel>> fetchMessages({
     required int receiverId,
+    required int senderId,
   }) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
       where:
-      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, receiverId, receiverId, senderId],
-      orderBy: 'messageSentFromDeviceTime ASC',
+      // orderBy: 'messageSentFromDeviceTime ASC',
     );
 
-    return result.map((map) => MessageModel.fromMap(map)).toList();
+    return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
 
   // Insert a new message
-  Future<void> insertMessage(MessageModel message) async {
+  Future<void> insertMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;
+
+    debugPrint("meesageSent: ${message.message}");
 
     await db.insert(
       tableName,
@@ -74,7 +78,7 @@ class MessageTable {
   }
 
   // Update message by messageId
-  Future<int> updateMessage(MessageModel message) async {
+  Future<int> updateMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;
     return await db.update(
       tableName,
@@ -84,8 +88,21 @@ class MessageTable {
     );
   }
 
+  Future<int> updateAckMessage(
+      String clientSystemMessageId, NewMessageModel newMessageModel) async {
+    // final messageTable = await getMessageByClientID(clientSystemMessageId);
+
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      newMessageModel.toMap(),
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [clientSystemMessageId],
+    );
+  }
+
   // Get message by messageId
-  Future<MessageModel?> getMessageById(String messageId) async {
+  Future<NewMessageModel?> getMessageById(int messageId) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -94,13 +111,28 @@ class MessageTable {
     );
 
     if (result.isNotEmpty) {
-      return MessageModel.fromMap(result.first);
+      return NewMessageModel.fromMap(result.first);
+    }
+    return null;
+  }
+
+  Future<NewMessageModel?> getMessageByClientID(
+      String clientSystemMessageId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [clientSystemMessageId],
+    );
+
+    if (result.isNotEmpty) {
+      return NewMessageModel.fromMap(result.first);
     }
     return null;
   }
 
   // Fetch messages not yet synced
-  Future<List<MessageModel>> fetchUnsentMessages() async {
+  Future<List<NewMessageModel>> fetchUnsentMessages() async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -108,7 +140,7 @@ class MessageTable {
       whereArgs: ['pending'],
     );
 
-    return result.map((map) => MessageModel.fromMap(map)).toList();
+    return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
 
   // Update syncStatus and state by messageId
@@ -153,7 +185,8 @@ class MessageTable {
   // Remove from deletion queue
   Future<void> removeQueuedDeletion(String messageId) async {
     final db = await DataBaseService().database;
-    await db.delete(deleteQueueTblName, where: 'messageId = ?', whereArgs: [messageId]);
+    await db.delete(deleteQueueTblName,
+        where: 'messageId = ?', whereArgs: [messageId]);
   }
 
   Future<void> updateMessageContent({
@@ -168,7 +201,6 @@ class MessageTable {
       whereArgs: [messageId],
     );
   }
-
 
   //
   // // Update message status

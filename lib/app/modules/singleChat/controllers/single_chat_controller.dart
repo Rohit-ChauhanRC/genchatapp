@@ -11,6 +11,8 @@ import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -72,20 +74,20 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get isLoading => _isLoading.value;
   set isLoading(bool b) => _isLoading.value = b;
 
-  final RxList<MessageModel> messageList = <MessageModel>[].obs;
+  final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
 
   final Rx<FlutterSoundRecorder> soundRecorder = FlutterSoundRecorder().obs;
 
   FocusNode focusNode = FocusNode();
 
-  final Rx<UserList?> _senderuserData = UserList().obs;
-  UserList? get senderuserData => _senderuserData.value;
-  set senderuserData(UserList? userData) => _senderuserData.value = (userData);
+  final Rx<UserData?> _senderuserData = UserData().obs;
+  UserData? get senderuserData => _senderuserData.value;
+  set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
   final Rx<UserList?> _receiverUserData = Rx<UserList?>(null);
   UserList? get receiverUserData => _receiverUserData.value;
   set receiverUserData(UserList? userData) {
-    print("receiverUserData updated: ${userData?.isOnline}");
+    // print("receiverUserData updated: ${userData?.isOnline}");
     _receiverUserData.value = (userData);
   }
 
@@ -106,32 +108,33 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   ).obs;
 
   final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
-  late Stream<List<MessageModel>> messageStream;
-  late StreamSubscription<List<MessageModel>> messageSubscription;
+  late Stream<List<NewMessageModel>> messageStream;
+  late StreamSubscription<List<NewMessageModel>> messageSubscription;
 
   late StreamSubscription<UserList?> receiverUserSubscription;
 
   @override
-  void onInit() async{
+  void onInit() async {
     super.onInit();
-    // senderuserData sharedPreferenceService.getUserData() as UserList;
+    senderuserData = sharedPreferenceService.getUserData();
 
     UserList? user = Get.arguments;
     var params = {"recipientId": user?.userId};
     socketService.checkUserOnline(params);
     receiverUserData = user;
     bindReceiverUserStream(user?.userId ?? 0);
-    print("reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
+    print(
+        "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
     // fullname = Get.arguments[1];
     getRootFolder();
-    _startLoadingTimer();
+    // _startLoadingTimer();
+    bindMessageStream();
   }
 
   @override
   void onReady() {
     // bindStream();
 
-    // bindMessageStream();
     // startListeningForConnectivityChanges();
     super.onReady();
   }
@@ -140,7 +143,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void onClose() {
     super.onClose();
     selectedMessages.clear();
-    // messageSubscription.cancel();
+    messageSubscription.cancel();
     receiverUserSubscription.cancel();
   }
 
@@ -158,54 +161,39 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }).asyncMap((event) async => await event);
   }
 
-
-
   void _startLoadingTimer() {
     Timer(Duration(seconds: 3), () {
       isLoading = false; // Stop loading after 3 seconds
     });
   }
 
-  Future<void> getRootFolder() async{
+  Future<void> getRootFolder() async {
     rootPath = await folderCreation.getRootFolderPath();
   }
 
-  // void bindMessageStream() {
-  //   messageStream = getMessageStream();
-  //   messageSubscription = messageStream.listen((messages) {
-  //     messageList.assignAll(messages);
-  //   });
-  // }
+  void bindMessageStream() {
+    messageStream = getMessageStream();
+    messageSubscription = messageStream.listen((messages) {
+      print(messages);
 
-  // Stream<List<MessageModel>> getMessageStream() async* {
-  //   if (connectivityService.isConnected.value) {
-  //     retryPendingMessages();
-  //     yield* firebaseController
-  //         .listenToMessages(
-  //       currentUserId: senderuserData!.userId.toString(),
-  //       receiverId: id.toString(),
-  //     )
-  //         .asyncMap((firebaseMessages) async {
-  //       for (var message in firebaseMessages) {
-  //         if (message.filePath != null && message.filePath!.isNotEmpty && message.type != null && message.fileUrl != null && message.fileUrl!.isNotEmpty) {
-  //           await folderCreation.checkAndHandleFile(
-  //             fileName: message.filePath!,
-  //             messageType: message.type.type,
-  //             fileUrl: message.fileUrl!,
-  //           );
-  //         }
-  //         markMessagesAsSeen(message);
-  //         await MessageTable().insertOrUpdateMessage(message);
-  //       }
-  //       return firebaseMessages;
-  //     });
-  //   } else {
-  //     yield await MessageTable().fetchMessages(
-  //       senderId: senderuserData!.userId.toString(),
-  //       receiverId: id.toString(),
-  //     );
-  //   }
-  // }
+      messageList.assignAll(messages);
+      for (var i in messages) {
+        if ((i.state == MessageState.sent || i.state == MessageState.unsent) &&
+            i.messageId != null) {
+          // socketService.sendMessageSeen(i.messageId!);
+        }
+      }
+    });
+  }
+
+  Stream<List<NewMessageModel>> getMessageStream() async* {
+    yield* Stream.periodic(const Duration(seconds: 1), (_) async {
+      return await MessageTable().fetchMessages(
+        receiverId: receiverUserData?.userId ?? 0,
+        senderId: senderuserData?.userId ?? 0,
+      );
+    }).asyncMap((event) async => await event);
+  }
 
   // Future<void> syncFirebaseMessagesToLocal() async {
   //   try {
@@ -241,42 +229,31 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   Future<void> sendTextMessage() async {
     if (messageController.text.trim().isEmpty) return;
 
-    final messageId = const Uuid().v1();
+    final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
 
-    final newMessage = MessageModel(
-      senderId: senderuserData!.userId.toString(),
-      receiverId: id.toString(),
-      text: messageController.text.trim(),
-      type: MessageEnum.text,
-      timeSent: timeSent,
-      messageId: messageId,
-      status: MessageStatus.uploading,
-      repliedMessage: messageReply == null
-          ? '' : messageReply.message.toString(),
-      repliedTo: messageReply.message == null ? '' :
-      messageReply.isMe!
-          ? senderuserData?.name ?? ""
-          : receiveruserDataModel.value.name ?? "",
-      repliedMessageType: messageReply.message == null
-          ? MessageEnum.text
-          : messageReply.messageEnum!,
-      syncStatus: 'pending',
-       filePath: '',
-       fileUrl: '',
-       fileSize: 0,
-       thumbnailPath: '',
+    final newMessage = NewMessageModel(
+      senderId: senderuserData?.userId,
+      recipientId: receiverUserData?.userId,
+      message: messageController.text.trim(),
+      messageSentFromDeviceTime: timeSent.toIso8601String(),
+      clientSystemMessageId: clientSystemMessageId,
+      state: MessageState.unsent,
+      syncStatus: SyncStatus.pending,
+      createdAt: timeSent.toIso8601String(),
     );
+    await MessageTable().insertMessage(newMessage).then((onValue) {
+      Future.delayed(Durations.medium4);
+      socketService.sendMessage(newMessage);
+    });
 
-    await MessageTable().insertMessage(newMessage);
-
-    messageList.add(newMessage);
+    // messageList.add(newMessage);
     messageController.clear();
-    await cancelReply();
+    // await cancelReply();
 
-    if (connectivityService.isConnected.value) {
-      // await _syncMessageToFirebase(newMessage);
-    }
+    // if (connectivityService.isConnected.value) {
+    // await _syncMessageToFirebase(newMessage);
+    // }
   }
 
   // Future<void> _syncMessageToFirebase(MessageModel message) async {
@@ -520,8 +497,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-
-
   // Future<void> sendFileMessage({
   //   required File file,
   //   required MessageEnum messageEnum,
@@ -597,9 +572,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   //   }
   // }
 
-  Future<String> saveFileLocally(File file, String fileType, String fileExtension) async {
+  Future<String> saveFileLocally(
+      File file, String fileType, String fileExtension) async {
     final subFolderName = fileType.toTitleCase;
-    final fileName = "GENCHAT_$fileType-${senderuserData!.userId.toString()}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+    final fileName =
+        "GENCHAT_$fileType-${senderuserData!.userId.toString()}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
     final filePath = await folderCreation.saveFileFromFile(
       sourceFile: file,
       fileName: fileName,
@@ -610,7 +587,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return '$subFolderName/$fileName';
   }
 
-
   Future<File?> pickImage() async {
     Completer<File?> completer = Completer<File?>();
     showImagePicker(onGetImage: (img) {
@@ -620,7 +596,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         //   messageEnum: MessageEnum.image,
         // );
         completer.complete(img);
-      }else{
+      } else {
         completer.complete(null);
       }
     });
@@ -634,7 +610,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       //   context: Get.context!,
       //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
       // );
-    }}
+    }
+  }
 
   void toggleEmojiKeyboardContainer() {
     if (isShowEmojiContainer) {

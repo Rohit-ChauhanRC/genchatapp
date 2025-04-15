@@ -29,29 +29,26 @@ init() async {
   await sharedPreferenceService.init();
   Get.put(sharedPreferenceService);
 
-
-
 // Initialize Repositories
   Get.lazyPut(() => ApiClient());
-  Get.lazyPut(() => AuthRepository(apiClient: Get.find<ApiClient>(), sharedPreferences: Get.find<SharedPreferenceService>()));
+  Get.lazyPut(() => AuthRepository(
+      apiClient: Get.find<ApiClient>(),
+      sharedPreferences: Get.find<SharedPreferenceService>()));
   Get.lazyPut(() => ProfileRepository(apiClient: Get.find<ApiClient>()));
-  Get.lazyPut<IContactRepository>(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
+  Get.lazyPut<IContactRepository>(
+      () => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
   Get.lazyPut(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
-
-
   final folder = Get.find<FolderCreation>();
   await folder.createAppFolderStructure();
-  final db = Get.find<DataBaseService>();
-  await db.database;
 
   // Initialize Controllers
   Get.lazyPut(() => LandingController());
-  Get.lazyPut(() => VerifyPhoneNumberController(authRepository: Get.find<AuthRepository>()));
+  Get.lazyPut(() =>
+      VerifyPhoneNumberController(authRepository: Get.find<AuthRepository>()));
   Get.lazyPut(() => OtpController(authRepository: Get.find<AuthRepository>()));
-  Get.lazyPut(() => CreateProfileController(profileRepository: Get.find<ProfileRepository>()));
+  Get.lazyPut(() => CreateProfileController(
+      profileRepository: Get.find<ProfileRepository>()));
   Get.lazyPut(() => SelectContactsController());
-
-
 }

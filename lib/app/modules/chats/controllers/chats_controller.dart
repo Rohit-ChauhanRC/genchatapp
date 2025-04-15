@@ -42,7 +42,7 @@ class ChatsController extends GetxController {
     // bindChatUsersStream();
     super.onInit();
     // bindStream();
-    connectSocket();
+    // connectSocket();
   }
 
   @override
@@ -57,9 +57,9 @@ class ChatsController extends GetxController {
     super.onClose();
   }
 
-  void connectSocket() async{
+  void connectSocket() async {
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    if(!socketService.isConnected){
+    if (!socketService.isConnected) {
       await socketService.initSocket(userId!);
     }
   }

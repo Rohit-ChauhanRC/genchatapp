@@ -171,11 +171,11 @@ class ChatsController extends GetxController {
       Set<int> addedUserIds = {};
 
       for (var message in newMessageList) {
-        final recipientId = message.recipientId;
+        final recipientId = message.recipientId == senderUserData!.userId
+            ? message.senderId
+            : message.recipientId;
 
-        if (recipientId == null ||
-            recipientId == senderUserData!.userId! ||
-            addedUserIds.contains(recipientId)) {
+        if (recipientId == null || addedUserIds.contains(recipientId)) {
           continue;
         }
 

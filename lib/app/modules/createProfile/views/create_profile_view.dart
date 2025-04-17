@@ -90,14 +90,14 @@ class CreateProfileView extends GetView<CreateProfileController> {
                             hintText: 'Email',
                           ),
                           cursorColor: textBarColor,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Email is required!";
-                            } else if (!isEmail(value)) {
-                              return "Please enter a valid email!";
-                            }
-                            return null;
-                          },
+                          // validator: (value) {
+                          //   if (value == null || value.isEmpty) {
+                          //     return "Email is required!";
+                          //   } else if (!isEmail(value)) {
+                          //     return "Please enter a valid email!";
+                          //   }
+                          //   return null;
+                          // },
                           keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(

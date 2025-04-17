@@ -59,7 +59,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
                 decoration: const InputDecoration(
                   isDense: true,
                   filled: true,
-                  fillColor: whiteColor,
+                  // fillColor: whiteColor,
                   hintText: 'Search',
                   hintStyle: TextStyle(
                     color: greyColor,

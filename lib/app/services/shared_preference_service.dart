@@ -63,31 +63,19 @@ class SharedPreferenceService {
     await _prefs.reload();
   }
 
-  UserModel? getUserDetails() {
-    if (getString(userDetail) == null || getString(userDetail) == "") {
-      print("UserIsNotEmpty:-----------> ${getString(userDetail)}");
-      db.closeDb();
-      clear();
-      Get.offAllNamed(Routes.LANDING);
-      return null;
-    } else {
-      print("UserExits:--------> ${getString(userDetail)}");
-      UserModel user = userModelFromJson(getString(userDetail) ?? "");
-      print("UserDetails:------> ${json.decode(getString(userDetail) ?? "")}");
-      return user;
-    }
-  }
-
   UserData? getUserData() {
-    if (getString(UserDefaultsKeys.userDetail) == null || getString(UserDefaultsKeys.userDetail) == "") {
-      print("UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
+    if (getString(UserDefaultsKeys.userDetail) == null ||
+        getString(UserDefaultsKeys.userDetail) == "") {
+      print(
+          "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
       db.closeDb();
       clear();
       Get.offAllNamed(Routes.LANDING);
       return null;
     } else {
       // print("UserExits:--------> ${getString(UserDefaultsKeys.userDetail)}");
-      UserData user = userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
+      UserData user =
+          userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
       // print("UserDetails:------> ${json.decode(getString(UserDefaultsKeys.userDetail) ?? "")}");
       return user;
     }

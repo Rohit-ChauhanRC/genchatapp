@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
@@ -147,10 +149,15 @@ class ChatsView extends GetView<ChatsController> {
                                     ctc.contactsList[i];
                                 return InkWell(
                                   onTap: () {
-                                    Get.toNamed(Routes.SINGLE_CHAT, arguments: [
-                                      chatConntactModel.uid,
-                                      chatConntactModel.name
-                                    ]);
+                                    Get.toNamed(Routes.SINGLE_CHAT,
+                                        arguments: UserList(
+                                          userId:
+                                              int.parse(chatConntactModel.uid!),
+                                          name: chatConntactModel.name,
+                                          displayPictureUrl:
+                                              chatConntactModel.profilePic,
+                                          localName: chatConntactModel.name,
+                                        ));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
@@ -161,20 +168,36 @@ class ChatsView extends GetView<ChatsController> {
                                           borderRadius:
                                               BorderRadius.circular(25),
                                           child: chatConntactModel
-                                                  .profilePic.isEmpty
+                                                  .profilePic!.isEmpty
                                               ? Image.asset(
                                                   "assets/images/genChatSplash.png",
                                                   width: 50,
                                                   height: 50,
                                                   fit: BoxFit.cover,
                                                 )
-                                              : CircleAvatar(
-                                                  backgroundImage: Image.file(
-                                                    File(chatConntactModel
-                                                        .profilePic),
-                                                    fit: BoxFit.cover,
-                                                  ).image,
-                                                  radius: 30,
+                                              : CachedNetworkImage(
+                                                  imageUrl: chatConntactModel
+                                                      .profilePic
+                                                      .toString(),
+                                                  imageBuilder: (context,
+                                                          imageProvider) =>
+                                                      CircleAvatar(
+                                                    backgroundImage:
+                                                        imageProvider,
+                                                    radius: 30,
+                                                  ),
+                                                  placeholder: (context, url) =>
+                                                      const CircleAvatar(
+                                                    radius: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          const CircleAvatar(
+                                                    radius: 30,
+                                                    child: Icon(Icons.error),
+                                                  ),
                                                 ),
                                         ),
                                         const SizedBox(width: 10),
@@ -186,7 +209,7 @@ class ChatsView extends GetView<ChatsController> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                chatConntactModel.name,
+                                                chatConntactModel.name ?? "",
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
@@ -194,7 +217,8 @@ class ChatsView extends GetView<ChatsController> {
                                                 ),
                                               ),
                                               Text(
-                                                chatConntactModel.lastMessage,
+                                                chatConntactModel.lastMessage ??
+                                                    "",
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(
@@ -210,7 +234,7 @@ class ChatsView extends GetView<ChatsController> {
                                         // Timestamp
                                         Text(
                                           lastSeenFormatted(chatConntactModel
-                                              .timeSent.microsecondsSinceEpoch
+                                              .timeSent!.microsecondsSinceEpoch
                                               .toString()),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,

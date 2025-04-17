@@ -103,9 +103,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   String get rootPath => _rootPath.value;
   set rootPath(String str) => _rootPath.value = str;
 
-  Rx<UserModel> receiveruserDataModel = UserModel(
-    isOnline: false,
-  ).obs;
+  // Rx<UserModel> receiveruserDataModel = UserModel(
+  //   isOnline: false,
+  // ).obs;
 
   final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
   late Stream<List<NewMessageModel>> messageStream;
@@ -270,7 +270,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       clientSystemMessageId: clientSystemMessageId,
       state: MessageState.unsent,
       syncStatus: SyncStatus.pending,
-      createdAt: timeSent.toIso8601String(),
+      createdAt: timeSent.toString(),
     );
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);

@@ -14,7 +14,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final connectivityService = Get.put(ConnectivityService());
-  final firebaseController = Get.find<FirebaseController>();
+  // final firebaseController = Get.find<FirebaseController>();
 
   final socketService = Get.find<SocketService>();
 
@@ -84,15 +84,15 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> setUserOnline() async {
-    final userRef = firebaseController.firestore
-        .collection('users')
-        .doc(sharedPreferenceService.getUserDetails()?.uid);
+    // final userRef = firebaseController.firestore
+    //     .collection('users')
+    //     .doc(sharedPreferenceService.getUserData()?.userId);
 
-    // Set online status
-    await userRef.set({
-      'isOnline': true,
-      'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
-    }, SetOptions(merge: true));
+    // // Set online status
+    // await userRef.set({
+    //   'isOnline': true,
+    //   'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
+    // }, SetOptions(merge: true));
   }
 
   Future<void> setUserOffline() async {

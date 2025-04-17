@@ -119,10 +119,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     senderuserData = sharedPreferenceService.getUserData();
 
     UserList? user = Get.arguments;
-    var params = {"recipientId": user?.userId};
-    socketService.checkUserOnline(params);
-    receiverUserData = user;
-    bindReceiverUserStream(user?.userId ?? 0);
+    if(user != null){
+      checkUserOnline(user);
+      receiverUserData = user;
+      bindReceiverUserStream(user.userId ?? 0);
+    }
+
     print(
         "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
     // fullname = Get.arguments[1];
@@ -145,6 +147,34 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     selectedMessages.clear();
     messageSubscription.cancel();
     receiverUserSubscription.cancel();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (connectivityService.isConnected.value) {
+          checkUserOnline(receiverUserData);
+        }
+
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.paused:
+        disConnectSocket();
+
+        break;
+      default:
+    }
+  }
+
+  void checkUserOnline(UserList? user) async{
+    var params = {"recipientId": user?.userId};
+    socketService.checkUserOnline(params);
+  }
+  void disConnectSocket() async {
+    socketService.disposeSocket();
   }
 
   void bindReceiverUserStream(int userId) {

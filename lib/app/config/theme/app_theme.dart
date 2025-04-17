@@ -40,7 +40,7 @@ class AppTheme {
         hintStyle:  TextStyle(
             color: AppColors.greyColor, fontSize: 14, fontWeight: FontWeight.w200),
         errorStyle:  TextStyle(color: AppColors.redColor),
-        fillColor: AppColors.whiteColor,
+        fillColor: AppColors.blackColor.withOpacity(0.1),
         filled: true,
         isDense: true,
 

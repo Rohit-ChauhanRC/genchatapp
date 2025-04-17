@@ -32,6 +32,20 @@ class VerifyPhoneNumberController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    country = Country(
+      phoneCode: '91',
+      countryCode: 'IN',
+      e164Sc: 91,
+      geographic: true,
+      level: 1,
+      name: 'India',
+      nameLocalized: 'India',
+      example: '9123456789',
+      displayName: 'India (IN) [+91]',
+      displayNameNoCountryCode: 'India (IN)',
+      e164Key: '91-IN-0',
+      fullExampleWithPlusSign: '+919123456789',
+    );
   }
 
   @override

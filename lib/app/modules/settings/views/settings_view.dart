@@ -116,6 +116,7 @@ class SettingsView extends GetView<SettingsController> {
                           onTap: () async {
                             await controller.homeController.setUserOffline();
                             controller.db.closeDb();
+                            controller.socketService.disposeSocket();
                             await controller.sharedPreferenceService
                                       .clear()
                                       .then((onValue) {

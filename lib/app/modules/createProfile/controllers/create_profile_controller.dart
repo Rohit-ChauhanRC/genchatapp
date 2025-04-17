@@ -263,7 +263,7 @@ class CreateProfileController extends GetxController {
     } else {
       sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
       sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
-      Get.offNamed(Routes.HOME);
+      Get.offAllNamed(Routes.HOME);
     }
   }
 }

@@ -62,6 +62,6 @@ class DataBaseService {
   }
 
   void closeDb() {
-    _database!.close();
+    _database?.close();
   }
 }

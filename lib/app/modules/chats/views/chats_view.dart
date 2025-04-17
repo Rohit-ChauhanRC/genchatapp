@@ -102,7 +102,7 @@ class ChatsView extends GetView<ChatsController> {
                 decoration: InputDecoration(
                   isDense: true,
                   filled: true,
-                  fillColor: whiteColor,
+                  // fillColor: whiteColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: const BorderSide(color: textBarColor, width: 1),

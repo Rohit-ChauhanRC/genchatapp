@@ -3,21 +3,21 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 class ChatConntactModel extends Equatable {
-  final String name;
-  final String profilePic;
-  final String contactId;
-  final DateTime timeSent;
-  final String lastMessage;
-  final String uid;
+  final String? name;
+  final String? profilePic;
+  final String? contactId;
+  final DateTime? timeSent;
+  final String? lastMessage;
+  final String? uid;
   // final UserModel? user;
 
   const ChatConntactModel({
-    required this.name,
-    required this.profilePic,
-    required this.contactId,
-    required this.timeSent,
-    required this.lastMessage,
-    required this.uid,
+    this.name,
+    this.profilePic,
+    this.contactId,
+    this.timeSent,
+    this.lastMessage,
+    this.uid,
     // this.user,
   });
 
@@ -26,7 +26,7 @@ class ChatConntactModel extends Equatable {
       'name': name,
       'profilePic': profilePic,
       'contactId': contactId,
-      'timeSent': timeSent.millisecondsSinceEpoch,
+      'timeSent': timeSent!.millisecondsSinceEpoch,
       'lastMessage': lastMessage,
       'uid': uid,
     };
@@ -47,6 +47,24 @@ class ChatConntactModel extends Equatable {
 
   factory ChatConntactModel.fromJson(String source) =>
       ChatConntactModel.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  ChatConntactModel copyWith({
+    final String? name,
+    final String? profilePic,
+    final String? contactId,
+    final DateTime? timeSent,
+    final String? lastMessage,
+    final String? uid,
+  }) {
+    return ChatConntactModel(
+      contactId: contactId ?? this.contactId,
+      profilePic: profilePic ?? this.profilePic,
+      name: name ?? this.name,
+      timeSent: timeSent ?? this.timeSent,
+      lastMessage: lastMessage ?? this.lastMessage,
+      uid: uid ?? this.uid,
+    );
+  }
 
   @override
   List<Object?> get props =>

@@ -26,8 +26,8 @@ class CreateProfileController extends GetxController {
   final ProfileRepository profileRepository;
 
   CreateProfileController({required this.profileRepository});
-  final FirebaseController firebaseController =
-      Get.put<FirebaseController>(FirebaseController());
+  // final FirebaseController firebaseController =
+  //     Get.put<FirebaseController>(FirebaseController());
 
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
@@ -190,7 +190,8 @@ class CreateProfileController extends GetxController {
       /// ✅ Step 1: Upload Image if Changed
       if (image != null) {
         processedImage = image!;
-        final uploadResponse = await profileRepository.uploadProfilePicture(processedImage);
+        final uploadResponse =
+            await profileRepository.uploadProfilePicture(processedImage);
 
         if (uploadResponse?.statusCode == 200) {
           final result = VerifyOtpResponseModel.fromJson(uploadResponse!.data);
@@ -200,7 +201,8 @@ class CreateProfileController extends GetxController {
             print("✅ Profile picture uploaded: $uploadedImageUrl");
 
             if (user != null) {
-              await sharedPreferenceService.setString(UserDefaultsKeys.userDetail, userDataToJson(user));
+              await sharedPreferenceService.setString(
+                  UserDefaultsKeys.userDetail, userDataToJson(user));
             }
           }
         } else {
@@ -211,7 +213,8 @@ class CreateProfileController extends GetxController {
 
       /// ✅ Step 2: Check if Name/Email Changed
       final storedUserData = sharedPreferenceService.getUserData();
-      final nameChanged = profileNameController.text.trim() != storedUserData?.name;
+      final nameChanged =
+          profileNameController.text.trim() != storedUserData?.name;
       final emailChanged = emailController.text.trim() != storedUserData?.email;
 
       if (!nameChanged && !emailChanged) {
@@ -233,7 +236,8 @@ class CreateProfileController extends GetxController {
           print("✅ Profile updated successfully: $uploadedImageUrl");
 
           if (user != null) {
-            await sharedPreferenceService.setString(UserDefaultsKeys.userDetail, userDataToJson(user));
+            await sharedPreferenceService.setString(
+                UserDefaultsKeys.userDetail, userDataToJson(user));
           }
 
           showAlertMessage('Profile updated successfully!');
@@ -252,7 +256,6 @@ class CreateProfileController extends GetxController {
       update(); // if you're using GetBuilder or Obx
     }
   }
-
 
   /// ✅ Navigate Back Based on Where the User Came From
   void navigateBack() {

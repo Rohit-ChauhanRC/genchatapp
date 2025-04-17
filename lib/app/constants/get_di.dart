@@ -20,7 +20,7 @@ import '../services/shared_preference_service.dart';
 init() async {
   Get.lazyPut(() => ConnectivityService());
   Get.lazyPut(() => FolderCreation());
-  Get.lazyPut(() => FirebaseController());
+  // Get.lazyPut(() => FirebaseController());
   Get.lazyPut(() => DataBaseService());
   Get.lazyPut<SocketService>(() => SocketService());
 

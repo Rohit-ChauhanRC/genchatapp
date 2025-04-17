@@ -213,4 +213,11 @@ class MessageTable {
   //     whereArgs: [messageId],
   //   );
   // }
+
+  Future<List<NewMessageModel>> getAllMessages() async {
+    final db = await DataBaseService().database;
+    final result = await db.query(tableName);
+
+    return result.map((map) => NewMessageModel.fromMap(map)).toList();
+  }
 }

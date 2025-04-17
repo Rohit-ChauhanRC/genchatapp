@@ -34,10 +34,10 @@ class ChatConntactModel extends Equatable {
 
   factory ChatConntactModel.fromMap(Map<String, dynamic> map) {
     return ChatConntactModel(
-      name: map['name'] as String,
+      name: map['name'] ?? "",
       profilePic: map['profilePic'] as String,
       contactId: map['contactId'] as String,
-      timeSent: DateTime.fromMillisecondsSinceEpoch(map['timeSent'] as int),
+      timeSent: DateTime.parse(map['timeSent']),
       lastMessage: map['lastMessage'] as String,
       uid: map['uid'] as String,
     );

@@ -1,5 +1,7 @@
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
+import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -12,6 +14,8 @@ class SocketService extends GetxService {
   IO.Socket get socket => _socket;
 
   final ContactsTable contactsTable = ContactsTable();
+
+  final ChatConectTable chatConectTable = ChatConectTable();
 
   final MessageTable messageTable = MessageTable();
 
@@ -53,6 +57,14 @@ class SocketService extends GetxService {
           senderId: data["senderId"],
           messageId: data["messageId"],
           recipientId: data["recipientId"],
+          messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          state: MessageState.delivered));
+
+      saveChatContacts(NewMessageModel(
+          message: data["message"],
+          senderId: data["recipientId"],
+          messageId: data["messageId"],
+          recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
           state: MessageState.delivered));
     });
@@ -111,20 +123,16 @@ class SocketService extends GetxService {
     });
   }
 
-  void sendMessage(NewMessageModel data) {
-    // messageTable.insertMessage(data).then((v) {
+  void sendMessage(NewMessageModel data) async {
+    saveChatContacts(data);
+
     _socket.emit('message-event', data.toMap());
-    // });
-    // Future.delayed(Duration(seconds: 1));
   }
 
   void sendMessageSeen(int messageId) {
-    // messageTable.insertMessage(data).then((v) {
     _socket.emit('message-seen', {
       "messageId": messageId,
     });
-    // });
-    // Future.delayed(Duration(seconds: 1));
   }
 
   void checkUserOnline(Map<String, dynamic> data) {
@@ -133,5 +141,32 @@ class SocketService extends GetxService {
 
   void disposeSocket() {
     _socket.dispose();
+  }
+
+  void saveChatContacts(
+    NewMessageModel data,
+  ) async {
+    final user = await contactsTable.getUserById(data.recipientId!);
+    final chatUser =
+        await chatConectTable.fetchById(uid: user!.userId.toString());
+    if (chatUser != null) {
+      await chatConectTable.updateContact(
+        uid: user.userId.toString(),
+        lastMessage: data.message,
+        timeSent: data.messageSentFromDeviceTime,
+        profilePic: user.displayPictureUrl,
+        name: user.localName,
+      );
+    } else {
+      await chatConectTable.insert(
+          contact: ChatConntactModel(
+        contactId: user.userId.toString(),
+        lastMessage: data.message,
+        name: user.localName,
+        profilePic: user.displayPictureUrl,
+        timeSent: DateTime.parse(data.messageSentFromDeviceTime.toString()),
+        uid: user.userId.toString(),
+      ));
+    }
   }
 }

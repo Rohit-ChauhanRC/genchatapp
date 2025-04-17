@@ -6,6 +6,7 @@ import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/modules/call/controllers/call_controller.dart';
 import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
+import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -14,7 +15,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final connectivityService = Get.put(ConnectivityService());
-  // final firebaseController = Get.find<FirebaseController>();
+  final selectedContactController = Get.find<SelectContactsController>();
 
   final socketService = Get.find<SocketService>();
 
@@ -26,7 +27,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
+
     controllerInit();
+    selectedContactController.loadInitialContacts();
     connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
     // print(connectivityService.isConnected.value);

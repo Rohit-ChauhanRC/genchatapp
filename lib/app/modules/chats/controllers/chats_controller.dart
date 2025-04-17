@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
@@ -32,23 +34,26 @@ class ChatsController extends GetxController {
 
   final ContactsTable contactsTable = ContactsTable();
 
-  final RxList<UserList> _contacts = <UserList>[].obs;
-  List<UserList> get contacts => _contacts;
-  set contacts(List<UserList> cts) => _contacts.assignAll(cts);
+  final RxList<UserList> contacts = <UserList>[].obs;
+  // List<UserList> get contacts => _contacts;
+  // set contacts(List<UserList> cts) => _contacts.assignAll(cts);
 
-  final RxList<NewMessageModel> _messageList = <NewMessageModel>[].obs;
-  List<NewMessageModel> get messageList => _messageList;
-  set messageList(List<NewMessageModel> cts) => _messageList.assignAll(cts);
+  final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
+  // List<NewMessageModel> get messageList => _messageList;
+  // set messageList(List<NewMessageModel> cts) => _messageList.assignAll(cts);
 
   final Rx<UserData?> _senderuserData = UserData().obs;
   UserData? get senderuserData => _senderuserData.value;
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
+  // late StreamSubscription<UserList?> contactsSubscription;
+
   @override
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
 
-    getContactsFromDB();
+    // bindContactsStream();
+    // messageBindStream();
     // bindChatUsersStream();
     // loadLocalContacts();
     bindChatUsersStream();
@@ -67,6 +72,7 @@ class ChatsController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    // contactsSubscription.cancel();
   }
 
   void connectSocket() async {
@@ -76,8 +82,14 @@ class ChatsController extends GetxController {
     }
   }
 
-  getContactsFromDB() async {
-    return contacts.assignAll(await contactsTable.fetchAll());
+  void bindContactsStream() {
+    contacts.bindStream(getContactsFromDBStream());
+  }
+
+  Stream<List<UserList>> getContactsFromDBStream() {
+    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) async {
+      return await contactsTable.fetchAll();
+    });
   }
 
   Future<void> loadLocalContacts() async {
@@ -91,15 +103,9 @@ class ChatsController extends GetxController {
     contactsList.assignAll(localContacts);
   }
 
-  // void bindStream() {
-  //   contactsList.bindStream(getChatContacts());
-  // }
-
   void bindChatUsersStream() {
     final stream = getChatUsersStream();
     stream.listen((firebaseContacts) async {
-      // Save new data locally
-      // await chatConectTable.deleteTable();
       for (var contact in firebaseContacts) {
         ChatConntactModel? ct =
             await chatConectTable.fetchById(uid: contact.uid!);
@@ -108,7 +114,7 @@ class ChatsController extends GetxController {
               uid: contact.uid!,
               lastMessage: contact.lastMessage,
               profilePic: contact.profilePic,
-              timeSent: contact.timeSent!.microsecondsSinceEpoch);
+              timeSent: contact.timeSent!.toString());
         } else {
           await chatConectTable.insert(contact: contact);
         }
@@ -119,146 +125,66 @@ class ChatsController extends GetxController {
     });
   }
 
-  // Stream<List<NewMessageModel>> getMessageStream() async* {
-  //   yield* Stream.periodic(const Duration(seconds: 1), (_) async {
-  //     return await MessageTable();
-
-  //     );
-  //   }).asyncMap((event) async => await event);
+  // void messageBindStream() {
+  //   messageList.bindStream(getMessageStream());
   // }
 
-  // Stream<List<ChatConntactModel>> getChatUsersStream() async* {
-  //   // UserModel? userdata = sharedPreferenceService.getUserDetails();
+  Stream<List<ChatConntactModel>> getChatUsersStream(
+      {Duration interval = const Duration(seconds: 1)}) async* {
+    while (true) {
+      await Future.delayed(interval); // controls polling frequency
+      final messages = await ChatConectTable().fetchAll();
 
-  //   yield* Stream.periodic(const Duration(seconds: 1), (_) async {
-  //     return await MessageTable().getAllMessages();
-  //   }).asyncMap((snapshot) async {
-  //     List<NewMessageModel> newMessageList = await snapshot;
-  //     List<ChatConntactModel> firebaseContacts = [];
-  //     Set<String> usersSet = {};
-
-  //     firebaseContacts = newMessageList
-  //         .where((message) =>
-  //             contacts.any((user) => user.userId == message.recipientId))
-  //         .map((message) {
-  //       final user = contacts.lastWhere((user) =>
-  //           (user.userId == message.recipientId) &&
-  //           (senderuserData!.userId != message.recipientId));
-  //       return ChatConntactModel(
-  //         contactId: user.userId.toString(),
-  //         lastMessage: message.message.toString(),
-  //         name: user.name.toString(),
-  //         profilePic: user.displayPictureUrl.toString(),
-  //         timeSent: DateTime.now(),
-  //         uid: user.userId.toString(),
-  //       );
-  //     }).toList();
-
-  //     return firebaseContacts;
-  //   });
-  // }
-  Stream<List<ChatConntactModel>> getChatUsersStream() {
-    final senderUserData = sharedPreferenceService.getUserData();
-
-    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) async {
-      List<NewMessageModel> newMessageList =
-          await MessageTable().getAllMessages();
-
-      // newMessageList.sort((a, b) => DateTime.parse(b.createdAt ?? '')
-      //     .compareTo(DateTime.parse(a.createdAt ?? '')));
-
-      List<ChatConntactModel> firebaseContacts = [];
-      Set<int> addedUserIds = {};
-
-      for (var message in newMessageList) {
-        final recipientId = message.recipientId == senderUserData!.userId
-            ? message.senderId
-            : message.recipientId;
-
-        if (recipientId == null || addedUserIds.contains(recipientId)) {
-          continue;
-        }
-
-        final user =
-            contacts.firstWhereOrNull((user) => user.userId == recipientId);
-
-        if (user != null) {
-          firebaseContacts.add(ChatConntactModel(
-            contactId: user.userId.toString(),
-            lastMessage: message.message ?? '',
-            name: user.localName ?? '',
-            profilePic: user.displayPictureUrl ?? '',
-            timeSent: DateTime.fromMicrosecondsSinceEpoch(
-              int.tryParse(message.messageSentFromDeviceTime ?? '') ??
-                  DateTime.now().microsecondsSinceEpoch,
-            ),
-            uid: user.userId.toString(),
-          ));
-          addedUserIds.add(recipientId);
-        }
-      }
-
-      return firebaseContacts;
-    });
+      yield messages;
+    }
   }
 
   // Stream<List<ChatConntactModel>> getChatUsersStream() {
-  //   UserModel? userdata = sharedPreferenceService.getUserDetails();
+  //   final senderUserData = sharedPreferenceService.getUserData();
 
-  //   return firebaseController.fetchUsersWithChats(userdata!.uid!);
-  // }
+  //   return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) async {
 
-  // void bindChatUsersStream() {
-  //   contactsList.bindStream(getChatUsersStream());
-  // }
+  //     if (messageList.length > 1) {
+  //       messageList.sort((a, b) {
+  //         final dateA = DateTime.tryParse(a.createdAt ?? '') ??
+  //             DateTime.fromMillisecondsSinceEpoch(0);
+  //         final dateB = DateTime.tryParse(b.createdAt ?? '') ??
+  //             DateTime.fromMillisecondsSinceEpoch(0);
+  //         return dateB.compareTo(dateA); // descending
+  //       });
+  //     }
 
-  // Stream<List<ChatConntactModel>> getChatContacts() async* {
-  //   UserModel? userdata = sharedPreferenceService.getUserDetails();
+  //     List<ChatConntactModel> chatContacts = [];
+  //     Set<int> processedUserIds = {};
 
-  //   // List<ChatConntactModel> contacts = [];
-
-  //   try {
-  //     Set<String> usersSet = {};
-
-  //     QuerySnapshot snapshot =
-  //         await firebaseController.firestore.collection('users').get();
-
-  //     firebaseController.firestore
-  //         .collection('users')
-  //         .doc(userdata!.uid)
-  //         .collection('chats')
-  //         .snapshots()
-  //         .asyncMap((event) async {
-  //       if (event.docs.isNotEmpty) {
-  //         for (var document in event.docs) {
-  //           var chatContact = ChatConntactModel.fromMap(document.data());
-  //           var userData = await firebaseController.firestore
-  //               .collection('users')
-  //               .doc(chatContact.contactId)
-  //               .get();
-  //           var user = UserModel.fromJson(userData.data()!);
-
-  //           if (!usersSet.contains(user.phoneNumber!)) {
-  //             contactsList.add(
-  //               ChatConntactModel(
-  //                 name: user.name!,
-  //                 profilePic: chatContact.profilePic,
-  //                 contactId: chatContact.contactId,
-  //                 timeSent: chatContact.timeSent,
-  //                 lastMessage: chatContact.lastMessage,
-  //                 uid: user.uid!,
-  //               ),
-  //             );
-  //             usersSet.add(user.phoneNumber!);
-  //           }
-  //         }
+  //     for (var message in messageList) {
+  //       // Get the other user's ID (not the current user)
+  //       int? otherUserId;
+  //       if (message.senderId == senderUserData?.userId) {
+  //         otherUserId = message.recipientId;
+  //       } else if (message.recipientId == senderUserData?.userId) {
+  //         otherUserId = message.senderId;
   //       }
-  //       // return contactsList.stream;
-  //     });
-  //     yield* contactsList.stream;
-  //   } catch (e) {
-  //     throw e.toString();
-  //   }
+
+  //       if (otherUserId == null || processedUserIds.contains(otherUserId))
+  //         continue;
+
+  //       final user = contacts.firstWhereOrNull((u) => u.userId == otherUserId);
+  //       if (user != null) {
+  //         chatContacts.add(ChatConntactModel(
+  //           contactId: user.userId.toString(),
+  //           lastMessage: message.message ?? '',
+  //           name: user.name ?? '',
+  //           profilePic: user.displayPictureUrl ?? '',
+  //           timeSent: DateTime.parse((message.messageSentFromDeviceTime ?? '')),
+  //           uid: user.userId.toString(),
+  //         ));
+  //         processedUserIds.add(otherUserId);
+  //       }
+  //     }
+
+  //     return chatContacts;
+  //   });
   // }
 
   Future<void> logout() async {

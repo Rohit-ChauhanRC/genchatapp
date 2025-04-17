@@ -13,7 +13,7 @@ class ChatConectTable {
     "name" TEXT,
     "profilePic" TEXT,
     "contactId" TEXT UNIQUE,
-    "timeSent" INTEGER,
+    "timeSent" TEXT,
     "lastMessage" TEXT,
     "uid" TEXT UNIQUE,
     PRIMARY KEY("id" AUTOINCREMENT)
@@ -68,7 +68,8 @@ class ChatConectTable {
     required String uid,
     String? profilePic,
     String? lastMessage,
-    int? timeSent,
+    String? timeSent,
+    String? name,
   }) async {
     final db = await DataBaseService().database;
 
@@ -77,6 +78,7 @@ class ChatConectTable {
       'profilePic': profilePic,
       'lastMessage': lastMessage,
       'timeSent': timeSent,
+      'name': name,
     };
 
     // Perform the update

@@ -119,7 +119,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     senderuserData = sharedPreferenceService.getUserData();
 
     UserList? user = Get.arguments;
-    if(user != null){
+    if (user != null) {
       checkUserOnline(user);
       receiverUserData = user;
       bindReceiverUserStream(user.userId ?? 0);
@@ -169,10 +169,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void checkUserOnline(UserList? user) async{
+  void checkUserOnline(UserList? user) async {
     var params = {"recipientId": user?.userId};
     socketService.checkUserOnline(params);
   }
+
   void disConnectSocket() async {
     socketService.disposeSocket();
   }
@@ -266,7 +267,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       senderId: senderuserData?.userId,
       recipientId: receiverUserData?.userId,
       message: messageController.text.trim(),
-      messageSentFromDeviceTime: timeSent.toIso8601String(),
+      messageSentFromDeviceTime: timeSent.toString(),
       clientSystemMessageId: clientSystemMessageId,
       state: MessageState.unsent,
       syncStatus: SyncStatus.pending,

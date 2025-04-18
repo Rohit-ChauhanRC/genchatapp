@@ -109,9 +109,10 @@ class SocketService extends GetxService {
       print('✅ user connection status: $data');
       final int userId = int.parse(data['userId']);
       final int isOnline = data['isOnline'] ? 1 : 0;
+      final String lastSeenTime = DateTime.now().toString();
 
       // Update local DB
-      await contactsTable.updateUserOnlineStatus(userId, isOnline);
+      await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
     });
 
     _socket.on('typing', (data) {

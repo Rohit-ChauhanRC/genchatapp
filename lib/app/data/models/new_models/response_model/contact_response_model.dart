@@ -44,10 +44,11 @@ class UserList {
   String? localName;
   String? email;
   String? userDescription;
-  int? isOnline;
+  bool? isOnline;
   String? displayPicture;
   String? displayPictureUrl;
-  int? isBlocked;
+  bool? isBlocked;
+  String? lastSeenTime;
 
   UserList({
     this.userId,
@@ -61,6 +62,7 @@ class UserList {
     this.displayPicture,
     this.displayPictureUrl,
     this.isBlocked,
+    this.lastSeenTime,
   });
 
   factory UserList.fromJson(Map<String, dynamic> json) => UserList(
@@ -75,6 +77,7 @@ class UserList {
     displayPicture: json["displayPicture"],
     displayPictureUrl: json["displayPictureUrl"],
     isBlocked: json["isBlocked"],
+    lastSeenTime: json["lastSeenTime"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -89,6 +92,7 @@ class UserList {
     "displayPicture": displayPicture,
     "displayPictureUrl": displayPictureUrl,
     "isBlocked": isBlocked,
+    "lastSeenTime": lastSeenTime,
   };
 
   factory UserList.fromMap(Map<String, dynamic> map) {
@@ -100,10 +104,11 @@ class UserList {
       localName: map["localName"],
       email: map["email"],
       userDescription: map["userDescription"],
-      isOnline: map["isOnline"],
+      isOnline: map["isOnline"] == 1,
       displayPicture: map["displayPicture"],
       displayPictureUrl: map["displayPictureUrl"],
-      isBlocked: map["isBlocked"],
+      isBlocked: map["isBlocked"] == 1,
+      lastSeenTime: map["lastSeenTime"],
     );
   }
 
@@ -116,10 +121,11 @@ class UserList {
       "localName": localName,
       "email": email,
       "userDescription": userDescription,
-      "isOnline": isOnline,
+      "isOnline": isOnline == true ? 1 : 0,
       "displayPicture": displayPicture,
       "displayPictureUrl": displayPictureUrl,
-      "isBlocked": isBlocked,
+      "isBlocked": isBlocked == true ? 1 : 0,
+      "lastSeenTime": lastSeenTime,
     };
   }
 
@@ -131,10 +137,11 @@ class UserList {
     String? localName,
     String? email,
     String? userDescription,
-    int? isOnline,
+    bool? isOnline,
     String? displayPicture,
     String? displayPictureUrl,
-    int? isBlocked,
+    bool? isBlocked,
+    String? lastSeenTime,
   }) {
     return UserList(
       userId: userId ?? this.userId,
@@ -148,6 +155,7 @@ class UserList {
       displayPicture: displayPicture ?? this.displayPicture,
       displayPictureUrl: displayPictureUrl ?? this.displayPictureUrl,
       isBlocked: isBlocked ?? this.isBlocked,
+      lastSeenTime: lastSeenTime ?? this.lastSeenTime,
     );
   }
 }

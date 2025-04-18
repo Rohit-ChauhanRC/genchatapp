@@ -72,9 +72,10 @@ class UserData extends Equatable{
   String? name;
   dynamic email;
   dynamic userDescription;
-  int? isOnline;
+  bool? isOnline;
   String? displayPicture;
   String? displayPictureUrl;
+  String? lastSeenTime;
 
   UserData({
     this.userId,
@@ -86,6 +87,7 @@ class UserData extends Equatable{
     this.isOnline,
     this.displayPicture,
     this.displayPictureUrl,
+    this.lastSeenTime,
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
@@ -98,6 +100,7 @@ class UserData extends Equatable{
     isOnline: json["isOnline"],
     displayPicture: json["displayPicture"],
     displayPictureUrl: json["displayPictureUrl"],
+    lastSeenTime: json["lastSeenTime"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -110,6 +113,7 @@ class UserData extends Equatable{
     "isOnline": isOnline,
     "displayPicture": displayPicture,
     "displayPictureUrl": displayPictureUrl,
+    "lastSeenTime": lastSeenTime,
   };
 
   @override
@@ -123,6 +127,7 @@ class UserData extends Equatable{
     userDescription,
     isOnline,
     displayPicture,
-    displayPictureUrl
+    displayPictureUrl,
+    lastSeenTime
   ];
 }

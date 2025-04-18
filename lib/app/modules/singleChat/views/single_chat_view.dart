@@ -60,7 +60,7 @@ class SingleChatView extends GetView<SingleChatController> {
                       user?.isOnline == 1
                           ? "Online"
                           : "last seen "
-                          // "${lastSeenFormatted(ctc.receiverUserData. ?? "").toLowerCase()}"
+                          "${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}"
                           "", maxLines: 2,
                       style: const TextStyle(
                         fontWeight: FontWeight.w200,

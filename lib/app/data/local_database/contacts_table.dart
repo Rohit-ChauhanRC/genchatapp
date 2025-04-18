@@ -19,6 +19,7 @@ class ContactsTable {
         isOnline INTEGER,
         displayPicture TEXT,
         displayPictureUrl TEXT,
+        lastSeenTime TEXT,
         isBlocked INTEGER
       );
     """);
@@ -53,11 +54,12 @@ class ContactsTable {
     return result.map((e) => UserList.fromMap(e)).toList();
   }
 
-  Future<void> updateUserOnlineStatus(int userId, int isOnline) async {
+  Future<void> updateUserOnlineStatus(int userId, int isOnline, String lastSeenTime) async {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'isOnline': isOnline},
+      {'isOnline': isOnline,
+      'lastSeenTime': lastSeenTime},
       where: 'userId = ?',
       whereArgs: [userId],
     );

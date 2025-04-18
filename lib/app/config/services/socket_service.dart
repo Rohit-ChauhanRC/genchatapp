@@ -75,6 +75,7 @@ class SocketService extends GetxService {
         messageTable.updateAckMessage(
           clientSystemMessageId: data["clientSystemMessageId"].toString(),
           state: data["state"],
+          messageId: data["messageId"],
         );
       } else if (data["state"] == 2 || data["state"] == 3) {
         messageTable.updateAckStateMessage(
@@ -97,7 +98,8 @@ class SocketService extends GetxService {
       final String lastSeenTime = DateTime.now().toString();
 
       // Update local DB
-      await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
+      await contactsTable.updateUserOnlineStatus(
+          userId, isOnline, lastSeenTime);
     });
 
     _socket.on('typing', (data) {

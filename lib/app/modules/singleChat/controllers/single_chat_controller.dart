@@ -211,10 +211,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                   i.state == MessageState.unsent ||
                   i.state == MessageState.delivered) &&
               i.messageId != null) {
-            socketService.sendMessageSeen(i.messageId!);
-          } else {
-            // socketService.sendMessageSync(i);
+            if (receiverUserData!.userId == i.senderId) {
+              socketService.sendMessageSeen(i.messageId!);
+            }
           }
+          // else if(i.syncStatus) {
+          // socketService.sendMessageSync(i);
+          // }
         }
       }
     });

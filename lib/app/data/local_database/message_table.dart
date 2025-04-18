@@ -68,7 +68,7 @@ class MessageTable {
   Future<void> insertMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;
 
-    debugPrint("meesageSent: ${message.message}");
+    // debugPrint("meesageSent: ${message.message}");
 
     await db.insert(
       tableName,
@@ -88,16 +88,48 @@ class MessageTable {
     );
   }
 
-  Future<int> updateAckMessage(
-      String clientSystemMessageId, NewMessageModel newMessageModel) async {
-    // final messageTable = await getMessageByClientID(clientSystemMessageId);
+//     final database = await DataBaseService().database;
+//     return await database.update(
+//       tableName,
+//       {
+//         if (name != null) 'name': name,
+//         if (profilePic != null) 'profilePic': profilePic,
+//         if (isOnline != null) 'isOnline': isOnline,
+//         if (phoneNumber != null) 'phoneNumber': phoneNumber,
+//         if (groupId != null) 'groupId': groupId,
+//         if (email != null) 'email': email,
+//         if (fcmToken != null) 'fcmToken': fcmToken,
+//         if (lastSeen != null) 'lastSeen': lastSeen,
+//       },
+//       where: 'uid = ?',
+//       conflictAlgorithm: ConflictAlgorithm.rollback,
+//       whereArgs: [uid],
+//     );
 
+  Future<int> updateAckMessage(
+      {required String clientSystemMessageId, required int state}) async {
     final db = await DataBaseService().database;
     return await db.update(
       tableName,
-      newMessageModel.toMap(),
+      {
+        "state": state,
+      },
       where: 'clientSystemMessageId = ?',
       whereArgs: [clientSystemMessageId],
+    );
+  }
+
+  Future<int> updateAckStateMessage(
+      {required String messageId, required int state}) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      {
+        "state": state,
+      },
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      conflictAlgorithm: ConflictAlgorithm.rollback,
     );
   }
 
@@ -171,7 +203,7 @@ class MessageTable {
       await db.insert(deleteQueueTblName, {'messageId': messageId},
           conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e) {
-      print("Error marking message for deletion: $e");
+      // print("Error marking message for deletion: $e");
     }
   }
 

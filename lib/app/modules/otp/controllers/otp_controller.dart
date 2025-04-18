@@ -78,7 +78,7 @@ class OtpController extends GetxController {
 
   void resendOtp() {
     if (isResendEnabled.value) {
-      print("Resending OTP to $mobileNumber...");
+      // print("Resending OTP to $mobileNumber...");
       startTimer();
       verifyPhoneNumberController.loginCred(mobileNumber, true);
     }
@@ -91,40 +91,47 @@ class OtpController extends GetxController {
     await verifyOTPLoginCred();
   }
 
-  Future<void> verifyOTPLoginCred() async{
-    try{
+  Future<void> verifyOTPLoginCred() async {
+    try {
       circularProgress = true;
       int countryNum = int.parse(countryCode);
-      final response = await authRepository.verifyOtp(mobileNumber, countryNum, otp);
-      if(response != null && response.statusCode == 200){
-        final getVerifyNumberResponse = VerifyOtpResponseModel.fromJson(response.data);
-        if(getVerifyNumberResponse.status == true){
+      final response =
+          await authRepository.verifyOtp(mobileNumber, countryNum, otp);
+      if (response != null && response.statusCode == 200) {
+        final getVerifyNumberResponse =
+            VerifyOtpResponseModel.fromJson(response.data);
+        if (getVerifyNumberResponse.status == true) {
           String? accessToken = getVerifyNumberResponse.data?.accessToken;
           String? refreshToken = getVerifyNumberResponse.data?.refreshToken;
           UserData? userDetails = getVerifyNumberResponse.data?.userData;
           int? userId = userDetails?.userId;
           String? mobileNum = userDetails?.phoneNumber;
-          saveIsNumVerified(accessToken ?? "", refreshToken ?? "", true, userId ?? 0, mobileNum ?? "");
-          sharedPreferenceService.setString(UserDefaultsKeys.userDetail, userDataToJson(userDetails!));
-          print("getUserData full details:---> ${sharedPreferenceService.getUserData()}");
-          Get.offAllNamed(
-            Routes.CREATE_PROFILE, arguments: false
-            // arguments: [mobileNumber, a.toString()],
-          );
+          saveIsNumVerified(accessToken ?? "", refreshToken ?? "", true,
+              userId ?? 0, mobileNum ?? "");
+          sharedPreferenceService.setString(
+              UserDefaultsKeys.userDetail, userDataToJson(userDetails!));
+          // print("getUserData full details:---> ${sharedPreferenceService.getUserData()}");
+          Get.offAllNamed(Routes.CREATE_PROFILE, arguments: false
+              // arguments: [mobileNumber, a.toString()],
+              );
         }
       }
-    }catch (e) {
-      print("Error in verifyOTPCred: $e");
+    } catch (e) {
+      // print("Error in verifyOTPCred: $e");
       showAlertMessage("Something went wrong: $e");
-    } finally{
+    } finally {
       circularProgress = false;
     }
   }
 
-  void saveIsNumVerified(String accessToken, String refreshToken, bool isNumVerified, int uid, String mob) {
-    sharedPreferenceService.setString(UserDefaultsKeys.accessToken, accessToken);
-    sharedPreferenceService.setString(UserDefaultsKeys.refreshToken, refreshToken);
-    sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, isNumVerified);
+  void saveIsNumVerified(String accessToken, String refreshToken,
+      bool isNumVerified, int uid, String mob) {
+    sharedPreferenceService.setString(
+        UserDefaultsKeys.accessToken, accessToken);
+    sharedPreferenceService.setString(
+        UserDefaultsKeys.refreshToken, refreshToken);
+    sharedPreferenceService.setBool(
+        UserDefaultsKeys.isNumVerify, isNumVerified);
     sharedPreferenceService.setInt(UserDefaultsKeys.userId, uid);
     sharedPreferenceService.setString(UserDefaultsKeys.userMobileNum, mob);
   }

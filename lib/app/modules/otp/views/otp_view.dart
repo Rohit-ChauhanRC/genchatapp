@@ -63,11 +63,10 @@ class OtpView extends GetView<OtpController> {
                               color: textBarColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w400),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap=(){
-                            Get.back();
-                          }
-                      )
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Get.back();
+                            })
                     ]),
                   ),
                   const SizedBox(
@@ -116,17 +115,17 @@ class OtpView extends GetView<OtpController> {
                         )
                       ],
                       onCompleted: (v) async {
-                        debugPrint("Completed $v");
+                        // debugPrint("Completed $v");
                         if (v.length == 4) {
                           await controller.login();
                         }
                       },
                       onChanged: (val) async {
-                        debugPrint(val);
+                        // debugPrint(val);
                         controller.otp = val;
                       },
                       beforeTextPaste: (text) {
-                        debugPrint("Allowing to paste $text");
+                        // debugPrint("Allowing to paste $text");
                         return true;
                       },
                     ),

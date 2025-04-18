@@ -18,7 +18,7 @@ class ConnectivityService extends GetxController {
       final result = await _connectivity.checkConnectivity();
       _updateConnectionStatus(result);
     } catch (e) {
-      print("Error checking connectivity: $e");
+      // print("Error checking connectivity: $e");
     }
   }
 
@@ -29,5 +29,4 @@ class ConnectivityService extends GetxController {
   void _updateConnectionStatus(List<ConnectivityResult> result) {
     isConnected.value = !result.contains(ConnectivityResult.none);
   }
-
 }

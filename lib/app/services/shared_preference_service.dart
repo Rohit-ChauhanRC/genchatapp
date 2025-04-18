@@ -66,8 +66,8 @@ class SharedPreferenceService {
   UserData? getUserData() {
     if (getString(UserDefaultsKeys.userDetail) == null ||
         getString(UserDefaultsKeys.userDetail) == "") {
-      print(
-          "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
+      // print(
+      //     "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
       db.closeDb();
       clear();
       Get.offAllNamed(Routes.LANDING);

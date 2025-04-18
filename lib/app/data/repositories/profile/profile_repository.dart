@@ -14,17 +14,13 @@ class ProfileRepository {
   ProfileRepository({required this.apiClient});
 
   /// Update user details (Name & Email)
-  Future<Response?> updateUserDetails({required String name, required String email}) async {
+  Future<Response?> updateUserDetails(
+      {required String name, required String email}) async {
     try {
-
-      final param = {
-        'name': name,
-        'email': email
-      };
+      final param = {'name': name, 'email': email};
       return await apiClient.post(ApiEndpoints.updateUser, param);
-
     } catch (e) {
-      print("🔥 Error updating user details: $e");
+      // print("🔥 Error updating user details: $e");
       showAlertMessage("Error updating user details: $e");
       return null;
     }
@@ -35,7 +31,7 @@ class ProfileRepository {
     String fileName = imageFile.path.split('/').last;
     String mimeType = getImageMimeType(imageFile);
 
-    print("FileName: $fileName\nFileType: $mimeType\nImagePath: ${imageFile.path} ");
+    // print("FileName: $fileName\nFileType: $mimeType\nImagePath: ${imageFile.path} ");
 
     FormData buildFormData() {
       return FormData.fromMap({
@@ -50,10 +46,10 @@ class ProfileRepository {
     return await retryFormDataUpload(
       url: ApiEndpoints.updateUserProPic,
       formDataBuilder: buildFormData,
-      uploadCall: (formData) => apiClient.uploadFile(ApiEndpoints.updateUserProPic, formData),
+      uploadCall: (formData) =>
+          apiClient.uploadFile(ApiEndpoints.updateUserProPic, formData),
     );
   }
-
 
   /// Function to get the correct content type for images dynamically
   String getImageMimeType(File file) {

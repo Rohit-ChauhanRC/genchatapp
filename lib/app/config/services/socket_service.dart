@@ -72,32 +72,17 @@ class SocketService extends GetxService {
     _socket.on('message-acknowledgement', (data) async {
       print('✅ Message Ack: $data');
       if (data["state"] == 1) {
-        NewMessageModel? newModel = await messageTable
-            .getMessageByClientID(data["clientSystemMessageId"].toString());
-        if (newModel != null) {
-          newModel = newModel.copyWith(
-              state: MessageState.sent, messageId: data["messageId"]);
-          messageTable.updateAckMessage(
-              data["clientSystemMessageId"].toString(), newModel);
-        }
-      } else if (data["state"] == 2) {
-        NewMessageModel? newModel =
-            await messageTable.getMessageById(data["messageId"]);
-        if (newModel != null) {
-          messageTable.updateMessage(newModel.copyWith(
-              state: MessageState.delivered, messageId: data["messageId"]));
-        }
-      } else if (data["state"] == 3) {
-        NewMessageModel? newModel =
-            await messageTable.getMessageById(data["messageId"]);
-        if (newModel != null) {
-          newModel.copyWith(
-              state: MessageState.read, messageId: data["messageId"]);
-
-          messageTable.updateMessage(newModel);
-        }
+        messageTable.updateAckMessage(
+          clientSystemMessageId: data["clientSystemMessageId"].toString(),
+          state: data["state"],
+        );
+      } else if (data["state"] == 2 || data["state"] == 3) {
+        messageTable.updateAckStateMessage(
+          messageId: data["messageId"].toString(),
+          state: data["state"],
+        );
       }
-      // TODO: Update message status in DB
+      //
     });
 
     _socket.on('group-message-acknowledgement', (data) {
@@ -130,7 +115,15 @@ class SocketService extends GetxService {
     _socket.emit('message-event', data.toMap());
   }
 
+  void sendMessageSync(NewMessageModel data) async {
+    _socket.emit('message-event', data.toMap());
+  }
+
   void sendMessageSeen(int messageId) {
+    messageTable.updateAckStateMessage(
+      messageId: messageId.toString(),
+      state: 3,
+    );
     _socket.emit('message-seen', {
       "messageId": messageId,
     });
@@ -148,7 +141,8 @@ class SocketService extends GetxService {
     final user = await contactsTable.getUserById(data.recipientId!);
     // print('🔍 [saveChatContacts] Found user from contactsTable: ${user?.toMap()}');
 
-    final chatUser = await chatConectTable.fetchById(uid: user!.userId.toString());
+    final chatUser =
+        await chatConectTable.fetchById(uid: user!.userId.toString());
     // print('📘 [saveChatContacts] Existing chat user in chatConectTable: ${chatUser?.toMap()}');
 
     if (chatUser != null) {
@@ -183,5 +177,4 @@ class SocketService extends GetxService {
       await chatConectTable.insert(contact: newContact);
     }
   }
-
 }

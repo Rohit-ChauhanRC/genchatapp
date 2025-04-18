@@ -38,10 +38,7 @@ class ChatConectTable {
     final e = await database.rawQuery('''
         SELECT * from $tableName
       ''');
-    for (var element in e) {
-      print(element.values);
-    }
-    // print(e);
+
     return e.map((el) => ChatConntactModel.fromMap((el))).toList();
   }
 
@@ -79,7 +76,8 @@ class ChatConectTable {
     if (timeSent != null) updatedValues['timeSent'] = timeSent;
     if (name != null) updatedValues['name'] = name;
 
-    print('📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');
+    print(
+        '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');
 
     if (updatedValues.isNotEmpty) {
       await db.update(
@@ -93,7 +91,6 @@ class ChatConectTable {
     }
   }
 
-
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;
 
@@ -101,7 +98,7 @@ class ChatConectTable {
     // final db = await database;
     await db.execute('DROP TABLE IF EXISTS $tableName');
     await createTable(db);
-    print('Table "$tableName" deleted successfully.');
+    // print('Table "$tableName" deleted successfully.');
   }
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {

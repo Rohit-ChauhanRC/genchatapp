@@ -107,31 +107,31 @@ class CreateProfileController extends GetxController {
   // }
 
   void createAppFolders() async {
-    print("CreateAppFolder Calls");
+    // print("CreateAppFolder Calls");
     final appDir = await getApplicationDocumentsDirectory();
     for (String folderPath in folderList) {
-      print("Call one by one $folderPath");
+      // print("Call one by one $folderPath");
       final dir = Directory('${appDir.path}/GenChatApp/$folderPath');
       var status = await Permission.storage.status;
       if (!status.isGranted) {
-        print(
-            "calling for storage permission $status \n Directory path:---------> $dir");
+        // print(
+        //     "calling for storage permission $status \n Directory path:---------> $dir");
         status = await Permission.storage.request();
         if (!status.isGranted) {
-          print("Storage permission denied. Cannot create folder: $folderPath");
+          // print("Storage permission denied. Cannot create folder: $folderPath");
           showPermissionDeniedDialog();
           continue; // Skip folder creation if permission is not granted
         }
       }
       if (!(await dir.exists())) {
-        print("creating folders");
+        // print("creating folders");
         await dir.create(recursive: true);
       }
       // Verify folder creation
       if (await dir.exists()) {
-        print("Folder created successfully: $dir");
+        // print("Folder created successfully: $dir");
       } else {
-        print("Failed to create folder: $dir");
+        // print("Failed to create folder: $dir");
       }
     }
   }
@@ -164,7 +164,7 @@ class CreateProfileController extends GetxController {
   void getUserData() async {
     UserData? userData = sharedPreferenceService.getUserData();
 
-    print("📢 Fetched User Data: $userData"); // Debugging Log
+    // print("📢 Fetched User Data: $userData"); // Debugging Log
 
     profileName = userData?.name ?? "";
     email = userData?.email ?? '';
@@ -174,7 +174,7 @@ class CreateProfileController extends GetxController {
 
     photoUrl = userData?.displayPictureUrl ?? '';
 
-    print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
+    // print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
   }
 
   Future<void> updateProfile() async {
@@ -198,7 +198,7 @@ class CreateProfileController extends GetxController {
           if (result.status == true) {
             final user = result.data?.userData;
             uploadedImageUrl = user?.displayPictureUrl;
-            print("✅ Profile picture uploaded: $uploadedImageUrl");
+            // print("✅ Profile picture uploaded: $uploadedImageUrl");
 
             if (user != null) {
               await sharedPreferenceService.setString(
@@ -233,7 +233,7 @@ class CreateProfileController extends GetxController {
         if (result.status == true) {
           final user = result.data?.userData;
           uploadedImageUrl = user?.displayPictureUrl;
-          print("✅ Profile updated successfully: $uploadedImageUrl");
+          // print("✅ Profile updated successfully: $uploadedImageUrl");
 
           if (user != null) {
             await sharedPreferenceService.setString(
@@ -249,7 +249,7 @@ class CreateProfileController extends GetxController {
         showAlertMessage('Failed to update profile.');
       }
     } catch (e) {
-      print("🔥 Error updating profile: $e");
+      // print("🔥 Error updating profile: $e");
       showAlertMessage('Something went wrong. Please try again.');
     } finally {
       circularProgress = false;

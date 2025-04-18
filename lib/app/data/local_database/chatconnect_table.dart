@@ -73,22 +73,26 @@ class ChatConectTable {
   }) async {
     final db = await DataBaseService().database;
 
-    // Map with new values
-    final updatedValues = {
-      'profilePic': profilePic,
-      'lastMessage': lastMessage,
-      'timeSent': timeSent,
-      'name': name,
-    };
+    final updatedValues = <String, dynamic>{};
+    if (profilePic != null) updatedValues['profilePic'] = profilePic;
+    if (lastMessage != null) updatedValues['lastMessage'] = lastMessage;
+    if (timeSent != null) updatedValues['timeSent'] = timeSent;
+    if (name != null) updatedValues['name'] = name;
 
-    // Perform the update
-    await db.update(
-      tableName,
-      updatedValues,
-      where: 'uid = ?',
-      whereArgs: [uid],
-    );
+    print('📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');
+
+    if (updatedValues.isNotEmpty) {
+      await db.update(
+        tableName,
+        updatedValues,
+        where: 'uid = ?',
+        whereArgs: [uid],
+      );
+    } else {
+      print('⚠️ [updateContact] No values to update for uid=$uid');
+    }
   }
+
 
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;

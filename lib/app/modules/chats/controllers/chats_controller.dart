@@ -106,19 +106,19 @@ class ChatsController extends GetxController {
   void bindChatUsersStream() {
     final stream = getChatUsersStream();
     stream.listen((firebaseContacts) async {
-      for (var contact in firebaseContacts) {
-        ChatConntactModel? ct =
-            await chatConectTable.fetchById(uid: contact.uid!);
-        if (ct != null) {
-          await chatConectTable.updateContact(
-              uid: contact.uid!,
-              lastMessage: contact.lastMessage,
-              profilePic: contact.profilePic,
-              timeSent: contact.timeSent!.toString());
-        } else {
-          await chatConectTable.insert(contact: contact);
-        }
-      }
+      // for (var contact in firebaseContacts) {
+      //   ChatConntactModel? ct =
+      //       await chatConectTable.fetchById(uid: contact.uid!);
+      //   if (ct != null) {
+      //     await chatConectTable.updateContact(
+      //         uid: contact.uid!,
+      //         lastMessage: contact.lastMessage,
+      //         profilePic: contact.profilePic,
+      //         timeSent: contact.timeSent!.toString());
+      //   } else {
+      //     await chatConectTable.insert(contact: contact);
+      //   }
+      // }
 
       // Update the UI list
       contactsList.assignAll(firebaseContacts);

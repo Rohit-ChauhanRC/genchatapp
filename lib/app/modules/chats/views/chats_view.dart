@@ -233,8 +233,8 @@ class ChatsView extends GetView<ChatsController> {
 
                                         // Timestamp
                                         Text(
-                                          lastSeenFormatted(chatConntactModel
-                                              .timeSent!.microsecondsSinceEpoch
+                                          formatLastMessageTime(chatConntactModel
+                                              .timeSent
                                               .toString()),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,

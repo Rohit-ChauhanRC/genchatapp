@@ -6,7 +6,7 @@ class ChatConntactModel extends Equatable {
   final String? name;
   final String? profilePic;
   final String? contactId;
-  final DateTime? timeSent;
+  final String? timeSent;
   final String? lastMessage;
   final String? uid;
   // final UserModel? user;
@@ -26,7 +26,7 @@ class ChatConntactModel extends Equatable {
       'name': name,
       'profilePic': profilePic,
       'contactId': contactId,
-      'timeSent': timeSent!.millisecondsSinceEpoch,
+      'timeSent': timeSent,
       'lastMessage': lastMessage,
       'uid': uid,
     };
@@ -34,10 +34,10 @@ class ChatConntactModel extends Equatable {
 
   factory ChatConntactModel.fromMap(Map<String, dynamic> map) {
     return ChatConntactModel(
-      name: map['name'] ?? "",
+      name: map['name'],
       profilePic: map['profilePic'] as String,
       contactId: map['contactId'] as String,
-      timeSent: DateTime.parse(map['timeSent']),
+      timeSent: map['timeSent'],
       lastMessage: map['lastMessage'] as String,
       uid: map['uid'] as String,
     );
@@ -52,7 +52,7 @@ class ChatConntactModel extends Equatable {
     final String? name,
     final String? profilePic,
     final String? contactId,
-    final DateTime? timeSent,
+    final String? timeSent,
     final String? lastMessage,
     final String? uid,
   }) {

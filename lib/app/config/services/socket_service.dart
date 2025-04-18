@@ -143,13 +143,23 @@ class SocketService extends GetxService {
     _socket.dispose();
   }
 
-  void saveChatContacts(
-    NewMessageModel data,
-  ) async {
+  void saveChatContacts(NewMessageModel data) async {
     final user = await contactsTable.getUserById(data.recipientId!);
-    final chatUser =
-        await chatConectTable.fetchById(uid: user!.userId.toString());
+    // print('🔍 [saveChatContacts] Found user from contactsTable: ${user?.toMap()}');
+
+    final chatUser = await chatConectTable.fetchById(uid: user!.userId.toString());
+    // print('📘 [saveChatContacts] Existing chat user in chatConectTable: ${chatUser?.toMap()}');
+
     if (chatUser != null) {
+      final updatedValues = {
+        'lastMessage': data.message,
+        'timeSent': data.messageSentFromDeviceTime,
+        'profilePic': user.displayPictureUrl,
+        'name': user.localName,
+      };
+
+      // print('✏️ [saveChatContacts] Updating contact with values: $updatedValues');
+
       await chatConectTable.updateContact(
         uid: user.userId.toString(),
         lastMessage: data.message,
@@ -158,15 +168,19 @@ class SocketService extends GetxService {
         name: user.localName,
       );
     } else {
-      await chatConectTable.insert(
-          contact: ChatConntactModel(
+      final newContact = ChatConntactModel(
         contactId: user.userId.toString(),
         lastMessage: data.message,
         name: user.localName,
         profilePic: user.displayPictureUrl,
-        timeSent: DateTime.parse(data.messageSentFromDeviceTime.toString()),
+        timeSent: data.messageSentFromDeviceTime,
         uid: user.userId.toString(),
-      ));
+      );
+
+      // print('🆕 [saveChatContacts] Inserting new contact: ${newContact.toMap()}');
+
+      await chatConectTable.insert(contact: newContact);
     }
   }
+
 }

@@ -25,11 +25,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       _currentPageIndex.value = currentPageIndex;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
 
     controllerInit();
-    selectedContactController.loadInitialContacts();
+    await selectedContactController.loadInitialContacts();
     connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
     // print(connectivityService.isConnected.value);

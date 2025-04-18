@@ -33,7 +33,7 @@ class DataBaseService {
   }
 
   Future<Database> _initialize() async {
-    print(await fullPath);
+    // print(await fullPath);
     final path = await fullPath;
     var database = await openDatabase(
       path,

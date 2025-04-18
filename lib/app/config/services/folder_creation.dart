@@ -48,7 +48,7 @@ class FolderCreation {
       }
       // print("App folder structure created successfully.");
     } catch (e) {
-      print("Error creating folder structure: $e");
+      // print("Error creating folder structure: $e");
     }
   }
 
@@ -72,7 +72,7 @@ class FolderCreation {
       // return file.path;
       return "$subFolderPath/$fileName";
     } catch (e) {
-      print("Error saving file: $e");
+      // print("Error saving file: $e");
       return "error!";
     }
   }
@@ -96,15 +96,13 @@ class FolderCreation {
 
       // Copy the file to the destination
       await sourceFile.copy(destinationFile.path);
-      print("Destination File Path:---------> ${destinationFile.path}");
+      // print("Destination File Path:---------> ${destinationFile.path}");
       return destinationFile.path;
     } catch (e) {
-      print("Error saving file: $e");
+      // print("Error saving file: $e");
       return "error!";
     }
   }
-
-
 
   String getImageName(String imagePath) {
     // Get the image file name with extension from the path
@@ -116,19 +114,18 @@ class FolderCreation {
     return path.extension(imagePath); // e.g., ".jpg"
   }
 
-  Future<String> getRootFolderPath() async{
+  Future<String> getRootFolderPath() async {
     final directory = await getApplicationDocumentsDirectory();
 
     final filePath = "${directory.path}/$appName/";
-    print('RootFolderPath:---------> $filePath');
+    // print('RootFolderPath:---------> $filePath');
     return filePath;
   }
 
-  Future<String?> checkAndHandleFile({
-    required String fileName,
-    required String messageType,
-    required String fileUrl
-  }) async {
+  Future<String?> checkAndHandleFile(
+      {required String fileName,
+      required String messageType,
+      required String fileUrl}) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
 
@@ -141,7 +138,7 @@ class FolderCreation {
         return downloadedFilePath;
       }
     } catch (e) {
-      print("Error checking file existence: $e");
+      // print("Error checking file existence: $e");
       return null;
     }
   }
@@ -153,14 +150,14 @@ class FolderCreation {
       if (response.statusCode == 200) {
         final file = File(savePath);
         await file.writeAsBytes(response.bodyBytes); // Save the file
-        print("File downloaded to $savePath");
+        // print("File downloaded to $savePath");
         return savePath;
       } else {
-        print("Failed to download file: ${response.statusCode}");
+        // print("Failed to download file: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error downloading file: $e");
+      // print("Error downloading file: $e");
       return null;
     }
   }

@@ -11,14 +11,11 @@ import '../../../data/local_database/contacts_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/repositories/select_contacts/select_contact_repository.dart';
 
-
 class SelectContactsController extends GetxController {
   final IContactRepository contactRepository = Get.find<IContactRepository>();
   final ContactsTable contactsTable = ContactsTable();
-  final ConnectivityService connectivityService = Get.find<ConnectivityService>();
-
-
-
+  final ConnectivityService connectivityService =
+      Get.find<ConnectivityService>();
 
   final RxBool _isContactRefreshed = false.obs;
   bool get isContactRefreshed => _isContactRefreshed.value;
@@ -37,7 +34,8 @@ class SelectContactsController extends GetxController {
     return contacts.where((contact) {
       final name = contact.localName?.toLowerCase() ?? '';
       final number = contact.phoneNumber ?? '';
-      return name.contains(searchQuery.toLowerCase()) || number.contains(searchQuery);
+      return name.contains(searchQuery.toLowerCase()) ||
+          number.contains(searchQuery);
     }).toList();
   }
 
@@ -59,9 +57,9 @@ class SelectContactsController extends GetxController {
   }
 
   Future<void> refreshSync() async {
-
     if (!connectivityService.isConnected.value) {
-     showAlertMessage("No Internet Connection!\nPlease check your connection and try again.");
+      showAlertMessage(
+          "No Internet Connection!\nPlease check your connection and try again.");
       return;
     }
 
@@ -73,7 +71,8 @@ class SelectContactsController extends GetxController {
   Future<void> syncContactsWithServer() async {
     try {
       if (await FlutterContacts.requestPermission()) {
-        final phoneContacts = await FlutterContacts.getContacts(withProperties: true);
+        final phoneContacts =
+            await FlutterContacts.getContacts(withProperties: true);
 
         final Map<String, String> localContactMap = {};
         for (var contact in phoneContacts) {
@@ -88,7 +87,8 @@ class SelectContactsController extends GetxController {
         }
 
         final phoneNumbers = localContactMap.keys.toList();
-        final serverUsers = await contactRepository.fetchAppUsersFromContacts(phoneNumbers);
+        final serverUsers =
+            await contactRepository.fetchAppUsersFromContacts(phoneNumbers);
 
         final enrichedUsers = serverUsers.map((user) {
           final userNumber = user.phoneNumber
@@ -96,7 +96,8 @@ class SelectContactsController extends GetxController {
               .replaceAll(RegExp(r'^\+91'), '')
               .replaceAll(RegExp(r'^0'), '');
 
-          final localName = localContactMap[userNumber ?? ''] ?? ''; // leave empty if not found
+          final localName = localContactMap[userNumber ?? ''] ??
+              ''; // leave empty if not found
 
           return user.copyWith(localName: localName); // only assign localName
         }).toList();
@@ -105,13 +106,11 @@ class SelectContactsController extends GetxController {
         contacts = enrichedUsers;
       }
     } catch (e) {
-      debugPrint('Error syncing contacts: $e');
+      // debugPrint('Error syncing contacts: $e');
     }
   }
 
   void selectContact(UserList user) {
     Get.toNamed(Routes.SINGLE_CHAT, arguments: user);
   }
-
 }
-

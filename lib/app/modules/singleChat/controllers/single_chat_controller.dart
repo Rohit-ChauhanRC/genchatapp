@@ -5,15 +5,12 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
-import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
-import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
-import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -125,8 +122,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       bindReceiverUserStream(user.userId ?? 0);
     }
 
-    print(
-        "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
+    // print(
+    //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
     // fullname = Get.arguments[1];
     getRootFolder();
     // _startLoadingTimer();
@@ -205,13 +202,19 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void bindMessageStream() {
     messageStream = getMessageStream();
     messageSubscription = messageStream.listen((messages) {
-      print(messages);
+      // print(messages);
 
       messageList.assignAll(messages);
-      for (var i in messages) {
-        if ((i.state == MessageState.sent || i.state == MessageState.unsent) &&
-            i.messageId != null) {
-          // socketService.sendMessageSeen(i.messageId!);
+      if (messages.isNotEmpty) {
+        for (var i in messages) {
+          if ((i.state == MessageState.sent ||
+                  i.state == MessageState.unsent ||
+                  i.state == MessageState.delivered) &&
+              i.messageId != null) {
+            socketService.sendMessageSeen(i.messageId!);
+          } else {
+            // socketService.sendMessageSync(i);
+          }
         }
       }
     });
@@ -455,12 +458,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
       if (kDebugMode) {
-        print("Message removed from list:------> $message");
+        // print("Message removed from list:------> $message");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        print("Message added to list:------> $message");
+        // print("Message added to list:------> $message");
       }
     }
     selectedMessages.refresh();
@@ -613,8 +616,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       fileName: fileName,
       subFolder: subFolderName,
     );
-    print("FileName for saving locally:----------------> $fileName");
-    print("FilePath for saving locally:----------------> $filePath");
+    // print("FileName for saving locally:----------------> $fileName");
+    // print("FilePath for saving locally:----------------> $filePath");
     return '$subFolderName/$fileName';
   }
 

@@ -214,10 +214,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             if (receiverUserData!.userId == i.senderId) {
               socketService.sendMessageSeen(i.messageId!);
             }
+          } else if (i.syncStatus == SyncStatus.pending &&
+              i.messageId == null) {
+            socketService.sendMessageSync(i);
           }
-          // else if(i.syncStatus) {
-          // socketService.sendMessageSync(i);
-          // }
         }
       }
     });
@@ -231,25 +231,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       );
     }).asyncMap((event) async => await event);
   }
-
-  // Future<void> syncFirebaseMessagesToLocal() async {
-  //   try {
-  //     final firebaseMessages = await firebaseController.fetchAllMessages(
-  //       currentUserId: senderuserData!.userId.toString(),
-  //       receiverId: id.toString(),
-  //     );
-  //
-  //     for (var message in firebaseMessages) {
-  //       await MessageTable().insertOrUpdateMessage(message);
-  //     }
-  //
-  //     messageList.assignAll(firebaseMessages);
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print("Error syncing Firebase messages to local: $e");
-  //     }
-  //   }
-  // }
 
   // void startListeningForConnectivityChanges() {
   //   ever(connectivityService.isConnected, (bool isConnected) async {

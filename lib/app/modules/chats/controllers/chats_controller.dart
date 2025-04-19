@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
+import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
@@ -13,6 +14,8 @@ import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
+
+import 'package:rxdart/rxdart.dart' as rx;
 
 class ChatsController extends GetxController {
   //
@@ -43,7 +46,8 @@ class ChatsController extends GetxController {
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
 
-    bindChatUsersStream();
+    // bindChatUsersStream();
+    bindCombinedStreams();
     super.onInit();
   }
 
@@ -94,6 +98,50 @@ class ChatsController extends GetxController {
 
       yield messages;
     }
+  }
+
+  Stream<List<NewMessageModel>> getMessagesStream() async* {
+    while (true) {
+      await Future.delayed(const Duration(seconds: 1));
+      final messages =
+          await MessageTable().getAllMessages(); // Make sure this exists
+      yield messages;
+    }
+  }
+
+  void bindCombinedStreams() {
+    final userId = senderuserData?.userId;
+    if (userId == null) return;
+
+    rx.Rx.combineLatest2(
+      getChatUsersStream(),
+      getMessagesStream(),
+      (List<ChatConntactModel> contacts, List<NewMessageModel> messages) {
+        // Update each contact with unread count
+        final updatedContacts = contacts.map((contact) {
+          final unreadCount = messages
+              .where((msg) =>
+                  msg.senderId == int.parse(contact.uid!) &&
+                  msg.recipientId == userId &&
+                  msg.state != MessageState.read)
+              .length;
+
+          return ChatConntactModel(
+            uid: contact.uid,
+            name: contact.name,
+            unreadCount: unreadCount,
+            lastMessage: contact.lastMessage,
+            profilePic: contact.profilePic,
+            timeSent: contact.timeSent,
+            contactId: contact.contactId,
+          );
+        }).toList();
+
+        return updatedContacts;
+      },
+    ).listen((updatedList) {
+      contactsList.assignAll(updatedList);
+    });
   }
 
   Future<void> logout() async {

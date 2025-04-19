@@ -110,11 +110,12 @@ class MessageTable {
   Future<int> updateAckMessage(
       {required String clientSystemMessageId,
       required int state,
-      required int messageId}) async {
+      required int messageId,
+      required SyncStatus syncStatus}) async {
     final db = await DataBaseService().database;
     return await db.update(
       tableName,
-      {"state": state, "messageId": messageId},
+      {"state": state, "messageId": messageId, "syncStatus": syncStatus.value},
       where: 'clientSystemMessageId = ?',
       whereArgs: [clientSystemMessageId],
       conflictAlgorithm: ConflictAlgorithm.rollback,

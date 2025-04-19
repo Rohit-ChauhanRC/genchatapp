@@ -9,7 +9,7 @@ class ChatConntactModel extends Equatable {
   final String? timeSent;
   final String? lastMessage;
   final String? uid;
-  // final UserModel? user;
+  final int? unreadCount;
 
   const ChatConntactModel({
     this.name,
@@ -18,7 +18,7 @@ class ChatConntactModel extends Equatable {
     this.timeSent,
     this.lastMessage,
     this.uid,
-    // this.user,
+    this.unreadCount = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,18 +29,19 @@ class ChatConntactModel extends Equatable {
       'timeSent': timeSent,
       'lastMessage': lastMessage,
       'uid': uid,
+      "unreadCount": unreadCount,
     };
   }
 
   factory ChatConntactModel.fromMap(Map<String, dynamic> map) {
     return ChatConntactModel(
-      name: map['name'],
-      profilePic: map['profilePic'] as String,
-      contactId: map['contactId'] as String,
-      timeSent: map['timeSent'],
-      lastMessage: map['lastMessage'] as String,
-      uid: map['uid'] as String,
-    );
+        name: map['name'],
+        profilePic: map['profilePic'] as String,
+        contactId: map['contactId'] as String,
+        timeSent: map['timeSent'],
+        lastMessage: map['lastMessage'] as String,
+        uid: map['uid'] as String,
+        unreadCount: map["unreadCount"]);
   }
 
   String toJson() => json.encode(toMap());
@@ -55,6 +56,7 @@ class ChatConntactModel extends Equatable {
     final String? timeSent,
     final String? lastMessage,
     final String? uid,
+    final int? unreadCount,
   }) {
     return ChatConntactModel(
       contactId: contactId ?? this.contactId,
@@ -63,10 +65,11 @@ class ChatConntactModel extends Equatable {
       timeSent: timeSent ?? this.timeSent,
       lastMessage: lastMessage ?? this.lastMessage,
       uid: uid ?? this.uid,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 
   @override
   List<Object?> get props =>
-      [name, profilePic, contactId, timeSent, lastMessage, uid];
+      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount];
 }

@@ -56,18 +56,18 @@ class ChatsView extends GetView<ChatsController> {
                 }
               },
               itemBuilder: (context) => [
-                    PopupMenuItem(
+                    const PopupMenuItem(
                         value: newGroup,
-                        child: const Text(
+                        child: Text(
                           newGroup,
                           style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                               color: blackColor),
                         )),
-                    PopupMenuItem(
+                    const PopupMenuItem(
                         value: settings,
-                        child: const Text(
+                        child: Text(
                           settings,
                           style: TextStyle(
                               fontSize: 14,
@@ -167,14 +167,9 @@ class ChatsView extends GetView<ChatsController> {
                                         ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(25),
-                                          child: chatConntactModel
-                                                  .profilePic!.isEmpty
-                                              ? Image.asset(
-                                                  "assets/images/genChatSplash.png",
-                                                  width: 50,
-                                                  height: 50,
-                                                  fit: BoxFit.cover,
-                                                )
+                                          child: chatConntactModel.profilePic ==
+                                                  null
+                                              ? const Icon(Icons.person)
                                               : CachedNetworkImage(
                                                   imageUrl: chatConntactModel
                                                       .profilePic
@@ -232,15 +227,55 @@ class ChatsView extends GetView<ChatsController> {
                                         ),
 
                                         // Timestamp
-                                        Text(
-                                          formatLastMessageTime(chatConntactModel
-                                              .timeSent
-                                              .toString()),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w300,
-                                            color: blackColor,
-                                            fontSize: 10,
-                                          ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              formatLastMessageTime(
+                                                  chatConntactModel.timeSent
+                                                      .toString()),
+                                              style: TextStyle(
+                                                fontWeight: chatConntactModel
+                                                            .unreadCount! >
+                                                        0
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w300,
+                                                color: chatConntactModel
+                                                            .unreadCount! >
+                                                        0
+                                                    ? textBarColor
+                                                    : blackColor,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                            chatConntactModel.unreadCount! > 0
+                                                ? Container(
+                                                    decoration: BoxDecoration(
+                                                      color: textBarColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              Get.height / 2),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5),
+                                                    child: Text(
+                                                      chatConntactModel
+                                                          .unreadCount
+                                                          .toString(),
+                                                      softWrap: true,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                        color: whiteColor,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const SizedBox.shrink(),
+                                          ],
                                         ),
                                       ],
                                     ),

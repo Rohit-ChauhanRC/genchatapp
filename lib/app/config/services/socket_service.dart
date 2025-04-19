@@ -58,7 +58,7 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["recipientId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          state: MessageState.delivered));
+          state: MessageState.sent));
 
       saveChatContacts(NewMessageModel(
           message: data["message"],
@@ -66,7 +66,7 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          state: MessageState.delivered));
+          state: MessageState.sent));
     });
 
     _socket.on('message-acknowledgement', (data) async {
@@ -76,6 +76,7 @@ class SocketService extends GetxService {
           clientSystemMessageId: data["clientSystemMessageId"].toString(),
           state: data["state"],
           messageId: data["messageId"],
+          syncStatus: SyncStatus.synced,
         );
       } else if (data["state"] == 2 || data["state"] == 3) {
         messageTable.updateAckStateMessage(

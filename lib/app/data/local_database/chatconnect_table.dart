@@ -16,6 +16,7 @@ class ChatConectTable {
     "timeSent" TEXT,
     "lastMessage" TEXT,
     "uid" TEXT UNIQUE,
+    "unreadCount" Integer,
     PRIMARY KEY("id" AUTOINCREMENT)
   );
 """);
@@ -67,6 +68,7 @@ class ChatConectTable {
     String? lastMessage,
     String? timeSent,
     String? name,
+    int? unreadCount,
   }) async {
     final db = await DataBaseService().database;
 
@@ -75,6 +77,7 @@ class ChatConectTable {
     if (lastMessage != null) updatedValues['lastMessage'] = lastMessage;
     if (timeSent != null) updatedValues['timeSent'] = timeSent;
     if (name != null) updatedValues['name'] = name;
+    if (unreadCount != 0) updatedValues["unreadCount"] = unreadCount;
 
     print(
         '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');

@@ -130,6 +130,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     getRootFolder();
     // _startLoadingTimer();
     bindMessageStream();
+    scrollController.addListener(handleScroll);
   }
 
   @override
@@ -166,6 +167,19 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         break;
       default:
     }
+  }
+
+  void handleScroll() {
+    if (!scrollController.hasClients) return;
+
+    final maxScroll = scrollController.position.maxScrollExtent;
+    final currentOffset = scrollController.offset;
+    final viewportHeight = scrollController.position.viewportDimension;
+
+    final isScrollable = maxScroll > viewportHeight;
+    final isAtBottom = (maxScroll - currentOffset) <= 100;
+
+    hasScrolledInitially.value = isScrollable && !isAtBottom;
   }
 
   void checkUserOnline(UserList? user) async {

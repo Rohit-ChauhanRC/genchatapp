@@ -54,15 +54,16 @@ class ContactsTable {
     return result.map((e) => UserList.fromMap(e)).toList();
   }
 
-  Future<void> updateUserOnlineStatus(int userId, int isOnline, String lastSeenTime) async {
+  Future<bool> updateUserOnlineStatus(int userId, int isOnline, String lastSeenTime) async {
     final db = await DataBaseService().database;
-    await db.update(
+    final rowsUpdated = await db.update(
       tableName,
       {'isOnline': isOnline,
       'lastSeenTime': lastSeenTime},
       where: 'userId = ?',
       whereArgs: [userId],
     );
+    return rowsUpdated > 0;
   }
 
   Future<UserList?> getUserById(int userId) async {

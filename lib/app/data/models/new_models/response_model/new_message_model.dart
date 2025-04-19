@@ -10,6 +10,7 @@ class NewMessageModel {
   final String? messageSentFromDeviceTime;
   final String? createdAt;
   final SyncStatus? syncStatus;
+  final String? senderPhoneNumber;
 
   NewMessageModel({
     this.messageId,
@@ -21,6 +22,7 @@ class NewMessageModel {
     this.messageSentFromDeviceTime,
     this.createdAt,
     this.syncStatus = SyncStatus.pending,
+    this.senderPhoneNumber,
   });
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
@@ -34,6 +36,7 @@ class NewMessageModel {
       messageSentFromDeviceTime: map['messageSentFromDeviceTime'],
       createdAt: map['createdAt'],
       syncStatus: SyncStatusExtension.fromValue(map['syncStatus']),
+      senderPhoneNumber: map['senderPhoneNumber'],
     );
   }
 
@@ -48,6 +51,7 @@ class NewMessageModel {
       'messageSentFromDeviceTime': messageSentFromDeviceTime,
       'createdAt': createdAt,
       'syncStatus': syncStatus!.value,
+      'senderPhoneNumber': senderPhoneNumber,
     };
   }
 
@@ -61,6 +65,7 @@ class NewMessageModel {
     final String? messageSentFromDeviceTime,
     final String? createdAt,
     final SyncStatus? syncStatus,
+    final String? senderPhoneNumber,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -74,6 +79,7 @@ class NewMessageModel {
           messageSentFromDeviceTime ?? this.messageSentFromDeviceTime,
       createdAt: createdAt ?? this.createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
+      senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
     );
   }
 }

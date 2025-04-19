@@ -22,7 +22,8 @@ class MessageTable {
         state INTEGER,
         messageSentFromDeviceTime TEXT,
         createdAt TEXT,
-        syncStatus TEXT
+        syncStatus TEXT,
+        senderPhoneNumber TEXT
       )
     ''');
   }

@@ -211,7 +211,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                   i.state == MessageState.unsent ||
                   i.state == MessageState.delivered) &&
               i.messageId != null) {
-            socketService.sendMessageSeen(i.messageId!);
+            if(receiverUserData?.userId == i.senderId){
+              socketService.sendMessageSeen(i.messageId!);
+            }
           } else {
             // socketService.sendMessageSync(i);
           }
@@ -275,6 +277,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       state: MessageState.unsent,
       syncStatus: SyncStatus.pending,
       createdAt: timeSent.toString(),
+      senderPhoneNumber: senderuserData?.phoneNumber,
     );
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);

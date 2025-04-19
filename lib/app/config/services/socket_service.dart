@@ -58,7 +58,10 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["recipientId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          state: MessageState.delivered));
+          state: MessageState.delivered,
+        senderPhoneNumber: data["senderPhoneNumber"]
+
+      ));
 
       saveChatContacts(NewMessageModel(
           message: data["message"],
@@ -66,7 +69,9 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          state: MessageState.delivered));
+          state: MessageState.delivered,
+        senderPhoneNumber: data["senderPhoneNumber"]
+      ));
     });
 
     _socket.on('message-acknowledgement', (data) async {
@@ -97,7 +102,11 @@ class SocketService extends GetxService {
       final String lastSeenTime = DateTime.now().toString();
 
       // Update local DB
-      await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
+      bool success = await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
+      
+      print(success ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
+          : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime");
+      
     });
 
     _socket.on('typing', (data) {
@@ -138,43 +147,61 @@ class SocketService extends GetxService {
   }
 
   void saveChatContacts(NewMessageModel data) async {
+    // Try to get user from local contacts
     final user = await contactsTable.getUserById(data.recipientId!);
-    // print('🔍 [saveChatContacts] Found user from contactsTable: ${user?.toMap()}');
 
-    final chatUser =
-        await chatConectTable.fetchById(uid: user!.userId.toString());
-    // print('📘 [saveChatContacts] Existing chat user in chatConectTable: ${chatUser?.toMap()}');
+    // If user is found, proceed as usual
+    if (user != null) {
+      final chatUser = await chatConectTable.fetchById(uid: user.userId.toString());
 
-    if (chatUser != null) {
-      final updatedValues = {
-        'lastMessage': data.message,
-        'timeSent': data.messageSentFromDeviceTime,
-        'profilePic': user.displayPictureUrl,
-        'name': user.localName,
-      };
-
-      // print('✏️ [saveChatContacts] Updating contact with values: $updatedValues');
-
-      await chatConectTable.updateContact(
-        uid: user.userId.toString(),
-        lastMessage: data.message,
-        timeSent: data.messageSentFromDeviceTime,
-        profilePic: user.displayPictureUrl,
-        name: user.localName,
-      );
+      if (chatUser != null) {
+        await chatConectTable.updateContact(
+          uid: user.userId.toString(),
+          lastMessage: data.message,
+          timeSent: data.messageSentFromDeviceTime,
+          profilePic: user.displayPictureUrl,
+          name: user.localName,
+        );
+      } else {
+        await chatConectTable.insert(
+          contact: ChatConntactModel(
+            contactId: user.userId.toString(),
+            lastMessage: data.message,
+            name: user.localName,
+            profilePic: user.displayPictureUrl,
+            timeSent: data.messageSentFromDeviceTime,
+            uid: user.userId.toString(),
+          ),
+        );
+      }
     } else {
-      final newContact = ChatConntactModel(
-        contactId: user.userId.toString(),
-        lastMessage: data.message,
-        name: user.localName,
-        profilePic: user.displayPictureUrl,
-        timeSent: data.messageSentFromDeviceTime,
-        uid: user.userId.toString(),
-      );
+      // Handle unknown contact (not in your contacts table)
+      final fallbackName = data.senderPhoneNumber ?? "Unknown"; // You must pass senderPhoneNumber in NewMessageModel
+      final fallbackUid = data.recipientId ?? "0";
 
-      // print('🆕 [saveChatContacts] Inserting new contact: ${newContact.toMap()}');
+      final chatUser = await chatConectTable.fetchById(uid: fallbackUid.toString());
 
-      await chatConectTable.insert(contact: newContact);
+      if (chatUser != null) {
+        await chatConectTable.updateContact(
+          uid: fallbackUid.toString(),
+          lastMessage: data.message,
+          timeSent: data.messageSentFromDeviceTime,
+          profilePic: '', // or a default avatar
+          name: fallbackName,
+        );
+      } else {
+        await chatConectTable.insert(
+          contact: ChatConntactModel(
+            contactId: fallbackUid.toString(),
+            lastMessage: data.message,
+            name: fallbackName,
+            profilePic: '',
+            timeSent: data.messageSentFromDeviceTime,
+            uid: fallbackUid.toString(),
+          ),
+        );
+      }
     }
   }
+
 }

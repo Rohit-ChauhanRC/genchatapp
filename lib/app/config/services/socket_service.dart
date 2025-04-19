@@ -80,6 +80,7 @@ class SocketService extends GetxService {
         messageTable.updateAckMessage(
           clientSystemMessageId: data["clientSystemMessageId"].toString(),
           state: data["state"],
+          messageId: data["messageId"],
         );
       } else if (data["state"] == 2 || data["state"] == 3) {
         messageTable.updateAckStateMessage(
@@ -103,10 +104,10 @@ class SocketService extends GetxService {
 
       // Update local DB
       bool success = await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
-      
+
       print(success ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
           : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime");
-      
+
     });
 
     _socket.on('typing', (data) {
@@ -149,6 +150,7 @@ class SocketService extends GetxService {
   void saveChatContacts(NewMessageModel data) async {
     // Try to get user from local contacts
     final user = await contactsTable.getUserById(data.recipientId!);
+    // print('🔍 [saveChatContacts] Found user from contactsTable: ${user?.toMap()}');
 
     // If user is found, proceed as usual
     if (user != null) {

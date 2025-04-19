@@ -19,7 +19,7 @@ class SingleChatView extends GetView<SingleChatController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Obx(()  {
+        title: Obx(() {
           final user = controller.receiverUserData;
           return Row(
             children: [
@@ -73,26 +73,27 @@ class SingleChatView extends GetView<SingleChatController> {
           );
         }),
         actions: [
-          Obx(()=> controller.selectedMessages.isNotEmpty
+          Obx(() => controller.selectedMessages.isNotEmpty
               ? IconButton(
-            icon: const Icon(Icons.delete, color: whiteColor),
-            onPressed: () => _showDeletePopup(context, controller),
-          ):
-             Row(
-               children: [
-                 InkWell(
-                   onTap: () {},
-                   child: const Icon(Icons.video_call_outlined, color: whiteColor),
-                 ),
-                 SizedBox(width: 10,),
-                 InkWell(
-                   onTap: () {},
-                   child: const Icon(Icons.call, color: whiteColor),
-                 ),
-               ],
-             )
-          ),
-
+                  icon: const Icon(Icons.delete, color: whiteColor),
+                  onPressed: () => _showDeletePopup(context, controller),
+                )
+              : Row(
+                  children: [
+                    InkWell(
+                      onTap: () {},
+                      child: const Icon(Icons.video_call_outlined,
+                          color: whiteColor),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    InkWell(
+                      onTap: () {},
+                      child: const Icon(Icons.call, color: whiteColor),
+                    ),
+                  ],
+                )),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert, color: whiteColor),
             offset: const Offset(0, 40),
@@ -126,7 +127,6 @@ class SingleChatView extends GetView<SingleChatController> {
               ),
             ],
           ),
-
         ],
       ),
       body: Column(
@@ -150,8 +150,8 @@ class SingleChatView extends GetView<SingleChatController> {
   }
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {
-    final isOnlySenderMessages = controller.selectedMessages
-        .every((msg) => msg.senderId == controller.senderuserData!.userId.toString());
+    final isOnlySenderMessages = controller.selectedMessages.every(
+        (msg) => msg.senderId == controller.senderuserData!.userId.toString());
 
     showModalBottomSheet(
       context: context,

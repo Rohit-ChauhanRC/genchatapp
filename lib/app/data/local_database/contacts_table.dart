@@ -82,6 +82,36 @@ class ContactsTable {
     }
   }
 
+  Future<void> insertPlaceholderUser({
+    required int userId,
+    required int isOnline,
+    required phoneNumber,
+    required localName
+  }) async {
+    final db = await DataBaseService().database;
+
+    final placeholderUser = {
+      'userId': userId,
+      'countryCode': 0,
+      'phoneNumber': phoneNumber,
+      'name': '',
+      'localName': localName,
+      'email': '',
+      'userDescription': '',
+      'isOnline': isOnline,
+      'displayPicture': '',
+      'displayPictureUrl': '',
+      'lastSeenTime': '',
+      'isBlocked': 0,
+    };
+
+    await db.insert(
+      tableName,
+      placeholderUser,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
 
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;

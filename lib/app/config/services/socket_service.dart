@@ -99,11 +99,21 @@ class SocketService extends GetxService {
     _socket.on('user-connection-status', (data) async {
       print('✅ user connection status: $data');
       final int userId = int.parse(data['userId']);
-      final int isOnline = data['isOnline'] ? 1 : 0;
-      final String lastSeenTime = DateTime.now().toString();
+      final bool isOnlineBool = data['isOnline'];
+      final int isOnline = isOnlineBool ? 1 : 0;
 
-      // Update local DB
-      bool success = await contactsTable.updateUserOnlineStatus(userId, isOnline, lastSeenTime);
+      String? lastSeenTime;
+
+      // Update only when user goes offline
+      if (!isOnlineBool) {
+        lastSeenTime = data['lastSeen'];
+      }
+
+      bool success = await contactsTable.updateUserOnlineStatus(
+        userId,
+        isOnline,
+        lastSeenTime ?? '', // Pass empty string if user is online
+      );
 
       print(success ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
           : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime");
@@ -201,6 +211,13 @@ class SocketService extends GetxService {
             timeSent: data.messageSentFromDeviceTime,
             uid: fallbackUid.toString(),
           ),
+        );
+
+        await contactsTable.insertPlaceholderUser(
+            userId: int.parse(fallbackUid.toString()),
+            isOnline: 1,
+            phoneNumber: fallbackName,
+            localName: fallbackName
         );
       }
     }

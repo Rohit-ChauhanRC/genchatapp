@@ -168,8 +168,19 @@ class ChatsView extends GetView<ChatsController> {
                                           borderRadius:
                                               BorderRadius.circular(25),
                                           child: chatConntactModel.profilePic ==
-                                                  null
-                                              ? const Icon(Icons.person)
+                                                      null ||
+                                                  chatConntactModel
+                                                      .profilePic!.isEmpty
+                                              ? Container(
+                                                  color: textBarColor,
+                                                  child: CircleAvatar(
+                                                    radius: 25,
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      color: whiteColor,
+                                                      // size: 25,
+                                                    ),
+                                                  ))
                                               : CachedNetworkImage(
                                                   imageUrl: chatConntactModel
                                                       .profilePic

@@ -28,24 +28,32 @@ class ChatList extends StatelessWidget {
       //   return loadingWidget(text: "Fetching data please wait....");
       // }
       if (singleChatController.messageList.isEmpty) {
-        return Center(
-          child: Text(
-            "No messages yet!",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        );
+        return loadingWidget(text: "Fetching data please wait....");
       }
+      // SchedulerBinding.instance.addPostFrameCallback((_) {
+      //   singleChatController.scrollController.jumpTo(
+      //       singleChatController.scrollController.position.maxScrollExtent);
+      //   if (singleChatController.scrollController.hasClients) {
+      //     singleChatController.scrollController.animateTo(
+      //       singleChatController.scrollController.position.maxScrollExtent,
+      //       duration: const Duration(seconds: 3),
+      //       curve: Curves.easeOut,
+      //     );
+      //   }
+      // })
+      // ;
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        // singleChatController.scrollController.jumpTo(
-        //     singleChatController.scrollController.position.maxScrollExtent);
-        if (singleChatController.scrollController.hasClients) {
+        if (!singleChatController.hasScrolledInitially.value &&
+            singleChatController.scrollController.hasClients) {
           singleChatController.scrollController.animateTo(
             singleChatController.scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
+          singleChatController.hasScrolledInitially.value = true;
         }
       });
+
       return ListView.builder(
         controller: singleChatController.scrollController,
         itemCount: singleChatController.messageList.length,

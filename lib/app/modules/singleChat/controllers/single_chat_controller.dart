@@ -33,6 +33,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
 
+  var hasScrolledInitially = false.obs;
+
   final TextEditingController messageController = TextEditingController();
 
   final Rx<Emoji> emoji = const Emoji("", "").obs;
@@ -168,7 +170,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   void checkUserOnline(UserList? user) async {
     var params = {"recipientId": user?.userId};
-    socketService.checkUserOnline(params);
+    if (socketService.isConnected) {
+      socketService.checkUserOnline(params);
+    }
   }
 
   void disConnectSocket() async {
@@ -211,12 +215,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                   i.state == MessageState.unsent ||
                   i.state == MessageState.delivered) &&
               i.messageId != null) {
-            if (receiverUserData!.userId == i.senderId) {
+            if (receiverUserData!.userId == i.senderId &&
+                socketService.isConnected) {
               socketService.sendMessageSeen(i.messageId!);
             }
           } else if (i.syncStatus == SyncStatus.pending &&
               i.messageId == null) {
-            socketService.sendMessageSync(i);
+            if (socketService.isConnected) {
+              socketService.sendMessageSync(i);
+            }
           }
         }
       }
@@ -263,7 +270,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);
-      socketService.sendMessage(newMessage);
+      if (socketService.isConnected) {
+        socketService.sendMessage(newMessage);
+      }
     });
 
     // messageList.add(newMessage);

@@ -140,6 +140,11 @@ class ChatsController extends GetxController {
         return updatedContacts;
       },
     ).listen((updatedList) {
+      updatedList.sort((a, b) {
+        final aTime = DateTime.tryParse(a.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = DateTime.tryParse(b.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime); // descending (latest first)
+      });
       contactsList.assignAll(updatedList);
     });
   }

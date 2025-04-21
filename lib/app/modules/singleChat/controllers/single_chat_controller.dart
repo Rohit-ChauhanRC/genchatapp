@@ -115,6 +115,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() async {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
 
     UserList? user = Get.arguments;
@@ -144,6 +145,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     super.onClose();
+    WidgetsBinding.instance.removeObserver(this);
     selectedMessages.clear();
     messageSubscription.cancel();
     receiverUserSubscription.cancel();
@@ -154,7 +156,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        if (connectivityService.isConnected.value) {
+        if (connectivityService.isConnected.value && !socketService.isConnected) {
+          await socketService.initSocket(senderuserData!.userId.toString());
+        }else if (socketService.isConnected){
           checkUserOnline(receiverUserData);
         }
 

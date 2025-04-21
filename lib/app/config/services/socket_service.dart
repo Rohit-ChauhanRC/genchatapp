@@ -27,7 +27,7 @@ class SocketService extends GetxService {
       'http://app.maklife.in:10000',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .disableAutoConnect()
+          .enableAutoConnect()
           .setQuery({'userId': userId})
           .build(),
     );

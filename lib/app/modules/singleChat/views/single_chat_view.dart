@@ -56,7 +56,7 @@ class SingleChatView extends GetView<SingleChatController> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    Text(
+                    controller.connectivityService.isConnected.value ? Text(
                       user?.isOnline == true
                           ? "Online"
                           : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}", maxLines: 2,
@@ -65,7 +65,7 @@ class SingleChatView extends GetView<SingleChatController> {
                         color: whiteColor,
                         fontSize: 12,
                       ),
-                    ),
+                    ) : SizedBox.shrink(),
                   ],
                 ),
               ),

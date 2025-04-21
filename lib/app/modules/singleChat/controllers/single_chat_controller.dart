@@ -34,6 +34,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final socketService = Get.find<SocketService>();
 
   var hasScrolledInitially = false.obs;
+  final isKeyboardVisible = false.obs;
+  final showScrollToBottom = false.obs;
 
   final TextEditingController messageController = TextEditingController();
 
@@ -118,6 +120,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
 
+
     UserList? user = Get.arguments;
     if (user != null) {
       checkUserOnline(user);
@@ -131,7 +134,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     getRootFolder();
     // _startLoadingTimer();
     bindMessageStream();
-    scrollController.addListener(handleScroll);
+    scrollController.addListener(_scrollListener);
   }
 
   @override
@@ -149,6 +152,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     selectedMessages.clear();
     messageSubscription.cancel();
     receiverUserSubscription.cancel();
+    scrollController.dispose();
   }
 
   @override
@@ -157,10 +161,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         if (connectivityService.isConnected.value && !socketService.isConnected) {
-          await socketService.initSocket(senderuserData!.userId.toString());
-        }else if (socketService.isConnected){
-          checkUserOnline(receiverUserData);
+          await socketService.initSocket(
+              senderuserData!.userId.toString(), onConnected: () {
+            checkUserOnline(receiverUserData);
+          });
         }
+
 
         break;
       case AppLifecycleState.inactive:
@@ -173,19 +179,53 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void handleScroll() {
+  // void handleScroll() {
+  //   if (!scrollController.hasClients) return;
+  //
+  //   final maxScroll = scrollController.position.maxScrollExtent;
+  //   final currentOffset = scrollController.offset;
+  //   final viewportHeight = scrollController.position.viewportDimension;
+  //
+  //   final isScrollable = maxScroll > viewportHeight;
+  //   final isAtBottom = (maxScroll - currentOffset) <= 100;
+  //
+  //   hasScrolledInitially.value = isScrollable && !isAtBottom;
+  // }
+
+  void _scrollListener() {
     if (!scrollController.hasClients) return;
 
     final maxScroll = scrollController.position.maxScrollExtent;
-    final currentOffset = scrollController.offset;
-    final viewportHeight = scrollController.position.viewportDimension;
+    final currentScroll = scrollController.position.pixels;
 
-    final isScrollable = maxScroll > viewportHeight;
-    final isAtBottom = (maxScroll - currentOffset) <= 100;
-
-    hasScrolledInitially.value = isScrollable && !isAtBottom;
+    showScrollToBottom.value = (maxScroll - currentScroll).abs() > 100;
   }
 
+  @override
+  void didChangeMetrics() {
+    final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+    isKeyboardVisible.value = bottomInset > 0;
+
+    if (isKeyboardVisible.value) {
+      Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+    }
+  }
+
+  void scrollToBottom({bool animate = true}) {
+    if (!scrollController.hasClients) return;
+
+    final position = scrollController.position.maxScrollExtent;
+
+    if (animate) {
+      scrollController.animateTo(
+        position,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      scrollController.jumpTo(position);
+    }
+  }
   void checkUserOnline(UserList? user) async {
     var params = {"recipientId": user?.userId};
     if (socketService.isConnected) {
@@ -291,6 +331,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       if (socketService.isConnected) {
         socketService.sendMessage(newMessage);
       }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          scrollToBottom();
+        });
+      });
     });
 
     // messageList.add(newMessage);

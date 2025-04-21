@@ -22,7 +22,7 @@ class SocketService extends GetxService {
   final RxBool _isConnected = false.obs;
   bool get isConnected => _isConnected.value;
 
-  Future<void> initSocket(String userId) async {
+  Future<void> initSocket(String userId,{Function()? onConnected}) async {
     _socket = IO.io(
       'http://app.maklife.in:10000',
       IO.OptionBuilder()
@@ -37,6 +37,7 @@ class SocketService extends GetxService {
     _socket.onConnect((_) {
       print('✅ Socket connected');
       _isConnected.value = true;
+      onConnected?.call();
     });
 
     _socket.onDisconnect((_) {

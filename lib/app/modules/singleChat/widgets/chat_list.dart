@@ -45,20 +45,19 @@ class ChatList extends StatelessWidget {
           // })
           // ;
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            if (!singleChatController.hasScrolledInitially.value &&
-                singleChatController.scrollController.hasClients) {
-              singleChatController.scrollController.animateTo(
-                singleChatController.scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-              singleChatController.hasScrolledInitially.value = true;
-            }
+            Future.delayed(Duration(milliseconds: 100), () {
+              if (!singleChatController.hasScrolledInitially.value &&
+                  singleChatController.scrollController.hasClients) {
+                singleChatController.scrollToBottom();
+                singleChatController.hasScrolledInitially.value = true;
+              }
+            });
           });
 
           return ListView.builder(
             controller: singleChatController.scrollController,
             itemCount: singleChatController.messageList.length,
+              physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               var messages = singleChatController.messageList[index];
               // if (messages.receiverId ==
@@ -136,21 +135,21 @@ class ChatList extends StatelessWidget {
           );
         }),
         Obx(() {
-          return singleChatController.hasScrolledInitially.value &&
-                  singleChatController.messageList.isNotEmpty
+          return singleChatController.showScrollToBottom.value
               ? Positioned(
                   bottom: 20,
                   right: 20,
                   child: FloatingActionButton(
                     mini: true,
-                    onPressed: () {
-                      singleChatController.scrollController.animateTo(
-                        singleChatController
-                            .scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    },
+                    onPressed: () =>singleChatController.scrollToBottom(),
+                    //     () {
+                    //   singleChatController.scrollController.animateTo(
+                    //     singleChatController
+                    //         .scrollController.position.maxScrollExtent,
+                    //     duration: const Duration(milliseconds: 300),
+                    //     curve: Curves.easeOut,
+                    //   );
+                    // },
                     child: const Icon(Icons.arrow_downward),
                   ),
                 )

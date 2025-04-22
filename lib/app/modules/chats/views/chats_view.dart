@@ -228,6 +228,7 @@ class ChatsView extends GetView<ChatsController> {
                                                 isTyping? "Typing..." :(chatConntactModel.lastMessage ?? ""),
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: isTyping ? FontWeight.bold :FontWeight.w300,

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -114,12 +115,17 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   late StreamSubscription<UserList?> receiverUserSubscription;
 
+  ScrollController textScrollController = ScrollController();
+
   @override
   void onInit() async {
     super.onInit();
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+
     WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
-
 
     UserList? user = Get.arguments;
     if (user != null) {
@@ -132,6 +138,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
     // fullname = Get.arguments[1];
     getRootFolder();
+
+    closeKeyboard();
     // _startLoadingTimer();
     bindMessageStream();
     scrollController.addListener(_scrollListener);
@@ -160,13 +168,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        if (connectivityService.isConnected.value && !socketService.isConnected) {
-          await socketService.initSocket(
-              senderuserData!.userId.toString(), onConnected: () {
+        if (connectivityService.isConnected.value &&
+            !socketService.isConnected) {
+          await socketService.initSocket(senderuserData!.userId.toString(),
+              onConnected: () {
             checkUserOnline(receiverUserData);
           });
         }
-
 
         break;
       case AppLifecycleState.inactive:
@@ -226,6 +234,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       scrollController.jumpTo(position);
     }
   }
+
   void checkUserOnline(UserList? user) async {
     var params = {"recipientId": user?.userId};
     if (socketService.isConnected) {

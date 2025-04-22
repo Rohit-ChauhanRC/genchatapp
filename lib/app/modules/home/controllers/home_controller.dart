@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
@@ -9,6 +10,7 @@ import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController with WidgetsBindingObserver {
@@ -27,6 +29,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() async {
     super.onInit();
+    closeKeyboard();
+
+    // FocusManager.instance.primaryFocus?.unfocus();
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
 
     controllerInit();
     await selectedContactController.loadInitialContacts();

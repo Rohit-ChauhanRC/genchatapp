@@ -120,8 +120,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   late StreamSubscription<UserList?> receiverUserSubscription;
   Timer? typingTimer;
 
-
   ScrollController textScrollController = ScrollController();
+
+  final Set<String> _sendingMessageIds = {};
 
   @override
   void onInit() async {
@@ -141,7 +142,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
     socketService.monitorReceiverTyping(
       receiverUserData!.userId.toString(),
-          (isTyping) {
+      (isTyping) {
         _isReceiverTyping.value = isTyping;
       },
     );
@@ -174,6 +175,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     receiverUserSubscription.cancel();
     scrollController.dispose();
     typingTimer?.cancel();
+    _sendingMessageIds.clear();
   }
 
   @override
@@ -283,6 +285,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     rootPath = await folderCreation.getRootFolderPath();
   }
 
+  bool _isAlreadyBeingSent(String clientSystemMessageId) {
+    return _sendingMessageIds.contains(clientSystemMessageId);
+  }
+
   void bindMessageStream() {
     messageStream = getMessageStream();
     messageSubscription = messageStream.listen((messages) {
@@ -302,13 +308,55 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           } else if (i.syncStatus == SyncStatus.pending &&
               i.messageId == null) {
             if (socketService.isConnected) {
-              socketService.sendMessageSync(i);
+              if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+                socketService.sendMessageSync(i);
+              }
             }
           }
         }
       }
     });
   }
+
+  // void bindMessageStream() {
+  //   messageStream = getMessageStream();
+  //   messageSubscription = messageStream.listen((messages) {
+  //     final Map<String, NewMessageModel> uniqueMessagesMap = {};
+
+  //     for (var i in messages) {
+  //       // Only add if messageId is not null and not already in the map
+  //       if (i.messageId != null) {
+  //         uniqueMessagesMap[i.messageId!.toString()] = i;
+  //       } else {
+  //         // Optionally handle messages without messageId
+  //         // Generate a temporary key or keep them uniquely (e.g., timestamp-based ID)
+  //         final tempKey = '${i.clientSystemMessageId}';
+  //         uniqueMessagesMap[tempKey] = i;
+  //       }
+  //     }
+
+  //     messageList.assignAll(uniqueMessagesMap.values);
+
+  //     if (uniqueMessagesMap.isNotEmpty) {
+  //       for (var i in uniqueMessagesMap.values) {
+  //         if ((i.state == MessageState.sent ||
+  //                 i.state == MessageState.unsent ||
+  //                 i.state == MessageState.delivered) &&
+  //             i.messageId != null) {
+  //           if (receiverUserData?.userId == i.senderId &&
+  //               socketService.isConnected) {
+  //             socketService.sendMessageSeen(i.messageId!);
+  //           }
+  //         } else if (i.syncStatus == SyncStatus.pending &&
+  //             i.messageId == null) {
+  //           if (socketService.isConnected) {
+  //             socketService.sendMessageSync(i);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 
   Stream<List<NewMessageModel>> getMessageStream() async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
@@ -348,9 +396,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
     );
+
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);
       if (socketService.isConnected) {
+        _sendingMessageIds.add(clientSystemMessageId);
         socketService.sendMessage(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -374,7 +424,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     // await _syncMessageToFirebase(newMessage);
     // }
   }
-
 
   void onTextChanged(String text) {
     final receiverId = receiverUserData?.userId.toString() ?? "";
@@ -410,9 +459,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     messageController.text = text;
   }
 
-
-
-
   void toggleMessageSelection(MessageModel message) {
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
@@ -431,7 +477,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void clearSelectedMessages() {
     selectedMessages.clear();
   }
-
 
   Future<void> cancelReply() async {
     messageReply = MessageReply(
@@ -457,8 +502,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       // sendFileMessage(file: selectedFile, messageEnum: fileType.toEnum());
     }
   }
-
-
 
   Future<String> saveFileLocally(
       File file, String fileType, String fileExtension) async {

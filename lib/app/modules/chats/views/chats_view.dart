@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
@@ -147,6 +148,7 @@ class ChatsView extends GetView<ChatsController> {
                               itemBuilder: (context, i) {
                                 ChatConntactModel chatConntactModel =
                                     ctc.contactsList[i];
+                                final isTyping = controller.socketService.typingStatusMap[chatConntactModel.uid] == true;
                                 return InkWell(
                                   onTap: () {
                                     Get.toNamed(Routes.SINGLE_CHAT,
@@ -223,14 +225,13 @@ class ChatsView extends GetView<ChatsController> {
                                                 ),
                                               ),
                                               Text(
-                                                chatConntactModel.lastMessage ??
-                                                    "",
+                                                isTyping? "Typing..." :(chatConntactModel.lastMessage ?? ""),
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
-                                                  fontWeight: FontWeight.w300,
-                                                  color: blackColor,
+                                                  fontWeight: isTyping ? FontWeight.bold :FontWeight.w300,
+                                                  color: isTyping ? AppColors.textBarColor :AppColors.blackColor,
                                                 ),
                                               ),
                                             ],

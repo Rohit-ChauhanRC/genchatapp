@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/typping_bubble.dart';
 import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -30,7 +31,9 @@ class ChatList extends StatelessWidget {
           //   return loadingWidget(text: "Fetching data please wait....");
           // }
           if (singleChatController.messageList.isEmpty) {
-            return loadingWidget(text: "Fetching data please wait....");
+            return const Text("No chat found");
+              // loadingWidget(text: "Fetching data please wait....");
+
           }
           // SchedulerBinding.instance.addPostFrameCallback((_) {
           //   singleChatController.scrollController.jumpTo(
@@ -54,11 +57,20 @@ class ChatList extends StatelessWidget {
             });
           });
 
+          final isTyping = singleChatController.isReceiverTyping;
+          final messageCount = singleChatController.messageList.length;
+
           return ListView.builder(
             controller: singleChatController.scrollController,
-            itemCount: singleChatController.messageList.length,
+            itemCount: messageCount + (isTyping ? 1 : 0),
               physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
+              if (isTyping && index == messageCount) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: TypingBubble(), // 👈 your animated dots widget
+                );
+              }
               var messages = singleChatController.messageList[index];
               // if (messages.receiverId ==
               //         singleChatController.receiveruserDataModel.value.uid) {

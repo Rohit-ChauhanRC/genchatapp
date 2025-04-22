@@ -23,9 +23,9 @@ class SingleChatView extends GetView<SingleChatController> {
           final user = controller.receiverUserData;
           return Row(
             children: [
-              user?.displayPictureUrl != null
+              (user?.displayPictureUrl?.isNotEmpty ?? false)
                   ? CachedNetworkImage(
-                      imageUrl: user?.displayPictureUrl ?? "",
+                      imageUrl: user!.displayPictureUrl.toString(),
                       imageBuilder: (context, image) {
                         return CircleAvatar(
                             backgroundColor: greyColor.withOpacity(0.4),
@@ -37,7 +37,11 @@ class SingleChatView extends GetView<SingleChatController> {
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     )
-                  : const SizedBox(),
+                  : const CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
               const SizedBox(
                 width: 10,
               ),
@@ -56,16 +60,36 @@ class SingleChatView extends GetView<SingleChatController> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    controller.connectivityService.isConnected.value ? Text(
-                      user?.isOnline == true
-                          ? "Online"
-                          : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}", maxLines: 2,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w200,
-                        color: whiteColor,
-                        fontSize: 12,
-                      ),
-                    ) : SizedBox.shrink(),
+
+                    // 👇 Wrap with Obx to reactively update UI
+                    Obx(() {
+                      if (!controller.connectivityService.isConnected.value) {
+                        return SizedBox.shrink();
+                      }
+
+                      if (controller.isReceiverTyping) {
+                        return const Text(
+                          "Typing...",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w200,
+                            color: whiteColor,
+                            fontSize: 12,
+                          ),
+                        );
+                      }
+
+                      return Text(
+                        user?.isOnline == true
+                            ? "Online"
+                            : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
+                        maxLines: 2,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w200,
+                          color: whiteColor,
+                          fontSize: 12,
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),

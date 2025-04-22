@@ -71,6 +71,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get isRecorderInit => _isRecorderInit.value;
   set isRecorderInit(bool b) => _isRecorderInit.value = b;
 
+  final RxBool _isReceiverTyping = false.obs;
+  bool get isReceiverTyping => _isReceiverTyping.value;
+  set isReceiverTyping(bool b) => _isReceiverTyping.value = b;
+
   final RxBool _isLoading = true.obs;
   bool get isLoading => _isLoading.value;
   set isLoading(bool b) => _isLoading.value = b;
@@ -113,6 +117,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   late StreamSubscription<List<NewMessageModel>> messageSubscription;
 
   late StreamSubscription<UserList?> receiverUserSubscription;
+  Timer? typingTimer;
+
 
   @override
   void onInit() async {
@@ -127,6 +133,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       receiverUserData = user;
       bindReceiverUserStream(user.userId ?? 0);
     }
+    socketService.monitorReceiverTyping(
+      receiverUserData!.userId.toString(),
+          (isTyping) {
+        _isReceiverTyping.value = isTyping;
+      },
+    );
 
     // print(
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
@@ -153,6 +165,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     messageSubscription.cancel();
     receiverUserSubscription.cancel();
     scrollController.dispose();
+    typingTimer?.cancel();
   }
 
   @override
@@ -340,6 +353,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     // messageList.add(newMessage);
     messageController.clear();
+    var receiverUserId = receiverUserData?.userId.toString() ?? '';
+    socketService.emitTypingStatus(
+      recipientId: receiverUserId,
+      isTyping: false,
+    );
+    typingTimer?.cancel();
     // await cancelReply();
 
     // if (connectivityService.isConnected.value) {
@@ -347,169 +366,43 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     // }
   }
 
-  // Future<void> _syncMessageToFirebase(MessageModel message) async {
-  //   try {
-  //     await _saveDataToContactsSubcollection(message);
-  //     final sentMessage = message.copyWith(
-  //         status: receiveruserDataModel.value.isOnline!
-  //             ? MessageStatus.delivered
-  //             : MessageStatus.sent,
-  //         syncStatus: 'sent');
-  //
-  //     await firebaseController.setUserMsg(
-  //         currentUid: sentMessage.senderId,
-  //         data: sentMessage,
-  //         messageId: sentMessage.messageId,
-  //         reciverId: sentMessage.receiverId);
-  //     // Save message in the receiver's chat with 'delivered' status
-  //     final deliveredMessage =
-  //         message.copyWith(status: MessageStatus.delivered, syncStatus: 'sent');
-  //     // users -> reciever id  -> sender id -> messages -> message id -> store message
-  //     await firebaseController.setUserMsg(
-  //         currentUid: deliveredMessage.receiverId,
-  //         data: deliveredMessage,
-  //         messageId: deliveredMessage.messageId,
-  //         reciverId: deliveredMessage.senderId);
-  //
-  //     // Update sync status in SQLite
-  //     await MessageTable()
-  //         .updateSyncStatus(message.messageId, 'sent', MessageStatus.delivered);
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print("Error syncing message: $e");
-  //     }
-  //   }
-  // }
 
-  // void retryPendingMessages() async {
-  //   final unsentMessages = await MessageTable().fetchUnsentMessages();
-  //
-  //   for (var message in unsentMessages) {
-  //     if (connectivityService.isConnected.value) {
-  //       try {
-  //         if (message.type == MessageEnum.text) {
-  //           await _syncMessageToFirebase(message);
-  //         }
-  //         else if (message.type != MessageEnum.text && message.fileUrl == null) {
-  //           final file = File(message.filePath ?? '');
-  //           final fileUrl = await uploadFileToServer(file, message.type.toString());
-  //           message = message.copyWith(fileUrl: fileUrl);
-  //
-  //           await _syncMessageToFirebase(message);
-  //         }
-  //       } catch (e) {
-  //         if (kDebugMode) {
-  //           print("Error syncing message: $e");
-  //         }
-  //       }
-  //     } else {
-  //       if (kDebugMode) {
-  //         print("No connectivity, unable to sync message: ${message.toMap()}");
-  //       }
-  //       break;
-  //     }
-  //   }
-  //
-  //   // Retry pending deletions
-  //   final queuedDeletions = await MessageTable().getQueuedDeletions();
-  //   for (var messageId in queuedDeletions) {
-  //     if (connectivityService.isConnected.value) {
-  //       try {
-  //         await firebaseController.deleteMessage(
-  //           currentUid: senderuserData!.userId.toString(),
-  //           receiverId: id,
-  //           messageId: messageId,
-  //         );
-  //         await MessageTable().removeQueuedDeletion(messageId);
-  //       } catch (e) {
-  //         print("Error syncing deletion: $e");
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // void markMessagesAsSeen(MessageModel messages) async {
-  //   final currentUserId = messages.receiverId;
-  //   final senderId = messages.senderId.toString(); // ID of the chat partner
-  //
-  //   // Update status only for messages not yet marked as 'seen'
-  //   if (messages.status == MessageStatus.delivered &&
-  //       messages.receiverId == senderuserData!.userId.toString()) {
-  //     await firebaseController.updateMessageStatus(
-  //       currentUserId: senderuserData!.userId.toString(),
-  //       senderId: senderId,
-  //       messageId: messages.messageId,
-  //       status: receiveruserDataModel.value.isOnline!
-  //           ? MessageStatus.seen
-  //           : messages.status,
-  //     );
-  //   }
-  // }
-  //
-  // Future<void> deleteMessages({required bool deleteForEveryone}) async {
-  //   if (selectedMessages.isEmpty) return;
-  //
-  //   try {
-  //     for (var message in selectedMessages) {
-  //       if (deleteForEveryone) {
-  //         // Delete for everyone
-  //         final placeholderMessage = message.copyWith(
-  //           text: "This message was deleted",
-  //           type: MessageEnum.deleted,
-  //         );
-  //
-  //         // Update the message for both sender and receiver in Firebase
-  //         await firebaseController.setUserMsg(
-  //           currentUid: message.senderId,
-  //           data: placeholderMessage,
-  //           messageId: message.messageId,
-  //           reciverId: message.receiverId,
-  //         );
-  //
-  //         await firebaseController.setUserMsg(
-  //           currentUid: message.receiverId,
-  //           data: placeholderMessage,
-  //           messageId: message.messageId,
-  //           reciverId: message.senderId,
-  //         );
-  //
-  //         // Update the message content locally in SQLite
-  //         await MessageTable().updateMessageContent(
-  //           messageId: message.messageId,
-  //           newText: "This message was deleted",
-  //         );
-  //
-  //         // Update the message in the UI
-  //         final index = messageList
-  //             .indexWhere((msg) => msg.messageId == message.messageId);
-  //         if (index != -1) {
-  //           messageList[index] = placeholderMessage;
-  //           messageList.refresh();
-  //         }
-  //       } else {
-  //         // Delete for me (local deletion only)
-  //         await MessageTable().deleteMessage(message.messageId);
-  //         messageList.removeWhere((msg) => msg.messageId == message.messageId);
-  //
-  //         // Optionally, queue deletion for Firebase if offline
-  //         if (connectivityService.isConnected.value) {
-  //           await firebaseController.deleteMessage(
-  //             currentUid: senderuserData!.userId.toString(),
-  //             receiverId: id,
-  //             messageId: message.messageId,
-  //           );
-  //         } else {
-  //           await MessageTable().markForDeletion(message.messageId);
-  //         }
-  //       }
-  //     }
-  //     selectedMessages.clear();
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print("Error deleting messages: $e");
-  //     }
-  //   }
-  // }
+  void onTextChanged(String text) {
+    final receiverId = receiverUserData?.userId.toString() ?? "";
+
+    if (text.isNotEmpty) {
+      isShowSendButton = true;
+
+      // Emit isTyping: true
+      socketService.emitTypingStatus(
+        recipientId: receiverId,
+        isTyping: true,
+      );
+
+      // Debounce logic for isTyping: false
+      typingTimer?.cancel();
+      typingTimer = Timer(const Duration(seconds: 2), () {
+        socketService.emitTypingStatus(
+          recipientId: receiverId,
+          isTyping: false,
+        );
+      });
+    } else {
+      isShowSendButton = false;
+
+      // Immediately emit false if field is cleared
+      socketService.emitTypingStatus(
+        recipientId: receiverId,
+        isTyping: false,
+      );
+      typingTimer?.cancel();
+    }
+
+    messageController.text = text;
+  }
+
+
+
 
   void toggleMessageSelection(MessageModel message) {
     if (selectedMessages.contains(message)) {
@@ -530,38 +423,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     selectedMessages.clear();
   }
 
-  // _saveDataToContactsSubcollection(MessageModel message) async {
-  //   // users -> reciever user id => chats -> current user id -> set data
-  //   var recieverChatContact = ChatConntactModel(
-  //     uid: message.senderId,
-  //     name: senderuserData?.name ?? "",
-  //     profilePic: senderuserData?.displayPictureUrl ?? "",
-  //     contactId: message.senderId,
-  //     timeSent: message.timeSent,
-  //     lastMessage: message.text,
-  //   );
-  //
-  //   await firebaseController.sendUserMsg(
-  //     currentUid: message.senderId,
-  //     data: recieverChatContact,
-  //     reciverId: message.receiverId,
-  //   );
-  //   // users -> current user id  => chats -> reciever user id -> set data
-  //   var senderChatContact = ChatConntactModel(
-  //     uid: message.receiverId,
-  //     name: receiveruserDataModel.value.name!,
-  //     profilePic: receiveruserDataModel.value.profilePic!,
-  //     contactId: message.receiverId,
-  //     timeSent: message.timeSent,
-  //     lastMessage: message.text,
-  //   );
-  //
-  //   await firebaseController.sendUserMsg(
-  //     currentUid: message.receiverId,
-  //     data: senderChatContact,
-  //     reciverId: message.senderId,
-  //   );
-  // }
 
   Future<void> cancelReply() async {
     messageReply = MessageReply(
@@ -588,80 +449,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // Future<void> sendFileMessage({
-  //   required File file,
-  //   required MessageEnum messageEnum,
-  // }) async {
-  //   final messageId = const Uuid().v1();
-  //   final timeSent = DateTime.now();
-  //   final fileType = messageEnum.type.split('.').last;
-  //   final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-  //   try {
-  //     // Save file locally
-  //     final localFilePath = await saveFileLocally(file, fileType, fileExtension);
-  //
-  //     // Upload file to the server
-  //     final fileUrl = await uploadFileToServer(file, fileType);
-  //
-  //     final newMessage = MessageModel(
-  //       senderId: senderuserData!.userId.toString(),
-  //       receiverId: id.toString(),
-  //       text: fileType,
-  //       type: messageEnum,
-  //       timeSent: timeSent,
-  //       messageId: messageId,
-  //       status: MessageStatus.uploading,
-  //       repliedMessage: messageReply == null
-  //           ? '' : messageReply.message.toString(),
-  //       repliedTo: messageReply.message == null ? '' :
-  //       messageReply.isMe!
-  //           ? senderuserData?.name ?? ""
-  //           : receiveruserDataModel.value.name ?? "",
-  //       repliedMessageType: messageReply.message == null
-  //           ? MessageEnum.text
-  //           : messageReply.messageEnum!,
-  //       syncStatus: 'pending',
-  //       fileUrl: fileUrl,
-  //       filePath: localFilePath,
-  //       fileSize: 0,
-  //       thumbnailPath: ""
-  //     );
-  //
-  //     // Save message locally
-  //     await MessageTable().insertMessage(newMessage);
-  //     messageList.add(newMessage);
-  //
-  //     // Sync message with Firebase if online
-  //     if (connectivityService.isConnected.value) {
-  //       // await _syncMessageToFirebase(newMessage.copyWith(
-  //       //   status: receiveruserDataModel.value.isOnline!
-  //       //       ? MessageStatus.delivered
-  //       //       : MessageStatus.sent,
-  //       // ));
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print("Error sending file message: $e");
-  //     }
-  //   }
-  // }
 
-  // Future<String> uploadFileToServer(File file, String fileType) async {
-  //   try {
-  //     final fileName = 'GENCHAT_$fileType${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}';
-  //     final serverPath = 'chat/$fileType/${senderuserData!.userId.toString()}/$fileName';
-  //
-  //     // Upload file to Firebase Storage or server
-  //     final uploadTask = firebaseController.firebaseStorage.ref(serverPath).putFile(file);
-  //     final snapshot = await uploadTask;
-  //     final fileUrl = await snapshot.ref.getDownloadURL();
-  //     print("FileURL from server:-----------------> $fileUrl");
-  //
-  //     return fileUrl; // Return public file URL
-  //   } catch (e) {
-  //     throw Exception("File upload failed: $e");
-  //   }
-  // }
 
   Future<String> saveFileLocally(
       File file, String fileType, String fileExtension) async {
@@ -737,3 +525,276 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isShowEmojiContainer = true;
   }
 }
+
+// _saveDataToContactsSubcollection(MessageModel message) async {
+//   // users -> reciever user id => chats -> current user id -> set data
+//   var recieverChatContact = ChatConntactModel(
+//     uid: message.senderId,
+//     name: senderuserData?.name ?? "",
+//     profilePic: senderuserData?.displayPictureUrl ?? "",
+//     contactId: message.senderId,
+//     timeSent: message.timeSent,
+//     lastMessage: message.text,
+//   );
+//
+//   await firebaseController.sendUserMsg(
+//     currentUid: message.senderId,
+//     data: recieverChatContact,
+//     reciverId: message.receiverId,
+//   );
+//   // users -> current user id  => chats -> reciever user id -> set data
+//   var senderChatContact = ChatConntactModel(
+//     uid: message.receiverId,
+//     name: receiveruserDataModel.value.name!,
+//     profilePic: receiveruserDataModel.value.profilePic!,
+//     contactId: message.receiverId,
+//     timeSent: message.timeSent,
+//     lastMessage: message.text,
+//   );
+//
+//   await firebaseController.sendUserMsg(
+//     currentUid: message.receiverId,
+//     data: senderChatContact,
+//     reciverId: message.senderId,
+//   );
+// }
+
+
+// Future<void> _syncMessageToFirebase(MessageModel message) async {
+//   try {
+//     await _saveDataToContactsSubcollection(message);
+//     final sentMessage = message.copyWith(
+//         status: receiveruserDataModel.value.isOnline!
+//             ? MessageStatus.delivered
+//             : MessageStatus.sent,
+//         syncStatus: 'sent');
+//
+//     await firebaseController.setUserMsg(
+//         currentUid: sentMessage.senderId,
+//         data: sentMessage,
+//         messageId: sentMessage.messageId,
+//         reciverId: sentMessage.receiverId);
+//     // Save message in the receiver's chat with 'delivered' status
+//     final deliveredMessage =
+//         message.copyWith(status: MessageStatus.delivered, syncStatus: 'sent');
+//     // users -> reciever id  -> sender id -> messages -> message id -> store message
+//     await firebaseController.setUserMsg(
+//         currentUid: deliveredMessage.receiverId,
+//         data: deliveredMessage,
+//         messageId: deliveredMessage.messageId,
+//         reciverId: deliveredMessage.senderId);
+//
+//     // Update sync status in SQLite
+//     await MessageTable()
+//         .updateSyncStatus(message.messageId, 'sent', MessageStatus.delivered);
+//   } catch (e) {
+//     if (kDebugMode) {
+//       print("Error syncing message: $e");
+//     }
+//   }
+// }
+
+// void retryPendingMessages() async {
+//   final unsentMessages = await MessageTable().fetchUnsentMessages();
+//
+//   for (var message in unsentMessages) {
+//     if (connectivityService.isConnected.value) {
+//       try {
+//         if (message.type == MessageEnum.text) {
+//           await _syncMessageToFirebase(message);
+//         }
+//         else if (message.type != MessageEnum.text && message.fileUrl == null) {
+//           final file = File(message.filePath ?? '');
+//           final fileUrl = await uploadFileToServer(file, message.type.toString());
+//           message = message.copyWith(fileUrl: fileUrl);
+//
+//           await _syncMessageToFirebase(message);
+//         }
+//       } catch (e) {
+//         if (kDebugMode) {
+//           print("Error syncing message: $e");
+//         }
+//       }
+//     } else {
+//       if (kDebugMode) {
+//         print("No connectivity, unable to sync message: ${message.toMap()}");
+//       }
+//       break;
+//     }
+//   }
+//
+//   // Retry pending deletions
+//   final queuedDeletions = await MessageTable().getQueuedDeletions();
+//   for (var messageId in queuedDeletions) {
+//     if (connectivityService.isConnected.value) {
+//       try {
+//         await firebaseController.deleteMessage(
+//           currentUid: senderuserData!.userId.toString(),
+//           receiverId: id,
+//           messageId: messageId,
+//         );
+//         await MessageTable().removeQueuedDeletion(messageId);
+//       } catch (e) {
+//         print("Error syncing deletion: $e");
+//       }
+//     }
+//   }
+// }
+//
+// void markMessagesAsSeen(MessageModel messages) async {
+//   final currentUserId = messages.receiverId;
+//   final senderId = messages.senderId.toString(); // ID of the chat partner
+//
+//   // Update status only for messages not yet marked as 'seen'
+//   if (messages.status == MessageStatus.delivered &&
+//       messages.receiverId == senderuserData!.userId.toString()) {
+//     await firebaseController.updateMessageStatus(
+//       currentUserId: senderuserData!.userId.toString(),
+//       senderId: senderId,
+//       messageId: messages.messageId,
+//       status: receiveruserDataModel.value.isOnline!
+//           ? MessageStatus.seen
+//           : messages.status,
+//     );
+//   }
+// }
+//
+// Future<void> deleteMessages({required bool deleteForEveryone}) async {
+//   if (selectedMessages.isEmpty) return;
+//
+//   try {
+//     for (var message in selectedMessages) {
+//       if (deleteForEveryone) {
+//         // Delete for everyone
+//         final placeholderMessage = message.copyWith(
+//           text: "This message was deleted",
+//           type: MessageEnum.deleted,
+//         );
+//
+//         // Update the message for both sender and receiver in Firebase
+//         await firebaseController.setUserMsg(
+//           currentUid: message.senderId,
+//           data: placeholderMessage,
+//           messageId: message.messageId,
+//           reciverId: message.receiverId,
+//         );
+//
+//         await firebaseController.setUserMsg(
+//           currentUid: message.receiverId,
+//           data: placeholderMessage,
+//           messageId: message.messageId,
+//           reciverId: message.senderId,
+//         );
+//
+//         // Update the message content locally in SQLite
+//         await MessageTable().updateMessageContent(
+//           messageId: message.messageId,
+//           newText: "This message was deleted",
+//         );
+//
+//         // Update the message in the UI
+//         final index = messageList
+//             .indexWhere((msg) => msg.messageId == message.messageId);
+//         if (index != -1) {
+//           messageList[index] = placeholderMessage;
+//           messageList.refresh();
+//         }
+//       } else {
+//         // Delete for me (local deletion only)
+//         await MessageTable().deleteMessage(message.messageId);
+//         messageList.removeWhere((msg) => msg.messageId == message.messageId);
+//
+//         // Optionally, queue deletion for Firebase if offline
+//         if (connectivityService.isConnected.value) {
+//           await firebaseController.deleteMessage(
+//             currentUid: senderuserData!.userId.toString(),
+//             receiverId: id,
+//             messageId: message.messageId,
+//           );
+//         } else {
+//           await MessageTable().markForDeletion(message.messageId);
+//         }
+//       }
+//     }
+//     selectedMessages.clear();
+//   } catch (e) {
+//     if (kDebugMode) {
+//       print("Error deleting messages: $e");
+//     }
+//   }
+// }
+
+// Future<void> sendFileMessage({
+//   required File file,
+//   required MessageEnum messageEnum,
+// }) async {
+//   final messageId = const Uuid().v1();
+//   final timeSent = DateTime.now();
+//   final fileType = messageEnum.type.split('.').last;
+//   final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+//   try {
+//     // Save file locally
+//     final localFilePath = await saveFileLocally(file, fileType, fileExtension);
+//
+//     // Upload file to the server
+//     final fileUrl = await uploadFileToServer(file, fileType);
+//
+//     final newMessage = MessageModel(
+//       senderId: senderuserData!.userId.toString(),
+//       receiverId: id.toString(),
+//       text: fileType,
+//       type: messageEnum,
+//       timeSent: timeSent,
+//       messageId: messageId,
+//       status: MessageStatus.uploading,
+//       repliedMessage: messageReply == null
+//           ? '' : messageReply.message.toString(),
+//       repliedTo: messageReply.message == null ? '' :
+//       messageReply.isMe!
+//           ? senderuserData?.name ?? ""
+//           : receiveruserDataModel.value.name ?? "",
+//       repliedMessageType: messageReply.message == null
+//           ? MessageEnum.text
+//           : messageReply.messageEnum!,
+//       syncStatus: 'pending',
+//       fileUrl: fileUrl,
+//       filePath: localFilePath,
+//       fileSize: 0,
+//       thumbnailPath: ""
+//     );
+//
+//     // Save message locally
+//     await MessageTable().insertMessage(newMessage);
+//     messageList.add(newMessage);
+//
+//     // Sync message with Firebase if online
+//     if (connectivityService.isConnected.value) {
+//       // await _syncMessageToFirebase(newMessage.copyWith(
+//       //   status: receiveruserDataModel.value.isOnline!
+//       //       ? MessageStatus.delivered
+//       //       : MessageStatus.sent,
+//       // ));
+//     }
+//   } catch (e) {
+//     if (kDebugMode) {
+//       print("Error sending file message: $e");
+//     }
+//   }
+// }
+
+// Future<String> uploadFileToServer(File file, String fileType) async {
+//   try {
+//     final fileName = 'GENCHAT_$fileType${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}';
+//     final serverPath = 'chat/$fileType/${senderuserData!.userId.toString()}/$fileName';
+//
+//     // Upload file to Firebase Storage or server
+//     final uploadTask = firebaseController.firebaseStorage.ref(serverPath).putFile(file);
+//     final snapshot = await uploadTask;
+//     final fileUrl = await snapshot.ref.getDownloadURL();
+//     print("FileURL from server:-----------------> $fileUrl");
+//
+//     return fileUrl; // Return public file URL
+//   } catch (e) {
+//     throw Exception("File upload failed: $e");
+//   }
+// }

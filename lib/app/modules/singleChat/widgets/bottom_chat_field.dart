@@ -38,12 +38,13 @@ class BottomChatField extends StatelessWidget {
                   maxLines: null,
                   focusNode: singleChatController.focusNode,
                   onChanged: (v) {
-                    if (v.isNotEmpty) {
-                      singleChatController.isShowSendButton = true;
-                      singleChatController.messageController.text = v;
-                    } else {
-                      singleChatController.isShowSendButton = false;
-                    }
+                    // if (v.isNotEmpty) {
+                    //   singleChatController.isShowSendButton = true;
+                    //   singleChatController.messageController.text = v;
+                    // } else {
+                    //   singleChatController.isShowSendButton = false;
+                    // }
+                    singleChatController.onTextChanged(v);
                   },
                   controller: singleChatController.messageController,
                   decoration: InputDecoration(
@@ -121,24 +122,23 @@ class BottomChatField extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
-                child: CircleAvatar(
-                  backgroundColor: textBarColor,
-                  radius: 25,
-                  child: Obx(() => GestureDetector(
-                        onTap: () async {
-                          await singleChatController.sendTextMessage();
-                          //
-                        },
-                        child: Icon(
-                          singleChatController.isShowSendButton
-                              ? Icons.send
-                              : singleChatController.isRecording
-                                  ? Icons.close
-                                  : Icons.mic,
-                        ),
-                      )),
+              InkWell(
+                onTap: () async {
+                  await singleChatController.sendTextMessage();
+                  },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
+                  child: CircleAvatar(
+                    backgroundColor: textBarColor,
+                    radius: 25,
+                    child: Obx(() => Icon(
+                      singleChatController.isShowSendButton
+                          ? Icons.send
+                          : singleChatController.isRecording
+                              ? Icons.close
+                              : Icons.mic,
+                    )),
+                  ),
                 ),
               ),
             ],

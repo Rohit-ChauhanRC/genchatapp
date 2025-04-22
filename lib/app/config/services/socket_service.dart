@@ -22,6 +22,8 @@ class SocketService extends GetxService {
   final RxBool _isConnected = false.obs;
   bool get isConnected => _isConnected.value;
 
+  final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
+
   Future<void> initSocket(String userId,{Function()? onConnected}) async {
     _socket = IO.io(
       'http://app.maklife.in:10000',
@@ -124,6 +126,13 @@ class SocketService extends GetxService {
 
     _socket.on('typing', (data) {
       print('✅ user is typing: $data');
+      print('📝 Typing event received: $data');
+
+      final String senderId = data["userId"].toString();
+      final bool isTyping = data["isTyping"] == true;
+
+      // 👇 Save typing state in map for the current chat
+      typingStatusMap[senderId] = isTyping;
     });
 
     _socket.on('custom-error', (data) {
@@ -154,6 +163,23 @@ class SocketService extends GetxService {
   void checkUserOnline(Map<String, dynamic> data) {
     _socket.emit('user-connection-status', data);
   }
+
+  void emitTypingStatus({required String recipientId, required bool isTyping}) {
+    _socket.emit('typing', {
+      "recipientId": recipientId,
+      "isTyping": isTyping,
+    });
+  }
+
+  void monitorReceiverTyping(
+      String receiverUserId, void Function(bool isTyping) onTypingStatusChanged) {
+    ever(typingStatusMap, (_) {
+      if (typingStatusMap.containsKey(receiverUserId)) {
+        onTypingStatusChanged(typingStatusMap[receiverUserId] == true);
+      }
+    });
+  }
+
 
   void disposeSocket() {
     _socket.dispose();

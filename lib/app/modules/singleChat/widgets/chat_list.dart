@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/typping_bubble.dart';
@@ -73,35 +74,32 @@ class ChatList extends StatelessWidget {
                 );
               }
               var messages = singleChatController.messageList[index];
-              // if (messages.receiverId ==
-              //         singleChatController.receiveruserDataModel.value.uid) {
+              // if (messages.recipientId ==
+              //         singleChatController.receiverUserData?.userId) {
               //   // singleChatController.setChatMessageSeen(
               //   //   context,
               //   //   messages.messageId,
               //   // );
               // }
               //   singleChatController.isMsgSelected = singleChatController.selectedMessages.contains(messages);
-              // if (messages.senderId == singleChatController.senderuserData.uid) {
+              // if (messages.senderId == singleChatController.senderuserData?.userId) {
               return InkWell(
                 onLongPress: () {
-                  // singleChatController.toggleMessageSelection(messages);
-                  // print("selected Multiple Taps");
+                  singleChatController.toggleMessageSelection(messages);
+                  print("selected Multiple Taps");
                 },
                 onTap: () {
-                  // if (singleChatController.selectedMessages.isNotEmpty) {
-                  //   singleChatController.toggleMessageSelection(messages);
-                  //   print("selected tap");
-                  // }
+                  if (singleChatController.selectedMessages.isNotEmpty) {
+                    singleChatController.toggleMessageSelection(messages);
+                    print("selected tap");
+                  }
                 },
                 child: Obx(() {
                   bool isMsgSelected =
                       singleChatController.selectedMessages.contains(messages);
                   return Container(
-                    color: isMsgSelected
-                        ? mySideBgColor.withOpacity(0.3)
-                        : Colors.transparent,
-                    child: messages.senderId ==
-                            singleChatController.senderuserData!.userId
+                    color: isMsgSelected ? AppColors.mySideBgColor.withOpacity(0.3) : Colors.transparent,
+                    child: messages.senderId == singleChatController.senderuserData!.userId
                         ? MyMessageCard(
                             message: messages.message!,
                             date: DateFormat('hh:mm a').format(DateTime.parse(
@@ -122,9 +120,7 @@ class ChatList extends StatelessWidget {
                             // repliedText: messages.repliedMessage.obs,
                             // username: messages.repliedTo,
                           )
-                        :
-                        // }
-                        SenderMessageCard(
+                        : SenderMessageCard(
                             message: messages.message.toString(),
                             date: DateFormat('hh:mm a').format(DateTime.parse(
                                 messages.messageSentFromDeviceTime!)),
@@ -144,6 +140,7 @@ class ChatList extends StatelessWidget {
                   );
                 }),
               );
+              // }
             },
           );
         }),

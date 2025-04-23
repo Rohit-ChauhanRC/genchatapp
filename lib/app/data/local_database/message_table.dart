@@ -206,7 +206,7 @@ class MessageTable {
       await db.insert(deleteQueueTblName, {'messageId': messageId},
           conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e) {
-      // print("Error marking message for deletion: $e");
+      print("Error marking message for deletion: $e");
     }
   }
 

@@ -175,7 +175,7 @@ class SingleChatView extends GetView<SingleChatController> {
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {
     final isOnlySenderMessages = controller.selectedMessages.every(
-        (msg) => msg.senderId == controller.senderuserData!.userId.toString());
+        (msg) => msg.senderId == controller.senderuserData!.userId);
 
     showModalBottomSheet(
       context: context,

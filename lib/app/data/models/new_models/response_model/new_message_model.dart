@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
+
 import '../../../../constants/message_enum.dart';
 
-class NewMessageModel {
+class NewMessageModel extends Equatable{
   final int? messageId;
   final String? clientSystemMessageId;
   final int? senderId;
@@ -26,6 +28,9 @@ class NewMessageModel {
   });
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
+    assert(map['messageId'] != null, "messageId cannot be null");
+    assert(map['senderId'] != null, "senderId cannot be null");
+    assert(map['recipientId'] != null, "recipientId cannot be null");
     return NewMessageModel(
       messageId: map['messageId'],
       clientSystemMessageId: map['clientSystemMessageId'],
@@ -56,16 +61,16 @@ class NewMessageModel {
   }
 
   NewMessageModel copyWith({
-    final int? messageId,
-    final String? clientSystemMessageId,
-    final int? senderId,
-    final int? recipientId,
-    final String? message,
-    final MessageState? state,
-    final String? messageSentFromDeviceTime,
-    final String? createdAt,
-    final SyncStatus? syncStatus,
-    final String? senderPhoneNumber,
+    int? messageId,
+    String? clientSystemMessageId,
+    int? senderId,
+    int? recipientId,
+    String? message,
+    MessageState? state,
+    String? messageSentFromDeviceTime,
+    String? createdAt,
+    SyncStatus? syncStatus,
+    String? senderPhoneNumber,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -82,4 +87,6 @@ class NewMessageModel {
       senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
     );
   }
+  @override
+  List<Object?> get props => [messageId];
 }

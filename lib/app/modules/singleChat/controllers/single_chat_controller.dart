@@ -113,7 +113,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   //   isOnline: false,
   // ).obs;
 
-  final RxList<MessageModel> selectedMessages = <MessageModel>[].obs;
+  final RxList<NewMessageModel> selectedMessages = <NewMessageModel>[].obs;
   late Stream<List<NewMessageModel>> messageStream;
   late StreamSubscription<List<NewMessageModel>> messageSubscription;
 
@@ -468,16 +468,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     messageController.text = text;
   }
 
-  void toggleMessageSelection(MessageModel message) {
+  void toggleMessageSelection(NewMessageModel message) {
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
       if (kDebugMode) {
-        // print("Message removed from list:------> $message");
+        print("Message removed from list:------> $message");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        // print("Message added to list:------> $message");
+        print("Message added to list:------> $message");
       }
     }
     selectedMessages.refresh();

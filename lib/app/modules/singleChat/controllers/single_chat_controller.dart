@@ -218,6 +218,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void _scrollListener() {
     if (!scrollController.hasClients) return;
 
+    // scrollController.jumpTo(scrollController.position.maxScrollExtent);
+
     final maxScroll = scrollController.position.maxScrollExtent;
     final currentScroll = scrollController.position.pixels;
 
@@ -307,6 +309,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             }
           } else if (i.syncStatus == SyncStatus.pending &&
               i.messageId == null) {
+            if (socketService.isConnected) {
+              if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+                socketService.sendMessageSync(i);
+              }
+            }
+          } else if (i.syncStatus == SyncStatus.pending &&
+              i.messageId != null) {
             if (socketService.isConnected) {
               if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
                 socketService.sendMessageSync(i);

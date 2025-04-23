@@ -17,7 +17,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final connectivityService = Get.put(ConnectivityService());
-  final selectedContactController = Get.find<SelectContactsController>();
+  final selectedContactController =
+      Get.put<SelectContactsController>(SelectContactsController());
 
   final socketService = Get.find<SocketService>();
 

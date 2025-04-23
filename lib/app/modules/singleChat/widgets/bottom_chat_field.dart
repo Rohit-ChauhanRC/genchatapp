@@ -1,5 +1,6 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
@@ -40,6 +41,7 @@ class BottomChatField extends StatelessWidget {
                     scrollController: singleChatController.textScrollController,
                     maxLines: null,
                     // autofocus: true,
+
                     keyboardType: TextInputType.multiline,
                     focusNode: singleChatController.focusNode,
                     onChanged: (v) {
@@ -49,9 +51,13 @@ class BottomChatField extends StatelessWidget {
                       // } else {
                       //   singleChatController.isShowSendButton = false;
                       // }
+                      print(v.length);
                       singleChatController.onTextChanged(v);
                     },
                     controller: singleChatController.messageController,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(800),
+                    ],
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: whiteColor,
@@ -131,19 +137,19 @@ class BottomChatField extends StatelessWidget {
               InkWell(
                 onTap: () async {
                   await singleChatController.sendTextMessage();
-                  },
+                },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
                   child: CircleAvatar(
                     backgroundColor: textBarColor,
                     radius: 25,
                     child: Obx(() => Icon(
-                      singleChatController.isShowSendButton
-                          ? Icons.send
-                          : singleChatController.isRecording
-                              ? Icons.close
-                              : Icons.mic,
-                    )),
+                          singleChatController.isShowSendButton
+                              ? Icons.send
+                              : singleChatController.isRecording
+                                  ? Icons.close
+                                  : Icons.mic,
+                        )),
                   ),
                 ),
               ),

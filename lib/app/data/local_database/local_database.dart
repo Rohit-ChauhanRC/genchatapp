@@ -61,7 +61,11 @@ class DataBaseService {
     // ProfileDB().onUpgrade(database, oldVersion, newVersion);
   }
 
-  void closeDb() {
+  Future<void> closeDb() async{
+    await MessageTable().deleteMessageTable();
+    await ContactsTable().deleteTable();
+    await ChatConectTable().deleteTable();
+    await MessageTable().deleteQueueMessageTable();
     _database?.close();
   }
 }

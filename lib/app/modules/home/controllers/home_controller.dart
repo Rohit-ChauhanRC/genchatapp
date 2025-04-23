@@ -16,9 +16,9 @@ import 'package:get/get.dart';
 class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
-  final connectivityService = Get.put(ConnectivityService());
+  final connectivityService = Get.find<ConnectivityService>();
   final selectedContactController =
-      Get.put<SelectContactsController>(SelectContactsController());
+      Get.find<SelectContactsController>();
 
   final socketService = Get.find<SocketService>();
 

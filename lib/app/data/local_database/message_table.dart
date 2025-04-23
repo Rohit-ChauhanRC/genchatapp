@@ -255,4 +255,15 @@ class MessageTable {
 
     return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
+
+  Future<void> deleteMessageTable() async {
+    final db = await DataBaseService().database;
+    await db.execute('DROP TABLE IF EXISTS $tableName');
+    // await createTable(db);
+  }
+  Future<void> deleteQueueMessageTable() async {
+    final db = await DataBaseService().database;
+    await db.execute('DROP TABLE IF EXISTS $deleteQueueTblName');
+    await createTable(db);
+  }
 }

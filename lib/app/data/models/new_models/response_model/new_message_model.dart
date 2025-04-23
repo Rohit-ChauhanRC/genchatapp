@@ -28,9 +28,9 @@ class NewMessageModel extends Equatable{
   });
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
-    assert(map['messageId'] != null, "messageId cannot be null");
-    assert(map['senderId'] != null, "senderId cannot be null");
-    assert(map['recipientId'] != null, "recipientId cannot be null");
+    // assert(map['messageId'] != null, "messageId cannot be null");
+    // assert(map['senderId'] != null, "senderId cannot be null");
+    // assert(map['recipientId'] != null, "recipientId cannot be null");
     return NewMessageModel(
       messageId: map['messageId'],
       clientSystemMessageId: map['clientSystemMessageId'],

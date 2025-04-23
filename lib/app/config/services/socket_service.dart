@@ -135,6 +135,13 @@ class SocketService extends GetxService {
       typingStatusMap[senderId] = isTyping;
     });
 
+    _socket.on('message-delete', (data){
+      print('✅ Message Deleted: $data');
+      final int messageId = data['messageId'];
+      final bool isDeleteFromEveryOne = data['deleteState'];
+      
+    });
+
     _socket.on('custom-error', (data) {
       print('🚫 Custom Error: $data');
     });
@@ -180,6 +187,12 @@ class SocketService extends GetxService {
     });
   }
 
+  void emitMessageDelete({required int messageId, required bool isDeleteFromEveryOne}) {
+    _socket.emit('message-delete', {
+      "messageId": messageId,
+      "deleteState": isDeleteFromEveryOne,
+    });
+  }
 
   void disposeSocket() {
     _socket.dispose();

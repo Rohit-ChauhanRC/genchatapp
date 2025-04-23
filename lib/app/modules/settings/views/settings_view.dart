@@ -114,7 +114,6 @@ class SettingsView extends GetView<SettingsController> {
                           description: "You have to login again.",
                           icon: Icons.logout_rounded,
                           onTap: () async {
-                            await controller.homeController.setUserOffline();
                             controller.db.closeDb();
                             controller.socketService.disposeSocket();
                             await controller.sharedPreferenceService

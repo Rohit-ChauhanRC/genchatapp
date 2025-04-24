@@ -188,7 +188,7 @@ class SingleChatView extends GetView<SingleChatController> {
               title: const Text("Delete for Me"),
               onTap: () {
                 Navigator.pop(context);
-                // controller.deleteMessages(deleteForEveryone: false);
+                controller.deleteMessages(deleteForEveryone: false);
               },
             ),
             if (isOnlySenderMessages)
@@ -197,7 +197,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 title: const Text("Delete for Everyone"),
                 onTap: () {
                   Navigator.pop(context);
-                  // controller.deleteMessages(deleteForEveryone: true);
+                  controller.deleteMessages(deleteForEveryone: true);
                 },
               ),
           ],

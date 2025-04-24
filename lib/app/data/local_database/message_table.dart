@@ -31,7 +31,8 @@ class MessageTable {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $deleteQueueTblName (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        messageId TEXT NOT NULL UNIQUE
+        messageId INTEGER NOT NULL UNIQUE,
+        deleteState INTEGER NOT NULL
       )
     ''');
   }
@@ -192,38 +193,50 @@ class MessageTable {
   }
 
   // Delete a message
-  Future<void> deleteMessage(String messageId) async {
+  Future<void> deleteMessage(int messageId) async {
     final db = await DataBaseService().database;
     await db.delete(tableName, where: 'messageId = ?', whereArgs: [messageId]);
   }
 
   // Add to deletion queue
-  Future<void> markForDeletion(String messageId) async {
+  Future<void> markForDeletion({
+    required int messageId,
+    required bool isDeleteFromEveryone,
+  }) async {
     try {
       final db = await DataBaseService().database;
-      await db.insert(deleteQueueTblName, {'messageId': messageId},
-          conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.insert(
+          deleteQueueTblName,
+          {
+            'messageId': messageId,
+            'deleteState': isDeleteFromEveryone ? 1 : 0,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore
+      );
     } catch (e) {
       print("Error marking message for deletion: $e");
     }
   }
 
   // Get all queued deletions
-  Future<List<String>> getQueuedDeletions() async {
+  Future<List<Map<String, dynamic>>> getQueuedDeletions() async {
     final db = await DataBaseService().database;
     final result = await db.query(deleteQueueTblName);
-    return result.map((row) => row['messageId'] as String).toList();
+    return result.map((row) => {
+      'messageId': row['messageId'],
+      'deleteState': row['deleteState'] == 1, // true or false
+    }).toList();
   }
 
   // Remove from deletion queue
-  Future<void> removeQueuedDeletion(String messageId) async {
+  Future<void> removeQueuedDeletion(int messageId) async {
     final db = await DataBaseService().database;
     await db.delete(deleteQueueTblName,
         where: 'messageId = ?', whereArgs: [messageId]);
   }
 
   Future<void> updateMessageContent({
-    required String messageId,
+    required int messageId,
     required String newText,
   }) async {
     final db = await DataBaseService().database;
@@ -253,6 +266,18 @@ class MessageTable {
 
     return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
+
+  Future<bool> messageExists(int messageId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
 
   Future<void> deleteMessageTable() async {
     final db = await DataBaseService().database;

@@ -39,6 +39,7 @@ class SocketService extends GetxService {
     _socket.onConnect((_) {
       print('✅ Socket connected');
       _isConnected.value = true;
+      retryPendingDeletions();
       onConnected?.call();
     });
 
@@ -135,10 +136,26 @@ class SocketService extends GetxService {
       typingStatusMap[senderId] = isTyping;
     });
 
-    _socket.on('message-delete', (data){
+    _socket.on('message-delete', (data) async {
       print('✅ Message Deleted: $data');
       final int messageId = data['messageId'];
       final bool isDeleteFromEveryOne = data['deleteState'];
+
+      bool existsLocally = await messageTable.messageExists(messageId);
+      if (existsLocally) {
+        if (isDeleteFromEveryOne) {
+          // Delete for everyone: mark as "This message was deleted"
+          await messageTable.updateMessageContent(
+            messageId: messageId,
+            newText: "This message was deleted",
+          );
+        } else {
+          // Delete for me only: remove the message locally
+          await messageTable.deleteMessage(messageId);
+        }
+      } else {
+        print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
+      }
       
     });
 
@@ -263,5 +280,24 @@ class SocketService extends GetxService {
       }
     }
   }
+
+  Future<void> retryPendingDeletions() async {
+    final pendingDeletions = await messageTable.getQueuedDeletions();
+
+    for (var entry in pendingDeletions) {
+      final messageId = entry['messageId'];
+      final isDeleteFromEveryone = entry['deleteState'] as bool;
+
+      // Retry emitting
+      emitMessageDelete(
+        messageId: messageId,
+        isDeleteFromEveryOne: isDeleteFromEveryone,
+      );
+
+      // After successful retry, remove from queue
+      await messageTable.removeQueuedDeletion(messageId);
+    }
+  }
+
 
 }

@@ -330,45 +330,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  // void bindMessageStream() {
-  //   messageStream = getMessageStream();
-  //   messageSubscription = messageStream.listen((messages) {
-  //     final Map<String, NewMessageModel> uniqueMessagesMap = {};
 
-  //     for (var i in messages) {
-  //       // Only add if messageId is not null and not already in the map
-  //       if (i.messageId != null) {
-  //         uniqueMessagesMap[i.messageId!.toString()] = i;
-  //       } else {
-  //         // Optionally handle messages without messageId
-  //         // Generate a temporary key or keep them uniquely (e.g., timestamp-based ID)
-  //         final tempKey = '${i.clientSystemMessageId}';
-  //         uniqueMessagesMap[tempKey] = i;
-  //       }
-  //     }
-
-  //     messageList.assignAll(uniqueMessagesMap.values);
-
-  //     if (uniqueMessagesMap.isNotEmpty) {
-  //       for (var i in uniqueMessagesMap.values) {
-  //         if ((i.state == MessageState.sent ||
-  //                 i.state == MessageState.unsent ||
-  //                 i.state == MessageState.delivered) &&
-  //             i.messageId != null) {
-  //           if (receiverUserData?.userId == i.senderId &&
-  //               socketService.isConnected) {
-  //             socketService.sendMessageSeen(i.messageId!);
-  //           }
-  //         } else if (i.syncStatus == SyncStatus.pending &&
-  //             i.messageId == null) {
-  //           if (socketService.isConnected) {
-  //             socketService.sendMessageSync(i);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
 
   Stream<List<NewMessageModel>> getMessageStream() async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
@@ -489,6 +451,49 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void clearSelectedMessages() {
     selectedMessages.clear();
   }
+
+
+  Future<void> deleteMessages({required bool deleteForEveryone}) async {
+    if (selectedMessages.isEmpty) return;
+
+    for (var message in selectedMessages) {
+      final isOnline = connectivityService.isConnected.value;
+
+      if (deleteForEveryone) {
+        // Emit socket event
+        if (isOnline) {
+          socketService.emitMessageDelete(
+            messageId: message.messageId!,
+            isDeleteFromEveryOne: true,
+          );
+        } else {
+          await MessageTable().markForDeletion(
+              messageId: message.messageId!, isDeleteFromEveryone: true
+          );
+        }
+
+        // Update UI and local DB
+        await MessageTable().updateMessageContent(
+          messageId: message.messageId!,
+          newText: "This message was deleted",
+        );
+      } else {
+        // Delete for me (self only)
+        await MessageTable().deleteMessage(message.messageId!);
+        if (isOnline) {
+          socketService.emitMessageDelete(
+            messageId: message.messageId!,
+            isDeleteFromEveryOne: false,
+          );
+        } else {
+          await MessageTable().markForDeletion(messageId: message.messageId!, isDeleteFromEveryone: false);
+        }
+      }
+    }
+
+    selectedMessages.clear();
+  }
+
 
   Future<void> cancelReply() async {
     messageReply = MessageReply(
@@ -861,4 +866,43 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 //   } catch (e) {
 //     throw Exception("File upload failed: $e");
 //   }
+// }
+// void bindMessageStream() {
+//   messageStream = getMessageStream();
+//   messageSubscription = messageStream.listen((messages) {
+//     final Map<String, NewMessageModel> uniqueMessagesMap = {};
+
+//     for (var i in messages) {
+//       // Only add if messageId is not null and not already in the map
+//       if (i.messageId != null) {
+//         uniqueMessagesMap[i.messageId!.toString()] = i;
+//       } else {
+//         // Optionally handle messages without messageId
+//         // Generate a temporary key or keep them uniquely (e.g., timestamp-based ID)
+//         final tempKey = '${i.clientSystemMessageId}';
+//         uniqueMessagesMap[tempKey] = i;
+//       }
+//     }
+
+//     messageList.assignAll(uniqueMessagesMap.values);
+
+//     if (uniqueMessagesMap.isNotEmpty) {
+//       for (var i in uniqueMessagesMap.values) {
+//         if ((i.state == MessageState.sent ||
+//                 i.state == MessageState.unsent ||
+//                 i.state == MessageState.delivered) &&
+//             i.messageId != null) {
+//           if (receiverUserData?.userId == i.senderId &&
+//               socketService.isConnected) {
+//             socketService.sendMessageSeen(i.messageId!);
+//           }
+//         } else if (i.syncStatus == SyncStatus.pending &&
+//             i.messageId == null) {
+//           if (socketService.isConnected) {
+//             socketService.sendMessageSync(i);
+//           }
+//         }
+//       }
+//     }
+//   });
 // }

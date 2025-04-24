@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
+import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
@@ -307,14 +308,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                 socketService.isConnected) {
               socketService.sendMessageSeen(i.messageId!);
             }
-          } else if (i.syncStatus == SyncStatus.pending &&
+          } else if (senderuserData!.userId == i.senderId &&
+              i.syncStatus == SyncStatus.pending &&
               i.messageId == null) {
             if (socketService.isConnected) {
               if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
                 socketService.sendMessageSync(i);
               }
             }
-          } else if (i.syncStatus == SyncStatus.pending &&
+          } else if (senderuserData!.userId == i.senderId &&
+              i.syncStatus == SyncStatus.pending &&
               i.messageId != null) {
             if (socketService.isConnected) {
               if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {

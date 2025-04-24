@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
-import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
@@ -261,6 +259,7 @@ class MessageTable {
     await db.execute('DROP TABLE IF EXISTS $tableName');
     // await createTable(db);
   }
+
   Future<void> deleteQueueMessageTable() async {
     final db = await DataBaseService().database;
     await db.execute('DROP TABLE IF EXISTS $deleteQueueTblName');

@@ -143,15 +143,35 @@ class SocketService extends GetxService {
 
       bool existsLocally = await messageTable.messageExists(messageId);
       if (existsLocally) {
+        final isLast = await messageTable.isLastMessage(messageId);
+        final msg = await messageTable.getMessageById(messageId);
         if (isDeleteFromEveryOne) {
           // Delete for everyone: mark as "This message was deleted"
           await messageTable.updateMessageContent(
             messageId: messageId,
             newText: "This message was deleted",
           );
+
+          if (isLast) {
+            await chatConectTable.updateContact(
+              uid: msg!.recipientId.toString(),
+              lastMessage: "This message was deleted",
+              timeSent: msg.messageSentFromDeviceTime,
+            );
+          }
         } else {
           // Delete for me only: remove the message locally
           await messageTable.deleteMessage(messageId);
+          if (isLast) {
+            final newLast = await messageTable.getLatestMessageForUser(msg?.recipientId ?? 0);
+            if (newLast != null) {
+              await chatConectTable.updateContact(
+                uid: msg!.recipientId.toString(),
+                lastMessage: newLast.message,
+                timeSent: newLast.clientSystemMessageId,
+              );
+            }
+          }
         }
       } else {
         print("⚠️ Message ID $messageId not found locally. Skipping deletion.");

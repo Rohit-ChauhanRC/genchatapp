@@ -8,6 +8,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
@@ -459,6 +460,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     for (var message in selectedMessages) {
       final isOnline = connectivityService.isConnected.value;
 
+      final isLast = await MessageTable().isLastMessage(message.messageId!);
+
       if (deleteForEveryone) {
         // Emit socket event
         if (isOnline) {
@@ -477,6 +480,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           messageId: message.messageId!,
           newText: "This message was deleted",
         );
+
+        if (isLast) {
+          await ChatConectTable().updateContact(
+            uid: message.recipientId.toString(),
+            lastMessage: "This message was deleted",
+            timeSent: message.messageSentFromDeviceTime,
+          );
+        }
       } else {
         // Delete for me (self only)
         await MessageTable().deleteMessage(message.messageId!);
@@ -488,10 +499,27 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         } else {
           await MessageTable().markForDeletion(messageId: message.messageId!, isDeleteFromEveryone: false);
         }
+        if (isLast) {
+          final newLast = await MessageTable().getLatestMessageForUser(message.recipientId!);
+          if (newLast != null) {
+            await ChatConectTable().updateContact(
+              uid: message.recipientId.toString(),
+              lastMessage: newLast.message,
+              timeSent: newLast.messageSentFromDeviceTime,
+            );
+          } else {
+            // Optional: reset chat contact if all messages deleted
+            // await chatConectTable.updateContact(
+            //   uid: message.recipientId.toString(),
+            //   lastMessage: '',
+            //   timeSent: '',
+            // );
+          }
       }
     }
 
     selectedMessages.clear();
+  }
   }
 
 
@@ -594,6 +622,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isShowEmojiContainer = true;
   }
 }
+
 
 // _saveDataToContactsSubcollection(MessageModel message) async {
 //   // users -> reciever user id => chats -> current user id -> set data

@@ -33,8 +33,8 @@ class MessageReplyPreview extends StatelessWidget {
                     Obx(() => singleChatController.messageReply.message != null
                         ? Text(
                             singleChatController.messageReply.isMe!
-                                ? 'Me'
-                                : 'Opposite',
+                                ? 'you'
+                                : '${singleChatController.receiverUserData?.localName}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
@@ -61,9 +61,9 @@ class MessageReplyPreview extends StatelessWidget {
             () => singleChatController.messageReply.message != null
                 ? DisplayTextImageGIF(
                     message: singleChatController.messageReply.message!,
-                    type: singleChatController.messageReply.messageEnum!,
+                    type: singleChatController.messageReply.messageType!,
                   )
-                : const SizedBox(),
+                : const SizedBox.shrink(),
           ),
         ],
       ),

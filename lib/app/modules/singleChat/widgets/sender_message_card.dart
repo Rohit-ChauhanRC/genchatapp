@@ -14,17 +14,17 @@ class SenderMessageCard extends StatelessWidget {
     required this.date,
     required this.type,
     this.onRightSwipe,
-    // required this.repliedText,
+    required this.repliedText,
     // required this.username,
-    // required this.repliedMessageType,
+    required this.repliedMessageType,
   });
   final String message;
   final String date;
-  final MessageEnum type;
+  final MessageType type;
   final void Function(DragUpdateDetails)? onRightSwipe;
-  // final RxString repliedText;
+  final RxString repliedText;
   // final String username;
-  // final MessageEnum repliedMessageType;
+  final MessageType repliedMessageType;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class SenderMessageCard extends StatelessWidget {
             child: Stack(
               children: [
                 Padding(
-                  padding: type == MessageEnum.text
+                  padding: type == MessageType.text
                       ? const EdgeInsets.only(
                           left: 10,
                           right: 50,
@@ -64,34 +64,35 @@ class SenderMessageCard extends StatelessWidget {
                         ),
                   child: Column(
                     children: [
-                      // Obx(() => repliedText.value.isNotEmpty &&
-                      //         repliedText.value != "null"
-                      //     ? Column(children: [
-                      //         Text(
-                      //           username,
-                      //           style: const TextStyle(
-                      //               fontWeight: FontWeight.bold,
-                      //               color: blackColor),
-                      //         ),
-                      //         const SizedBox(height: 3),
-                      //         Container(
-                      //           padding: const EdgeInsets.all(10),
-                      //           decoration: BoxDecoration(
-                      //             color: replyColor.withOpacity(0.67),
-                      //             borderRadius: BorderRadius.all(
-                      //               Radius.circular(
-                      //                 5,
-                      //               ),
-                      //             ),
-                      //           ),
-                      //           child: DisplayTextImageGIF(
-                      //             message: repliedText.value,
-                      //             type: repliedMessageType,
-                      //           ),
-                      //         ),
-                      //         const SizedBox(height: 8),
-                      //       ])
-                      //     : const SizedBox()),
+                      type != MessageType.deleted && repliedText.value.isNotEmpty &&
+                          repliedText.value != "null"
+                          ? Obx(() =>  Column(
+                          children: [
+                              Text(
+                                "username",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: blackColor),
+                              ),
+                              const SizedBox(height: 3),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: replyColor.withOpacity(0.67),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(
+                                      5,
+                                    ),
+                                  ),
+                                ),
+                                child: DisplayTextImageGIF(
+                                  message: repliedText.value,
+                                  type: repliedMessageType,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ]))
+                          : const SizedBox(),
 
                       DisplayTextImageGIF(
                         message: message,

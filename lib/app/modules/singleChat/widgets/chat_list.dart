@@ -32,7 +32,8 @@ class ChatList extends StatelessWidget {
           //   return loadingWidget(text: "Fetching data please wait....");
           // }
           if (singleChatController.messageList.isEmpty) {
-            return const Text("No chat found");
+            return Center(child: const Text("No messages yet!",
+              style: TextStyle(fontSize: 16, color: Colors.grey),));
               // loadingWidget(text: "Fetching data please wait....");
 
           }
@@ -99,42 +100,53 @@ class ChatList extends StatelessWidget {
                       singleChatController.selectedMessages.contains(messages);
                   return Container(
                     color: isMsgSelected ? AppColors.mySideBgColor.withOpacity(0.3) : Colors.transparent,
-                    child: messages.senderId == singleChatController.senderuserData!.userId
+                    child: messages.senderId == singleChatController.senderuserData?.userId
                         ? MyMessageCard(
-                            message: messages.message!,
+                            message: messages.messageType == MessageType.text || messages.messageType == MessageType.deleted ? (messages.message ?? '')  // NULL-SAFE
+                                : (messages.assetServerName ?? ''),
                             date: DateFormat('hh:mm a').format(DateTime.parse(
-                                messages.messageSentFromDeviceTime!)),
+                                messages.messageSentFromDeviceTime ?? '')),
                             // date: "",
-                            type: MessageEnum.text,
-                            status: messages.state!,
-                            onLeftSwipe: (v) {
+                            type: messages.messageType ?? MessageType.text,
+                            status: messages.state ?? MessageState.unsent,
+                            onLeftSwipe: messages.messageType == MessageType.deleted
+                                ? null
+                                : (v) {
                               // singleChatController.isRepUpdate = true;
 
                               singleChatController.onMessageSwipe(
                                 isMe: true,
-                                message: messages.message!,
-                                messageEnum: MessageEnum.text,
+                                message: messages.message ?? '',
+                                messageType: messages.messageType ??  MessageType.text,
+                                isReplied: true,
+                                messageId: messages.messageId ?? 0,
                               );
                             },
-                            // repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                            // repliedText: messages.repliedMessage.obs,
-                            // username: messages.repliedTo,
+                            repliedMessageType: messages.messageRepliedOnType ?? MessageType.text,
+                            repliedText: (messages.messageRepliedOn ?? '').obs,
+                            // username: messages.,
                           )
                         : SenderMessageCard(
-                            message: messages.message.toString(),
+                            message: messages.messageType == MessageType.text || messages.messageType == MessageType.deleted
+                                ? (messages.message ?? '')
+                                : (messages.assetServerName ?? ''),
                             date: DateFormat('hh:mm a').format(DateTime.parse(
-                                messages.messageSentFromDeviceTime!)),
-                            type: MessageEnum.text,
-                            onRightSwipe: (v) {
+                                messages.messageSentFromDeviceTime ?? '')),
+                            type: messages.messageType ?? MessageType.text,
+                            onRightSwipe: messages.messageType == MessageType.deleted
+                                ? null
+                                : (v) {
                               // singleChatController.isRepUpdate = true;
-                              // singleChatController.onMessageSwipe(
-                              //   isMe: false,
-                              //   message: messages.message!,
-                              //   messageEnum: MessageEnum.text,
-                              // );
+                              singleChatController.onMessageSwipe(
+                                isMe: false,
+                                message: messages.message ?? '',
+                                messageType: messages.messageType ?? MessageType.text,
+                                isReplied: true,
+                                messageId: messages.messageId ?? 0
+                              );
                             },
-                            // repliedMessageType: messages.repliedMessageType.type.toEnum(),
-                            // repliedText: messages.repliedMessage.obs,
+                            repliedMessageType: messages.messageRepliedOnType ?? MessageType.text,
+                            repliedText: (messages.messageRepliedOn ?? '').obs,
                             // username: messages.repliedTo,
                           ),
                   );

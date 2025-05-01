@@ -94,6 +94,12 @@ class ChatConectTable {
     }
   }
 
+  Future<void> deleteChatUser(String uid) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName, where: 'uid = ?', whereArgs: [uid]);
+  }
+
+
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -24,13 +25,13 @@ import '../../../config/services/folder_creation.dart';
 import '../../../config/services/socket_service.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
+import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 
 class SingleChatController extends GetxController with WidgetsBindingObserver {
   //
 
   final connectivityService = Get.find<ConnectivityService>();
-  // final firebaseController = Get.put(FirebaseController());
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final FolderCreation folderCreation = Get.find<FolderCreation>();
   final ContactsTable contactsTable = ContactsTable();
@@ -111,11 +112,20 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   String get rootPath => _rootPath.value;
   set rootPath(String str) => _rootPath.value = str;
 
-  // Rx<UserModel> receiveruserDataModel = UserModel(
-  //   isOnline: false,
-  // ).obs;
-
   final RxList<NewMessageModel> selectedMessages = <NewMessageModel>[].obs;
+
+  bool get allMessagesHaveServerId =>
+      selectedMessages.every((msg) => msg.messageId != null);
+
+  bool get isOnlySenderMessages =>
+      selectedMessages.every((msg) => msg.senderId == senderuserData?.userId);
+
+  bool get hasAnyNotDeleted =>
+      selectedMessages.any((msg) => msg.messageType != MessageType.deleted);
+
+  bool get canDeleteForEveryone =>
+      isOnlySenderMessages && hasAnyNotDeleted && allMessagesHaveServerId;
+
   late Stream<List<NewMessageModel>> messageStream;
   late StreamSubscription<List<NewMessageModel>> messageSubscription;
 
@@ -162,9 +172,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onReady() {
-    // bindStream();
-
-    // startListeningForConnectivityChanges();
     super.onReady();
   }
 
@@ -185,37 +192,29 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        if (connectivityService.isConnected.value &&
-            !socketService.isConnected) {
-          await socketService.initSocket(senderuserData!.userId.toString(),
-              onConnected: () {
-            checkUserOnline(receiverUserData);
-          });
+        print('💬 SingleChatController resumed.');
+        if (connectivityService.isConnected.value && socketService.isConnected) {
+          checkUserOnline(receiverUserData);
         }
 
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-        disConnectSocket();
+
 
         break;
       default:
     }
   }
 
-  // void handleScroll() {
-  //   if (!scrollController.hasClients) return;
-  //
-  //   final maxScroll = scrollController.position.maxScrollExtent;
-  //   final currentOffset = scrollController.offset;
-  //   final viewportHeight = scrollController.position.viewportDimension;
-  //
-  //   final isScrollable = maxScroll > viewportHeight;
-  //   final isAtBottom = (maxScroll - currentOffset) <= 100;
-  //
-  //   hasScrolledInitially.value = isScrollable && !isAtBottom;
-  // }
+  void checkUserOnline(UserList? user) async {
+    if (user == null) return;
+    var params = {"recipientId": user.userId};
+    if (socketService.isConnected) {
+      socketService.checkUserOnline(params);
+    }
+  }
 
   void _scrollListener() {
     if (!scrollController.hasClients) return;
@@ -254,16 +253,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void checkUserOnline(UserList? user) async {
-    var params = {"recipientId": user?.userId};
-    if (socketService.isConnected) {
-      socketService.checkUserOnline(params);
-    }
-  }
 
-  void disConnectSocket() async {
-    socketService.disposeSocket();
-  }
 
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
@@ -342,20 +332,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }).asyncMap((event) async => await event);
   }
 
-  // void startListeningForConnectivityChanges() {
-  //   ever(connectivityService.isConnected, (bool isConnected) async {
-  //     if (isConnected) {
-  //       await syncFirebaseMessagesToLocal();
-  //     }
-  //   });
-  // }
-
-  // void bindStream() {
-  //   receiveruserDataModel.bindStream(firebaseController.getUserData(id));
-  // }
 
   Future<void> sendTextMessage() async {
-    if (messageController.text.trim().isEmpty) return;
+    final message = messageController.text.trim();
+    if (message.isEmpty) return;
+    if (message.length > 800) {
+      showAlertMessage("This message is too long, Please shorter the message.");
+      return;
+    }
 
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
@@ -363,14 +347,26 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final newMessage = NewMessageModel(
       senderId: senderuserData?.userId,
       recipientId: receiverUserData?.userId,
-      message: messageController.text.trim(),
+      message: message,
       messageSentFromDeviceTime: timeSent.toString(),
       clientSystemMessageId: clientSystemMessageId,
       state: MessageState.unsent,
       syncStatus: SyncStatus.pending,
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
+      messageType: MessageType.text,
+      isForwarded: false,
+      isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+      messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+      messageRepliedOn: messageReply == null
+          ? '' : messageReply.message,
+      messageRepliedOnType: messageReply == null ? MessageType.text : messageReply.messageType,
+      isAsset:false,
+      assetOriginalName:"",
+      assetServerName:"",
+      assetUrl:"",
     );
+    print("Message All details Request: ${newMessage.toMap()}");
 
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);
@@ -393,11 +389,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       isTyping: false,
     );
     typingTimer?.cancel();
-    // await cancelReply();
-
-    // if (connectivityService.isConnected.value) {
-    // await _syncMessageToFirebase(newMessage);
-    // }
+    await cancelReply();
   }
 
   void onTextChanged(String text) {
@@ -457,69 +449,78 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   Future<void> deleteMessages({required bool deleteForEveryone}) async {
     if (selectedMessages.isEmpty) return;
 
+    final isOnline = connectivityService.isConnected.value;
+
     for (var message in selectedMessages) {
-      final isOnline = connectivityService.isConnected.value;
+      final hasMessageId = message.messageId != null;
 
-      final isLast = await MessageTable().isLastMessage(message.messageId!);
+      final isLast = hasMessageId ?await MessageTable().isLastMessage(message.messageId!): false;
 
-      if (deleteForEveryone) {
+      if (!hasMessageId && message.clientSystemMessageId != null) {
+        await MessageTable().deleteMessageByClientSystemMessageId(message.clientSystemMessageId.toString());
+        continue;
+      }
+
+      if (hasMessageId){
+        if (deleteForEveryone) {
         // Emit socket event
-        if (isOnline) {
-          socketService.emitMessageDelete(
-            messageId: message.messageId!,
-            isDeleteFromEveryOne: true,
-          );
-        } else {
-          await MessageTable().markForDeletion(
-              messageId: message.messageId!, isDeleteFromEveryone: true
-          );
-        }
-
-        // Update UI and local DB
-        await MessageTable().updateMessageContent(
-          messageId: message.messageId!,
-          newText: "This message was deleted",
-        );
-
-        if (isLast) {
-          await ChatConectTable().updateContact(
-            uid: message.recipientId.toString(),
-            lastMessage: "This message was deleted",
-            timeSent: message.messageSentFromDeviceTime,
-          );
-        }
-      } else {
-        // Delete for me (self only)
-        await MessageTable().deleteMessage(message.messageId!);
-        if (isOnline) {
-          socketService.emitMessageDelete(
-            messageId: message.messageId!,
-            isDeleteFromEveryOne: false,
-          );
-        } else {
-          await MessageTable().markForDeletion(messageId: message.messageId!, isDeleteFromEveryone: false);
-        }
-        if (isLast) {
-          final newLast = await MessageTable().getLatestMessageForUser(message.recipientId!);
-          if (newLast != null) {
-            await ChatConectTable().updateContact(
-              uid: message.recipientId.toString(),
-              lastMessage: newLast.message,
-              timeSent: newLast.messageSentFromDeviceTime,
+          if (isOnline) {
+            socketService.emitMessageDelete(
+              messageId: message.messageId!,
+              isDeleteFromEveryOne: true,
             );
           } else {
-            // Optional: reset chat contact if all messages deleted
-            // await chatConectTable.updateContact(
-            //   uid: message.recipientId.toString(),
-            //   lastMessage: '',
-            //   timeSent: '',
-            // );
+            await MessageTable().markForDeletion(
+                messageId: message.messageId!, isDeleteFromEveryone: true
+            );
           }
+
+          // Update UI and local DB
+          await MessageTable().updateMessageContent(
+            messageId: message.messageId!,
+            newText: "This message was deleted",
+            newType: MessageType.deleted,
+          );
+
+          if (isLast) {
+            await ChatConectTable().updateContact(
+              uid: message.recipientId.toString(),
+              lastMessage: "This message was deleted",
+              timeSent: message.messageSentFromDeviceTime,
+            );
+          }
+        } else {
+            // Delete for me (self only)
+            await MessageTable().deleteMessage(message.messageId!);
+            if (isOnline) {
+              socketService.emitMessageDelete(
+                messageId: message.messageId!,
+                isDeleteFromEveryOne: false,
+              );
+            } else {
+              await MessageTable().markForDeletion(messageId: message.messageId!, isDeleteFromEveryone: false);
+            }
+            if (isLast) {
+              final newLast = await MessageTable().getLatestMessageForUser(message.recipientId!);
+              if (newLast != null) {
+                await ChatConectTable().updateContact(
+                  uid: message.recipientId.toString(),
+                  lastMessage: newLast.message,
+                  timeSent: newLast.messageSentFromDeviceTime,
+                );
+              } else {
+                // Optional: reset chat contact if all messages deleted
+                // await chatConectTable.updateContact(
+                //   uid: message.recipientId.toString(),
+                //   lastMessage: '',
+                //   timeSent: '',
+                // );
+              }
+            }
+        }
       }
     }
-
     selectedMessages.clear();
-  }
   }
 
 
@@ -527,19 +528,20 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     messageReply = MessageReply(
       isMe: false,
       message: null,
+      isReplied: false,
     );
   }
 
   void selectFile(String fileType) async {
     File? selectedFile;
 
-    if (fileType == MessageEnum.image.type) {
+    if (fileType == MessageType.image.value) {
       selectedFile = await pickImage();
-    } else if (fileType == MessageEnum.video.type) {
+    } else if (fileType == MessageType.video.value) {
       // selectedFile = await pickVideo();
-    } else if (fileType == MessageEnum.audio.type) {
+    } else if (fileType == MessageType.audio.value) {
       // selectedFile = await pickAudio();
-    } else if (fileType == MessageEnum.document.type) {
+    } else if (fileType == MessageType.document.value) {
       // selectedFile = await pickDocument();
     }
 
@@ -602,12 +604,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void onMessageSwipe({
     required String message,
     required bool isMe,
-    required MessageEnum messageEnum,
+    required MessageType messageType,
+    required bool isReplied,
+    required int messageId,
   }) {
     messageReply = MessageReply(
+        messageId: messageId,
       message: message,
       isMe: isMe,
-      messageEnum: messageEnum.type.toEnum(),
+      messageType: messageType,
+      isReplied: isReplied
     );
   }
 

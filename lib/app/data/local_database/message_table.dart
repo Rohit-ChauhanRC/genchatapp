@@ -21,7 +21,17 @@ class MessageTable {
         messageSentFromDeviceTime TEXT,
         createdAt TEXT,
         syncStatus TEXT,
-        senderPhoneNumber TEXT
+        senderPhoneNumber TEXT,
+        messageType TEXT,
+        isForwarded INTEGER,
+        isRepliedMessage INTEGER,
+        messageRepliedOnId INTEGER,
+        messageRepliedOn TEXT,
+        messageRepliedOnType TEXT,
+        isAsset INTEGER,
+        assetOriginalName TEXT,
+        assetServerName TEXT,
+        assetUrl TEXT
       )
     ''');
   }
@@ -172,7 +182,7 @@ class MessageTable {
       tableName,
       where: 'recipientId = ?',
       whereArgs: [uid],
-      orderBy: 'timeSent DESC',
+      orderBy: 'messageSentFromDeviceTime DESC',
       limit: 1,
     );
 
@@ -233,6 +243,13 @@ class MessageTable {
     await db.delete(tableName, where: 'messageId = ?', whereArgs: [messageId]);
   }
 
+  // Delete a message By ClientSystemMessageId
+  Future<void> deleteMessageByClientSystemMessageId(String clientSystemMessageId) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName, where: 'clientSystemMessageId = ?', whereArgs: [clientSystemMessageId]);
+  }
+
+
   // Add to deletion queue
   Future<void> markForDeletion({
     required int messageId,
@@ -273,27 +290,27 @@ class MessageTable {
   Future<void> updateMessageContent({
     required int messageId,
     required String newText,
+    required MessageType newType,
   }) async {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'message': newText},
+      {'message': newText, 'messageType': newType.value,},
       where: 'messageId = ?',
       whereArgs: [messageId],
     );
   }
 
-  //
-  // // Update message status
-  // Future<void> updateMessageStatus(String messageId, String status) async {
-  //   final db = await DataBaseService().database;
-  //   await db.update(
-  //     'messages',
-  //     {'status': status},
-  //     where: 'messageId = ?',
-  //     whereArgs: [messageId],
-  //   );
-  // }
+  Future<void> deleteMessagesForUser(int userId) async {
+    final db = await DataBaseService().database;
+
+    await db.delete(
+      tableName,
+      where: '(senderId = ? OR recipientId = ?)',
+      whereArgs: [userId, userId],
+    );
+  }
+
 
   Future<List<NewMessageModel>> getAllMessages() async {
     final db = await DataBaseService().database;

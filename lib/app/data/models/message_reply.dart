@@ -3,13 +3,15 @@ import 'package:genchatapp/app/constants/message_enum.dart';
 class MessageReply {
   late final String? message;
   late final bool? isMe;
-  late final MessageEnum? messageEnum;
-  late final String? messageId;
+  late final MessageType? messageType;
+  late final int? messageId;
+  late final bool? isReplied;
 
   MessageReply({
     this.message,
     this.isMe,
-    this.messageEnum,
+    this.messageType,
     this.messageId,
+    this.isReplied,
   });
 }

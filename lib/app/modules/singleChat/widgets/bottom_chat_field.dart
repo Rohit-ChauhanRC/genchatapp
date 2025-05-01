@@ -7,6 +7,7 @@ import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_contro
 import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
 import 'package:get/get.dart';
 
+import '../../../utils/alert_popup_utils.dart';
 import 'message_reply_preview.dart';
 
 class BottomChatField extends StatelessWidget {
@@ -53,16 +54,22 @@ class BottomChatField extends StatelessWidget {
                       // }
                       print(v.length);
                       singleChatController.onTextChanged(v);
+                      if (v.length >= 800) {
+                        // You could show a SnackBar, error, or shake animation here
+                        showAlertMessage("This message is too long, Please shorter the message.");
+                        print("Max character limit reached");
+                      }
                     },
                     controller: singleChatController.messageController,
                     inputFormatters: [
                       LengthLimitingTextInputFormatter(800),
                     ],
+                    // maxLength: 800,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: whiteColor,
                       prefixIcon: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.only(left: 20),
                         child: SizedBox(
                           width: 20,
                           child: Row(
@@ -96,12 +103,12 @@ class BottomChatField extends StatelessWidget {
                           ),
                         ),
                       ),
-                      suffixIcon: SizedBox(
-                        width: 100,
+                      suffixIcon: Obx(() =>SizedBox(
+                        width: !singleChatController.isShowSendButton ?100: 50,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            IconButton(
+                            !singleChatController.isShowSendButton ?IconButton(
                               onPressed: () {
                                 singleChatController
                                     .selectFile(MessageEnum.image.type);
@@ -110,7 +117,8 @@ class BottomChatField extends StatelessWidget {
                                 Icons.camera_alt,
                                 color: greyMsgColor,
                               ),
-                            ),
+                            )
+                                :SizedBox.shrink(),
                             IconButton(
                               onPressed: () {
                                 // singleChatController.selectVideo();
@@ -124,7 +132,7 @@ class BottomChatField extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
+                      )),
                       hintText: 'Type a message!',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20.0),

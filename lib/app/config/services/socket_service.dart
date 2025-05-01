@@ -10,8 +10,8 @@ import '../../data/local_database/contacts_table.dart';
 import '../../modules/singleChat/controllers/single_chat_controller.dart';
 
 class SocketService extends GetxService {
-  late IO.Socket _socket;
-  IO.Socket get socket => _socket;
+  IO.Socket? _socket;
+  IO.Socket? get socket => _socket;
 
   final ContactsTable contactsTable = ContactsTable();
 
@@ -19,12 +19,18 @@ class SocketService extends GetxService {
 
   final MessageTable messageTable = MessageTable();
 
-  final RxBool _isConnected = false.obs;
-  bool get isConnected => _isConnected.value;
+  // final RxBool _isConnected = false.obs;
+  // bool get isConnected => _isConnected.value;
+
+  bool get isConnected => _socket?.connected == true;
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
 
   Future<void> initSocket(String userId,{Function()? onConnected}) async {
+    if (_socket?.connected == true) {
+      print('⚠️ Socket already connected, skipping init.');
+      return;
+    }
     _socket = IO.io(
       'http://app.maklife.in:10000',
       IO.OptionBuilder()
@@ -33,52 +39,84 @@ class SocketService extends GetxService {
           .setQuery({'userId': userId})
           .build(),
     );
+    _registerSocketListeners(onConnected);
+    // _socket?.connect();
+    print('🔌 Socket initialized');
+  }
 
-    _socket.connect();
 
-    _socket.onConnect((_) {
+  void _registerSocketListeners(Function()? onConnected) {
+    _socket?.onConnect((_) async {
       print('✅ Socket connected');
-      _isConnected.value = true;
-      retryPendingDeletions();
+      // _isConnected.value = true;
+      await retryPendingDeletions();
       onConnected?.call();
     });
 
-    _socket.onDisconnect((_) {
+    _socket?.onDisconnect((_) {
       print('❌ Socket disconnected');
-      _isConnected.value = false;
+      // _isConnected.value = false;
+      _clearSocketListeners();
     });
 
-    _socket.onError((data) {
+    _socket?.onError((data) {
       print('⚠️ Socket error: $data');
+      _clearSocketListeners();
     });
 
     // Add your custom events here
-    _socket.on('message-event', (data) {
+    _socket?.on('message-event', (data) async{
       print('📩 Message received: $data');
+      int messageId = data["messageId"];
+      bool existsLocally = await messageTable.messageExists(messageId);
       //
-      messageTable.insertMessage(NewMessageModel(
+      if(!existsLocally) {
+        print("message not found");
+        final newMessage = NewMessageModel(
           message: data["message"],
           senderId: data["senderId"],
           messageId: data["messageId"],
           recipientId: data["recipientId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          messageType: data['messageType'] != null
+              ? MessageTypeExtension.fromValue(data['messageType'])
+              : MessageType.text,
+          // default if null
           state: MessageState.sent,
-        senderPhoneNumber: data["senderPhoneNumber"]
+          senderPhoneNumber: data["senderPhoneNumber"],
+          isRepliedMessage: data["isRepliedMessage"] ?? false,
+          messageRepliedOnId: data["messageRepliedOnId"],
+          messageRepliedOn: data["messageRepliedOn"] ?? '',
+          messageRepliedOnType: data["messageRepliedOnType"] != null
+              ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
+              : null,
+          isAsset: data["isAsset"] ?? false,
+          assetOriginalName: data["assetOriginalName"] ?? '',
+          assetServerName: data["assetServerName"] ?? '',
+          assetUrl: data["assetUrl"] ?? '',
+          isForwarded: data["isForwarded"] ?? false,
+        );
 
-      ));
+        messageTable.insertMessage(newMessage);
 
-      saveChatContacts(NewMessageModel(
+        final chatContactMessage = NewMessageModel(
           message: data["message"],
           senderId: data["recipientId"],
           messageId: data["messageId"],
           recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
           state: MessageState.sent,
-        senderPhoneNumber: data["senderPhoneNumber"]
-      ));
+          senderPhoneNumber: data["senderPhoneNumber"],
+        );
+
+        saveChatContacts(chatContactMessage);
+      }else{
+        print("⚠️ Message $messageId found in locally, Skipping reinserting.");
+      }
+
     });
 
-    _socket.on('message-acknowledgement', (data) async {
+    _socket?.on('message-acknowledgement', (data) async {
       print('✅ Message Ack: $data');
       if (data["state"] == 1) {
         messageTable.updateAckMessage(
@@ -96,12 +134,12 @@ class SocketService extends GetxService {
       //
     });
 
-    _socket.on('group-message-acknowledgement', (data) {
+    _socket?.on('group-message-acknowledgement', (data) {
       print('✅ Group Message Ack: $data');
       // TODO: Update message status in DB
     });
 
-    _socket.on('user-connection-status', (data) async {
+    _socket?.on('user-connection-status', (data) async {
       print('✅ user connection status: $data');
       final int userId = int.parse(data['userId']);
       final bool isOnlineBool = data['isOnline'];
@@ -125,7 +163,7 @@ class SocketService extends GetxService {
 
     });
 
-    _socket.on('typing', (data) {
+    _socket?.on('typing', (data) {
       print('✅ user is typing: $data');
       print('📝 Typing event received: $data');
 
@@ -136,7 +174,7 @@ class SocketService extends GetxService {
       typingStatusMap[senderId] = isTyping;
     });
 
-    _socket.on('message-delete', (data) async {
+    _socket?.on('message-delete', (data) async {
       print('✅ Message Deleted: $data');
       final int messageId = data['messageId'];
       final bool isDeleteFromEveryOne = data['deleteState'];
@@ -150,6 +188,7 @@ class SocketService extends GetxService {
           await messageTable.updateMessageContent(
             messageId: messageId,
             newText: "This message was deleted",
+            newType: MessageType.deleted,
           );
 
           if (isLast) {
@@ -179,7 +218,7 @@ class SocketService extends GetxService {
       
     });
 
-    _socket.on('custom-error', (data) {
+    _socket?.on('custom-error', (data) {
       print('🚫 Custom Error: $data');
     });
   }
@@ -187,11 +226,11 @@ class SocketService extends GetxService {
   void sendMessage(NewMessageModel data) async {
     saveChatContacts(data);
 
-    _socket.emit('message-event', data.toMap());
+    _socket?.emit('message-event', data.toMap());
   }
 
   void sendMessageSync(NewMessageModel data) async {
-    _socket.emit('message-event', data.toMap());
+    _socket?.emit('message-event', data.toMap());
   }
 
   void sendMessageSeen(int messageId) {
@@ -199,17 +238,17 @@ class SocketService extends GetxService {
       messageId: messageId.toString(),
       state: 3,
     );
-    _socket.emit('message-seen', {
+    _socket?.emit('message-seen', {
       "messageId": messageId,
     });
   }
 
   void checkUserOnline(Map<String, dynamic> data) {
-    _socket.emit('user-connection-status', data);
+    _socket?.emit('user-connection-status', data);
   }
 
   void emitTypingStatus({required String recipientId, required bool isTyping}) {
-    _socket.emit('typing', {
+    _socket?.emit('typing', {
       "recipientId": recipientId,
       "isTyping": isTyping,
     });
@@ -225,14 +264,18 @@ class SocketService extends GetxService {
   }
 
   void emitMessageDelete({required int messageId, required bool isDeleteFromEveryOne}) {
-    _socket.emit('message-delete', {
+    _socket?.emit('message-delete', {
       "messageId": messageId,
       "deleteState": isDeleteFromEveryOne,
     });
   }
 
   void disposeSocket() {
-    _socket.dispose();
+    if (_socket?.connected == true) {
+      _socket?.disconnect();
+    }
+      _clearSocketListeners();
+      print('🔌 Socket disposed manually');
   }
 
   void saveChatContacts(NewMessageModel data) async {
@@ -317,6 +360,18 @@ class SocketService extends GetxService {
       // After successful retry, remove from queue
       await messageTable.removeQueuedDeletion(messageId);
     }
+  }
+
+  void _clearSocketListeners() {
+    _socket?.clearListeners();
+    // _socket?.off('message-event');
+    // _socket?.off('message-acknowledgement');
+    // _socket?.off('group-message-acknowledgement');
+    // _socket?.off('user-connection-status');
+    // _socket?.off('typing');
+    // _socket?.off('message-delete');
+    // _socket?.off('custom-error');
+
   }
 
 

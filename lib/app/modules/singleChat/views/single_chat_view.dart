@@ -174,8 +174,8 @@ class SingleChatView extends GetView<SingleChatController> {
   }
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {
-    final isOnlySenderMessages = controller.selectedMessages.every(
-        (msg) => msg.senderId == controller.senderuserData!.userId);
+    // final isOnlySenderMessages = controller.selectedMessages.every(
+    //     (msg) => msg.senderId == controller.senderuserData!.userId);
 
     showModalBottomSheet(
       context: context,
@@ -191,7 +191,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 controller.deleteMessages(deleteForEveryone: false);
               },
             ),
-            if (isOnlySenderMessages)
+            if (controller.canDeleteForEveryone)
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text("Delete for Everyone"),

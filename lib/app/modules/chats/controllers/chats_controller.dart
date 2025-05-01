@@ -42,6 +42,9 @@ class ChatsController extends GetxController {
   UserData? get senderuserData => _senderuserData.value;
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
+  final RxSet<String> selectedChatUids = <String>{}.obs;
+
+
   @override
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
@@ -59,35 +62,7 @@ class ChatsController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-  }
-
-  void connectSocket() async {
-    String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    if (!socketService.isConnected) {
-      await socketService.initSocket(userId!);
-    }
-  }
-
-  void bindContactsStream() {
-    contacts.bindStream(getContactsFromDBStream());
-  }
-
-  Stream<List<UserList>> getContactsFromDBStream() {
-    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) async {
-      return await contactsTable.fetchAll();
-    });
-  }
-
-  void bindChatUsersStream() {
-    final stream = getChatUsersStream();
-    stream.listen((firebaseContacts) async {
-      firebaseContacts.sort((a, b) {
-        final aTime = DateTime.tryParse(a.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime = DateTime.tryParse(b.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bTime.compareTo(aTime); // descending (latest first)
-      });
-      contactsList.assignAll(firebaseContacts);
-    });
+    selectedChatUids.clear();
   }
 
   Stream<List<ChatConntactModel>> getChatUsersStream(
@@ -149,10 +124,41 @@ class ChatsController extends GetxController {
     });
   }
 
-  Future<void> logout() async {
-    db.closeDb();
-    await sharedPreferenceService.clear().then((onValue) {
-      Get.offAllNamed(Routes.LANDING);
-    });
+  void toggleChatSelection(String uid) {
+    if (selectedChatUids.contains(uid)) {
+      selectedChatUids.remove(uid);
+    } else {
+      selectedChatUids.add(uid);
+    }
+    selectedChatUids.refresh();
   }
+
+  void clearChatSelection(){
+    selectedChatUids.clear();
+  }
+
+  Future<void> deleteSelectedChatsForMeOnly() async {
+    try {
+      final uidsToDelete = selectedChatUids.toList();
+
+      for (String uid in uidsToDelete) {
+        final userId = int.parse(uid); // Assuming UIDs are stored as String but are numeric
+
+        await messageTable.deleteMessagesForUser(userId);
+
+        await chatConectTable.deleteChatUser(uid);
+      }
+
+      selectedChatUids.clear();
+      
+      update();
+
+      // Get.snackbar("Deleted", "Selected chats were deleted from your side only");
+    } catch (e) {
+      // debugPrint("Error in deleting chats: $e");
+      // Get.snackbar("Error", "Failed to delete selected chats");
+    }
+  }
+
+
 }

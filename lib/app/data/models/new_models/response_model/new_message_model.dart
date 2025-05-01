@@ -13,6 +13,16 @@ class NewMessageModel extends Equatable{
   final String? createdAt;
   final SyncStatus? syncStatus;
   final String? senderPhoneNumber;
+  final MessageType? messageType;
+  final bool? isForwarded;
+  final bool? isRepliedMessage;
+  final int? messageRepliedOnId;
+  final String? messageRepliedOn;
+  final MessageType? messageRepliedOnType;
+  final bool? isAsset;
+  final String? assetOriginalName;
+  final String? assetServerName;
+  final String? assetUrl;
 
   NewMessageModel({
     this.messageId,
@@ -25,6 +35,16 @@ class NewMessageModel extends Equatable{
     this.createdAt,
     this.syncStatus = SyncStatus.pending,
     this.senderPhoneNumber,
+    this.messageType,
+    this.isForwarded,
+    this.isRepliedMessage,
+    this.messageRepliedOnId,
+    this.messageRepliedOn,
+    this.messageRepliedOnType,
+    this.isAsset,
+    this.assetOriginalName,
+    this.assetServerName,
+    this.assetUrl,
   });
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
@@ -37,11 +57,23 @@ class NewMessageModel extends Equatable{
       senderId: map['senderId'],
       recipientId: map['recipientId'],
       message: map['message'],
-      state: MessageStateExtension.fromValue(map['state']),
+      state: map['state'] != null ? MessageStateExtension.fromValue(map['state']) : MessageState.sent,
       messageSentFromDeviceTime: map['messageSentFromDeviceTime'],
       createdAt: map['createdAt'],
-      syncStatus: SyncStatusExtension.fromValue(map['syncStatus']),
-      senderPhoneNumber: map['senderPhoneNumber'],
+      syncStatus: map['syncStatus'] != null ? SyncStatusExtension.fromValue(map['syncStatus']) : SyncStatus.synced,
+      senderPhoneNumber: map['senderPhoneNumber'] ?? '',
+      messageType: map['messageType'] != null ? MessageTypeExtension.fromValue(map['messageType']) : MessageType.text,
+      isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
+      isRepliedMessage: map['isRepliedMessage'] == 1 || map['isRepliedMessage'] == true,
+      messageRepliedOnId: map['messageRepliedOnId'],
+      messageRepliedOn: map['messageRepliedOn'] ?? '',
+      messageRepliedOnType: map['messageRepliedOnType'] != null
+          ? MessageTypeExtension.fromValue(map['messageRepliedOnType'])
+          : null,
+      isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
+      assetOriginalName: map['assetOriginalName'] ?? '',
+      assetServerName: map['assetServerName'] ?? '',
+      assetUrl: map['assetUrl'] ?? '',
     );
   }
 
@@ -55,8 +87,18 @@ class NewMessageModel extends Equatable{
       'state': state!.value,
       'messageSentFromDeviceTime': messageSentFromDeviceTime,
       'createdAt': createdAt,
-      'syncStatus': syncStatus!.value,
+      'syncStatus': syncStatus?.value,
       'senderPhoneNumber': senderPhoneNumber,
+      'messageType': messageType?.value,
+      'isForwarded': isForwarded == true ? 1 : 0,
+      'isRepliedMessage': isRepliedMessage == true ? 1 : 0,
+      'messageRepliedOnId': messageRepliedOnId ?? 0,
+      'messageRepliedOn': messageRepliedOn ?? '',
+      'messageRepliedOnType': messageRepliedOnType?.value ?? '',
+      'isAsset': isAsset == true ? 1 : 0,
+      'assetOriginalName': assetOriginalName,
+      'assetServerName': assetServerName,
+      'assetUrl': assetUrl,
     };
   }
 
@@ -71,6 +113,16 @@ class NewMessageModel extends Equatable{
     String? createdAt,
     SyncStatus? syncStatus,
     String? senderPhoneNumber,
+    MessageType? messageType,
+    bool? isForwarded,
+    bool? isRepliedMessage,
+    int? messageRepliedOnId,
+    String? messageRepliedOn,
+    MessageType? messageRepliedOnType,
+    bool? isAsset,
+    String? assetOriginalName,
+    String? assetServerName,
+    String? assetUrl,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -85,8 +137,18 @@ class NewMessageModel extends Equatable{
       createdAt: createdAt ?? this.createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
       senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
+      messageType: messageType ?? this.messageType,
+      isForwarded: isForwarded ?? this.isForwarded,
+      isRepliedMessage: isRepliedMessage ?? this.isRepliedMessage,
+      messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
+      messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
+      messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
+      isAsset: isAsset ?? this.isAsset,
+      assetOriginalName: assetOriginalName ?? this.assetOriginalName,
+      assetServerName: assetServerName ?? this.assetServerName,
+      assetUrl: assetUrl ?? this.assetUrl,
     );
   }
   @override
-  List<Object?> get props => [messageId];
+  List<Object?> get props => [messageId ?? clientSystemMessageId];
 }

@@ -37,7 +37,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
     controllerInit();
     await selectedContactController.loadInitialContacts();
-    connectSocket();
+    String? userId = sharedPreferenceService.getUserData()?.userId.toString();
+    socketService.initSocket(userId ?? "", onConnected: () {
+      print('Initial socket connection established in HomeController');
+    });
+    // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
     // print(connectivityService.isConnected.value);
     SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
@@ -66,6 +70,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
+        print('📱 App Resumed: Trying to reconnect socket...');
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
           connectSocket();
@@ -75,6 +80,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
+      print('📴 App Backgrounded: Disposing socket...');
         disConnectSocket();
 
         break;
@@ -84,8 +90,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   void connectSocket() async {
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    if (!socketService.isConnected) {
-      await socketService.initSocket(userId!);
+    if (userId != null && !socketService.isConnected) {
+      await socketService.initSocket(userId);
     }
   }
 

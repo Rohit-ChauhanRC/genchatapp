@@ -15,7 +15,7 @@ import '../../../constants/constants.dart';
 
 class DisplayTextImageGIF extends StatelessWidget {
   final String message;
-  final MessageEnum type;
+  final MessageType type;
   DisplayTextImageGIF({
     Key? key,
     required this.message,
@@ -32,17 +32,17 @@ class DisplayTextImageGIF extends StatelessWidget {
     var rootFolderPath = singleChatController.rootPath;
 
     // print("FullFolderPath:--------->${rootFolderPath+message}");
-    return type == MessageEnum.text || type == MessageEnum.deleted
+    return type == MessageType.text || type == MessageType.deleted
         ? SelectableText(
             message,
             style: TextStyle(
                 fontSize: 16,
-                fontStyle: type == MessageEnum.deleted
+                fontStyle: type == MessageType.deleted
                     ? FontStyle.italic
                     : FontStyle.normal,
-                color: type == MessageEnum.deleted ? greyMsgColor : blackColor),
+                color: type == MessageType.deleted ? greyMsgColor : blackColor),
           )
-        : type == MessageEnum.audio
+        : type == MessageType.audio
             ? StatefulBuilder(builder: (context, setState) {
                 return IconButton(
                   constraints: const BoxConstraints(

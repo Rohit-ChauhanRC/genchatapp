@@ -124,3 +124,54 @@ extension SyncStatusExtension on SyncStatus {
   }
 }
 
+enum MessageType {
+  text,
+  image,
+  audio,
+  video,
+  gif,
+  deleted,
+  document
+}
+
+extension MessageTypeExtension on MessageType{
+  String get value {
+    switch (this) {
+      case MessageType.text:
+        return 'text';
+      case MessageType.image:
+        return 'image';
+      case MessageType.audio:
+        return 'audio';
+      case MessageType.video:
+        return 'video';
+      case MessageType.gif:
+        return 'gif';
+      case MessageType.deleted:
+        return 'deleted';
+      case MessageType.document:
+        return 'document';
+    }
+  }
+
+  static MessageType fromValue(String value) {
+    switch (value) {
+      case 'image':
+        return MessageType.image;
+      case 'video':
+        return MessageType.video;
+      case 'audio':
+        return MessageType.audio;
+      case 'gif':
+        return MessageType.gif;
+      case 'deleted':
+        return MessageType.deleted;
+      case 'document':
+        return MessageType.document;
+      case 'text':
+      default:
+        return MessageType.text;
+    }
+  }
+}
+

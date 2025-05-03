@@ -27,20 +27,27 @@ class SocketService extends GetxService {
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
 
   Future<void> initSocket(String userId,{Function()? onConnected}) async {
-    if (_socket?.connected == true) {
-      print('⚠️ Socket already connected, skipping init.');
-      return;
+    if (_socket != null) {
+      if (_socket!.connected) {
+        print('⚠️ Socket already connected, skipping init.');
+        return;
+      } else {
+        // Socket is present but disconnected — dispose and reconnect
+        print('🔄 Disposing stale socket and reinitializing...');
+        await disposeSocket();
+      }
     }
     _socket = IO.io(
       'http://app.maklife.in:10000',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .enableAutoConnect()
+          .disableAutoConnect() // prevent auto connect before setting everything
+          .enableForceNew()
           .setQuery({'userId': userId})
           .build(),
     );
     _registerSocketListeners(onConnected);
-    // _socket?.connect();
+    _socket?.connect();
     print('🔌 Socket initialized');
   }
 
@@ -62,6 +69,12 @@ class SocketService extends GetxService {
     _socket?.onError((data) {
       print('⚠️ Socket error: $data');
       _clearSocketListeners();
+    });
+
+    _socket?.onReconnect((_){
+      print('Socket reconnection.');
+      _clearSocketListeners();
+      _registerSocketListeners(onConnected);
     });
 
     // Add your custom events here
@@ -270,11 +283,13 @@ class SocketService extends GetxService {
     });
   }
 
-  void disposeSocket() {
+  Future<void> disposeSocket() async {
     if (_socket?.connected == true) {
       _socket?.disconnect();
     }
       _clearSocketListeners();
+    _socket?.dispose();
+    _socket = null;
       print('🔌 Socket disposed manually');
   }
 

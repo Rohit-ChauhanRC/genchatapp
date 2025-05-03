@@ -38,8 +38,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     controllerInit();
     await selectedContactController.loadInitialContacts();
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    socketService.initSocket(userId ?? "", onConnected: () {
-      print('Initial socket connection established in HomeController');
+    socketService.initSocket(userId!, onConnected: () {
+      print('Initial socket connection established in HomeController: UserId for socket connection: $userId');
     });
     // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
@@ -97,28 +97,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   void disConnectSocket() async {
     socketService.disposeSocket();
-  }
-
-  Future<void> setUserOnline() async {
-    // final userRef = firebaseController.firestore
-    //     .collection('users')
-    //     .doc(sharedPreferenceService.getUserData()?.userId);
-
-    // // Set online status
-    // await userRef.set({
-    //   'isOnline': true,
-    //   'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
-    // }, SetOptions(merge: true));
-  }
-
-  Future<void> setUserOffline() async {
-    // final userRef = firebaseController.firestore
-    //     .collection('users')
-    //     .doc(sharedPreferenceService.getUserDetails()?.uid);
-    // await userRef.update({
-    //   'isOnline': false,
-    //   'lastSeen': DateTime.now().microsecondsSinceEpoch.toString(),
-    // });
   }
 
   void controllerInit() {

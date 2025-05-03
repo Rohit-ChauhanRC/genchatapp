@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
@@ -40,5 +42,13 @@ class SettingsController extends GetxController {
       _userData.value = userDetails;
     }
   }
+
+  Future<void> logout(Function()? onSuccess) async{
+    await db.closeDb();
+    await socketService.disposeSocket();
+    await sharedPreferenceService.clear();
+    onSuccess?.call();
+  }
+
 
 }

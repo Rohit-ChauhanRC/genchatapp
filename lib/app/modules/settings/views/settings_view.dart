@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
+import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
 
@@ -114,13 +115,19 @@ class SettingsView extends GetView<SettingsController> {
                           description: "You have to login again.",
                           icon: Icons.logout_rounded,
                           onTap: () async {
-                            controller.db.closeDb();
-                            controller.socketService.disposeSocket();
-                            await controller.sharedPreferenceService
-                                      .clear()
-                                      .then((onValue) {
-                                        Get.offAllNamed(Routes.LANDING);
+                            showAlertMessageWithAction(
+                                title: "Confirm Logout?",
+                                message: "• Your chat history will be cleared from this phone\n"
+                                    "• You will be logged out from all GenChat groups\n"
+                                "• All locally stored data (chats, groups, media) will be deleted",
+                                confirmText: "Logout",
+                                cancelText: "Cancel",
+                                onConfirm: () async{
+                                  await controller.logout((){
+                                    Get.offAllNamed(Routes.LANDING);
                                   });
+                                },
+                                context: context);
 
                           }),
                     ],
@@ -178,7 +185,7 @@ class SettingsView extends GetView<SettingsController> {
       String? description,
       IconData? icon,
       VoidCallback? onTap}) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Row(
         children: [

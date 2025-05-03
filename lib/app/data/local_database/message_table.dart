@@ -334,12 +334,12 @@ class MessageTable {
   Future<void> deleteMessageTable() async {
     final db = await DataBaseService().database;
     await db.execute('DROP TABLE IF EXISTS $tableName');
-    // await createTable(db);
+    await createTable(db);
   }
 
   Future<void> deleteQueueMessageTable() async {
     final db = await DataBaseService().database;
     await db.execute('DROP TABLE IF EXISTS $deleteQueueTblName');
-    await createTable(db);
+    await createDeletionQueueTable(db);
   }
 }

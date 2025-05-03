@@ -59,6 +59,13 @@ class SharedPreferenceService {
 
   // Clear all preferences
   Future<void> clear() async {
+    await remove(UserDefaultsKeys.userDetail);
+    await remove(UserDefaultsKeys.accessToken);
+    await remove(UserDefaultsKeys.refreshToken);
+    await remove(UserDefaultsKeys.userId);
+    await remove(UserDefaultsKeys.isNumVerify);
+    await remove(UserDefaultsKeys.createUserProfile);
+    await remove(UserDefaultsKeys.userMobileNum);
     await _prefs.clear();
     await _prefs.reload();
   }

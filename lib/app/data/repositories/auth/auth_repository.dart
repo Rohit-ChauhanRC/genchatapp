@@ -32,7 +32,7 @@ class AuthRepository {
       return await apiClient.post(ApiEndpoints.verifyOtp, param);
     } catch (e) {
       // print('Error in verifyOTPAPI: $e');
-      showAlertMessage("Error in verifyOTPAPI: $e");
+      showAlertMessage("Error in verifyOTP: $e");
       return null;
     }
   }

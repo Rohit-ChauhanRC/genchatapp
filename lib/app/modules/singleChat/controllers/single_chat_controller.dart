@@ -120,11 +120,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get isOnlySenderMessages =>
       selectedMessages.every((msg) => msg.senderId == senderuserData?.userId);
 
-  bool get hasAnyNotDeleted =>
-      selectedMessages.any((msg) => msg.messageType != MessageType.deleted);
+  bool get hasAnyDeleted =>
+      selectedMessages.any((msg) => msg.messageType == MessageType.deleted);
 
   bool get canDeleteForEveryone =>
-      isOnlySenderMessages && hasAnyNotDeleted && allMessagesHaveServerId;
+      isOnlySenderMessages && !hasAnyDeleted && allMessagesHaveServerId;
 
   late Stream<List<NewMessageModel>> messageStream;
   late StreamSubscription<List<NewMessageModel>> messageSubscription;

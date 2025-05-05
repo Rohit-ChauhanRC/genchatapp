@@ -136,6 +136,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final Set<String> _sendingMessageIds = {};
 
+  final RxMap<String, GlobalKey> messageKeys = <String, GlobalKey>{}.obs;
+
   @override
   void onInit() async {
     super.onInit();
@@ -205,6 +207,42 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         break;
       default:
     }
+  }
+
+  void scrollToMessage(int messageId) {
+    final key = messageKeys[messageId];
+    if (key != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 300),
+        alignment: 0.1,
+      );
+    }
+  }
+
+  void scrollToOriginal(String repliedMessageId) {
+    final key = messageKeys[repliedMessageId];
+    if (key == null) {
+      print("No key found for ID $repliedMessageId");
+      return;
+    } else {
+      print("key found for ID $repliedMessageId");
+    }
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      final context = key.currentContext;
+      if (context != null) {
+        print("Scrolling to message $repliedMessageId");
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 400),
+          alignment: 0.2,
+          curve: Curves.easeInOut,
+        );
+      } else {
+        print("Key context is null (widget may be offscreen)");
+      }
+    });
   }
 
   void checkUserOnline(UserList? user) async {
@@ -628,6 +666,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isShowEmojiContainer = true;
   }
 }
+
+
 
 
 // _saveDataToContactsSubcollection(MessageModel message) async {

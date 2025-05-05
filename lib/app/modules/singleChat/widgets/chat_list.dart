@@ -32,10 +32,12 @@ class ChatList extends StatelessWidget {
           //   return loadingWidget(text: "Fetching data please wait....");
           // }
           if (singleChatController.messageList.isEmpty) {
-            return Center(child: const Text("No messages yet!",
-              style: TextStyle(fontSize: 16, color: Colors.grey),));
-              // loadingWidget(text: "Fetching data please wait....");
-
+            return Center(
+                child: const Text(
+              "No messages yet!",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ));
+            // loadingWidget(text: "Fetching data please wait....");
           }
           // SchedulerBinding.instance.addPostFrameCallback((_) {
           //   singleChatController.scrollController.jumpTo(
@@ -99,55 +101,80 @@ class ChatList extends StatelessWidget {
                   bool isMsgSelected =
                       singleChatController.selectedMessages.contains(messages);
                   return Container(
-                    color: isMsgSelected ? AppColors.mySideBgColor.withOpacity(0.3) : Colors.transparent,
-                    child: messages.senderId == singleChatController.senderuserData?.userId
+                    color: isMsgSelected
+                        ? AppColors.mySideBgColor.withOpacity(0.3)
+                        : Colors.transparent,
+                    child: messages.senderId ==
+                            singleChatController.senderuserData?.userId
                         ? MyMessageCard(
-                            message: messages.messageType == MessageType.text || messages.messageType == MessageType.deleted ? (messages.message ?? '')  // NULL-SAFE
+                            message: messages.messageType == MessageType.text ||
+                                    messages.messageType == MessageType.deleted
+                                ? (messages.message ?? '') // NULL-SAFE
                                 : (messages.assetServerName ?? ''),
                             date: DateFormat('hh:mm a').format(DateTime.parse(
                                 messages.messageSentFromDeviceTime ?? '')),
                             // date: "",
                             type: messages.messageType ?? MessageType.text,
                             status: messages.state ?? MessageState.unsent,
-                            onLeftSwipe: messages.messageType == MessageType.deleted
-                                ? null
-                                : (v) {
-                              // singleChatController.isRepUpdate = true;
+                            onLeftSwipe:
+                                messages.messageType == MessageType.deleted
+                                    ? null
+                                    : (v) {
+                                        // singleChatController.isRepUpdate = true;
 
-                              singleChatController.onMessageSwipe(
-                                isMe: true,
-                                message: messages.message ?? '',
-                                messageType: messages.messageType ??  MessageType.text,
-                                isReplied: true,
-                                messageId: messages.messageId ?? 0,
-                              );
-                            },
-                            repliedMessageType: messages.messageRepliedOnType ?? MessageType.text,
+                                        singleChatController.onMessageSwipe(
+                                          isMe: true,
+                                          message: messages.message ?? '',
+                                          messageType: messages.messageType ??
+                                              MessageType.text,
+                                          isReplied: true,
+                                          messageId: messages.messageId ?? 0,
+                                        );
+                                      },
+                            repliedMessageType: messages.messageRepliedOnType ??
+                                MessageType.text,
                             repliedText: (messages.messageRepliedOn ?? '').obs,
                             // username: messages.,
-                          )
+                            repliedUserId: messages.repliedUserId,
+                            repliedUserName: messages.repliedUserId != 0
+                                ? messages.repliedUserId ==
+                                        singleChatController
+                                            .senderuserData!.userId
+                                    ? "You"
+                                    : singleChatController
+                                        .receiverUserData!.name
+                                : "")
                         : SenderMessageCard(
-                            message: messages.messageType == MessageType.text || messages.messageType == MessageType.deleted
+                            message: messages.messageType == MessageType.text ||
+                                    messages.messageType == MessageType.deleted
                                 ? (messages.message ?? '')
                                 : (messages.assetServerName ?? ''),
                             date: DateFormat('hh:mm a').format(DateTime.parse(
                                 messages.messageSentFromDeviceTime ?? '')),
                             type: messages.messageType ?? MessageType.text,
-                            onRightSwipe: messages.messageType == MessageType.deleted
-                                ? null
-                                : (v) {
-                              // singleChatController.isRepUpdate = true;
-                              singleChatController.onMessageSwipe(
-                                isMe: false,
-                                message: messages.message ?? '',
-                                messageType: messages.messageType ?? MessageType.text,
-                                isReplied: true,
-                                messageId: messages.messageId ?? 0
-                              );
-                            },
-                            repliedMessageType: messages.messageRepliedOnType ?? MessageType.text,
+                            onRightSwipe:
+                                messages.messageType == MessageType.deleted
+                                    ? null
+                                    : (v) {
+                                        // singleChatController.isRepUpdate = true;
+                                        singleChatController.onMessageSwipe(
+                                            isMe: false,
+                                            message: messages.message ?? '',
+                                            messageType: messages.messageType ??
+                                                MessageType.text,
+                                            isReplied: true,
+                                            messageId: messages.messageId ?? 0);
+                                      },
+                            repliedMessageType: messages.messageRepliedOnType ??
+                                MessageType.text,
                             repliedText: (messages.messageRepliedOn ?? '').obs,
                             // username: messages.repliedTo,
+                            repliedUserId: messages.repliedUserId,
+                            repliedUserName: messages.repliedUserId != 0 && messages.repliedUserId  != null
+                                ? messages.repliedUserId == singleChatController.senderuserData!.userId
+                                    ? "You"
+                                    : singleChatController.receiverUserData!.name
+                                : "",
                           ),
                   );
                 }),
@@ -163,7 +190,7 @@ class ChatList extends StatelessWidget {
                   right: 20,
                   child: FloatingActionButton(
                     mini: true,
-                    onPressed: () =>singleChatController.scrollToBottom(),
+                    onPressed: () => singleChatController.scrollToBottom(),
                     //     () {
                     //   singleChatController.scrollController.animateTo(
                     //     singleChatController

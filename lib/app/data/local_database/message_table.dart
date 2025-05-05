@@ -31,7 +31,8 @@ class MessageTable {
         isAsset INTEGER,
         assetOriginalName TEXT,
         assetServerName TEXT,
-        assetUrl TEXT
+        assetUrl TEXT,
+        repliedUserId INTEGER
       )
     ''');
   }
@@ -193,8 +194,6 @@ class MessageTable {
     return null;
   }
 
-
-
   Future<NewMessageModel?> getMessageByClientID(
       String clientSystemMessageId) async {
     final db = await DataBaseService().database;
@@ -244,11 +243,12 @@ class MessageTable {
   }
 
   // Delete a message By ClientSystemMessageId
-  Future<void> deleteMessageByClientSystemMessageId(String clientSystemMessageId) async {
+  Future<void> deleteMessageByClientSystemMessageId(
+      String clientSystemMessageId) async {
     final db = await DataBaseService().database;
-    await db.delete(tableName, where: 'clientSystemMessageId = ?', whereArgs: [clientSystemMessageId]);
+    await db.delete(tableName,
+        where: 'clientSystemMessageId = ?', whereArgs: [clientSystemMessageId]);
   }
-
 
   // Add to deletion queue
   Future<void> markForDeletion({
@@ -263,8 +263,7 @@ class MessageTable {
             'messageId': messageId,
             'deleteState': isDeleteFromEveryone ? 1 : 0,
           },
-          conflictAlgorithm: ConflictAlgorithm.ignore
-      );
+          conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e) {
       print("Error marking message for deletion: $e");
     }
@@ -274,10 +273,12 @@ class MessageTable {
   Future<List<Map<String, dynamic>>> getQueuedDeletions() async {
     final db = await DataBaseService().database;
     final result = await db.query(deleteQueueTblName);
-    return result.map((row) => {
-      'messageId': row['messageId'],
-      'deleteState': row['deleteState'] == 1, // true or false
-    }).toList();
+    return result
+        .map((row) => {
+              'messageId': row['messageId'],
+              'deleteState': row['deleteState'] == 1, // true or false
+            })
+        .toList();
   }
 
   // Remove from deletion queue
@@ -295,7 +296,10 @@ class MessageTable {
     final db = await DataBaseService().database;
     await db.update(
       tableName,
-      {'message': newText, 'messageType': newType.value,},
+      {
+        'message': newText,
+        'messageType': newType.value,
+      },
       where: 'messageId = ?',
       whereArgs: [messageId],
     );
@@ -310,7 +314,6 @@ class MessageTable {
       whereArgs: [userId, userId],
     );
   }
-
 
   Future<List<NewMessageModel>> getAllMessages() async {
     final db = await DataBaseService().database;
@@ -329,7 +332,6 @@ class MessageTable {
     );
     return result.isNotEmpty;
   }
-
 
   Future<void> deleteMessageTable() async {
     final db = await DataBaseService().database;

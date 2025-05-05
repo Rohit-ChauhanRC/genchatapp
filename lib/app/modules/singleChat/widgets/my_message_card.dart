@@ -12,8 +12,9 @@ class MyMessageCard extends StatelessWidget {
   final MessageState status;
   final void Function(DragUpdateDetails)? onLeftSwipe;
   final RxString repliedText;
-  // final String username;
+  final int? repliedUserId;
   final MessageType repliedMessageType;
+  final String? repliedUserName;
 
   const MyMessageCard({
     super.key,
@@ -25,6 +26,8 @@ class MyMessageCard extends StatelessWidget {
     required this.repliedText,
     // required this.username,
     required this.repliedMessageType,
+    this.repliedUserId,
+    this.repliedUserName,
   });
 
   @override
@@ -74,35 +77,37 @@ class MyMessageCard extends StatelessWidget {
                       children: [
                         // Reply Preview
 
-                        type != MessageType.deleted && repliedText.value.isNotEmpty &&
-                            repliedText.value != "null" ? Obx(() =>
-                            Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                Text(
-                                  "username", textAlign: TextAlign.start,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: blackColor),
-                                ),
-                                const SizedBox(height: 3),
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration:  BoxDecoration(
-                                    color: replyColor.withOpacity(0.67),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(
-                                        5,
+                        type != MessageType.deleted &&
+                                repliedText.value.isNotEmpty &&
+                                repliedText.value != "null"
+                            ? Obx(() => Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        repliedUserName ?? "username",
+                                        textAlign: TextAlign.start,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: blackColor),
                                       ),
-                                    ),
-                                  ),
-                                  child: DisplayTextImageGIF(
-                                    message: repliedText.value,
-                                    type: repliedMessageType,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                              ]))
+                                      const SizedBox(height: 3),
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: replyColor.withOpacity(0.67),
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(
+                                              5,
+                                            ),
+                                          ),
+                                        ),
+                                        child: DisplayTextImageGIF(
+                                          message: repliedText.value,
+                                          type: repliedMessageType,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                    ]))
                             : const SizedBox(),
                         DisplayTextImageGIF(
                           message: message,
@@ -133,21 +138,20 @@ class MyMessageCard extends StatelessWidget {
                           width: 5,
                         ),
                         type != MessageType.deleted
-                            ?
-                        Icon(
-                          status == MessageState.unsent
-                              ? Icons.watch_later
-                              : status == MessageState.sent
-                                  ? Icons.done
-                                  : status == MessageState.delivered
-                                      ? Icons.done_all
-                                      : Icons.done_all,
-                          size: 20,
-                          color: status == MessageState.read
-                              ? Colors.blue
-                              : greyMsgColor,
-                        )
-                        : const SizedBox.shrink(),
+                            ? Icon(
+                                status == MessageState.unsent
+                                    ? Icons.watch_later
+                                    : status == MessageState.sent
+                                        ? Icons.done
+                                        : status == MessageState.delivered
+                                            ? Icons.done_all
+                                            : Icons.done_all,
+                                size: 20,
+                                color: status == MessageState.read
+                                    ? Colors.blue
+                                    : greyMsgColor,
+                              )
+                            : const SizedBox.shrink(),
                       ],
                     ),
                   ),

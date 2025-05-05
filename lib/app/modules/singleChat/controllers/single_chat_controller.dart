@@ -193,7 +193,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         print('💬 SingleChatController resumed.');
-        if (connectivityService.isConnected.value && socketService.isConnected) {
+        if (connectivityService.isConnected.value &&
+            socketService.isConnected) {
           checkUserOnline(receiverUserData);
         }
 
@@ -201,8 +202,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-
-
         break;
       default:
     }
@@ -252,8 +251,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       scrollController.jumpTo(position);
     }
   }
-
-
 
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
@@ -321,8 +318,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-
-
   Stream<List<NewMessageModel>> getMessageStream() async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
       return await MessageTable().fetchMessages(
@@ -331,7 +326,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       );
     }).asyncMap((event) async => await event);
   }
-
 
   Future<void> sendTextMessage() async {
     final message = messageController.text.trim();
@@ -358,13 +352,18 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       isForwarded: false,
       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
-      messageRepliedOn: messageReply == null
-          ? '' : messageReply.message,
-      messageRepliedOnType: messageReply == null ? MessageType.text : messageReply.messageType,
-      isAsset:false,
-      assetOriginalName:"",
-      assetServerName:"",
-      assetUrl:"",
+      messageRepliedOn: messageReply == null ? '' : messageReply.message,
+      messageRepliedOnType:
+          messageReply == null ? MessageType.text : messageReply.messageType,
+      isAsset: false,
+      assetOriginalName: "",
+      assetServerName: "",
+      assetUrl: "",
+      repliedUserId: messageReply.message == null
+          ? 0
+          : messageReply.isMe == true
+              ? senderuserData?.userId
+              : receiverUserData?.userId,
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
@@ -445,7 +444,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     selectedMessages.clear();
   }
 
-
   Future<void> deleteMessages({required bool deleteForEveryone}) async {
     if (selectedMessages.isEmpty) return;
 
@@ -454,16 +452,19 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     for (var message in selectedMessages) {
       final hasMessageId = message.messageId != null;
 
-      final isLast = hasMessageId ?await MessageTable().isLastMessage(message.messageId!): false;
+      final isLast = hasMessageId
+          ? await MessageTable().isLastMessage(message.messageId!)
+          : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
-        await MessageTable().deleteMessageByClientSystemMessageId(message.clientSystemMessageId.toString());
+        await MessageTable().deleteMessageByClientSystemMessageId(
+            message.clientSystemMessageId.toString());
         continue;
       }
 
-      if (hasMessageId){
+      if (hasMessageId) {
         if (deleteForEveryone) {
-        // Emit socket event
+          // Emit socket event
           if (isOnline) {
             socketService.emitMessageDelete(
               messageId: message.messageId!,
@@ -471,8 +472,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             );
           } else {
             await MessageTable().markForDeletion(
-                messageId: message.messageId!, isDeleteFromEveryone: true
-            );
+                messageId: message.messageId!, isDeleteFromEveryone: true);
           }
 
           // Update UI and local DB
@@ -490,39 +490,40 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             );
           }
         } else {
-            // Delete for me (self only)
-            await MessageTable().deleteMessage(message.messageId!);
-            if (isOnline) {
-              socketService.emitMessageDelete(
-                messageId: message.messageId!,
-                isDeleteFromEveryOne: false,
+          // Delete for me (self only)
+          await MessageTable().deleteMessage(message.messageId!);
+          if (isOnline) {
+            socketService.emitMessageDelete(
+              messageId: message.messageId!,
+              isDeleteFromEveryOne: false,
+            );
+          } else {
+            await MessageTable().markForDeletion(
+                messageId: message.messageId!, isDeleteFromEveryone: false);
+          }
+          if (isLast) {
+            final newLast = await MessageTable()
+                .getLatestMessageForUser(message.recipientId!);
+            if (newLast != null) {
+              await ChatConectTable().updateContact(
+                uid: message.recipientId.toString(),
+                lastMessage: newLast.message,
+                timeSent: newLast.messageSentFromDeviceTime,
               );
             } else {
-              await MessageTable().markForDeletion(messageId: message.messageId!, isDeleteFromEveryone: false);
+              // Optional: reset chat contact if all messages deleted
+              // await chatConectTable.updateContact(
+              //   uid: message.recipientId.toString(),
+              //   lastMessage: '',
+              //   timeSent: '',
+              // );
             }
-            if (isLast) {
-              final newLast = await MessageTable().getLatestMessageForUser(message.recipientId!);
-              if (newLast != null) {
-                await ChatConectTable().updateContact(
-                  uid: message.recipientId.toString(),
-                  lastMessage: newLast.message,
-                  timeSent: newLast.messageSentFromDeviceTime,
-                );
-              } else {
-                // Optional: reset chat contact if all messages deleted
-                // await chatConectTable.updateContact(
-                //   uid: message.recipientId.toString(),
-                //   lastMessage: '',
-                //   timeSent: '',
-                // );
-              }
-            }
+          }
         }
       }
     }
     selectedMessages.clear();
   }
-
 
   Future<void> cancelReply() async {
     messageReply = MessageReply(
@@ -610,11 +611,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }) {
     messageReply = MessageReply(
         messageId: messageId,
-      message: message,
-      isMe: isMe,
-      messageType: messageType,
-      isReplied: isReplied
-    );
+        message: message,
+        isMe: isMe,
+        messageType: messageType,
+        isReplied: isReplied);
   }
 
   void showKeyboard() => focusNode.requestFocus();

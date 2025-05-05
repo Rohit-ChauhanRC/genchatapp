@@ -17,6 +17,10 @@ class SenderMessageCard extends StatelessWidget {
     required this.repliedText,
     // required this.username,
     required this.repliedMessageType,
+  this. repliedUserId,
+    this.repliedUserName,
+
+
   });
   final String message;
   final String date;
@@ -25,6 +29,10 @@ class SenderMessageCard extends StatelessWidget {
   final RxString repliedText;
   // final String username;
   final MessageType repliedMessageType;
+  final int? repliedUserId;
+  final String? repliedUserName;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +77,7 @@ class SenderMessageCard extends StatelessWidget {
                           ? Obx(() =>  Column(
                           children: [
                               Text(
-                                "username",
+                               repliedUserName ??  "username",
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: blackColor),

@@ -69,11 +69,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                   ),
                 );
               })
-            // : type == MessageEnum.video
+            // : type == MessageType.video
             //     ? VideoPlayerItem(
             //         videoUrl: message,
             //       )
-            //     : type == MessageEnum.gif
+            //     : type == MessageType.gif
             //         ? CachedNetworkImage(
             //             imageUrl: message,
             //           )

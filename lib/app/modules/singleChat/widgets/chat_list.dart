@@ -146,7 +146,7 @@ class ChatList extends StatelessWidget {
                                             .senderuserData!.userId
                                     ? "You"
                                     : singleChatController
-                                        .receiverUserData!.name
+                                        .receiverUserData!.localName
                                 : "username",
                             onReplyTap: () =>
                                 singleChatController.scrollToOriginal(

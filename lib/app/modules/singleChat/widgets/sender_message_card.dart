@@ -60,7 +60,7 @@ class SenderMessageCard extends StatelessWidget {
                   padding: type == MessageType.text
                       ? const EdgeInsets.only(
                           left: 10,
-                          right: 50,
+                          right: 34,
                           top: 5,
                           bottom: 20,
                         )
@@ -96,6 +96,7 @@ class SenderMessageCard extends StatelessWidget {
                                 child: DisplayTextImageGIF(
                                   message: repliedText.value,
                                   type: repliedMessageType,
+                                  isReply: true,
                                 ),
                               ),
                               const SizedBox(height: 8),

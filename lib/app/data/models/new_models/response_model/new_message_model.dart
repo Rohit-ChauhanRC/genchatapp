@@ -23,7 +23,7 @@ class NewMessageModel extends Equatable {
   final String? assetOriginalName;
   final String? assetServerName;
   final String? assetUrl;
-  final int? repliedUserId;
+  final int? messageRepliedUserId;
 
   NewMessageModel({
     this.messageId,
@@ -46,7 +46,7 @@ class NewMessageModel extends Equatable {
     this.assetOriginalName,
     this.assetServerName,
     this.assetUrl,
-    this.repliedUserId,
+    this.messageRepliedUserId,
   });
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
@@ -83,7 +83,7 @@ class NewMessageModel extends Equatable {
         assetOriginalName: map['assetOriginalName'] ?? '',
         assetServerName: map['assetServerName'] ?? '',
         assetUrl: map['assetUrl'] ?? '',
-        repliedUserId: map['repliedUserId']);
+        messageRepliedUserId: map['messageRepliedUserId']);
   }
 
   Map<String, dynamic> toMap() {
@@ -108,7 +108,7 @@ class NewMessageModel extends Equatable {
       'assetOriginalName': assetOriginalName,
       'assetServerName': assetServerName,
       'assetUrl': assetUrl,
-      'repliedUserId': repliedUserId
+      'messageRepliedUserId': messageRepliedUserId
     };
   }
 
@@ -133,7 +133,7 @@ class NewMessageModel extends Equatable {
     String? assetOriginalName,
     String? assetServerName,
     String? assetUrl,
-    int? repliedUserId,
+    int? messageRepliedUserId,
   }) {
     return NewMessageModel(
         clientSystemMessageId:
@@ -158,7 +158,7 @@ class NewMessageModel extends Equatable {
         assetOriginalName: assetOriginalName ?? this.assetOriginalName,
         assetServerName: assetServerName ?? this.assetServerName,
         assetUrl: assetUrl ?? this.assetUrl,
-        repliedUserId: repliedUserId ?? this.repliedUserId);
+        messageRepliedUserId: messageRepliedUserId ?? this.messageRepliedUserId);
   }
 
   @override

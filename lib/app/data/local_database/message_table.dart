@@ -32,7 +32,7 @@ class MessageTable {
         assetOriginalName TEXT,
         assetServerName TEXT,
         assetUrl TEXT,
-        repliedUserId INTEGER
+        messageRepliedUserId INTEGER
       )
     ''');
   }
@@ -69,7 +69,7 @@ class MessageTable {
       where:
           '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, receiverId, receiverId, senderId],
-      // orderBy: 'messageSentFromDeviceTime ASC',
+      orderBy: 'messageSentFromDeviceTime ASC',
     );
 
     return result.map((map) => NewMessageModel.fromMap(map)).toList();

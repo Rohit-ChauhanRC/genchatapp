@@ -359,7 +359,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       assetOriginalName: "",
       assetServerName: "",
       assetUrl: "",
-      repliedUserId: messageReply.message == null
+      messageRepliedUserId: messageReply.message == null
           ? 0
           : messageReply.isMe == true
               ? senderuserData?.userId

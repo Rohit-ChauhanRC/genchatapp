@@ -67,7 +67,9 @@ class ChatList extends StatelessWidget {
           return ListView.builder(
             controller: singleChatController.scrollController,
             itemCount: messageCount + (isTyping ? 1 : 0),
-            physics: const BouncingScrollPhysics(),
+            physics: BouncingScrollPhysics(),
+            // singleChatController.isAtBottom.value
+            // ? ClampingScrollPhysics():NeverScrollableScrollPhysics(),
             // padding: const EdgeInsets.only(bottom: 80),
             itemBuilder: (context, index) {
               if (isTyping && index == messageCount) {
@@ -77,15 +79,6 @@ class ChatList extends StatelessWidget {
                 );
               }
               var messages = singleChatController.messageList[index];
-              // if (messages.recipientId ==
-              //         singleChatController.receiverUserData?.userId) {
-              //   // singleChatController.setChatMessageSeen(
-              //   //   context,
-              //   //   messages.messageId,
-              //   // );
-              // }
-              //   singleChatController.isMsgSelected = singleChatController.selectedMessages.contains(messages);
-              // if (messages.senderId == singleChatController.senderuserData?.userId) {
               return InkWell(
                 onLongPress: () {
                   singleChatController.toggleMessageSelection(messages);
@@ -135,14 +128,14 @@ class ChatList extends StatelessWidget {
                                 MessageType.text,
                             repliedText: (messages.messageRepliedOn ?? '').obs,
                             // username: messages.,
-                            repliedUserId: messages.repliedUserId,
-                            repliedUserName: messages.repliedUserId != 0
-                                ? messages.repliedUserId ==
+                            repliedUserId: messages.messageRepliedUserId,
+                            repliedUserName: messages.messageRepliedUserId != 0
+                                ? messages.messageRepliedUserId ==
                                         singleChatController
                                             .senderuserData!.userId
                                     ? "You"
                                     : singleChatController
-                                        .receiverUserData!.name
+                                        .receiverUserData!.localName
                                 : "")
                         : SenderMessageCard(
                             message: messages.messageType == MessageType.text ||
@@ -169,11 +162,11 @@ class ChatList extends StatelessWidget {
                                 MessageType.text,
                             repliedText: (messages.messageRepliedOn ?? '').obs,
                             // username: messages.repliedTo,
-                            repliedUserId: messages.repliedUserId,
-                            repliedUserName: messages.repliedUserId != 0 && messages.repliedUserId  != null
-                                ? messages.repliedUserId == singleChatController.senderuserData!.userId
+                            repliedUserId: messages.messageRepliedUserId,
+                            repliedUserName: messages.messageRepliedUserId != 0 && messages.messageRepliedUserId  != null
+                                ? messages.messageRepliedUserId == singleChatController.senderuserData!.userId
                                     ? "You"
-                                    : singleChatController.receiverUserData!.name
+                                    : singleChatController.receiverUserData!.localName
                                 : "",
                           ),
                   );
@@ -191,14 +184,6 @@ class ChatList extends StatelessWidget {
                   child: FloatingActionButton(
                     mini: true,
                     onPressed: () => singleChatController.scrollToBottom(),
-                    //     () {
-                    //   singleChatController.scrollController.animateTo(
-                    //     singleChatController
-                    //         .scrollController.position.maxScrollExtent,
-                    //     duration: const Duration(milliseconds: 300),
-                    //     curve: Curves.easeOut,
-                    //   );
-                    // },
                     child: const Icon(Icons.arrow_downward),
                   ),
                 )

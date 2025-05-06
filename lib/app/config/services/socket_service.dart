@@ -108,6 +108,7 @@ class SocketService extends GetxService {
           assetServerName: data["assetServerName"] ?? '',
           assetUrl: data["assetUrl"] ?? '',
           isForwarded: data["isForwarded"] ?? false,
+          messageRepliedUserId: data["messageRepliedUserId"] ?? 0
         );
 
         messageTable.insertMessage(newMessage);

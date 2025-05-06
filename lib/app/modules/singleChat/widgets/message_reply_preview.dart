@@ -62,6 +62,7 @@ class MessageReplyPreview extends StatelessWidget {
                 ? DisplayTextImageGIF(
                     message: singleChatController.messageReply.message!,
                     type: singleChatController.messageReply.messageType!,
+              isReply: true,
                   )
                 : const SizedBox.shrink(),
           ),

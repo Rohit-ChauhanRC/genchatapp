@@ -15,6 +15,7 @@ class SingleChatView extends GetView<SingleChatController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: textBarColor,

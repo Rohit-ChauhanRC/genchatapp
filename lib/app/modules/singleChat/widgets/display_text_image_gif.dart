@@ -16,10 +16,12 @@ import '../../../constants/constants.dart';
 class DisplayTextImageGIF extends StatelessWidget {
   final String message;
   final MessageType type;
+  final bool? isReply;
   DisplayTextImageGIF({
     Key? key,
     required this.message,
     required this.type,
+    this.isReply = false,
   }) : super(key: key);
 
   final SingleChatController singleChatController =
@@ -35,6 +37,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     return type == MessageType.text || type == MessageType.deleted
         ? SelectableText(
             message,
+            maxLines: isReply == true ?2: null,
             style: TextStyle(
                 fontSize: 16,
                 fontStyle: type == MessageType.deleted
@@ -80,8 +83,8 @@ class DisplayTextImageGIF extends StatelessWidget {
                   File('$rootFolderPath$message'),
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
-                  height: 200,
-                  width: 300,
+                  height: isReply == true ?20 :200,
+                  width: isReply == true ?30:300,
                 ));
     // CachedNetworkImage(
     //             imageUrl: message,

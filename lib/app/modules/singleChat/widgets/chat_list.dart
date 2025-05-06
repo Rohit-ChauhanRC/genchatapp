@@ -79,6 +79,14 @@ class ChatList extends StatelessWidget {
                 );
               }
               var messages = singleChatController.messageList[index];
+              final messageId = messages.messageId!;
+
+              GlobalKey? messageKey =
+                  singleChatController.messageKeys[messageId.toString()];
+              if (messageKey == null) {
+                messageKey = GlobalKey();
+                singleChatController.messageKeys[messageId.toString()] = messageKey;
+              }
               return InkWell(
                 onLongPress: () {
                   singleChatController.toggleMessageSelection(messages);
@@ -94,12 +102,15 @@ class ChatList extends StatelessWidget {
                   bool isMsgSelected =
                       singleChatController.selectedMessages.contains(messages);
                   return Container(
+                            key: messageKey,
+
                     color: isMsgSelected
                         ? AppColors.mySideBgColor.withOpacity(0.3)
                         : Colors.transparent,
                     child: messages.senderId ==
                             singleChatController.senderuserData?.userId
                         ? MyMessageCard(
+
                             message: messages.messageType == MessageType.text ||
                                     messages.messageType == MessageType.deleted
                                 ? (messages.message ?? '') // NULL-SAFE
@@ -135,9 +146,14 @@ class ChatList extends StatelessWidget {
                                             .senderuserData!.userId
                                     ? "You"
                                     : singleChatController
-                                        .receiverUserData!.localName
-                                : "")
+                                        .receiverUserData!.name
+                                : "username",
+                            onReplyTap: () =>
+                                singleChatController.scrollToOriginal(
+                                    messages.messageRepliedOnId.toString()),
+                          )
                         : SenderMessageCard(
+
                             message: messages.messageType == MessageType.text ||
                                     messages.messageType == MessageType.deleted
                                 ? (messages.message ?? '')
@@ -166,8 +182,9 @@ class ChatList extends StatelessWidget {
                             repliedUserName: messages.messageRepliedUserId != 0 && messages.messageRepliedUserId  != null
                                 ? messages.messageRepliedUserId == singleChatController.senderuserData!.userId
                                     ? "You"
-                                    : singleChatController.receiverUserData!.localName
-                                : "",
+                                    : singleChatController
+                                        .receiverUserData!.localName
+                                : "username",
                           ),
                   );
                 }),

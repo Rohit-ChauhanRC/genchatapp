@@ -15,29 +15,28 @@ class MyMessageCard extends StatelessWidget {
   final int? repliedUserId;
   final MessageType repliedMessageType;
   final String? repliedUserName;
+  final VoidCallback? onReplyTap;
 
   const MyMessageCard({
-    super.key,
+    Key? key, // 👈 Ensure this is passed properly in ChatList
     required this.message,
     required this.date,
     required this.type,
     required this.status,
     required this.onLeftSwipe,
     required this.repliedText,
-    // required this.username,
     required this.repliedMessageType,
     this.repliedUserId,
     this.repliedUserName,
-  });
+    this.onReplyTap,
+  }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
   Widget build(BuildContext context) {
-    // final isReplying = repliedText.isNotEmpty;
-
-    return SwipeTo(
-        // swipeSensitivity: 20,
+    return GestureDetector(
+      onTap: onReplyTap,
+      child: SwipeTo(
         onLeftSwipe: onLeftSwipe,
-        // key: UniqueKey(),
         child: Align(
           alignment: Alignment.centerRight,
           child: ConstrainedBox(
@@ -48,17 +47,18 @@ class MyMessageCard extends StatelessWidget {
             child: Card(
               elevation: 1,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.zero,
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8))),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.zero,
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
               color: mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
                   Padding(
-                    // width: Get.width - 70,
                     padding: type == MessageType.text
                         ? const EdgeInsets.only(
                             left: 10,
@@ -67,49 +67,45 @@ class MyMessageCard extends StatelessWidget {
                             bottom: 20,
                           )
                         : const EdgeInsets.only(
-                            left: 5,
-                            top: 5,
-                            right: 5,
-                            bottom: 25,
-                          ),
+                            left: 5, top: 5, right: 5, bottom: 25),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Reply Preview
+                        Obx(() {
+                          final replyText = repliedText.value.trim();
+                          final hasReply = replyText.isNotEmpty &&
+                              replyText.toLowerCase() != "null" &&
+                              type != MessageType.deleted;
 
-                        type != MessageType.deleted &&
-                                repliedText.value.isNotEmpty &&
-                                repliedText.value != "null"
-                            ? Obx(() => Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        repliedUserName ?? "username",
-                                        textAlign: TextAlign.start,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: blackColor),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: replyColor.withOpacity(0.67),
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(
-                                              5,
-                                            ),
-                                          ),
-                                        ),
-                                        child: DisplayTextImageGIF(
-                                          message: repliedText.value,
-                                          type: repliedMessageType,
-                                          isReply: true,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                    ]))
-                            : const SizedBox(),
+                          if (!hasReply) return const SizedBox();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                repliedUserName ?? "username",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: blackColor,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: replyColor.withOpacity(0.67),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: DisplayTextImageGIF(
+                                  message: replyText,
+                                  type: repliedMessageType,
+                                  isReply: true,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          );
+                        }),
                         DisplayTextImageGIF(
                           message: message,
                           type: type,
@@ -122,37 +118,26 @@ class MyMessageCard extends StatelessWidget {
                     right: 10,
                     child: Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                          ),
-                          //time
-                          child: Text(
-                            date,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: greyMsgColor,
-                            ),
+                        Text(
+                          date,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: greyMsgColor,
                           ),
                         ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        type != MessageType.deleted
-                            ? Icon(
-                                status == MessageState.unsent
-                                    ? Icons.watch_later
-                                    : status == MessageState.sent
-                                        ? Icons.done
-                                        : status == MessageState.delivered
-                                            ? Icons.done_all
-                                            : Icons.done_all,
-                                size: 20,
-                                color: status == MessageState.read
-                                    ? Colors.blue
-                                    : greyMsgColor,
-                              )
-                            : const SizedBox.shrink(),
+                        const SizedBox(width: 5),
+                        if (type != MessageType.deleted)
+                          Icon(
+                            status == MessageState.unsent
+                                ? Icons.watch_later
+                                : status == MessageState.sent
+                                    ? Icons.done
+                                    : Icons.done_all,
+                            size: 20,
+                            color: status == MessageState.read
+                                ? Colors.blue
+                                : greyMsgColor,
+                          ),
                       ],
                     ),
                   ),
@@ -160,6 +145,8 @@ class MyMessageCard extends StatelessWidget {
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

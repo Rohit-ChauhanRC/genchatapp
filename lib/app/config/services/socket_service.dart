@@ -39,6 +39,7 @@ class SocketService extends GetxService {
     }
     _socket = IO.io(
       'http://app.maklife.in:10000',
+      // 'http://payment-payu.maklifedairy.in:6040',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect() // prevent auto connect before setting everything

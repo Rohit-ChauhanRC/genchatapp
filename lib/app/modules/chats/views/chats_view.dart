@@ -339,7 +339,12 @@ class ChatsView extends GetView<ChatsController> {
                             },
                           ),
                         )
-                      : const SizedBox.shrink();
+                      : Padding(
+                    padding: EdgeInsets.only(top: Get.height/3),
+                      child: Text(
+                        "No chats yet!\nStart chatting with your GenChat contacts.", textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ));;
                 }),
           ],
         ),

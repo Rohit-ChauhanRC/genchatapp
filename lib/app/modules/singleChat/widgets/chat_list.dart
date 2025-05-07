@@ -67,10 +67,10 @@ class ChatList extends StatelessWidget {
           return ListView.builder(
             controller: singleChatController.scrollController,
             itemCount: messageCount + (isTyping ? 1 : 0),
-            physics: BouncingScrollPhysics(),
+            physics: ClampingScrollPhysics(),
             // singleChatController.isAtBottom.value
             // ? ClampingScrollPhysics():NeverScrollableScrollPhysics(),
-            // padding: const EdgeInsets.only(bottom: 80),
+            padding: const EdgeInsets.only(bottom: 50),
             itemBuilder: (context, index) {
               if (isTyping && index == messageCount) {
                 return const Padding(
@@ -200,7 +200,7 @@ class ChatList extends StatelessWidget {
                   right: 20,
                   child: FloatingActionButton(
                     mini: true,
-                    onPressed: () => singleChatController.scrollToBottom(),
+                    onPressed: () => singleChatController.scrollToBottom(animate: true),
                     child: const Icon(Icons.arrow_downward),
                   ),
                 )

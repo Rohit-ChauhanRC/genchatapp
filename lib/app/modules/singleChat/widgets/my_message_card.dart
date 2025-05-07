@@ -83,7 +83,7 @@ class MyMessageCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                repliedUserName ?? "username",
+                                repliedUserName ?? "",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: blackColor,

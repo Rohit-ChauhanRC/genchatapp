@@ -38,7 +38,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final socketService = Get.find<SocketService>();
 
   var hasScrolledInitially = false.obs;
-  final isKeyboardVisible = false.obs;
+  // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
 
   final TextEditingController messageController = TextEditingController();
@@ -264,20 +264,20 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     showScrollToBottom.value = (maxScroll - currentScroll).abs() > 100;
   }
 
-  @override
-  void didChangeMetrics() {
-    final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
-    isKeyboardVisible.value = bottomInset > 0;
-
-    if (isKeyboardVisible.value) {
-      Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
-    }
-  }
+  // @override
+  // void didChangeMetrics() {
+  //   final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+  //   isKeyboardVisible.value = bottomInset > 0;
+  //
+  //   if (isKeyboardVisible.value) {
+  //     Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+  //   }
+  // }
 
   void scrollToBottom({bool animate = true}) {
     if (!scrollController.hasClients) return;
 
-    final position = scrollController.position.maxScrollExtent;
+    final position = scrollController.position.maxScrollExtent + 100;
 
     if (animate) {
       scrollController.animateTo(

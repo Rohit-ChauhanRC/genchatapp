@@ -1,5 +1,6 @@
 class ApiEndpoints {
   static const String baseUrl = "http://app.maklife.in:10000/api/";
+  // static const String baseUrl = "http://payment-payu.maklifedairy.in:6040/api/";
   static const String apiVersion = "v1/";
 
   static const String sendOtp = "send-otp";

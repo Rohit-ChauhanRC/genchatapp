@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
@@ -15,9 +16,12 @@ import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/models/replied_message_configuration.dart';
+import 'package:genchatapp/app/data/models/replied_msg_auto_scroll_config.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -138,6 +142,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final RxMap<String, GlobalKey> messageKeys = <String, GlobalKey>{}.obs;
 
+  Map<int, double> itemHeights = {}; // messageId : height
+  final ValueNotifier<String?> replyId = ValueNotifier(null);
+
+  final itemScrollController = ItemScrollController();
+  final itemPositionsListener = ItemPositionsListener.create();
+  final Map<String, int> messageIdToIndex = {};
+
+  final ValueNotifier<String?> highlightedMessageId = ValueNotifier(null);
+
   @override
   void onInit() async {
     super.onInit();
@@ -169,7 +182,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     closeKeyboard();
     // _startLoadingTimer();
     bindMessageStream();
-    scrollController.addListener(_scrollListener);
+    monitorScrollPosition();
+    // scrollController.addListener(_scrollListener);
   }
 
   @override
@@ -187,6 +201,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     scrollController.dispose();
     typingTimer?.cancel();
     _sendingMessageIds.clear();
+    replyId.dispose();
   }
 
   @override
@@ -209,7 +224,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void scrollToMessage(int messageId) {
+  void scrollToMessage(String messageId) {
     final key = messageKeys[messageId];
     if (key != null) {
       Scrollable.ensureVisible(
@@ -220,29 +235,78 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void scrollToOriginal(String repliedMessageId) {
-    final key = messageKeys[repliedMessageId];
-    if (key == null) {
-      print("No key found for ID $repliedMessageId");
-      return;
-    } else {
-      print("key found for ID $repliedMessageId");
-    }
+  Future<void> scrollToOriginalMessage(int? repliedId) async {
+    if (repliedId == null) return;
 
-    Future.delayed(const Duration(milliseconds: 100), () {
-      final context = key.currentContext;
-      if (context != null) {
-        print("Scrolling to message $repliedMessageId");
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 400),
-          alignment: 0.2,
-          curve: Curves.easeInOut,
+    final index = messageIdToIndex[repliedId.toString()];
+    if (index != null) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+
+      // Trigger highlight
+      highlightedMessageId.value = repliedId.toString();
+
+      // Clear highlight after some time
+      Future.delayed(const Duration(seconds: 2), () {
+        if (highlightedMessageId.value == repliedId.toString()) {
+          highlightedMessageId.value = null;
+        }
+      });
+    } else {
+      print('Original message not currently visible');
+    }
+  }
+
+  Future<void> onReplyTap(String id, List<NewMessageModel>? messages) async {
+    final repliedMessages =
+        messages?.firstWhere((message) => id == message.messageId.toString());
+    final RepliedMessageConfiguration repliedMessageConfig =
+        RepliedMessageConfiguration(
+      backgroundColor: Colors.green,
+      verticalBarColor: Colors.amber,
+      repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
+        enableHighlightRepliedMsg: true,
+        highlightColor: Colors.pinkAccent.shade100,
+        highlightScale: 1.1,
+      ),
+      textStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.25,
+      ),
+      replyTitleTextStyle: const TextStyle(color: Colors.black),
+    );
+    if (repliedMessages != null && repliedMessages.keys!.currentState != null) {
+      await Scrollable.ensureVisible(
+        repliedMessages.keys!.currentState!.context,
+        alignment: 0.5,
+        curve: repliedMessageConfig
+                ?.repliedMsgAutoScrollConfig.highlightScrollCurve ??
+            Curves.easeIn,
+        duration: repliedMessageConfig
+                ?.repliedMsgAutoScrollConfig.highlightDuration ??
+            const Duration(milliseconds: 300),
+      );
+      if (repliedMessageConfig
+              ?.repliedMsgAutoScrollConfig.enableHighlightRepliedMsg ??
+          false) {
+        replyId.value = id;
+
+        Future.delayed(
+          repliedMessageConfig?.repliedMsgAutoScrollConfig.highlightDuration ??
+              const Duration(milliseconds: 300),
+          () {
+            replyId.value = null;
+          },
         );
-      } else {
-        print("Key context is null (widget may be offscreen)");
       }
-    });
+    } else {
+      print("not found!");
+      print(repliedMessages!.keys);
+    }
   }
 
   void checkUserOnline(UserList? user) async {
@@ -250,6 +314,37 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     var params = {"recipientId": user.userId};
     if (socketService.isConnected) {
       socketService.checkUserOnline(params);
+    }
+  }
+
+  void monitorScrollPosition() {
+    itemPositionsListener.itemPositions.addListener(() {
+      final positions = itemPositionsListener.itemPositions.value;
+
+      if (positions.isNotEmpty) {
+        final lastVisibleIndex =
+            positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+
+        final totalCount = messageList.length + (isReceiverTyping ? 1 : 0);
+
+        // If the last visible index is less than the last item, show the button
+        showScrollToBottom.value = lastVisibleIndex < totalCount - 1;
+      }
+    });
+  }
+
+  void scrollToBottom({bool animated = false}) {
+    if (itemScrollController.isAttached) {
+      final lastIndex = messageList.length - 1;
+      if (animated) {
+        itemScrollController.scrollTo(
+          index: lastIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        itemScrollController.jumpTo(index: lastIndex);
+      }
     }
   }
 
@@ -274,22 +369,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void scrollToBottom({bool animate = true}) {
-    if (!scrollController.hasClients) return;
-
-    final position = scrollController.position.maxScrollExtent;
-
-    if (animate) {
-      scrollController.animateTo(
-        position,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } else {
-      scrollController.jumpTo(position);
-    }
-  }
-
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
       if (user != null) {
@@ -305,7 +384,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   void _startLoadingTimer() {
-    Timer(Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), () {
       isLoading = false; // Stop loading after 3 seconds
     });
   }
@@ -322,8 +401,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     messageStream = getMessageStream();
     messageSubscription = messageStream.listen((messages) {
       // print(messages);
-
+      messageKeys.clear();
+      for (final item in messages) {
+        messageKeys[item.messageId.toString()] = GlobalKey();
+      }
       messageList.assignAll(messages);
+
       if (messages.isNotEmpty) {
         for (var i in messages) {
           if ((i.state == MessageState.sent ||

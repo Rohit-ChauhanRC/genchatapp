@@ -1,4 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/route_manager.dart';
 
 import '../../../../constants/message_enum.dart';
 
@@ -24,6 +27,8 @@ class NewMessageModel extends Equatable {
   final String? assetServerName;
   final String? assetUrl;
   final int? messageRepliedUserId;
+    final BuildContext? context;
+     final GlobalKey? keys;
 
   NewMessageModel({
     this.messageId,
@@ -47,7 +52,7 @@ class NewMessageModel extends Equatable {
     this.assetServerName,
     this.assetUrl,
     this.messageRepliedUserId,
-  });
+  }) : context = Get.context, keys = GlobalKey();
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
     // assert(map['messageId'] != null, "messageId cannot be null");

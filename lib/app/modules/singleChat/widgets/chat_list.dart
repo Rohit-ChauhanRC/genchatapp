@@ -84,7 +84,8 @@ class ChatList extends StatelessWidget {
 
               var messages = singleChatController.messageList[index];
 
-              final id = messages.messageId.toString();
+              final id = (messages.messageId ?? messages.clientSystemMessageId)
+                  .toString();
 
               final key = singleChatController.messageKeys
                   .putIfAbsent(id, () => GlobalKey());

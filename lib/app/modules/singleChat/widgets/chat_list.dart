@@ -70,7 +70,7 @@ class ChatList extends StatelessWidget {
             itemPositionsListener: singleChatController.itemPositionsListener,
             // controller: singleChatController.scrollController,
             itemCount: messageCount + (isTyping ? 1 : 0),
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             // singleChatController.isAtBottom.value
             // ? ClampingScrollPhysics():NeverScrollableScrollPhysics(),
             // padding: const EdgeInsets.only(bottom: 80),
@@ -84,7 +84,8 @@ class ChatList extends StatelessWidget {
 
               var messages = singleChatController.messageList[index];
 
-              final id = messages.messageId.toString();
+              final id = (messages.messageId ?? messages.clientSystemMessageId)
+                  .toString();
 
               final key = singleChatController.messageKeys
                   .putIfAbsent(id, () => GlobalKey());

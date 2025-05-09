@@ -16,6 +16,7 @@ class MyMessageCard extends StatelessWidget {
   final MessageType repliedMessageType;
   final String? repliedUserName;
   final VoidCallback? onReplyTap;
+  final bool? isHighlighted;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -29,21 +30,27 @@ class MyMessageCard extends StatelessWidget {
     this.repliedUserId,
     this.repliedUserName,
     this.onReplyTap,
+    this.isHighlighted = false,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onReplyTap,
-      child: SwipeTo(
-        onLeftSwipe: onLeftSwipe,
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: 130,
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
+    final replyText1 = repliedText.value.trim();
+    final hasReply1 = replyText1.isNotEmpty &&
+        replyText1.toLowerCase() != "null" &&
+        type != MessageType.deleted;
+
+    return SwipeTo(
+      onLeftSwipe: onLeftSwipe,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: 130,
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
+          child: GestureDetector(
+            onTap: hasReply1 ? onReplyTap : null,
             child: Card(
               elevation: 1,
               shape: RoundedRectangleBorder(
@@ -54,7 +61,8 @@ class MyMessageCard extends StatelessWidget {
                   bottomRight: Radius.circular(8),
                 ),
               ),
-              color: mySideBgColor,
+              color:
+                  isHighlighted! ? Colors.pinkAccent.shade100 : mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [

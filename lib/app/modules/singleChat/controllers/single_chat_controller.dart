@@ -369,21 +369,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   //   }
   // }
 
-  void scrollToBottom({bool animate = true}) {
-    if (!scrollController.hasClients) return;
-
-    final position = scrollController.position.maxScrollExtent + 100;
-
-    if (animate) {
-      scrollController.animateTo(
-        position,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } else {
-      scrollController.jumpTo(position);
-    }
-  }
+  // void scrollToBottom({bool animate = true}) {
+  //   if (!scrollController.hasClients) return;
+  //
+  //   final position = scrollController.position.maxScrollExtent + 100;
+  //
+  //   if (animate) {
+  //     scrollController.animateTo(
+  //       position,
+  //       duration: const Duration(milliseconds: 300),
+  //       curve: Curves.easeOut,
+  //     );
+  //   } else {
+  //     scrollController.jumpTo(position);
+  //   }
+  // }
 
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {

@@ -41,7 +41,7 @@ init() async {
   Get.lazyPut(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
   final folder = Get.find<FolderCreation>();
-  await folder.createAppFolderStructure();
+  // await folder.createAppFolderStructure();
 
   // Initialize Controllers
   Get.lazyPut(() => LandingController());

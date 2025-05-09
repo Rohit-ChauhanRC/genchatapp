@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
@@ -61,24 +62,14 @@ class CreateProfileController extends GetxController {
   final TextEditingController profileNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
-  List<String> folderList = [
-    "Media",
-    "Database",
-    "Backup",
-    "Media/Profiles",
-    "Media/Audio",
-    "Media/Video",
-    "Media/GIF",
-    "Media/Images"
-  ];
 
   @override
   void onInit() {
     super.onInit();
-    folder.createAppFolderStructure();
+    // folder.createAppFolderStructure();
+    _checkAndRequestStoragePermissionOnce();
     getUserData();
     isFromInsideApp = Get.arguments;
-    // createAppFolders();
   }
 
   @override
@@ -93,64 +84,49 @@ class CreateProfileController extends GetxController {
     _email.close();
   }
 
-  // void createAppFolder(String folderName) async {
-  //   final dir = Directory('${(await getApplicationSupportDirectory() //FOR IOS
-  //       ).path}/$folderName');
-  //   var status = await Permission.storage.status;
-  //   if (!status.isGranted) {
-  //     await Permission.storage.request();
-  //   }
-  //   if ((await dir.exists())) {
-  //   } else {
-  //     dir.create();
-  //   }
-  // }
 
-  void createAppFolders() async {
-    // print("CreateAppFolder Calls");
-    final appDir = await getApplicationDocumentsDirectory();
-    for (String folderPath in folderList) {
-      // print("Call one by one $folderPath");
-      final dir = Directory('${appDir.path}/GenChatApp/$folderPath');
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        // print(
-        //     "calling for storage permission $status \n Directory path:---------> $dir");
-        status = await Permission.storage.request();
-        if (!status.isGranted) {
-          // print("Storage permission denied. Cannot create folder: $folderPath");
-          showPermissionDeniedDialog();
-          continue; // Skip folder creation if permission is not granted
-        }
-      }
-      if (!(await dir.exists())) {
-        // print("creating folders");
-        await dir.create(recursive: true);
-      }
-      // Verify folder creation
-      if (await dir.exists()) {
-        // print("Folder created successfully: $dir");
-      } else {
-        // print("Failed to create folder: $dir");
+  Future<void> _checkAndRequestStoragePermissionOnce() async{
+    bool alreadyAsked = sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ?? false;
+
+    if (!alreadyAsked) {
+      // Delay to let UI build before showing dialog
+      await Future.delayed(Duration(milliseconds: 300));
+
+      Get.dialog(
+        WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text("Contacts and Media", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+            content: const Text("To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo"
+                " and other media.", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Get.back(); // Close dialog
+                  final status = await Permission.storage.request();
+                  final statusAndroid = await Permission.manageExternalStorage.request();
+          
+                  if (status.isGranted || statusAndroid.isGranted) {
+                    await folder.createAppFolderStructure(); // 👈 your existing method
+                  }
+          
+                  sharedPreferenceService.setBool(UserDefaultsKeys.permissionAsked, true);
+                },
+                child: const Text("Continue"),
+              ),
+            ],
+          ),
+        ),
+        barrierDismissible: false, // 👈 prevent closing with tap outside
+      );
+    } else {
+      // If already asked and permission granted, auto create folders
+      final status = await Permission.storage.status;
+      final statusAndroid = await Permission.manageExternalStorage.status;
+      if (status.isGranted || statusAndroid.isGranted) {
+        await folder.createAppFolderStructure();
       }
     }
-  }
-
-  void showPermissionDeniedDialog() {
-    Get.defaultDialog(
-      title: "Permission Required",
-      content: Text(
-          "Storage permission is required to create necessary folders. Please grant the permission in the app settings."),
-      textConfirm: "Open Settings",
-      onConfirm: () async {
-        await openAppSettings();
-        Get.back();
-      },
-      textCancel: "Cancel",
-      onCancel: () {
-        Get.back();
-      },
-    );
   }
 
   void selectImage() async {

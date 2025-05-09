@@ -531,17 +531,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           // Delete for me (self only)
           await MessageTable().deleteMessage(message.messageId!);
           if (isOnline) {
-            socketService.emitMessageDelete(
-              messageId: message.messageId!,
-              isDeleteFromEveryOne: false,
-            );
+            if(message.senderId != receiverUserData?.userId){
+              socketService.emitMessageDelete(
+                messageId: message.messageId!,
+                isDeleteFromEveryOne: false,
+              );
+            }
           } else {
-            await MessageTable().markForDeletion(
-                messageId: message.messageId!, isDeleteFromEveryone: false);
+            if(message.senderId != receiverUserData?.userId) {
+              await MessageTable().markForDeletion(
+                  messageId: message.messageId!, isDeleteFromEveryone: false);
+            }
           }
           if (isLast) {
             final newLast = await MessageTable()
-                .getLatestMessageForUser(message.recipientId!);
+                .getLatestMessageForUser(message.recipientId!, message.senderId!);
             if (newLast != null) {
               await ChatConectTable().updateContact(
                 uid: message.recipientId.toString(),

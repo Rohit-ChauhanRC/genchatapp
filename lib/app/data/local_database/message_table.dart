@@ -177,12 +177,13 @@ class MessageTable {
     return false;
   }
 
-  Future<NewMessageModel?> getLatestMessageForUser(int uid) async {
+  Future<NewMessageModel?> getLatestMessageForUser(int recipientId, int senderId) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
-      where: 'recipientId = ?',
-      whereArgs: [uid],
+      where:
+      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+      whereArgs: [senderId, recipientId, recipientId, senderId],
       orderBy: 'messageSentFromDeviceTime DESC',
       limit: 1,
     );

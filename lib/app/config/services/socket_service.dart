@@ -217,7 +217,7 @@ class SocketService extends GetxService {
           // Delete for me only: remove the message locally
           await messageTable.deleteMessage(messageId);
           if (isLast) {
-            final newLast = await messageTable.getLatestMessageForUser(msg?.recipientId ?? 0);
+            final newLast = await messageTable.getLatestMessageForUser(msg?.recipientId ?? 0, msg?.senderId ?? 0);
             if (newLast != null) {
               await chatConectTable.updateContact(
                 uid: msg!.recipientId.toString(),

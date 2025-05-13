@@ -89,6 +89,7 @@ class ChatList extends StatelessWidget {
                         print("selected Multiple Taps");
                       },
                       onTap: () {
+                        singleChatController.hideKeyboard();
                         if (singleChatController.selectedMessages.isNotEmpty) {
                           singleChatController.toggleMessageSelection(messages);
                           print("selected tap");
@@ -98,7 +99,7 @@ class ChatList extends StatelessWidget {
                         bool isMsgSelected = singleChatController
                             .selectedMessages
                             .contains(messages);
-                        final bgColor = isMsgSelected
+                        final bgColor = isMsgSelected || isHighlighted
                             ? AppColors.mySideBgColor.withOpacity(0.3)
                             : Colors.transparent;
                         final isMine = messages.senderId ==

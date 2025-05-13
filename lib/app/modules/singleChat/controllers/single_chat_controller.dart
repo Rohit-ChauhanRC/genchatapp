@@ -8,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
@@ -224,17 +225,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void scrollToMessage(String messageId) {
-    final key = messageKeys[messageId];
-    if (key != null) {
-      Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: const Duration(milliseconds: 300),
-        alignment: 0.1,
-      );
-    }
-  }
-
   Future<void> scrollToOriginalMessage(int? repliedId) async {
     if (repliedId == null) return;
 
@@ -257,55 +247,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       });
     } else {
       print('Original message not currently visible');
-    }
-  }
-
-  Future<void> onReplyTap(String id, List<NewMessageModel>? messages) async {
-    final repliedMessages =
-        messages?.firstWhere((message) => id == message.messageId.toString());
-    final RepliedMessageConfiguration repliedMessageConfig =
-        RepliedMessageConfiguration(
-      backgroundColor: Colors.green,
-      verticalBarColor: Colors.amber,
-      repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
-        enableHighlightRepliedMsg: true,
-        highlightColor: Colors.pinkAccent.shade100,
-        highlightScale: 1.1,
-      ),
-      textStyle: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 0.25,
-      ),
-      replyTitleTextStyle: const TextStyle(color: Colors.black),
-    );
-    if (repliedMessages != null && repliedMessages.keys!.currentState != null) {
-      await Scrollable.ensureVisible(
-        repliedMessages.keys!.currentState!.context,
-        alignment: 0.5,
-        curve: repliedMessageConfig
-                ?.repliedMsgAutoScrollConfig.highlightScrollCurve ??
-            Curves.easeIn,
-        duration: repliedMessageConfig
-                ?.repliedMsgAutoScrollConfig.highlightDuration ??
-            const Duration(milliseconds: 300),
-      );
-      if (repliedMessageConfig
-              ?.repliedMsgAutoScrollConfig.enableHighlightRepliedMsg ??
-          false) {
-        replyId.value = id;
-
-        Future.delayed(
-          repliedMessageConfig?.repliedMsgAutoScrollConfig.highlightDuration ??
-              const Duration(milliseconds: 300),
-          () {
-            replyId.value = null;
-          },
-        );
-      }
-    } else {
-      print("not found!");
-      print(repliedMessages!.keys);
     }
   }
 

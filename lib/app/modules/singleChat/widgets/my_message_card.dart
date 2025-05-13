@@ -5,6 +5,8 @@ import 'package:genchatapp/app/modules/singleChat/widgets/display_text_image_gif
 import 'package:get/get.dart';
 import 'package:swipe_to/swipe_to.dart';
 
+import '../../../config/theme/app_colors.dart';
+
 class MyMessageCard extends StatelessWidget {
   final String message;
   final String date;
@@ -49,7 +51,7 @@ class MyMessageCard extends StatelessWidget {
             minWidth: 130,
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
-          child: GestureDetector(
+          child: InkWell(
             onTap: hasReply1 ? onReplyTap : null,
             child: Card(
               elevation: 1,
@@ -62,7 +64,8 @@ class MyMessageCard extends StatelessWidget {
                 ),
               ),
               color:
-                  isHighlighted! ? Colors.pinkAccent.shade100 : mySideBgColor,
+              // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
+              mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [

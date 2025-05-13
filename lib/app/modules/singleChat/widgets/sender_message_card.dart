@@ -48,7 +48,7 @@ class SenderMessageCard extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
-          child: GestureDetector(
+          child: InkWell(
             onTap: hasReply1 ? onReplyTap : null,
             child: Card(
               elevation: 1,
@@ -58,7 +58,9 @@ class SenderMessageCard extends StatelessWidget {
                       topRight: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                       bottomRight: Radius.circular(8))),
-              color: isHighlighted! ? Colors.pinkAccent.shade100 : whiteColor,
+              color:
+              // isHighlighted! ? Colors.pinkAccent.shade100 :
+              whiteColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [

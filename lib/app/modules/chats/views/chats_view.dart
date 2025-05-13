@@ -129,7 +129,7 @@ class ChatsView extends GetView<ChatsController> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: TextFormField(
-                onChanged: (v) {},
+                onChanged: (value) => controller.searchText = value.trim().toLowerCase(),
                 decoration: InputDecoration(
                   isDense: true,
                   filled: true,
@@ -169,14 +169,14 @@ class ChatsView extends GetView<ChatsController> {
             GetX<ChatsController>(
                 init: Get.find<ChatsController>(),
                 builder: (ctc) {
-                  return ctc.contactsList.isNotEmpty
+                  final contactsToDisplay = ctc.filteredContacts;
+                  return contactsToDisplay.isNotEmpty
                       ? Expanded(
                           child: ListView.builder(
                             // padding: const EdgeInsets.only(top: 10),
-                            itemCount: ctc.contactsList.length,
+                            itemCount: contactsToDisplay.length,
                             itemBuilder: (context, i) {
-                              ChatConntactModel chatConntactModel =
-                                  ctc.contactsList[i];
+                              ChatConntactModel chatConntactModel = contactsToDisplay[i];
                               final isTyping = controller.socketService.typingStatusMap[chatConntactModel.uid] == true;
                               final isSelected = controller.selectedChatUids.contains(chatConntactModel.uid);
                               return Container(
@@ -185,6 +185,7 @@ class ChatsView extends GetView<ChatsController> {
                                 ),
                                 child: InkWell(
                                   onTap: () {
+                                    controller.hideKeyboard();
                                     if (controller.selectedChatUids.isNotEmpty) {
                                       controller.toggleChatSelection(chatConntactModel.uid!);
                                     } else {

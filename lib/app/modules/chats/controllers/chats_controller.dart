@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -11,7 +12,6 @@ import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
-import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
@@ -23,6 +23,8 @@ class ChatsController extends GetxController {
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final MessageTable messageTable = MessageTable();
+
+  FocusNode focusNode = FocusNode();
 
   final RxList<ChatConntactModel> contactsList = <ChatConntactModel>[].obs;
 
@@ -44,11 +46,19 @@ class ChatsController extends GetxController {
 
   final RxSet<String> selectedChatUids = <String>{}.obs;
 
+  final RxString _searchText = ''.obs;
+  String get searchText => _searchText.value;
+  set searchText(String searchText) => _searchText.value = searchText;
+
+  final RxList<ChatConntactModel> filteredContacts = <ChatConntactModel>[].obs;
+
 
   @override
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
 
+    ever<List<ChatConntactModel>>(contactsList, (_) => filterContacts());
+    ever<String>(_searchText, (_) => filterContacts());
     // bindChatUsersStream();
     bindCombinedStreams();
     super.onInit();
@@ -124,6 +134,21 @@ class ChatsController extends GetxController {
     });
   }
 
+
+  void filterContacts() {
+    if (searchText.isEmpty) {
+      filteredContacts.assignAll(contactsList); // Show full list
+    } else {
+      filteredContacts.assignAll(
+        contactsList.where((contact) {
+          final name = contact.name?.toLowerCase() ?? '';
+          return name.contains(searchText);
+        }).toList(),
+      );
+    }
+  }
+
+
   void toggleChatSelection(String uid) {
     if (selectedChatUids.contains(uid)) {
       selectedChatUids.remove(uid);
@@ -160,5 +185,7 @@ class ChatsController extends GetxController {
     }
   }
 
+  void showKeyboard() => focusNode.requestFocus();
+  void hideKeyboard() => focusNode.unfocus();
 
 }

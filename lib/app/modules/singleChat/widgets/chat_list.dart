@@ -39,41 +39,23 @@ class ChatList extends StatelessWidget {
               "No messages yet!",
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ));
-            // loadingWidget(text: "Fetching data please wait....");
           }
-
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (!singleChatController.hasScrolledInitially.value &&
-                  singleChatController.scrollController.hasClients) {
-                singleChatController.scrollToBottom();
-                singleChatController.hasScrolledInitially.value = true;
-              }
-            });
-          });
-          // SchedulerBinding.instance.addPostFrameCallback((_) {
-          //   Future.delayed(const Duration(milliseconds: 100), () {
-          //     if (!singleChatController.hasScrolledInitially.value &&
-          //         singleChatController.itemScrollController.isAttached &&
-          //         singleChatController.messageList.isNotEmpty) {
-          //       singleChatController.scrollToBottom1();
-          //       singleChatController.hasScrolledInitially.value = true;
-          //     }
-          //   });
-          // });
 
           final isTyping = singleChatController.isReceiverTyping;
           final messageCount = singleChatController.messageList.length;
 
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if(!singleChatController.hasScrolledInitially.value && singleChatController.messageList.isNotEmpty){
+            singleChatController.scrollToBottom();
+            singleChatController.hasScrolledInitially.value = true;
+            }
+          });
+
           return ScrollablePositionedList.builder(
             itemScrollController: singleChatController.itemScrollController,
             itemPositionsListener: singleChatController.itemPositionsListener,
-            // controller: singleChatController.scrollController,
             itemCount: messageCount + (isTyping ? 1 : 0),
             physics: const ClampingScrollPhysics(),
-            // singleChatController.isAtBottom.value
-            // ? ClampingScrollPhysics():NeverScrollableScrollPhysics(),
-            // padding: const EdgeInsets.only(bottom: 80),
             itemBuilder: (context, index) {
               if (isTyping && index == messageCount) {
                 return const Padding(

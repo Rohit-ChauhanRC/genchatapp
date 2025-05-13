@@ -348,43 +348,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void _scrollListener() {
-    if (!scrollController.hasClients) return;
-
-    // scrollController.jumpTo(scrollController.position.maxScrollExtent);
-
-    final maxScroll = scrollController.position.maxScrollExtent;
-    final currentScroll = scrollController.position.pixels;
-
-    showScrollToBottom.value = (maxScroll - currentScroll).abs() > 100;
-  }
-
-  // @override
-  // void didChangeMetrics() {
-  //   final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
-  //   isKeyboardVisible.value = bottomInset > 0;
-  //
-  //   if (isKeyboardVisible.value) {
-  //     Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
-  //   }
-  // }
-
-  // void scrollToBottom({bool animate = true}) {
-  //   if (!scrollController.hasClients) return;
-  //
-  //   final position = scrollController.position.maxScrollExtent + 100;
-  //
-  //   if (animate) {
-  //     scrollController.animateTo(
-  //       position,
-  //       duration: const Duration(milliseconds: 300),
-  //       curve: Curves.easeOut,
-  //     );
-  //   } else {
-  //     scrollController.jumpTo(position);
-  //   }
-  // }
-
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
       if (user != null) {
@@ -512,7 +475,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(const Duration(milliseconds: 100), () {
-          scrollToBottom();
+          scrollToBottom(animated: true);
         });
       });
     });

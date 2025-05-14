@@ -55,7 +55,8 @@ class ChatList extends StatelessWidget {
             itemScrollController: singleChatController.itemScrollController,
             itemPositionsListener: singleChatController.itemPositionsListener,
             itemCount: messageCount + (isTyping ? 1 : 0),
-            physics: const ClampingScrollPhysics(),
+            // physics: const ClampingScrollPhysics(),
+            physics: const BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
             itemBuilder: (context, index) {
               if (isTyping && index == messageCount) {
                 return const Padding(

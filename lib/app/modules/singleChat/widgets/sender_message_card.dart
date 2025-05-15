@@ -59,8 +59,8 @@ class SenderMessageCard extends StatelessWidget {
                       bottomLeft: Radius.circular(8),
                       bottomRight: Radius.circular(8))),
               color:
-              // isHighlighted! ? Colors.pinkAccent.shade100 :
-              whiteColor,
+                  // isHighlighted! ? Colors.pinkAccent.shade100 :
+                  whiteColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
@@ -68,7 +68,7 @@ class SenderMessageCard extends StatelessWidget {
                     padding: type == MessageType.text
                         ? const EdgeInsets.only(
                             left: 10,
-                            right: 34,
+                            right: 50,
                             top: 5,
                             bottom: 20,
                           )

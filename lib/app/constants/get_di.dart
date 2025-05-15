@@ -1,3 +1,4 @@
+import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
@@ -9,7 +10,6 @@ import 'package:genchatapp/app/network/api_client.dart';
 import 'package:get/get.dart';
 
 import '../config/services/connectivity_service.dart';
-import '../config/services/firebase_controller.dart';
 import '../config/services/folder_creation.dart';
 import '../config/services/socket_service.dart';
 import '../data/repositories/select_contacts/select_contact_repository.dart';
@@ -18,6 +18,7 @@ import '../modules/select_contacts/controllers/select_contacts_controller.dart';
 import '../services/shared_preference_service.dart';
 
 init() async {
+  Get.lazyPut<EncryptionService>(() => EncryptionService());
   Get.lazyPut(() => ConnectivityService());
   Get.lazyPut(() => FolderCreation());
   // Get.lazyPut(() => FirebaseController());

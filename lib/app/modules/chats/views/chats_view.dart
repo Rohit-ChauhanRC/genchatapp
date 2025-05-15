@@ -27,7 +27,7 @@ class ChatsView extends GetView<ChatsController> {
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
         centerTitle: false,
-        title: Obx((){
+        title: Obx(() {
           final selectedCount = controller.selectedChatUids.length;
           return Row(
             children: [
@@ -37,15 +37,16 @@ class ChatsView extends GetView<ChatsController> {
                   icon: const Icon(Icons.close, color: whiteColor),
                 ),
               Text(
-                selectedCount > 0 ? "$selectedCount selected" :'GENCHAT',
-              style: TextStyle(
-                fontSize: 20,
-                color: whiteColor,
-                fontWeight: FontWeight.bold,
+                selectedCount > 0 ? "$selectedCount selected" : 'GENCHAT',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: whiteColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-                      ),
             ],
-          );}),
+          );
+        }),
         actions: [
           Obx(() {
             final hasSelection = controller.selectedChatUids.isNotEmpty;
@@ -59,10 +60,12 @@ class ChatsView extends GetView<ChatsController> {
                       // _showDeleteConfirmationDialog(context);
                       showAlertMessageWithAction(
                           title: "Delete Chat?",
-                          message: "All messages and media will be deleted. Are you sure you want to continue?",
+                          message:
+                              "All messages and media will be deleted. Are you sure you want to continue?",
                           confirmText: "Delete",
                           cancelText: "Cancel",
-                          onConfirm: () => controller.deleteSelectedChatsForMeOnly(),
+                          onConfirm: () =>
+                              controller.deleteSelectedChatsForMeOnly(),
                           context: context);
                     },
                   ),
@@ -120,7 +123,6 @@ class ChatsView extends GetView<ChatsController> {
             );
           }),
         ],
-
       ),
       body: GradientContainer(
         child: Column(
@@ -129,7 +131,8 @@ class ChatsView extends GetView<ChatsController> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: TextFormField(
-                onChanged: (value) => controller.searchText = value.trim().toLowerCase(),
+                onChanged: (value) =>
+                    controller.searchText = value.trim().toLowerCase(),
                 decoration: InputDecoration(
                   isDense: true,
                   filled: true,
@@ -176,35 +179,45 @@ class ChatsView extends GetView<ChatsController> {
                             // padding: const EdgeInsets.only(top: 10),
                             itemCount: contactsToDisplay.length,
                             itemBuilder: (context, i) {
-                              ChatConntactModel chatConntactModel = contactsToDisplay[i];
-                              final isTyping = controller.socketService.typingStatusMap[chatConntactModel.uid] == true;
-                              final isSelected = controller.selectedChatUids.contains(chatConntactModel.uid);
+                              ChatConntactModel chatConntactModel =
+                                  contactsToDisplay[i];
+                              final isTyping = controller.socketService
+                                      .typingStatusMap[chatConntactModel.uid] ==
+                                  true;
+                              final isSelected = controller.selectedChatUids
+                                  .contains(chatConntactModel.uid);
                               return Container(
                                 decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.mySideBgColor.withOpacity(0.3) : Colors.transparent,
+                                  color: isSelected
+                                      ? AppColors.mySideBgColor.withOpacity(0.3)
+                                      : Colors.transparent,
                                 ),
                                 child: InkWell(
                                   onTap: () {
                                     controller.hideKeyboard();
-                                    if (controller.selectedChatUids.isNotEmpty) {
-                                      controller.toggleChatSelection(chatConntactModel.uid!);
+                                    if (controller
+                                        .selectedChatUids.isNotEmpty) {
+                                      controller.toggleChatSelection(
+                                          chatConntactModel.uid!);
                                     } else {
                                       Get.toNamed(Routes.SINGLE_CHAT,
-                                        arguments: UserList(
-                                          userId:
-                                              int.parse(chatConntactModel.uid!),
-                                          name: chatConntactModel.name,
-                                          displayPictureUrl:
-                                              chatConntactModel.profilePic,
-                                          localName: chatConntactModel.name,
-                                        ));
+                                          arguments: UserList(
+                                            userId: int.parse(
+                                                chatConntactModel.uid!),
+                                            name: chatConntactModel.name,
+                                            displayPictureUrl:
+                                                chatConntactModel.profilePic,
+                                            localName: chatConntactModel.name,
+                                          ));
                                     }
                                   },
                                   onLongPress: () {
-                                    controller.toggleChatSelection(chatConntactModel.uid!);
+                                    controller.toggleChatSelection(
+                                        chatConntactModel.uid!);
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 18, vertical: 10),
                                     child: Row(
                                       children: [
                                         // Profile Image
@@ -267,14 +280,29 @@ class ChatsView extends GetView<ChatsController> {
                                                 ),
                                               ),
                                               Text(
-                                                isTyping? "Typing..." :(chatConntactModel.lastMessage ?? ""),
+                                                isTyping
+                                                    ? "Typing..."
+                                                    : (chatConntactModel
+                                                            .lastMessage!
+                                                            .isNotEmpty
+                                                        ? controller
+                                                            .encryptionService
+                                                            .decryptText(
+                                                                chatConntactModel
+                                                                    .lastMessage
+                                                                    .toString())
+                                                        : ""),
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  fontWeight: isTyping ? FontWeight.bold :FontWeight.w300,
-                                                  color: isTyping ? AppColors.textBarColor :AppColors.blackColor,
+                                                  fontWeight: isTyping
+                                                      ? FontWeight.bold
+                                                      : FontWeight.w300,
+                                                  color: isTyping
+                                                      ? AppColors.textBarColor
+                                                      : AppColors.blackColor,
                                                 ),
                                               ),
                                             ],
@@ -341,11 +369,13 @@ class ChatsView extends GetView<ChatsController> {
                           ),
                         )
                       : Padding(
-                    padding: EdgeInsets.only(top: Get.height/3),
-                      child: Text(
-                        "No chats yet!\nStart chatting with your GenChat contacts.", textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ));;
+                          padding: EdgeInsets.only(top: Get.height / 3),
+                          child: Text(
+                            "No chats yet!\nStart chatting with your GenChat contacts.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ));
+                  ;
                 }),
           ],
         ),

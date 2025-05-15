@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -23,6 +24,9 @@ class ChatsController extends GetxController {
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final MessageTable messageTable = MessageTable();
+
+  final EncryptionService encryptionService = Get.find();
+
 
   FocusNode focusNode = FocusNode();
 

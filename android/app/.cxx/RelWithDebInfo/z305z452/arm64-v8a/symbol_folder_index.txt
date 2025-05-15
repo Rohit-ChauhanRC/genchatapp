@@ -1,0 +1,1 @@
+/Users/genmak/Documents/genchat/genchatapp/build/app/intermediates/cxx/RelWithDebInfo/z305z452/obj/arm64-v8a

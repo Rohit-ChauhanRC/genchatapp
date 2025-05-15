@@ -8,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
+import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -41,6 +42,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final FolderCreation folderCreation = Get.find<FolderCreation>();
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
+
+  final EncryptionService encryptionService = Get.find();
+
 
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
@@ -382,7 +386,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final newMessage = NewMessageModel(
       senderId: senderuserData?.userId,
       recipientId: receiverUserData?.userId,
-      message: message,
+      message: encryptionService.encryptText(message),
       messageSentFromDeviceTime: timeSent.toString(),
       clientSystemMessageId: clientSystemMessageId,
       state: MessageState.unsent,
@@ -412,6 +416,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       Future.delayed(Durations.medium4);
       if (socketService.isConnected) {
         _sendingMessageIds.add(clientSystemMessageId);
+        // encryptionService.encryptText();
+        
         socketService.sendMessage(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {

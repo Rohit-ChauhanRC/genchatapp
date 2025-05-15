@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/bottom_chat_field.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/chat_list.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
@@ -17,12 +19,41 @@ class SingleChatView extends GetView<SingleChatController> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: bgColor,
+
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        leading: Obx(() {
+          final selectedCount = controller.selectedMessages.length;
+          if (selectedCount > 0) {
+            return IconButton(
+              onPressed: controller.clearSelectedMessages,
+              icon: const Icon(Symbols.close, color: whiteColor),
+            );
+          } else {
+            return IconButton(
+              icon: const Icon(Symbols.arrow_back, color: whiteColor),
+              onPressed: () {
+                Get.back(); // Or Navigator.pop(context)
+              },
+            );
+          }
+        }),
         title: Obx(() {
           final user = controller.receiverUserData;
-          return Row(
+          final selectedCount = controller.selectedMessages.length;
+          return selectedCount > 0
+              ? Text(
+            "$selectedCount selected",
+            style: TextStyle(
+              fontSize: 20,
+              color: whiteColor,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+              : Row(
             children: [
               (user?.displayPictureUrl?.isNotEmpty ?? false)
                   ? CachedNetworkImage(
@@ -99,23 +130,33 @@ class SingleChatView extends GetView<SingleChatController> {
         }),
         actions: [
           Obx(() => controller.selectedMessages.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.delete, color: whiteColor),
-                  onPressed: () => _showDeletePopup(context, controller),
-                )
+              ? Row(
+                children: [
+                  IconButton(
+                      icon: const Icon(Symbols.delete, color: whiteColor),
+                      onPressed: () => _showDeletePopup(context, controller),
+                    ),
+                  if (controller.canForward)
+                    IconButton(
+                      icon: Icon(Symbols.forward, color: AppColors.whiteColor,),
+                      onPressed: () {
+                        controller.prepareToForward();
+                      },
+                    ),
+                ],
+              )
               : Row(
                   children: [
                     InkWell(
                       onTap: () {},
-                      child: const Icon(Icons.video_call_outlined,
-                          color: whiteColor),
+                      child: Icon(Symbols.videocam_rounded, color: AppColors.whiteColor),
                     ),
                     SizedBox(
                       width: 10,
                     ),
                     InkWell(
                       onTap: () {},
-                      child: const Icon(Icons.call, color: whiteColor),
+                      child: Icon(Symbols.call_rounded, color: AppColors.whiteColor),
                     ),
                   ],
                 )),

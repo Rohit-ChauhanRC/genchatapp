@@ -1,7 +1,7 @@
 name: genchatapp
 description: "A new Flutter project."
 publish_to: "none"
-version: 0.1.0
+version: 0.1.0+1
 
 environment:
   sdk: ^3.5.3
@@ -39,6 +39,7 @@ dependencies:
   socket_io_client: ^3.1.1
   rxdart: ^0.27.7
   scrollable_positioned_list: ^0.3.8
+  material_symbols_icons: ^4.2815.0
 #  image: ^4.5.4
 
 

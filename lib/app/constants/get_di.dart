@@ -3,6 +3,7 @@ import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
 import 'package:genchatapp/app/modules/createProfile/controllers/create_profile_controller.dart';
+import 'package:genchatapp/app/modules/forward_messages/controllers/forward_messages_controller.dart';
 import 'package:genchatapp/app/modules/landing/controllers/landing_controller.dart';
 import 'package:genchatapp/app/modules/verifyPhoneNumber/controllers/verify_phone_number_controller.dart';
 import 'package:genchatapp/app/network/api_client.dart';
@@ -51,4 +52,5 @@ init() async {
   Get.lazyPut(() => CreateProfileController(
       profileRepository: Get.find<ProfileRepository>()));
   Get.lazyPut(() => SelectContactsController());
+  Get.lazyPut(() => ForwardMessagesController());
 }

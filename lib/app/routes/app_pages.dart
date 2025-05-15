@@ -6,6 +6,8 @@ import '../modules/chats/bindings/chats_binding.dart';
 import '../modules/chats/views/chats_view.dart';
 import '../modules/createProfile/bindings/create_profile_binding.dart';
 import '../modules/createProfile/views/create_profile_view.dart';
+import '../modules/forward_messages/bindings/forward_messages_binding.dart';
+import '../modules/forward_messages/views/forward_messages_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/landing/bindings/landing_binding.dart';
@@ -91,6 +93,11 @@ class AppPages {
       name: _Paths.SETTINGS,
       page: () => const SettingsView(),
       binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.FORWARD_MESSAGES,
+      page: () => const ForwardMessagesView(),
+      binding: ForwardMessagesBinding(),
     ),
   ];
 }

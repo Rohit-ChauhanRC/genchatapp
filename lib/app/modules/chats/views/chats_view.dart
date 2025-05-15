@@ -13,6 +13,7 @@ import 'package:genchatapp/app/utils/time_utils.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../constants/constants.dart';
 import '../controllers/chats_controller.dart';
@@ -34,7 +35,7 @@ class ChatsView extends GetView<ChatsController> {
               if (selectedCount > 0)
                 IconButton(
                   onPressed: controller.clearChatSelection,
-                  icon: const Icon(Icons.close, color: whiteColor),
+                  icon: Icon(Symbols.close, color: AppColors.whiteColor),
                 ),
               Text(
                 selectedCount > 0 ? "$selectedCount selected" :'GENCHAT',
@@ -54,7 +55,7 @@ class ChatsView extends GetView<ChatsController> {
               children: [
                 if (hasSelection)
                   IconButton(
-                    icon: const Icon(Icons.delete, color: whiteColor),
+                    icon: const Icon(Symbols.delete, color: whiteColor),
                     onPressed: () {
                       // _showDeleteConfirmationDialog(context);
                       showAlertMessageWithAction(

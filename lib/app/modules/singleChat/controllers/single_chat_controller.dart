@@ -19,6 +19,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/new_message
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/models/replied_message_configuration.dart';
 import 'package:genchatapp/app/data/models/replied_msg_auto_scroll_config.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -478,6 +479,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         print("Message added to list:------> $message");
       }
     }
+    updateForwardAvailability();
     selectedMessages.refresh();
   }
 
@@ -577,6 +579,52 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       isReplied: false,
     );
   }
+
+  final RxBool _canForward = false.obs;
+  bool get canForward => _canForward.value;
+  set canForward(bool b) => _canForward.value = b;
+
+  void updateForwardAvailability() {
+    final selected = selectedMessages;
+
+    if (selected.isEmpty) {
+      canForward = false;
+      return;
+    }
+
+    // Allow only messages that are not deleted
+    final nonDeleted = selected.where((msg) => msg.messageType != MessageType.deleted).toList();
+
+    // Optional: limit total messages
+    if (nonDeleted.length > 30) {
+      canForward = false;
+      return;
+    }
+
+    // Optional: limit media messages
+    final mediaMessages = nonDeleted.where((msg) =>
+    msg.messageType == MessageType.image ||
+        msg.messageType == MessageType.video ||
+        msg.messageType == MessageType.audio ||
+        msg.messageType == MessageType.document ||
+        msg.messageType == MessageType.gif
+    );
+
+    if (mediaMessages.length > 5) {
+      canForward = false;
+      return;
+    }
+
+    canForward = true;
+  }
+
+  void prepareToForward() {
+    final messagesToForward = selectedMessages.toList();
+    clearSelectedMessages();
+    Get.toNamed(Routes.FORWARD_MESSAGES, arguments: messagesToForward);
+    // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
+  }
+
 
   void selectFile(String fileType) async {
     File? selectedFile;

@@ -190,7 +190,7 @@ class MessageTable {
     final result = await db.query(
       tableName,
       where:
-      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, recipientId, recipientId, senderId],
       orderBy: 'messageSentFromDeviceTime DESC',
       limit: 1,
@@ -257,6 +257,21 @@ class MessageTable {
     final db = await DataBaseService().database;
     await db.delete(tableName,
         where: 'clientSystemMessageId = ?', whereArgs: [clientSystemMessageId]);
+  }
+
+  Future<void> deleteMessageText({
+    required String messageType,
+    required int? receiverId,
+    required int? senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName,
+        where:
+            '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?) AND messageType = ?',
+        whereArgs: [senderId, receiverId, receiverId, senderId, messageType]);
+    if (messageType != "text") {
+      //  media delete
+    }
   }
 
   // Add to deletion queue

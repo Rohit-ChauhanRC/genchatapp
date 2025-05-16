@@ -8,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
+import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -42,6 +43,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final FolderCreation folderCreation = Get.find<FolderCreation>();
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
+
+  final EncryptionService encryptionService = Get.find();
 
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
@@ -204,6 +207,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     typingTimer?.cancel();
     _sendingMessageIds.clear();
     replyId.dispose();
+    
   }
 
   @override
@@ -383,7 +387,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final newMessage = NewMessageModel(
       senderId: senderuserData?.userId,
       recipientId: receiverUserData?.userId,
-      message: message,
+      message: encryptionService.encryptText(message),
       messageSentFromDeviceTime: timeSent.toString(),
       clientSystemMessageId: clientSystemMessageId,
       state: MessageState.unsent,
@@ -413,6 +417,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       Future.delayed(Durations.medium4);
       if (socketService.isConnected) {
         _sendingMessageIds.add(clientSystemMessageId);
+        // encryptionService.encryptText();
+
         socketService.sendMessage(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -536,21 +542,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           // Delete for me (self only)
           await MessageTable().deleteMessage(message.messageId!);
           if (isOnline) {
-            if(message.senderId != receiverUserData?.userId){
+            if (message.senderId != receiverUserData?.userId) {
               socketService.emitMessageDelete(
                 messageId: message.messageId!,
                 isDeleteFromEveryOne: false,
               );
             }
           } else {
-            if(message.senderId != receiverUserData?.userId) {
+            if (message.senderId != receiverUserData?.userId) {
               await MessageTable().markForDeletion(
                   messageId: message.messageId!, isDeleteFromEveryone: false);
             }
           }
           if (isLast) {
-            final newLast = await MessageTable()
-                .getLatestMessageForUser(message.recipientId!, message.senderId!);
+            final newLast = await MessageTable().getLatestMessageForUser(
+                message.recipientId!, message.senderId!);
             if (newLast != null) {
               await ChatConectTable().updateContact(
                 uid: message.recipientId.toString(),
@@ -720,7 +726,28 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void showEmojiContainer() {
     isShowEmojiContainer = true;
   }
+
+  Future<void> deleteTextMessage() async {
+    MessageTable().deleteMessageText(
+      messageType: "text",
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+
+    //  'deleted'
+    MessageTable().deleteMessageText(
+      messageType: 'deleted',
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+  }
+
+  Future<void> deleteMedia() async {
+    await folderCreation.clearMediaFiles();
+  }
 }
+
+
 
 
 

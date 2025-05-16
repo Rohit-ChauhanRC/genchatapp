@@ -19,6 +19,8 @@ class SocketService extends GetxService {
 
   final MessageTable messageTable = MessageTable();
 
+  // final EncryptionService encryptionService = Get.find();
+
   // final RxBool _isConnected = false.obs;
   // bool get isConnected => _isConnected.value;
 
@@ -26,7 +28,7 @@ class SocketService extends GetxService {
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
 
-  Future<void> initSocket(String userId,{Function()? onConnected}) async {
+  Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
       if (_socket!.connected) {
         print('⚠️ Socket already connected, skipping init.');
@@ -51,7 +53,6 @@ class SocketService extends GetxService {
     print('🔌 Socket initialized');
   }
 
-
   void _registerSocketListeners(Function()? onConnected) {
     _socket?.onConnect((_) async {
       print('✅ Socket connected');
@@ -71,45 +72,44 @@ class SocketService extends GetxService {
       _clearSocketListeners();
     });
 
-    _socket?.onReconnect((_){
+    _socket?.onReconnect((_) {
       print('Socket reconnection.');
       _clearSocketListeners();
       _registerSocketListeners(onConnected);
     });
 
     // Add your custom events here
-    _socket?.on('message-event', (data) async{
+    _socket?.on('message-event', (data) async {
       print('📩 Message received: $data');
       int messageId = data["messageId"];
       bool existsLocally = await messageTable.messageExists(messageId);
       //
-      if(!existsLocally) {
+      if (!existsLocally) {
         print("message not found");
         final newMessage = NewMessageModel(
-          message: data["message"],
-          senderId: data["senderId"],
-          messageId: data["messageId"],
-          recipientId: data["recipientId"],
-          messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          messageType: data['messageType'] != null
-              ? MessageTypeExtension.fromValue(data['messageType'])
-              : MessageType.text,
-          // default if null
-          state: MessageState.sent,
-          senderPhoneNumber: data["senderPhoneNumber"],
-          isRepliedMessage: data["isRepliedMessage"] ?? false,
-          messageRepliedOnId: data["messageRepliedOnId"],
-          messageRepliedOn: data["messageRepliedOn"] ?? '',
-          messageRepliedOnType: data["messageRepliedOnType"] != null
-              ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
-              : null,
-          isAsset: data["isAsset"] ?? false,
-          assetOriginalName: data["assetOriginalName"] ?? '',
-          assetServerName: data["assetServerName"] ?? '',
-          assetUrl: data["assetUrl"] ?? '',
-          isForwarded: data["isForwarded"] ?? false,
-          messageRepliedUserId: data["messageRepliedUserId"] ?? 0
-        );
+            message: data["message"],
+            senderId: data["senderId"],
+            messageId: data["messageId"],
+            recipientId: data["recipientId"],
+            messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+            messageType: data['messageType'] != null
+                ? MessageTypeExtension.fromValue(data['messageType'])
+                : MessageType.text,
+            // default if null
+            state: MessageState.sent,
+            senderPhoneNumber: data["senderPhoneNumber"],
+            isRepliedMessage: data["isRepliedMessage"] ?? false,
+            messageRepliedOnId: data["messageRepliedOnId"],
+            messageRepliedOn: data["messageRepliedOn"] ?? '',
+            messageRepliedOnType: data["messageRepliedOnType"] != null
+                ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
+                : null,
+            isAsset: data["isAsset"] ?? false,
+            assetOriginalName: data["assetOriginalName"] ?? '',
+            assetServerName: data["assetServerName"] ?? '',
+            assetUrl: data["assetUrl"] ?? '',
+            isForwarded: data["isForwarded"] ?? false,
+            messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
 
         messageTable.insertMessage(newMessage);
 
@@ -124,10 +124,9 @@ class SocketService extends GetxService {
         );
 
         saveChatContacts(chatContactMessage);
-      }else{
+      } else {
         print("⚠️ Message $messageId found in locally, Skipping reinserting.");
       }
-
     });
 
     _socket?.on('message-acknowledgement', (data) async {
@@ -172,9 +171,9 @@ class SocketService extends GetxService {
         lastSeenTime ?? '', // Pass empty string if user is online
       );
 
-      print(success ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
+      print(success
+          ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
           : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime");
-
     });
 
     _socket?.on('typing', (data) {
@@ -217,7 +216,8 @@ class SocketService extends GetxService {
           // Delete for me only: remove the message locally
           await messageTable.deleteMessage(messageId);
           if (isLast) {
-            final newLast = await messageTable.getLatestMessageForUser(msg?.recipientId ?? 0, msg?.senderId ?? 0);
+            final newLast = await messageTable.getLatestMessageForUser(
+                msg?.recipientId ?? 0, msg?.senderId ?? 0);
             if (newLast != null) {
               await chatConectTable.updateContact(
                 uid: msg!.recipientId.toString(),
@@ -230,7 +230,6 @@ class SocketService extends GetxService {
       } else {
         print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
       }
-      
     });
 
     _socket?.on('custom-error', (data) {
@@ -269,8 +268,8 @@ class SocketService extends GetxService {
     });
   }
 
-  void monitorReceiverTyping(
-      String receiverUserId, void Function(bool isTyping) onTypingStatusChanged) {
+  void monitorReceiverTyping(String receiverUserId,
+      void Function(bool isTyping) onTypingStatusChanged) {
     ever(typingStatusMap, (_) {
       if (typingStatusMap.containsKey(receiverUserId)) {
         onTypingStatusChanged(typingStatusMap[receiverUserId] == true);
@@ -278,7 +277,8 @@ class SocketService extends GetxService {
     });
   }
 
-  void emitMessageDelete({required int messageId, required bool isDeleteFromEveryOne}) {
+  void emitMessageDelete(
+      {required int messageId, required bool isDeleteFromEveryOne}) {
     _socket?.emit('message-delete', {
       "messageId": messageId,
       "deleteState": isDeleteFromEveryOne,
@@ -289,10 +289,10 @@ class SocketService extends GetxService {
     if (_socket?.connected == true) {
       _socket?.disconnect();
     }
-      _clearSocketListeners();
+    _clearSocketListeners();
     _socket?.dispose();
     _socket = null;
-      print('🔌 Socket disposed manually');
+    print('🔌 Socket disposed manually');
   }
 
   void saveChatContacts(NewMessageModel data) async {
@@ -302,7 +302,8 @@ class SocketService extends GetxService {
 
     // If user is found, proceed as usual
     if (user != null) {
-      final chatUser = await chatConectTable.fetchById(uid: user.userId.toString());
+      final chatUser =
+          await chatConectTable.fetchById(uid: user.userId.toString());
 
       if (chatUser != null) {
         await chatConectTable.updateContact(
@@ -326,10 +327,12 @@ class SocketService extends GetxService {
       }
     } else {
       // Handle unknown contact (not in your contacts table)
-      final fallbackName = data.senderPhoneNumber ?? "Unknown"; // You must pass senderPhoneNumber in NewMessageModel
+      final fallbackName = data.senderPhoneNumber ??
+          "Unknown"; // You must pass senderPhoneNumber in NewMessageModel
       final fallbackUid = data.recipientId ?? "0";
 
-      final chatUser = await chatConectTable.fetchById(uid: fallbackUid.toString());
+      final chatUser =
+          await chatConectTable.fetchById(uid: fallbackUid.toString());
 
       if (chatUser != null) {
         await chatConectTable.updateContact(
@@ -355,8 +358,7 @@ class SocketService extends GetxService {
             userId: int.parse(fallbackUid.toString()),
             isOnline: 1,
             phoneNumber: fallbackName,
-            localName: fallbackName
-        );
+            localName: fallbackName);
       }
     }
   }
@@ -388,8 +390,5 @@ class SocketService extends GetxService {
     // _socket?.off('typing');
     // _socket?.off('message-delete');
     // _socket?.off('custom-error');
-
   }
-
-
 }

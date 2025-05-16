@@ -161,4 +161,74 @@ class FolderCreation {
       return null;
     }
   }
+
+  Future<void> clearMediaFiles() async {
+    Directory appDir = await getApplicationDocumentsDirectory();
+    final String rootFolderPath = '${appDir.path}/$appName';
+
+    final List<String> subFolders = [
+      '$rootFolderPath/Database',
+      '$rootFolderPath/Images',
+      '$rootFolderPath/Videos',
+      '$rootFolderPath/Audio',
+      '$rootFolderPath/GIFs',
+      '$rootFolderPath/Files',
+      '$rootFolderPath/Backups',
+    ];
+    try {
+      for (final folder in subFolders) {
+        final Directory dir = Directory(folder);
+        if (await dir.exists()) {
+          List<FileSystemEntity> files = dir.listSync();
+          for (FileSystemEntity file in files) {
+            if (file is File &&
+                (file.path.endsWith('.jpg') ||
+                    file.path.endsWith('.png') ||
+                    file.path.endsWith('.mp4') ||
+                    file.path.endsWith('.mp3'))) {
+              await file.delete();
+              print('Deleted: ${file.path}');
+            } else {
+              print('Media directory does not exist.');
+            }
+          }
+        } else {
+          if (kDebugMode) {
+            print(dir.path);
+          }
+        }
+      }
+      // Get the application's documents directory
+
+      // Specify your media folder (change as needed)
+      Directory mediaDir = Directory('${appDir.path}/media');
+
+      // Check if the directory exists
+    } catch (e) {
+      print('Error clearing media files: $e');
+    }
+  }
+
+  Future<bool> deleteFileByName({
+    required String subFolder,
+    required String fileName,
+  }) async {
+    try {
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String filePath = '${appDir.path}/$appName/$subFolder/$fileName';
+
+      final File file = File(filePath);
+      if (await file.exists()) {
+        await file.delete();
+        print('Deleted file: $filePath');
+        return true;
+      } else {
+        print('File not found: $filePath');
+        return false;
+      }
+    } catch (e) {
+      print('Error deleting file: $e');
+      return false;
+    }
+  }
 }

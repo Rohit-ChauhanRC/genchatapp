@@ -70,10 +70,10 @@ class SingleChatView extends GetView<SingleChatController> {
                           const Icon(Icons.error),
                     )
                   : const CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
+                      radius: 20,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
               const SizedBox(
                 width: 10,
               ),
@@ -96,7 +96,7 @@ class SingleChatView extends GetView<SingleChatController> {
                     // 👇 Wrap with Obx to reactively update UI
                     Obx(() {
                       if (!controller.connectivityService.isConnected.value) {
-                        return SizedBox.shrink();
+                        return const SizedBox.shrink();
                       }
 
                       if (controller.isReceiverTyping) {
@@ -151,7 +151,7 @@ class SingleChatView extends GetView<SingleChatController> {
                       onTap: () {},
                       child: Icon(Symbols.videocam_rounded, color: AppColors.whiteColor),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10,
                     ),
                     InkWell(
@@ -164,15 +164,34 @@ class SingleChatView extends GetView<SingleChatController> {
             icon: const Icon(Icons.more_vert, color: whiteColor),
             offset: const Offset(0, 40),
             color: whiteColor,
-            onSelected: (value) {
+            onSelected: (value) async {
               // Handle menu item selection
+              switch (value) {
+                case clearText:
+                  print(clearText);
+                  await controller.deleteTextMessage();
+                  break;
+                default:
+              }
             },
             itemBuilder: (context) => [
               PopupMenuItem(
-                value: 'newGroup',
+                value: newGroup,
                 onTap: () {},
+                // ignore: prefer_const_constructors
                 child: Text(
                   newGroup,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: blackColor,
+                  ),
+                ),
+              ),
+              const PopupMenuItem(
+                value: settings,
+                child: Text(
+                  settings,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -181,9 +200,9 @@ class SingleChatView extends GetView<SingleChatController> {
                 ),
               ),
               const PopupMenuItem(
-                value: 'settings',
+                value: clearText,
                 child: Text(
-                  settings,
+                  clearText,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,

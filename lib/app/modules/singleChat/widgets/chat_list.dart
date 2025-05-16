@@ -45,9 +45,10 @@ class ChatList extends StatelessWidget {
           final messageCount = singleChatController.messageList.length;
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if(!singleChatController.hasScrolledInitially.value && singleChatController.messageList.isNotEmpty){
-            singleChatController.scrollToBottom();
-            singleChatController.hasScrolledInitially.value = true;
+            if (!singleChatController.hasScrolledInitially.value &&
+                singleChatController.messageList.isNotEmpty) {
+              singleChatController.scrollToBottom();
+              singleChatController.hasScrolledInitially.value = true;
             }
           });
 
@@ -56,7 +57,8 @@ class ChatList extends StatelessWidget {
             itemPositionsListener: singleChatController.itemPositionsListener,
             itemCount: messageCount + (isTyping ? 1 : 0),
             // physics: const ClampingScrollPhysics(),
-            physics: const BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
+            physics: const BouncingScrollPhysics(
+                decelerationRate: ScrollDecelerationRate.normal),
             itemBuilder: (context, index) {
               if (isTyping && index == messageCount) {
                 return const Padding(
@@ -113,8 +115,19 @@ class ChatList extends StatelessWidget {
                                               MessageType.text ||
                                           messages.messageType ==
                                               MessageType.deleted
-                                      ? (messages.message ?? '') // NULL-SAFE
-                                      : (messages.assetServerName ?? ''),
+                                      ? (messages.message!.isNotEmpty
+                                          ? singleChatController
+                                              .encryptionService
+                                              .decryptText(
+                                                  messages.message.toString())
+                                          : '') // NULL-SAFE
+                                      : (messages.assetServerName!.isNotEmpty
+                                          ? singleChatController
+                                              .encryptionService
+                                              .decryptText(messages
+                                                  .assetServerName
+                                                  .toString())
+                                          : ''),
                                   date: DateFormat('hh:mm a').format(
                                       DateTime.parse(
                                           messages.messageSentFromDeviceTime ??
@@ -140,7 +153,14 @@ class ChatList extends StatelessWidget {
                                       messages.messageRepliedOnType ??
                                           MessageType.text,
                                   repliedText:
-                                      (messages.messageRepliedOn ?? '').obs,
+                                      (messages.messageRepliedOn!.isNotEmpty
+                                              ? singleChatController
+                                                  .encryptionService
+                                                  .decryptText(messages
+                                                      .messageRepliedOn
+                                                      .toString())
+                                              : '')
+                                          .obs,
                                   // username: messages.,
                                   repliedUserId: messages.messageRepliedUserId,
                                   repliedUserName:
@@ -161,11 +181,16 @@ class ChatList extends StatelessWidget {
                                   message: messages.messageType == MessageType.text ||
                                           messages.messageType ==
                                               MessageType.deleted
-                                      ? (messages.message ?? '')
+                                      ? (messages.message!.isNotEmpty
+                                          ? singleChatController.encryptionService
+                                              .decryptText(
+                                                  messages.message.toString())
+                                          : '')
                                       : (messages.assetServerName ?? ''),
-                                  date: DateFormat('hh:mm a').format(DateTime.parse(
-                                      messages.messageSentFromDeviceTime ??
-                                          '')),
+                                  date: DateFormat('hh:mm a').format(
+                                      DateTime.parse(
+                                          messages.messageSentFromDeviceTime ??
+                                              '')),
                                   type:
                                       messages.messageType ?? MessageType.text,
                                   onRightSwipe: messages.messageType ==
@@ -183,16 +208,13 @@ class ChatList extends StatelessWidget {
                                               messageId:
                                                   messages.messageId ?? 0);
                                         },
-                                  repliedMessageType: messages.messageRepliedOnType ??
-                                      MessageType.text,
-                                  repliedText:
-                                      (messages.messageRepliedOn ?? '').obs,
+                                  repliedMessageType:
+                                      messages.messageRepliedOnType ?? MessageType.text,
+                                  repliedText: (messages.messageRepliedOn!.isNotEmpty ? singleChatController.encryptionService.decryptText(messages.messageRepliedOn.toString()) : '').obs,
                                   // username: messages.repliedTo,
                                   repliedUserId: messages.messageRepliedUserId,
-                                  repliedUserName: messages.messageRepliedUserId != 0 &&
-                                          messages.messageRepliedUserId != null
-                                      ? messages.messageRepliedUserId ==
-                                              singleChatController.senderuserData!.userId
+                                  repliedUserName: messages.messageRepliedUserId != 0 && messages.messageRepliedUserId != null
+                                      ? messages.messageRepliedUserId == singleChatController.senderuserData!.userId
                                           ? "You"
                                           : singleChatController.receiverUserData!.localName
                                       : "username",

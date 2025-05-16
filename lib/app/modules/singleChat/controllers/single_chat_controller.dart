@@ -45,7 +45,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final EncryptionService encryptionService = Get.find();
 
-
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
@@ -207,6 +206,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     typingTimer?.cancel();
     _sendingMessageIds.clear();
     replyId.dispose();
+    
   }
 
   @override
@@ -417,7 +417,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       if (socketService.isConnected) {
         _sendingMessageIds.add(clientSystemMessageId);
         // encryptionService.encryptText();
-        
+
         socketService.sendMessage(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -540,21 +540,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           // Delete for me (self only)
           await MessageTable().deleteMessage(message.messageId!);
           if (isOnline) {
-            if(message.senderId != receiverUserData?.userId){
+            if (message.senderId != receiverUserData?.userId) {
               socketService.emitMessageDelete(
                 messageId: message.messageId!,
                 isDeleteFromEveryOne: false,
               );
             }
           } else {
-            if(message.senderId != receiverUserData?.userId) {
+            if (message.senderId != receiverUserData?.userId) {
               await MessageTable().markForDeletion(
                   messageId: message.messageId!, isDeleteFromEveryone: false);
             }
           }
           if (isLast) {
-            final newLast = await MessageTable()
-                .getLatestMessageForUser(message.recipientId!, message.senderId!);
+            final newLast = await MessageTable().getLatestMessageForUser(
+                message.recipientId!, message.senderId!);
             if (newLast != null) {
               await ChatConectTable().updateContact(
                 uid: message.recipientId.toString(),
@@ -678,7 +678,28 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void showEmojiContainer() {
     isShowEmojiContainer = true;
   }
+
+  Future<void> deleteTextMessage() async {
+    MessageTable().deleteMessageText(
+      messageType: "text",
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+
+    //  'deleted'
+    MessageTable().deleteMessageText(
+      messageType: 'deleted',
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+  }
+
+  Future<void> deleteMedia() async {
+    await folderCreation.clearMediaFiles();
+  }
 }
+
+
 
 
 

@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 
+import '../config/services/socket_service.dart';
+import '../data/local_database/local_database.dart';
 import '../routes/app_pages.dart';
 import 'api_client.dart';
 import 'api_endpoints.dart';
@@ -12,8 +15,10 @@ import 'api_endpoints.dart';
 class ApiInterceptor extends Interceptor {
   final SharedPreferenceService sharedPreference;
   final ApiClient apiClient;
+  final DataBaseService db;
+  final SocketService socketService;
 
-  ApiInterceptor(this.sharedPreference, this.apiClient);
+  ApiInterceptor(this.sharedPreference, this.apiClient, this.db, this.socketService);
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     String? token = sharedPreference.getString(UserDefaultsKeys.accessToken);
@@ -118,9 +123,13 @@ class ApiInterceptor extends Interceptor {
       print("🔴 Refresh token request failed: $e");
     }
     print("🔴 Refresh token invalid, logging out...");
-    await sharedPreference.clear().then((onValue) {
+
+    await logout((){
       Get.offAllNamed(Routes.LANDING);
     });
+    // await sharedPreference.clear().then((onValue) {
+    //   Get.offAllNamed(Routes.LANDING);
+    // });
     return false;
   }
 
@@ -148,5 +157,12 @@ class ApiInterceptor extends Interceptor {
     }
 
     return apiClient.dio.fetch(requestOptions);
+  }
+
+  Future<void> logout(Function()? onSuccess) async{
+    await db.closeDb();
+    await socketService.disposeSocket();
+    await sharedPreference.clear();
+    onSuccess?.call();
   }
 }

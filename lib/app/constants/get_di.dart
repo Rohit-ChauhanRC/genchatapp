@@ -4,6 +4,7 @@ import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
 import 'package:genchatapp/app/modules/createProfile/controllers/create_profile_controller.dart';
 import 'package:genchatapp/app/modules/forward_messages/controllers/forward_messages_controller.dart';
+import 'package:genchatapp/app/modules/home/controllers/home_controller.dart';
 import 'package:genchatapp/app/modules/landing/controllers/landing_controller.dart';
 import 'package:genchatapp/app/modules/verifyPhoneNumber/controllers/verify_phone_number_controller.dart';
 import 'package:genchatapp/app/network/api_client.dart';
@@ -16,6 +17,7 @@ import '../config/services/socket_service.dart';
 import '../data/repositories/select_contacts/select_contact_repository.dart';
 import '../modules/otp/controllers/otp_controller.dart';
 import '../modules/select_contacts/controllers/select_contacts_controller.dart';
+import '../modules/settings/controllers/settings_controller.dart';
 import '../services/shared_preference_service.dart';
 
 init() async {
@@ -51,6 +53,8 @@ init() async {
   Get.lazyPut(() => OtpController(authRepository: Get.find<AuthRepository>()));
   Get.lazyPut(() => CreateProfileController(
       profileRepository: Get.find<ProfileRepository>()));
+  Get.lazyPut(() => HomeController());
+  Get.lazyPut(() => SettingsController());
   Get.lazyPut(() => SelectContactsController());
   Get.lazyPut(() => ForwardMessagesController());
 }

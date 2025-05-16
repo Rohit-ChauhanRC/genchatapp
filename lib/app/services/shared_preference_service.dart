@@ -66,6 +66,7 @@ class SharedPreferenceService {
     await remove(UserDefaultsKeys.isNumVerify);
     await remove(UserDefaultsKeys.createUserProfile);
     await remove(UserDefaultsKeys.userMobileNum);
+    await remove(UserDefaultsKeys.permissionAsked);
     await _prefs.clear();
     await _prefs.reload();
   }

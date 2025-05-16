@@ -496,7 +496,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       final hasMessageId = message.messageId != null;
 
       final isLast = hasMessageId
-          ? await MessageTable().isLastMessage(message.messageId!)
+          ? await MessageTable().isLastMessage(messageId: message.messageId!, senderId: message.senderId!, receiverId: message.recipientId!)
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {

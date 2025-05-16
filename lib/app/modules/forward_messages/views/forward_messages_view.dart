@@ -38,31 +38,59 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        return GradientContainer(
-          child: ListView(
-            // padding: const EdgeInsets.all(12),
-            children: [
-              _buildSearchBar(),
-              if (controller.filteredRecents.isNotEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  child: Text('Recent Chats',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ...controller.filteredRecents.map((user) => _buildUserTile(user)),
 
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                child: Text('All Contacts',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        return GradientContainer(
+          child: Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.only(bottom: 60),
+                children: [
+                  _buildSearchBar(),
+
+                  if (controller.showRecent)
+                    _buildSectionTitle('Recent Chats'),
+                  ...controller.filteredRecents.map(_buildUserTile),
+
+                  if (controller.showAllContacts)
+                    _buildSectionTitle('All Contacts'),
+                  ...controller.nonRecentFilteredContacts.map(_buildUserTile),
+                ],
               ),
-              ...controller.filteredRecents.map((user) => _buildUserTile(user)),
+
+              // Bottom "Sending to" section
+              Obx(() => controller.selectedUserIds.isNotEmpty
+                  ? Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  color: AppColors.textBarColor.withOpacity(0.15),
+                  child: Text(
+                    "Sending to: ${controller.selectedUserNames.join(', ')}",
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w500),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+                  : const SizedBox.shrink()),
             ],
           ),
         );
       }),
     );
   }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      child: Text(title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+    );
+  }
+
 
   Widget _buildUserTile(UserList user) {
     final isSelected = controller.selectedUserIds.contains(user.userId);

@@ -16,7 +16,7 @@ class AuthRepository {
       return await apiClient.post(ApiEndpoints.sendOtp, param);
     } catch (e) {
       // print('Error in sendOtpAPI: $e');
-      showAlertMessage("Error in sendOTPAPI: $e");
+      showAlertMessage("Error: $e");
       return null;
     }
   }
@@ -32,7 +32,7 @@ class AuthRepository {
       return await apiClient.post(ApiEndpoints.verifyOtp, param);
     } catch (e) {
       // print('Error in verifyOTPAPI: $e');
-      showAlertMessage("Error in verifyOTP: $e");
+      showAlertMessage("Error: $e");
       return null;
     }
   }

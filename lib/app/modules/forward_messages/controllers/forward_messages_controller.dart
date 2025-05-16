@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../config/services/socket_service.dart';
+import '../../../constants/message_enum.dart';
 import '../../../data/local_database/chatconnect_table.dart';
 import '../../../data/local_database/contacts_table.dart';
+import '../../../data/local_database/message_table.dart';
 import '../../../data/models/chat_conntact_model.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/models/new_models/response_model/new_message_model.dart';
+import '../../../data/models/new_models/response_model/verify_otp_response_model.dart';
+import '../../../routes/app_pages.dart';
 import '../../../utils/alert_popup_utils.dart';
 
 class ForwardMessagesController extends GetxController {
@@ -13,6 +20,8 @@ class ForwardMessagesController extends GetxController {
   FocusNode focusNode = FocusNode();
   final ContactsTable contactsTable = ContactsTable();
   final ChatConectTable chatConectTable = ChatConectTable();
+  final socketService = Get.find<SocketService>();
+  final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final RxList<UserList> recentChats = <UserList>[].obs;
   final RxList<UserList> contacts = <UserList>[].obs;
@@ -34,17 +43,36 @@ class ForwardMessagesController extends GetxController {
       .where((u) => (u.localName ?? '').toLowerCase().contains(searchQuery.toLowerCase()))
       .toList();
 
+  List<UserList> get nonRecentFilteredContacts {
+    final recentIds = recentChats.map((e) => e.userId).toSet();
+    return filteredContacts.where((u) => !recentIds.contains(u.userId)).toList();
+  }
+
+  bool get showRecent => filteredRecents.isNotEmpty;
+  bool get showAllContacts => nonRecentFilteredContacts.isNotEmpty;
+
+
   List<String> get selectedUserNames {
-    final all = [...recentChats, ...contacts];
-    return all
-        .where((u) => selectedUserIds.contains(u.userId))
-        .map((u) => u.localName ?? u.phoneNumber ?? '')
+    final Map<int, UserList> userMap = {};
+    for (final user in [...recentChats, ...contacts]) {
+      userMap[user.userId ?? 0] = user; // replaces duplicates
+    }
+
+    return userMap.entries
+        .where((entry) => selectedUserIds.contains(entry.key))
+        .map((e) => e.value.localName ?? e.value.phoneNumber ?? '')
         .toList();
   }
+
+  final Rx<UserData?> _senderuserData = UserData().obs;
+  UserData? get senderuserData => _senderuserData.value;
+  set senderuserData(UserData? userData) => _senderuserData.value = (userData);
+
   @override
   void onInit() {
     super.onInit();
     fetchData();
+    senderuserData = sharedPreferenceService.getUserData();
   }
 
   @override
@@ -85,17 +113,52 @@ class ForwardMessagesController extends GetxController {
         : selectedUserIds.add(userId);
   }
 
-  void forwardMessages() {
+  Future<void> forwardMessages() async{
     if (selectedUserIds.isEmpty || messagesToForward.isEmpty) return;
 
     for (final userId in selectedUserIds) {
       for (final msg in messagesToForward) {
-        // SocketService.to.sendForwardedMessage(to: userId, message: msg);
+        final clientSystemMessageId = const Uuid().v1();
+        final timeSent = DateTime.now();
+
+        final forwardMessage = NewMessageModel(
+          senderId: senderuserData?.userId,
+          recipientId: userId,
+          message: msg.message,
+          messageSentFromDeviceTime: timeSent.toString(),
+          clientSystemMessageId: clientSystemMessageId,
+          state: MessageState.unsent,
+          syncStatus: SyncStatus.pending,
+          createdAt: timeSent.toString(),
+          senderPhoneNumber: senderuserData?.phoneNumber,
+          messageType: msg.messageType,
+          isForwarded: true,
+          isRepliedMessage: false,
+          messageRepliedOnId: 0,
+          messageRepliedOn: '',
+          messageRepliedOnType: null,
+          isAsset: msg.isAsset,
+          assetOriginalName: "",
+          assetServerName: "",
+          assetUrl: "",
+          messageRepliedUserId: 0,
+        );
+
+        print("Message All details Request: ${forwardMessage.toMap()}");
+
+        await MessageTable().insertMessage(forwardMessage).then((onValue) {
+          Future.delayed(Durations.medium4);
+          if (socketService.isConnected) {
+            // _sendingMessageIds.add(clientSystemMessageId);
+            socketService.sendMessage(forwardMessage);
+          }
+        });
       }
     }
 
-    Get.back();
-    showAlertMessage("Messages forwarded successfully");
+    Get.until((route) => route.settings.name == Routes.HOME);
+    // Get.offAndToNamed(Routes.HOME);
+    // showAlertMessage("Messages forwarded successfully");
   }
 
   void showKeyboard() => focusNode.requestFocus();

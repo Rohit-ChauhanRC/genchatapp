@@ -4,6 +4,7 @@ import 'package:genchatapp/app/constants/constants.dart';
 import 'package:get/get.dart';
 
 import 'app/config/theme/app_theme.dart';
+import 'app/network/app_config.dart';
 import 'app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,6 +15,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  AppConfig.setEnvironment(AppEnvironment.prod);
   await di.init();
 
   runApp(const App());

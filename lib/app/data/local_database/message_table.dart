@@ -161,14 +161,21 @@ class MessageTable {
     return null;
   }
 
-  Future<bool> isLastMessage(int messageId) async {
+  Future<bool> isLastMessage({
+    required int messageId,
+    required int senderId,
+    required int receiverId,
+  }) async {
     final db = await DataBaseService().database;
 
     final result = await db.rawQuery('''
     SELECT messageId FROM $tableName
+    WHERE 
+      (senderId = ? AND recipientId = ?) OR 
+      (senderId = ? AND recipientId = ?)
     ORDER BY messageSentFromDeviceTime DESC
     LIMIT 1
-  ''');
+  ''', [senderId, receiverId, receiverId, senderId]);
 
     if (result.isNotEmpty) {
       return result.first['messageId'] == messageId;
@@ -176,6 +183,7 @@ class MessageTable {
 
     return false;
   }
+
 
   Future<NewMessageModel?> getLatestMessageForUser(int recipientId, int senderId) async {
     final db = await DataBaseService().database;

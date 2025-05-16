@@ -3,11 +3,11 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
+import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import '../../data/local_database/contacts_table.dart';
-import '../../modules/singleChat/controllers/single_chat_controller.dart';
 
 class SocketService extends GetxService {
   IO.Socket? _socket;
@@ -38,8 +38,7 @@ class SocketService extends GetxService {
       }
     }
     _socket = IO.io(
-      'http://app.maklife.in:10000',
-      // 'http://payment-payu.maklifedairy.in:6040',
+      ApiEndpoints.socketBaseUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect() // prevent auto connect before setting everything
@@ -196,8 +195,9 @@ class SocketService extends GetxService {
 
       bool existsLocally = await messageTable.messageExists(messageId);
       if (existsLocally) {
-        final isLast = await messageTable.isLastMessage(messageId);
+
         final msg = await messageTable.getMessageById(messageId);
+        final isLast = await messageTable.isLastMessage(messageId: messageId, senderId: msg?.senderId ?? 0, receiverId: msg?.recipientId ?? 0);
         if (isDeleteFromEveryOne) {
           // Delete for everyone: mark as "This message was deleted"
           await messageTable.updateMessageContent(

@@ -30,7 +30,7 @@ void showAlertMessage(String message) {
                 isDefaultAction: true,
                 child: GestureDetector(
                     onTap: () {
-                      Get.back();
+                      // Get.back();
                     },
                     child: Text("OK",
                         style: TextStyle(color: AppColors.textBarColor))),

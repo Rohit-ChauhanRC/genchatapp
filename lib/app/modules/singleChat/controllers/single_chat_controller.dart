@@ -44,6 +44,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
 
+  final ChatConectTable chatConectTable = ChatConectTable();
+
   final EncryptionService encryptionService = Get.find();
 
   var hasScrolledInitially = false.obs;
@@ -207,7 +209,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     typingTimer?.cancel();
     _sendingMessageIds.clear();
     replyId.dispose();
-    
   }
 
   @override
@@ -504,7 +505,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       final hasMessageId = message.messageId != null;
 
       final isLast = hasMessageId
-          ? await MessageTable().isLastMessage(messageId: message.messageId!, senderId: message.senderId!, receiverId: message.recipientId!)
+          ? await MessageTable().isLastMessage(
+              messageId: message.messageId!,
+              senderId: message.senderId!,
+              receiverId: message.recipientId!)
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
@@ -560,14 +564,14 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             final newLast = await MessageTable().getLatestMessageForUser(
                 message.recipientId!, message.senderId!);
             if (newLast != null) {
-              await ChatConectTable().updateContact(
+              await chatConectTable.updateContact(
                 uid: message.recipientId.toString(),
                 lastMessage: newLast.message,
                 timeSent: newLast.messageSentFromDeviceTime,
               );
             } else {
               // Optional: reset chat contact if all messages deleted
-              await ChatConectTable().updateContact(
+              await chatConectTable.updateContact(
                 uid: message.recipientId.toString(),
                 lastMessage: '',
                 timeSent: '',
@@ -601,7 +605,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
 
     // Allow only messages that are not deleted
-    final nonDeleted = selected.where((msg) => msg.messageType != MessageType.deleted).toList();
+    final nonDeleted = selected
+        .where((msg) => msg.messageType != MessageType.deleted)
+        .toList();
 
     // Optional: limit total messages
     if (nonDeleted.length > 30) {
@@ -611,12 +617,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     // Optional: limit media messages
     final mediaMessages = nonDeleted.where((msg) =>
-    msg.messageType == MessageType.image ||
+        msg.messageType == MessageType.image ||
         msg.messageType == MessageType.video ||
         msg.messageType == MessageType.audio ||
         msg.messageType == MessageType.document ||
-        msg.messageType == MessageType.gif
-    );
+        msg.messageType == MessageType.gif);
 
     if (mediaMessages.length > 5) {
       canForward = false;
@@ -632,7 +637,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     Get.toNamed(Routes.FORWARD_MESSAGES, arguments: messagesToForward);
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
   }
-
 
   void selectFile(String fileType) async {
     File? selectedFile;
@@ -742,6 +746,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       receiverId: receiverUserData!.userId,
       senderId: senderuserData?.userId,
     );
+
+    await chatConectTable.updateContact(
+        uid: receiverUserData!.userId.toString(),
+        lastMessage: "",
+        timeSent: "");
   }
 
   Future<void> deleteMedia() async {

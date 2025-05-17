@@ -1,25 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
-import 'package:genchatapp/app/config/theme/app_colors.dart';
-import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
-import 'package:genchatapp/app/data/models/message_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
-import 'package:genchatapp/app/data/models/replied_message_configuration.dart';
-import 'package:genchatapp/app/data/models/replied_msg_auto_scroll_config.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';

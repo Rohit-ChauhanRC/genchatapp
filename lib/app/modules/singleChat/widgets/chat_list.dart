@@ -116,17 +116,13 @@ class ChatList extends StatelessWidget {
                                           messages.messageType ==
                                               MessageType.deleted
                                       ? (messages.message!.isNotEmpty
-                                          ? singleChatController
-                                              .encryptionService
-                                              .decryptText(
-                                                  messages.message.toString())
+                                          ? 
+                                                  messages.message.toString()
                                           : '') // NULL-SAFE
                                       : (messages.assetServerName!.isNotEmpty
-                                          ? singleChatController
-                                              .encryptionService
-                                              .decryptText(messages
+                                          ? messages
                                                   .assetServerName
-                                                  .toString())
+                                                  .toString()
                                           : ''),
                                   date: DateFormat('hh:mm a').format(
                                       DateTime.parse(
@@ -154,11 +150,9 @@ class ChatList extends StatelessWidget {
                                           MessageType.text,
                                   repliedText:
                                       (messages.messageRepliedOn!.isNotEmpty
-                                              ? singleChatController
-                                                  .encryptionService
-                                                  .decryptText(messages
+                                              ? messages
                                                       .messageRepliedOn
-                                                      .toString())
+                                                      .toString()
                                               : '')
                                           .obs,
                                   // username: messages.,
@@ -183,9 +177,8 @@ class ChatList extends StatelessWidget {
                                           messages.messageType ==
                                               MessageType.deleted
                                       ? (messages.message!.isNotEmpty
-                                          ? singleChatController.encryptionService
-                                              .decryptText(
-                                                  messages.message.toString())
+                                          ? 
+                                                  messages.message.toString()
                                           : '')
                                       : (messages.assetServerName ?? ''),
                                   date: DateFormat('hh:mm a').format(
@@ -211,7 +204,7 @@ class ChatList extends StatelessWidget {
                                         },
                                   repliedMessageType:
                                       messages.messageRepliedOnType ?? MessageType.text,
-                                  repliedText: (messages.messageRepliedOn!.isNotEmpty ? singleChatController.encryptionService.decryptText(messages.messageRepliedOn.toString()) : '').obs,
+                                  repliedText: (messages.messageRepliedOn!.isNotEmpty ? messages.messageRepliedOn.toString() : '').obs,
                                   // username: messages.repliedTo,
                                   repliedUserId: messages.messageRepliedUserId,
                                   repliedUserName: messages.messageRepliedUserId != 0 && messages.messageRepliedUserId != null

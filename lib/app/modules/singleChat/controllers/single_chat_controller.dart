@@ -420,6 +420,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         // encryptionService.encryptText();
 
         socketService.sendMessage(newMessage);
+      }else{
+        socketService.saveChatContacts(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(const Duration(milliseconds: 100), () {
@@ -565,11 +567,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
               );
             } else {
               // Optional: reset chat contact if all messages deleted
-              // await chatConectTable.updateContact(
-              //   uid: message.recipientId.toString(),
-              //   lastMessage: '',
-              //   timeSent: '',
-              // );
+              await ChatConectTable().updateContact(
+                uid: message.recipientId.toString(),
+                lastMessage: '',
+                timeSent: '',
+              );
             }
           }
         }

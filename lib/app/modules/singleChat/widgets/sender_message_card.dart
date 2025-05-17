@@ -3,8 +3,10 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 // import 'package:genchat/app/modules/single_chat/controllers/single_chat_controller.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:swipe_to/swipe_to.dart';
 
+import '../../../config/theme/app_colors.dart';
 import 'display_text_image_gif.dart';
 
 class SenderMessageCard extends StatelessWidget {
@@ -21,6 +23,7 @@ class SenderMessageCard extends StatelessWidget {
     this.repliedUserName,
     this.isHighlighted = false,
     this.onReplyTap,
+    this.isForwarded = false,
   });
   final String message;
   final String date;
@@ -33,6 +36,7 @@ class SenderMessageCard extends StatelessWidget {
   final String? repliedUserName;
   final bool? isHighlighted;
   final VoidCallback? onReplyTap;
+  final bool isForwarded;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +83,20 @@ class SenderMessageCard extends StatelessWidget {
                             bottom: 25,
                           ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        isForwarded ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor,size: 18,),
+                            SizedBox(width: 10,),
+                            Text("Forwarded",style: TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.greyMsgColor)),
+                          ],
+                        ) :  SizedBox.shrink(),
                         type != MessageType.deleted &&
                                 repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"

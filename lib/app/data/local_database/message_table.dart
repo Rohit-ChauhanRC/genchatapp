@@ -146,6 +146,19 @@ class MessageTable {
     );
   }
 
+  Future<List<NewMessageModel>> fetchAllPendingMessages({required int loginUserId}) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.query(
+      tableName,
+      where: 'syncStatus = ? AND senderId = ?',
+      whereArgs: [SyncStatus.pending.value, loginUserId],
+    );
+
+    return result.map((e) => NewMessageModel.fromMap(e)).toList();
+  }
+
+
   // Get message by messageId
   Future<NewMessageModel?> getMessageById(int messageId) async {
     final db = await DataBaseService().database;

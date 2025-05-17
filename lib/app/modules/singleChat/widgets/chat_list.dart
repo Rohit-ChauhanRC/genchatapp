@@ -176,6 +176,7 @@ class ChatList extends StatelessWidget {
                                       .scrollToOriginalMessage(
                                           messages.messageRepliedOnId!),
                                   isHighlighted: isHighlighted,
+                            isForwarded: messages.isForwarded!,
                                 )
                               : SenderMessageCard(
                                   message: messages.messageType == MessageType.text ||
@@ -219,7 +220,9 @@ class ChatList extends StatelessWidget {
                                           : singleChatController.receiverUserData!.localName
                                       : "username",
                                   onReplyTap: () => singleChatController.scrollToOriginalMessage(messages.messageRepliedOnId!),
-                                  isHighlighted: isHighlighted),
+                                  isHighlighted: isHighlighted,
+                                  isForwarded: messages.isForwarded!
+                          ),
                         );
                       }),
                     );

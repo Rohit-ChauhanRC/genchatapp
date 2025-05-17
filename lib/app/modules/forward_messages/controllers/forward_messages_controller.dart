@@ -132,7 +132,7 @@ class ForwardMessagesController extends GetxController {
           createdAt: timeSent.toString(),
           senderPhoneNumber: senderuserData?.phoneNumber,
           messageType: msg.messageType,
-          isForwarded: true,
+          isForwarded: msg.senderId == senderuserData?.userId ?false: true,
           isRepliedMessage: false,
           messageRepliedOnId: 0,
           messageRepliedOn: '',
@@ -148,6 +148,7 @@ class ForwardMessagesController extends GetxController {
 
         await MessageTable().insertMessage(forwardMessage).then((onValue) {
           Future.delayed(Durations.medium4);
+          socketService.saveChatContacts(forwardMessage);
           if (socketService.isConnected) {
             // _sendingMessageIds.add(clientSystemMessageId);
             socketService.sendMessage(forwardMessage);

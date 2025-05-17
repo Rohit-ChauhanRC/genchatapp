@@ -48,16 +48,17 @@ class SocketService extends GetxService {
           .setQuery({'userId': userId})
           .build(),
     );
-    _registerSocketListeners(onConnected);
+    _registerSocketListeners(onConnected, userId);
     _socket?.connect();
     print('🔌 Socket initialized');
   }
 
-  void _registerSocketListeners(Function()? onConnected) {
+  void _registerSocketListeners(Function()? onConnected, String userId, ) {
     _socket?.onConnect((_) async {
       print('✅ Socket connected');
       // _isConnected.value = true;
       await retryPendingDeletions();
+      await syncPendingMessages(loginUserId: int.parse(userId));
       onConnected?.call();
     });
 
@@ -75,7 +76,7 @@ class SocketService extends GetxService {
     _socket?.onReconnect((_) {
       print('Socket reconnection.');
       _clearSocketListeners();
-      _registerSocketListeners(onConnected);
+      _registerSocketListeners(onConnected,userId);
     });
 
     // Add your custom events here
@@ -223,6 +224,13 @@ class SocketService extends GetxService {
                 uid: msg!.recipientId.toString(),
                 lastMessage: newLast.message,
                 timeSent: newLast.clientSystemMessageId,
+              );
+            } else {
+              // Optional: reset chat contact if all messages deleted
+              await chatConectTable.updateContact(
+                uid: msg!.recipientId.toString(),
+                lastMessage: '',
+                timeSent: '',
               );
             }
           }
@@ -381,6 +389,12 @@ class SocketService extends GetxService {
     }
   }
 
+  Future<void> syncPendingMessages({required int loginUserId}) async{
+    final dbMessages = await messageTable.fetchAllPendingMessages(loginUserId: loginUserId);
+    for(final msg in dbMessages){
+      sendMessageSync(msg);
+    }
+  }
   void _clearSocketListeners() {
     _socket?.clearListeners();
     // _socket?.off('message-event');

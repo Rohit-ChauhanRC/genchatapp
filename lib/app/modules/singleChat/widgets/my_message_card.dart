@@ -3,6 +3,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_text_image_gif.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 import '../../../config/theme/app_colors.dart';
@@ -19,6 +20,7 @@ class MyMessageCard extends StatelessWidget {
   final String? repliedUserName;
   final VoidCallback? onReplyTap;
   final bool? isHighlighted;
+  final bool isForwarded;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -33,6 +35,7 @@ class MyMessageCard extends StatelessWidget {
     this.repliedUserName,
     this.onReplyTap,
     this.isHighlighted = false,
+    this.isForwarded =false,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -82,6 +85,19 @@ class MyMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+
+                          isForwarded ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor,size: 18,),
+                              SizedBox(width: 10,),
+                              Text("Forwarded",style: TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.greyMsgColor)),
+                            ],
+                          ) :  SizedBox.shrink(),
                         Obx(() {
                           final replyText = repliedText.value.trim();
                           final hasReply = replyText.isNotEmpty &&

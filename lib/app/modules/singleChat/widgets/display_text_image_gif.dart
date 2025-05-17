@@ -36,7 +36,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     // print("FullFolderPath:--------->${rootFolderPath+message}");
     return type == MessageType.text || type == MessageType.deleted
         ? SelectableText(
-            message,
+        type ==   MessageType.text?  singleChatController.encryptionService.decryptText(message): message,
             maxLines: isReply == true ?2: null,
             style: TextStyle(
                 fontSize: 16,

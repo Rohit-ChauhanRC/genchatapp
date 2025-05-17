@@ -60,7 +60,8 @@ class MessageReplyPreview extends StatelessWidget {
           Obx(
             () => singleChatController.messageReply.message != null
                 ? DisplayTextImageGIF(
-                    message: singleChatController.messageReply.message!,
+                    message: 
+                        singleChatController.messageReply.message.toString(),
                     type: singleChatController.messageReply.messageType!,
               isReply: true,
                   )

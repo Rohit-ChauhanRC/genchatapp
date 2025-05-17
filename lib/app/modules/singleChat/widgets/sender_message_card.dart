@@ -85,7 +85,7 @@ class SenderMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        isForwarded ? Row(
+                        type != MessageType.deleted && isForwarded ? Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor,size: 18,),

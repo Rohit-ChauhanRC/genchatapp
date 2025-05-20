@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 
@@ -14,6 +14,7 @@ class UpdatesView extends GetView<UpdatesController> {
       appBar: AppBar(
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
+        centerTitle: false,
         title: const Text(
           'Updates',
           style: TextStyle(

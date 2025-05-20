@@ -1,5 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/widgets/gradientContainer.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -51,17 +52,21 @@ class OtpView extends GetView<OtpController> {
                     text: TextSpan(children: [
                       TextSpan(
                           text:
-                              "Waiting to automatically detect an SMS sent to ${controller.mobileNumber}",
+                              "Waiting to automatically detect an SMS sent to   +${controller.countryCode} ${controller.mobileNumber}",
                           style: const TextStyle(
                               color: blackColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w400)),
-                      const TextSpan(
+                      TextSpan(
                           text: " Wrong Number?",
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: textBarColor,
                               fontSize: 14,
-                              fontWeight: FontWeight.w400))
+                              fontWeight: FontWeight.w400),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Get.back();
+                            })
                     ]),
                   ),
                   const SizedBox(
@@ -110,17 +115,17 @@ class OtpView extends GetView<OtpController> {
                         )
                       ],
                       onCompleted: (v) async {
-                        debugPrint("Completed $v");
+                        // debugPrint("Completed $v");
                         if (v.length == 4) {
                           await controller.login();
                         }
                       },
                       onChanged: (val) async {
-                        debugPrint(val);
+                        // debugPrint(val);
                         controller.otp = val;
                       },
                       beforeTextPaste: (text) {
-                        debugPrint("Allowing to paste $text");
+                        // debugPrint("Allowing to paste $text");
                         return true;
                       },
                     ),

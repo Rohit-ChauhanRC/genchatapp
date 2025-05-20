@@ -6,12 +6,18 @@ import '../modules/chats/bindings/chats_binding.dart';
 import '../modules/chats/views/chats_view.dart';
 import '../modules/createProfile/bindings/create_profile_binding.dart';
 import '../modules/createProfile/views/create_profile_view.dart';
+import '../modules/forward_messages/bindings/forward_messages_binding.dart';
+import '../modules/forward_messages/views/forward_messages_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/landing/bindings/landing_binding.dart';
 import '../modules/landing/views/landing_view.dart';
 import '../modules/otp/bindings/otp_binding.dart';
 import '../modules/otp/views/otp_view.dart';
+import '../modules/select_contacts/bindings/select_contacts_binding.dart';
+import '../modules/select_contacts/views/select_contacts_view.dart';
+import '../modules/settings/bindings/settings_binding.dart';
+import '../modules/settings/views/settings_view.dart';
 import '../modules/singleChat/bindings/single_chat_binding.dart';
 import '../modules/singleChat/views/single_chat_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
@@ -77,6 +83,21 @@ class AppPages {
       name: _Paths.SINGLE_CHAT,
       page: () => const SingleChatView(),
       binding: SingleChatBinding(),
+    ),
+    GetPage(
+      name: _Paths.SELECT_CONTACTS,
+      page: () => const SelectContactsView(),
+      binding: SelectContactsBinding(),
+    ),
+    GetPage(
+      name: _Paths.SETTINGS,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.FORWARD_MESSAGES,
+      page: () => const ForwardMessagesView(),
+      binding: ForwardMessagesBinding(),
     ),
   ];
 }

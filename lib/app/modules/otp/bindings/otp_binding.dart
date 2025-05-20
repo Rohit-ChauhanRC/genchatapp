@@ -6,7 +6,7 @@ class OtpBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<OtpController>(
-      () => OtpController(),
+      () => OtpController(authRepository: Get.find()),
     );
   }
 }

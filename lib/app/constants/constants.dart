@@ -1,7 +1,7 @@
-const appName = "GenChatApp";
+const appName = "GenChat";
 const poweredBy = "Powered by";
 const genmak = "Genmak";
-const welcomeToGenchat = "Welcome to Genchatapp";
+const welcomeToGenchat = "WELCOME TO GENCHAT";
 const tapAgreeAndContinue = "Tap 'Agree and continue' to accept the";
 const genmakTermsOfServices = " Genmak Terms of\nService and Privacy Policy";
 const agreeAndContinue = "AGREE AND CONTINUE";
@@ -15,6 +15,8 @@ const createYurProfile = "Create your profile";
 const next = "NEXT";
 const newGroup = "New Group";
 const settings = "Settings";
+const clearText = "Clear chat text";
+const logout = "Logout";
 
 //Shared preferences Keys Names
 const isNumVerify = "isNumberVerified";
@@ -22,3 +24,9 @@ const userUId = "userUId";
 const userMob = "userMob";
 const createUserProfile = "createUserProfile";
 const usersDb = "usersDb";
+const userDetail = "userDetail";
+const contactsDb = "contactsDb";
+const messageTable = "messageTable";
+const deleteQueueTable = "deletion_queue";
+const contactsSynced = "contactsSynced";
+const chatConnectTable = "chatConnectTable";

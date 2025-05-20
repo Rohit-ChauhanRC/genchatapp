@@ -1,0 +1,2 @@
+/Users/genmak/Documents/genchat/genchatapp/android/app/.cxx/RelWithDebInfo/z305z452/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/genmak/Documents/genchat/genchatapp/android/app/.cxx/RelWithDebInfo/z305z452/arm64-v8a/CMakeFiles/rebuild_cache.dir

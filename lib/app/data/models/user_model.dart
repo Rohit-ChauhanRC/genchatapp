@@ -1,84 +1,72 @@
-import 'dart:convert';
+// // To parse this JSON data, do
+// //
+// //     final userModel = userModelFromJson(jsonString);
 
-class UserModel {
-  final String uid;
-  final String email;
-  final String name;
-  final String profilePic;
-  final bool isOnline;
-  final String phoneNumber;
-  final List<String> groupId;
-  final String lastSeen;
-  final String fcmToken;
+// import 'package:equatable/equatable.dart';
+// import 'package:meta/meta.dart';
+// import 'dart:convert';
 
-  UserModel({
-    required this.name,
-    required this.uid,
-    required this.profilePic,
-    required this.isOnline,
-    required this.phoneNumber,
-    required this.groupId,
-    required this.email,
-    required this.lastSeen,
-    required this.fcmToken,
-  });
+// UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'name': name,
-      'uid': uid,
-      'profilePic': profilePic,
-      'isOnline': isOnline,
-      'phoneNumber': phoneNumber,
-      'groupId': groupId,
-      'email': email,
-      'lastSeen': lastSeen,
-      'fcmToken': fcmToken,
-    };
-  }
+// String userModelToJson(UserModel data) => json.encode(data.toJson());
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      name: map['name'] as String,
-      uid: map['uid'] as String,
-      profilePic: map['profilePic'] as String,
-      isOnline: map['isOnline'] as bool,
-      phoneNumber: map['phoneNumber'] as String,
-      fcmToken: map['fcmToken'] as String,
-      lastSeen: map['lastSeen'] as String,
-      email: map['email'] as String,
-      groupId: List<String>.from(
-        (map['groupId'] as List),
-      ),
-    );
-  }
+// class UserModel extends Equatable {
+//   String? name;
+//   String? uid;
+//   String? profilePic;
+//   bool? isOnline;
+//   String? phoneNumber;
+//   List<dynamic>? groupId;
+//   String? email;
+//   String? lastSeen;
+//   String? fcmToken;
 
-  String toJson() => json.encode(toMap());
+//   UserModel({
+//     this.name,
+//     this.uid,
+//     this.profilePic,
+//     this.isOnline,
+//     this.phoneNumber,
+//     this.groupId,
+//     this.email,
+//     this.lastSeen,
+//     this.fcmToken,
+//   });
 
-  factory UserModel.fromJson(String source) =>
-      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
+//   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+//         name: json["name"],
+//         uid: json["uid"],
+//         profilePic: json["profilePic"],
+//         isOnline: json["isOnline"],
+//         phoneNumber: json["phoneNumber"],
+//         groupId: List<dynamic>.from(json["groupId"].map((x) => x)),
+//         email: json["email"],
+//         lastSeen: json["lastSeen"],
+//         fcmToken: json["fcmToken"],
+//       );
 
-  UserModel copyWith({
-    String? name,
-    String? uid,
-    String? profilePic,
-    bool? isOnline,
-    String? phoneNumber,
-    String? email,
-    String? lastSeen,
-    String? fcmToken,
-    List<String>? groupId,
-  }) {
-    return UserModel(
-      name: name ?? this.name,
-      uid: uid ?? this.uid,
-      profilePic: profilePic ?? this.profilePic,
-      isOnline: isOnline ?? this.isOnline,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      groupId: groupId ?? this.groupId,
-      email: email ?? this.email,
-      lastSeen: lastSeen ?? this.lastSeen,
-      fcmToken: fcmToken ?? this.fcmToken,
-    );
-  }
-}
+//   Map<String, dynamic> toJson() => {
+//         "name": name,
+//         "uid": uid,
+//         "profilePic": profilePic,
+//         "isOnline": isOnline,
+//         "phoneNumber": phoneNumber,
+//         "groupId": List<dynamic>.from(groupId!.map((x) => x)),
+//         "email": email,
+//         "lastSeen": lastSeen,
+//         "fcmToken": fcmToken,
+//       };
+
+//   @override
+//   List<Object?> get props => [
+//         name,
+//         uid,
+//         profilePic,
+//         isOnline,
+//         phoneNumber,
+//         groupId,
+//         email,
+//         lastSeen,
+//         fcmToken
+//       ];
+// }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import '../../../constants/colors.dart';
 import '../../../constants/constants.dart';
-import '../../../widgets/gradientContainer.dart';
 import '../controllers/splash_controller.dart';
 
 class SplashView extends GetView<SplashController> {

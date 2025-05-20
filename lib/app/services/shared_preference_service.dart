@@ -1,9 +1,22 @@
+import 'dart:convert';
+
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/models/user_model.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SharedPreferenceService{
+import '../data/local_database/local_database.dart';
+import '../routes/app_pages.dart';
+
+class SharedPreferenceService {
   late SharedPreferences _prefs;
 
-  Future<void> init() async{
+  final DataBaseService db = Get.find<DataBaseService>();
+
+  Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
 
@@ -46,6 +59,33 @@ class SharedPreferenceService{
 
   // Clear all preferences
   Future<void> clear() async {
+    await remove(UserDefaultsKeys.userDetail);
+    await remove(UserDefaultsKeys.accessToken);
+    await remove(UserDefaultsKeys.refreshToken);
+    await remove(UserDefaultsKeys.userId);
+    await remove(UserDefaultsKeys.isNumVerify);
+    await remove(UserDefaultsKeys.createUserProfile);
+    await remove(UserDefaultsKeys.userMobileNum);
+    await remove(UserDefaultsKeys.permissionAsked);
     await _prefs.clear();
+    await _prefs.reload();
+  }
+
+  UserData? getUserData() {
+    if (getString(UserDefaultsKeys.userDetail) == null ||
+        getString(UserDefaultsKeys.userDetail) == "") {
+      // print(
+      //     "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
+      db.closeDb();
+      clear();
+      Get.offAllNamed(Routes.LANDING);
+      return null;
+    } else {
+      // print("UserExits:--------> ${getString(UserDefaultsKeys.userDetail)}");
+      UserData user =
+          userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
+      // print("UserDetails:------> ${json.decode(getString(UserDefaultsKeys.userDetail) ?? "")}");
+      return user;
+    }
   }
 }

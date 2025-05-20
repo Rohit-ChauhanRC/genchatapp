@@ -223,6 +223,7 @@ class SocketService extends GetxService {
                 msg?.recipientId ?? 0, msg?.senderId ?? 0);
             if (newLast != null) {
               await chatConectTable.updateContact(
+                lastMessageId: newLast.messageId,
                 uid: msg!.recipientId.toString(),
                 lastMessage: newLast.message,
                 timeSent: newLast.clientSystemMessageId,

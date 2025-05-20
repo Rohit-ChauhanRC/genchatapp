@@ -209,8 +209,8 @@ class SocketService extends GetxService {
 
           if (isLast) {
             await chatConectTable.updateContact(
+              uid: msg!.senderId.toString(),
               lastMessageId: 0,
-              uid: msg!.recipientId.toString(),
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
             );

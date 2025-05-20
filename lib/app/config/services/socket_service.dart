@@ -110,6 +110,7 @@ class SocketService extends GetxService {
             assetServerName: data["assetServerName"] ?? '',
             assetUrl: data["assetUrl"] ?? '',
             isForwarded: data["isForwarded"] ?? false,
+            forwardedMessageId: data['forwardedMessageId'] ?? 0,
             messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
 
         messageTable.insertMessage(newMessage);
@@ -208,6 +209,7 @@ class SocketService extends GetxService {
 
           if (isLast) {
             await chatConectTable.updateContact(
+              lastMessageId: 0,
               uid: msg!.recipientId.toString(),
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
@@ -228,6 +230,7 @@ class SocketService extends GetxService {
             } else {
               // Optional: reset chat contact if all messages deleted
               await chatConectTable.updateContact(
+                lastMessageId: 0,
                 uid: msg!.recipientId.toString(),
                 lastMessage: '',
                 timeSent: '',
@@ -317,6 +320,7 @@ class SocketService extends GetxService {
         await chatConectTable.updateContact(
           uid: user.userId.toString(),
           lastMessage: data.message,
+          lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: user.displayPictureUrl,
           name: user.localName,
@@ -324,6 +328,7 @@ class SocketService extends GetxService {
       } else {
         await chatConectTable.insert(
           contact: ChatConntactModel(
+            lastMessageId:data.messageId,
             contactId: user.userId.toString(),
             lastMessage: data.message,
             name: user.localName,
@@ -346,6 +351,7 @@ class SocketService extends GetxService {
         await chatConectTable.updateContact(
           uid: fallbackUid.toString(),
           lastMessage: data.message,
+          lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: '', // or a default avatar
           name: fallbackName,
@@ -354,6 +360,7 @@ class SocketService extends GetxService {
         await chatConectTable.insert(
           contact: ChatConntactModel(
             contactId: fallbackUid.toString(),
+            lastMessageId: data.messageId,
             lastMessage: data.message,
             name: fallbackName,
             profilePic: '',

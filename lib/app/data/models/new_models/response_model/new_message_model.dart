@@ -18,6 +18,7 @@ class NewMessageModel extends Equatable {
   final String? senderPhoneNumber;
   final MessageType? messageType;
   final bool? isForwarded;
+  final int? forwardedMessageId;
   final bool? isRepliedMessage;
   final int? messageRepliedOnId;
   final String? messageRepliedOn;
@@ -43,6 +44,7 @@ class NewMessageModel extends Equatable {
     this.senderPhoneNumber,
     this.messageType,
     this.isForwarded,
+    this.forwardedMessageId,
     this.isRepliedMessage,
     this.messageRepliedOnId,
     this.messageRepliedOn,
@@ -77,6 +79,7 @@ class NewMessageModel extends Equatable {
             ? MessageTypeExtension.fromValue(map['messageType'])
             : MessageType.text,
         isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
+        forwardedMessageId: map['forwardedMessageId'],
         isRepliedMessage:
             map['isRepliedMessage'] == 1 || map['isRepliedMessage'] == true,
         messageRepliedOnId: map['messageRepliedOnId'],
@@ -105,6 +108,7 @@ class NewMessageModel extends Equatable {
       'senderPhoneNumber': senderPhoneNumber,
       'messageType': messageType?.value,
       'isForwarded': isForwarded == true ? 1 : 0,
+      'forwardedMessageId': forwardedMessageId,
       'isRepliedMessage': isRepliedMessage == true ? 1 : 0,
       'messageRepliedOnId': messageRepliedOnId ?? 0,
       'messageRepliedOn': messageRepliedOn ?? '',
@@ -130,6 +134,7 @@ class NewMessageModel extends Equatable {
     String? senderPhoneNumber,
     MessageType? messageType,
     bool? isForwarded,
+    int? forwardedMessageId,
     bool? isRepliedMessage,
     int? messageRepliedOnId,
     String? messageRepliedOn,
@@ -155,6 +160,7 @@ class NewMessageModel extends Equatable {
         senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
         messageType: messageType ?? this.messageType,
         isForwarded: isForwarded ?? this.isForwarded,
+        forwardedMessageId: forwardedMessageId ?? this.forwardedMessageId,
         isRepliedMessage: isRepliedMessage ?? this.isRepliedMessage,
         messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
         messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,

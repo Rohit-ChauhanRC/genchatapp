@@ -108,9 +108,15 @@ class ForwardMessagesController extends GetxController {
   }
 
   void toggleSelection(int userId) {
-    selectedUserIds.contains(userId)
-        ? selectedUserIds.remove(userId)
-        : selectedUserIds.add(userId);
+    if(selectedUserIds.contains(userId)){
+      selectedUserIds.remove(userId);
+    } else{
+      if (selectedUserIds.length >= 5) {
+        showAlertMessage("You can only share with up to 5 chats.");
+        return;
+      }
+      selectedUserIds.add(userId);
+    }
   }
 
   Future<void> forwardMessages() async{
@@ -133,6 +139,7 @@ class ForwardMessagesController extends GetxController {
           senderPhoneNumber: senderuserData?.phoneNumber,
           messageType: msg.messageType,
           isForwarded: msg.senderId == senderuserData?.userId ?false: true,
+          forwardedMessageId: msg.messageId,
           isRepliedMessage: false,
           messageRepliedOnId: 0,
           messageRepliedOn: '',

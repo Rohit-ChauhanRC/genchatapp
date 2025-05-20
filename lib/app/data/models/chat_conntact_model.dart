@@ -10,6 +10,7 @@ class ChatConntactModel extends Equatable {
   final String? lastMessage;
   final String? uid;
   final int? unreadCount;
+  final int? lastMessageId;
 
   const ChatConntactModel({
     this.name,
@@ -17,6 +18,7 @@ class ChatConntactModel extends Equatable {
     this.contactId,
     this.timeSent,
     this.lastMessage,
+    this.lastMessageId,
     this.uid,
     this.unreadCount = 0,
   });
@@ -28,6 +30,7 @@ class ChatConntactModel extends Equatable {
       'contactId': contactId,
       'timeSent': timeSent,
       'lastMessage': lastMessage,
+      'lastMessageId': lastMessageId,
       'uid': uid,
       "unreadCount": unreadCount,
     };
@@ -40,6 +43,7 @@ class ChatConntactModel extends Equatable {
         contactId: map['contactId'] as String,
         timeSent: map['timeSent'],
         lastMessage: map['lastMessage'] as String,
+        lastMessageId: map['lastMessageId'],
         uid: map['uid'] as String,
         unreadCount: map["unreadCount"]);
   }
@@ -55,6 +59,7 @@ class ChatConntactModel extends Equatable {
     final String? contactId,
     final String? timeSent,
     final String? lastMessage,
+    final int? lastMessageId,
     final String? uid,
     final int? unreadCount,
   }) {
@@ -65,11 +70,12 @@ class ChatConntactModel extends Equatable {
       timeSent: timeSent ?? this.timeSent,
       lastMessage: lastMessage ?? this.lastMessage,
       uid: uid ?? this.uid,
+      lastMessageId: lastMessageId ?? this.lastMessageId,
       unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 
   @override
   List<Object?> get props =>
-      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount];
+      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount, lastMessageId];
 }

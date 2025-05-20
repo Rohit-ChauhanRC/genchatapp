@@ -15,6 +15,7 @@ class ChatConectTable {
     "contactId" TEXT UNIQUE,
     "timeSent" TEXT,
     "lastMessage" TEXT,
+    "lastMessageId" INTEGER,
     "uid" TEXT UNIQUE,
     "unreadCount" Integer,
     PRIMARY KEY("id" AUTOINCREMENT)
@@ -64,6 +65,7 @@ class ChatConectTable {
 
   Future<void> updateContact({
     required String uid,
+    int? lastMessageId,
     String? profilePic,
     String? lastMessage,
     String? timeSent,
@@ -75,6 +77,7 @@ class ChatConectTable {
     final updatedValues = <String, dynamic>{};
     if (profilePic != null) updatedValues['profilePic'] = profilePic;
     if (lastMessage != null) updatedValues['lastMessage'] = lastMessage;
+    if (lastMessageId != null) updatedValues['lastMessageId'] = lastMessageId;
     if (timeSent != null) updatedValues['timeSent'] = timeSent;
     if (name != null) updatedValues['name'] = name;
     if (unreadCount != 0) updatedValues["unreadCount"] = unreadCount;

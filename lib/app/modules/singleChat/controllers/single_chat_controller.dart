@@ -390,6 +390,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       senderPhoneNumber: senderuserData?.phoneNumber,
       messageType: MessageType.text,
       isForwarded: false,
+      forwardedMessageId: 0,
       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
       messageRepliedOn: messageReply == null ? '' : messageReply.message,
@@ -532,6 +533,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
           if (isLast) {
             await ChatConectTable().updateContact(
+              lastMessageId: 0,
               uid: message.recipientId.toString(),
               lastMessage: "This message was deleted",
               timeSent: message.messageSentFromDeviceTime,
@@ -557,15 +559,26 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             final newLast = await MessageTable().getLatestMessageForUser(
                 message.recipientId!, message.senderId!);
             if (newLast != null) {
+              final isFromMe = newLast.senderId == senderuserData?.userId;
+              final contactUid = isFromMe
+                  ? newLast.recipientId.toString()
+                  : newLast.senderId.toString();
               await chatConectTable.updateContact(
-                uid: message.recipientId.toString(),
+                lastMessageId: newLast.messageId,
+                uid: contactUid,
                 lastMessage: newLast.message,
                 timeSent: newLast.messageSentFromDeviceTime,
               );
             } else {
+              // If no new message, still determine correct uid for contact
+              final isFromMe = message.senderId == senderuserData?.userId;
+              final contactUid = isFromMe
+                  ? message.recipientId.toString()
+                  : message.senderId.toString();
               // Optional: reset chat contact if all messages deleted
               await chatConectTable.updateContact(
-                uid: message.recipientId.toString(),
+                lastMessageId: 0,
+                uid: contactUid,
                 lastMessage: '',
                 timeSent: '',
               );
@@ -597,20 +610,25 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
-    // Allow only messages that are not deleted
-    final nonDeleted = selected
-        .where((msg) => msg.messageType != MessageType.deleted)
-        .toList();
+    // ❗ If even one selected message is deleted, disable forward
+    final hasDeleted = selected.any(
+          (msg) => msg.messageType == MessageType.deleted,
+    );
 
-    // Optional: limit total messages
-    if (nonDeleted.length > 30) {
+    if (hasDeleted) {
+      canForward = false;
+      return;
+    }
+
+    // Optional: limit total forwardable messages
+    if (selected.length > 30) {
       canForward = false;
       return;
     }
 
     // Optional: limit media messages
-    final mediaMessages = nonDeleted.where((msg) =>
-        msg.messageType == MessageType.image ||
+    final mediaMessages = selected.where((msg) =>
+    msg.messageType == MessageType.image ||
         msg.messageType == MessageType.video ||
         msg.messageType == MessageType.audio ||
         msg.messageType == MessageType.document ||

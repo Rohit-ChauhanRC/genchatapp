@@ -24,6 +24,7 @@ class MessageTable {
         senderPhoneNumber TEXT,
         messageType TEXT,
         isForwarded INTEGER,
+        forwardedMessageId INTEGER,
         isRepliedMessage INTEGER,
         messageRepliedOnId INTEGER,
         messageRepliedOn TEXT,

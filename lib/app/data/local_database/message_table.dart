@@ -76,6 +76,27 @@ class MessageTable {
     return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
 
+  Future<List<NewMessageModel>> fetchMessagesPaginated({
+    required int receiverId,
+    required int senderId,
+    required int limit,
+    required int offset
+
+  }) async{
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+      orderBy: 'messageSentFromDeviceTime ASC',
+      limit: limit,
+      offset: offset,
+    );
+
+    return result.map((map) => NewMessageModel.fromMap(map)).toList();
+  }
+
   // Insert a new message
   Future<void> insertMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;

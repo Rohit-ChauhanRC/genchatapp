@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../common/user_defaults/user_defaults_keys.dart';
+import '../../../data/local_database/local_database.dart';
 import '../../../data/models/new_models/response_model/verify_otp_response_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/alert_popup_utils.dart';
@@ -33,6 +34,7 @@ class CreateProfileController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final folder = Get.find<FolderCreation>();
+  final dbService = Get.find<DataBaseService>();
 
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
 
@@ -151,6 +153,13 @@ class CreateProfileController extends GetxController {
     photoUrl = userData?.displayPictureUrl ?? '';
 
     // print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
+    // ✅ Set up the database with the user-specific ID
+    if (userData?.userId != null) {
+      dbService.setUserId(userData!.userId.toString()); // Set before accessing DB
+      await dbService.database; // Ensures DB is initialized
+    } else {
+      print("⚠️ No user ID found, DB not initialized.");
+    }
   }
 
   Future<void> updateProfile() async {

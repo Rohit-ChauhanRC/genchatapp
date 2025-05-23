@@ -16,6 +16,7 @@ abstract class Routes {
   static const SELECT_CONTACTS = _Paths.SELECT_CONTACTS;
   static const SETTINGS = _Paths.SETTINGS;
   static const FORWARD_MESSAGES = _Paths.FORWARD_MESSAGES;
+  static const CHAT_BACKUP = _Paths.CHAT_BACKUP;
 }
 
 abstract class _Paths {
@@ -33,4 +34,5 @@ abstract class _Paths {
   static const SELECT_CONTACTS = '/select-contacts';
   static const SETTINGS = '/settings';
   static const FORWARD_MESSAGES = '/forward-messages';
+  static const CHAT_BACKUP = '/chat-backup';
 }

@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../modules/call/bindings/call_binding.dart';
 import '../modules/call/views/call_view.dart';
+import '../modules/chat_backup/bindings/chat_backup_binding.dart';
+import '../modules/chat_backup/views/chat_backup_view.dart';
 import '../modules/chats/bindings/chats_binding.dart';
 import '../modules/chats/views/chats_view.dart';
 import '../modules/createProfile/bindings/create_profile_binding.dart';
@@ -98,6 +100,11 @@ class AppPages {
       name: _Paths.FORWARD_MESSAGES,
       page: () => const ForwardMessagesView(),
       binding: ForwardMessagesBinding(),
+    ),
+    GetPage(
+      name: _Paths.CHAT_BACKUP,
+      page: () => const ChatBackupView(),
+      binding: ChatBackupBinding(),
     ),
   ];
 }

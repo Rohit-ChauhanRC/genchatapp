@@ -5,6 +5,7 @@ import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../constants/colors.dart';
 import '../../../constants/constants.dart';
@@ -103,33 +104,43 @@ class SettingsView extends GetView<SettingsController> {
                         height: 10,
                       ),
                       _settingsItemWidget(
-                          title: "Delete Account",
-                          description: "Your account will be deleted forever.",
-                          icon: Icons.delete_forever_rounded,
-                          onTap: () {}),
+                          title: "Chat backup",
+                          description: "Back up your chats to your local device storage.",
+                          icon: Symbols.backup_rounded,
+                          onTap: () {
+                            Get.toNamed(Routes.CHAT_BACKUP);
+                          }),
                       const SizedBox(
                         height: 10,
                       ),
                       _settingsItemWidget(
-                          title: "Logout",
-                          description: "You have to login again.",
-                          icon: Icons.logout_rounded,
-                          onTap: () async {
-                            showAlertMessageWithAction(
-                                title: "Confirm Logout?",
-                                message: "• Your chat history will be cleared from this phone\n"
-                                    "• You will be logged out from all GenChat groups\n"
-                                "• All locally stored data (chats, groups, media) will be deleted",
-                                confirmText: "Logout",
-                                cancelText: "Cancel",
-                                onConfirm: () async{
-                                  await controller.logout((){
-                                    Get.offAllNamed(Routes.LANDING);
-                                  });
-                                },
-                                context: context);
-
-                          }),
+                          title: "Delete Account",
+                          description: "Your account will be deleted forever.",
+                          icon: Symbols.delete_forever_rounded,
+                          onTap: () {}),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      // _settingsItemWidget(
+                      //     title: "Logout",
+                      //     description: "You have to login again.",
+                      //     icon: Icons.logout_rounded,
+                      //     onTap: () async {
+                      //       showAlertMessageWithAction(
+                      //           title: "Confirm Logout?",
+                      //           message: "• Your chat history will be cleared from this phone\n"
+                      //               "• You will be logged out from all GenChat groups\n"
+                      //           "• All locally stored data (chats, groups, media) will be deleted",
+                      //           confirmText: "Logout",
+                      //           cancelText: "Cancel",
+                      //           onConfirm: () async{
+                      //             await controller.logout((){
+                      //               Get.offAllNamed(Routes.LANDING);
+                      //             });
+                      //           },
+                      //           context: context);
+                      //
+                      //     }),
                     ],
                   ),
                 ),

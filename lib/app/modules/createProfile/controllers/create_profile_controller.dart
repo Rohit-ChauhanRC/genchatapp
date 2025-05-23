@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
@@ -11,6 +9,7 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../main.dart';
 import '../../../common/user_defaults/user_defaults_keys.dart';
 import '../../../data/local_database/local_database.dart';
 import '../../../data/models/new_models/response_model/verify_otp_response_model.dart';
@@ -64,7 +63,6 @@ class CreateProfileController extends GetxController {
   final TextEditingController profileNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
-
   @override
   void onInit() {
     super.onInit();
@@ -86,9 +84,10 @@ class CreateProfileController extends GetxController {
     _email.close();
   }
 
-
-  Future<void> _checkAndRequestStoragePermissionOnce() async{
-    bool alreadyAsked = sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ?? false;
+  Future<void> _checkAndRequestStoragePermissionOnce() async {
+    bool alreadyAsked =
+        sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ??
+            false;
 
     if (!alreadyAsked) {
       // Delay to let UI build before showing dialog
@@ -98,21 +97,29 @@ class CreateProfileController extends GetxController {
         WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
-            title: Text("Contacts and Media", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-            content: const Text("To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo"
-                " and other media.", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+            title: Text(
+              "Contacts and Media",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            content: const Text(
+                "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo"
+                " and other media.",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
             actions: [
               TextButton(
                 onPressed: () async {
                   Get.back(); // Close dialog
                   final status = await Permission.storage.request();
-                  final statusAndroid = await Permission.manageExternalStorage.request();
-          
+                  final statusAndroid =
+                      await Permission.manageExternalStorage.request();
+
                   if (status.isGranted || statusAndroid.isGranted) {
-                    await folder.createAppFolderStructure(); // 👈 your existing method
+                    await folder
+                        .createAppFolderStructure(); // 👈 your existing method
                   }
-          
-                  sharedPreferenceService.setBool(UserDefaultsKeys.permissionAsked, true);
+
+                  sharedPreferenceService.setBool(
+                      UserDefaultsKeys.permissionAsked, true);
                 },
                 child: const Text("Continue"),
               ),
@@ -155,7 +162,8 @@ class CreateProfileController extends GetxController {
     // print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
     // ✅ Set up the database with the user-specific ID
     if (userData?.userId != null) {
-      dbService.setUserId(userData!.userId.toString()); // Set before accessing DB
+      dbService
+          .setUserId(userData!.userId.toString()); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized
     } else {
       print("⚠️ No user ID found, DB not initialized.");
@@ -203,7 +211,8 @@ class CreateProfileController extends GetxController {
       final emailChanged = emailController.text.trim() != storedUserData?.email;
 
       if (!nameChanged && !emailChanged) {
-        navigateBack();
+        // navigateBack();
+        checkAndPromptForBackup();
         return;
       }
 
@@ -226,7 +235,8 @@ class CreateProfileController extends GetxController {
           }
 
           showAlertMessage('Profile updated successfully!');
-          navigateBack();
+          // navigateBack();
+          checkAndPromptForBackup();
         } else {
           showAlertMessage('Failed to update profile.');
         }
@@ -252,6 +262,36 @@ class CreateProfileController extends GetxController {
       sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
       sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
       Get.offAllNamed(Routes.HOME);
+    }
+  }
+
+  Future<void> checkAndPromptForBackup() async {
+    final hasBackup = await dbService.hasBackup();
+    if (hasBackup && !isFromInsideApp) {
+      showAlertMessageWithAction(
+          title: "Backup Found",
+          message:
+              "A backup exists for this user. Would you like to restore it?",
+          cancelText: "Skip",
+          confirmText: "Restore",
+          showCancel: true,
+          onCancel: () {
+            Get.back();
+          },
+          onConfirm: () async {
+            Get.back();
+            try {
+              await dbService.restoreDatabase();
+              showAlertMessage("Backup restored successfully.");
+            } catch (e) {
+              showAlertMessage("Failed to restore backup.");
+            }finally {
+              navigateBack();  // ✅ Move ahead after restore (success or fail)
+            }
+          },
+          context: navigatorKey.currentContext!);
+    }else{
+      navigateBack();
     }
   }
 }

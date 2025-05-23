@@ -9,6 +9,9 @@ import 'chatconnect_table.dart';
 import 'contacts_table.dart';
 import 'message_table.dart';
 
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
+
 class DataBaseService {
   Database? _database;
   final FolderCreation folderCreation = Get.find<FolderCreation>();
@@ -93,4 +96,55 @@ class DataBaseService {
     await ChatConectTable().deleteTable();
     await MessageTable().deleteQueueMessageTable();
   }
+}
+
+
+
+extension BackupRestore on DataBaseService {
+
+  /// Backup the database file to external storage
+  Future<void> backupDatabase() async {
+    if (_userId == null) throw Exception("User ID not set.");
+
+    final permissionGranted = await Permission.manageExternalStorage.request();
+    if (!permissionGranted.isGranted) {
+      throw Exception("Storage permission not granted");
+    }
+
+    final sourcePath = await fullPath;
+    final backupDir = Directory('/storage/emulated/0/GenChatBackup');
+    if (!await backupDir.exists()) await backupDir.create(recursive: true);
+
+    final backupPath = '${backupDir.path}/genchat_$_userId.db';
+    final dbFile = File(sourcePath);
+
+    if (await dbFile.exists()) {
+      await dbFile.copy(backupPath);
+    } else {
+      throw Exception("Database file does not exist.");
+    }
+  }
+
+  /// Restore the database file from backup
+  Future<void> restoreDatabase() async {
+    if (_userId == null) throw Exception("User ID not set.");
+
+    final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
+    final sourcePath = await fullPath;
+    final backupFile = File(backupPath);
+
+    if (!await backupFile.exists()) {
+      throw Exception("No backup found for user $_userId.");
+    }
+
+    await closeDb(); // Important: close connection before overwriting
+    await File(sourcePath).writeAsBytes(await backupFile.readAsBytes());
+  }
+
+  Future<bool> hasBackup() async {
+    if (_userId == null) return false;
+    final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
+    return File(backupPath).exists();
+  }
+
 }

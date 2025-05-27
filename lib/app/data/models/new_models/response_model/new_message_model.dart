@@ -28,8 +28,9 @@ class NewMessageModel extends Equatable {
   final String? assetServerName;
   final String? assetUrl;
   final int? messageRepliedUserId;
-    final BuildContext? context;
-     final GlobalKey? keys;
+  final BuildContext? context;
+  final GlobalKey? keys;
+  final bool? showForwarded;
 
   NewMessageModel({
     this.messageId,
@@ -54,44 +55,48 @@ class NewMessageModel extends Equatable {
     this.assetServerName,
     this.assetUrl,
     this.messageRepliedUserId,
-  }) : context = Get.context, keys = GlobalKey();
+    this.showForwarded,
+  })  : context = Get.context,
+        keys = GlobalKey();
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
     // assert(map['messageId'] != null, "messageId cannot be null");
     // assert(map['senderId'] != null, "senderId cannot be null");
     // assert(map['recipientId'] != null, "recipientId cannot be null");
     return NewMessageModel(
-        messageId: map['messageId'],
-        clientSystemMessageId: map['clientSystemMessageId'],
-        senderId: map['senderId'],
-        recipientId: map['recipientId'],
-        message: map['message'],
-        state: map['state'] != null
-            ? MessageStateExtension.fromValue(map['state'])
-            : MessageState.sent,
-        messageSentFromDeviceTime: map['messageSentFromDeviceTime'],
-        createdAt: map['createdAt'],
-        syncStatus: map['syncStatus'] != null
-            ? SyncStatusExtension.fromValue(map['syncStatus'])
-            : SyncStatus.synced,
-        senderPhoneNumber: map['senderPhoneNumber'] ?? '',
-        messageType: map['messageType'] != null
-            ? MessageTypeExtension.fromValue(map['messageType'])
-            : MessageType.text,
-        isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
-        forwardedMessageId: map['forwardedMessageId'],
-        isRepliedMessage:
-            map['isRepliedMessage'] == 1 || map['isRepliedMessage'] == true,
-        messageRepliedOnId: map['messageRepliedOnId'],
-        messageRepliedOn: map['messageRepliedOn'] ?? '',
-        messageRepliedOnType: map['messageRepliedOnType'] != null
-            ? MessageTypeExtension.fromValue(map['messageRepliedOnType'])
-            : null,
-        isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
-        assetOriginalName: map['assetOriginalName'] ?? '',
-        assetServerName: map['assetServerName'] ?? '',
-        assetUrl: map['assetUrl'] ?? '',
-        messageRepliedUserId: map['messageRepliedUserId']);
+      messageId: map['messageId'],
+      clientSystemMessageId: map['clientSystemMessageId'],
+      senderId: map['senderId'],
+      recipientId: map['recipientId'],
+      message: map['message'],
+      state: map['state'] != null
+          ? MessageStateExtension.fromValue(map['state'])
+          : MessageState.sent,
+      messageSentFromDeviceTime: map['messageSentFromDeviceTime'],
+      createdAt: map['createdAt'],
+      syncStatus: map['syncStatus'] != null
+          ? SyncStatusExtension.fromValue(map['syncStatus'])
+          : SyncStatus.synced,
+      senderPhoneNumber: map['senderPhoneNumber'] ?? '',
+      messageType: map['messageType'] != null
+          ? MessageTypeExtension.fromValue(map['messageType'])
+          : MessageType.text,
+      isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
+      showForwarded: map['showForwarded'] == 1 || map['showForwarded'] == true,
+      forwardedMessageId: map['forwardedMessageId'],
+      isRepliedMessage:
+          map['isRepliedMessage'] == 1 || map['isRepliedMessage'] == true,
+      messageRepliedOnId: map['messageRepliedOnId'],
+      messageRepliedOn: map['messageRepliedOn'] ?? '',
+      messageRepliedOnType: map['messageRepliedOnType'] != null
+          ? MessageTypeExtension.fromValue(map['messageRepliedOnType'])
+          : null,
+      isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
+      assetOriginalName: map['assetOriginalName'] ?? '',
+      assetServerName: map['assetServerName'] ?? '',
+      assetUrl: map['assetUrl'] ?? '',
+      messageRepliedUserId: map['messageRepliedUserId'],
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -117,7 +122,8 @@ class NewMessageModel extends Equatable {
       'assetOriginalName': assetOriginalName,
       'assetServerName': assetServerName,
       'assetUrl': assetUrl,
-      'messageRepliedUserId': messageRepliedUserId
+      'messageRepliedUserId': messageRepliedUserId,
+      'showForwarded': showForwarded == true ? 1 : 0,
     };
   }
 
@@ -144,32 +150,35 @@ class NewMessageModel extends Equatable {
     String? assetServerName,
     String? assetUrl,
     int? messageRepliedUserId,
+    bool? showForwarded,
   }) {
     return NewMessageModel(
-        clientSystemMessageId:
-            clientSystemMessageId ?? this.clientSystemMessageId,
-        message: message ?? this.message,
-        messageId: messageId ?? this.messageId,
-        senderId: senderId ?? this.senderId,
-        recipientId: recipientId ?? this.recipientId,
-        state: state ?? this.state,
-        messageSentFromDeviceTime:
-            messageSentFromDeviceTime ?? this.messageSentFromDeviceTime,
-        createdAt: createdAt ?? this.createdAt,
-        syncStatus: syncStatus ?? this.syncStatus,
-        senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
-        messageType: messageType ?? this.messageType,
-        isForwarded: isForwarded ?? this.isForwarded,
-        forwardedMessageId: forwardedMessageId ?? this.forwardedMessageId,
-        isRepliedMessage: isRepliedMessage ?? this.isRepliedMessage,
-        messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
-        messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
-        messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
-        isAsset: isAsset ?? this.isAsset,
-        assetOriginalName: assetOriginalName ?? this.assetOriginalName,
-        assetServerName: assetServerName ?? this.assetServerName,
-        assetUrl: assetUrl ?? this.assetUrl,
-        messageRepliedUserId: messageRepliedUserId ?? this.messageRepliedUserId);
+      clientSystemMessageId:
+          clientSystemMessageId ?? this.clientSystemMessageId,
+      message: message ?? this.message,
+      messageId: messageId ?? this.messageId,
+      senderId: senderId ?? this.senderId,
+      recipientId: recipientId ?? this.recipientId,
+      state: state ?? this.state,
+      messageSentFromDeviceTime:
+          messageSentFromDeviceTime ?? this.messageSentFromDeviceTime,
+      createdAt: createdAt ?? this.createdAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
+      messageType: messageType ?? this.messageType,
+      isForwarded: isForwarded ?? this.isForwarded,
+      forwardedMessageId: forwardedMessageId ?? this.forwardedMessageId,
+      isRepliedMessage: isRepliedMessage ?? this.isRepliedMessage,
+      messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
+      messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
+      messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
+      isAsset: isAsset ?? this.isAsset,
+      assetOriginalName: assetOriginalName ?? this.assetOriginalName,
+      assetServerName: assetServerName ?? this.assetServerName,
+      assetUrl: assetUrl ?? this.assetUrl,
+      messageRepliedUserId: messageRepliedUserId ?? this.messageRepliedUserId,
+      showForwarded: showForwarded ?? this.showForwarded,
+    );
   }
 
   @override

@@ -162,6 +162,7 @@ class CreateProfileController extends GetxController {
     // print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
     // ✅ Set up the database with the user-specific ID
     if (userData?.userId != null) {
+       sharedPreferenceService.setString(UserDefaultsKeys.backupUserId, userData!.userId.toString());
       dbService
           .setUserId(userData!.userId.toString()); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized

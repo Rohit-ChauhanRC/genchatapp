@@ -26,6 +26,7 @@ class MessageTable {
         isForwarded INTEGER,
         forwardedMessageId INTEGER,
         isRepliedMessage INTEGER,
+        showForwarded INTEGER,
         messageRepliedOnId INTEGER,
         messageRepliedOn TEXT,
         messageRepliedOnType TEXT,
@@ -76,18 +77,16 @@ class MessageTable {
     return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
 
-  Future<List<NewMessageModel>> fetchMessagesPaginated({
-    required int receiverId,
-    required int senderId,
-    required int limit,
-    required int offset
-
-  }) async{
+  Future<List<NewMessageModel>> fetchMessagesPaginated(
+      {required int receiverId,
+      required int senderId,
+      required int limit,
+      required int offset}) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
       where:
-      '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, receiverId, receiverId, senderId],
       orderBy: 'messageSentFromDeviceTime ASC',
       limit: limit,
@@ -168,7 +167,8 @@ class MessageTable {
     );
   }
 
-  Future<List<NewMessageModel>> fetchAllPendingMessages({required int loginUserId}) async {
+  Future<List<NewMessageModel>> fetchAllPendingMessages(
+      {required int loginUserId}) async {
     final db = await DataBaseService().database;
 
     final result = await db.query(
@@ -179,7 +179,6 @@ class MessageTable {
 
     return result.map((e) => NewMessageModel.fromMap(e)).toList();
   }
-
 
   // Get message by messageId
   Future<NewMessageModel?> getMessageById(int messageId) async {
@@ -219,8 +218,8 @@ class MessageTable {
     return false;
   }
 
-
-  Future<NewMessageModel?> getLatestMessageForUser(int recipientId, int senderId) async {
+  Future<NewMessageModel?> getLatestMessageForUser(
+      int recipientId, int senderId) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -402,5 +401,11 @@ class MessageTable {
     final db = await DataBaseService().database;
     await db.execute('DROP TABLE IF EXISTS $deleteQueueTblName');
     await createDeletionQueueTable(db);
+  }
+
+  void onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE $tableName ADD COLUMN showForwarded INTEGER;");
+    }
   }
 }

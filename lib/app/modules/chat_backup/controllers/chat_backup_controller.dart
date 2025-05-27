@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -52,6 +53,7 @@ class ChatBackupController extends GetxController {
 
   Future<void> createBackup() async {
     try {
+      dbService.setUserId(sharedPref.getString(UserDefaultsKeys.backupUserId).toString());
       await dbService.backupDatabase();
       await loadBackupInfo();
       showAlertMessage("Backup created successfully");

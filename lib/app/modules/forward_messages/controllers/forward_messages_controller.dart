@@ -138,10 +138,11 @@ class ForwardMessagesController extends GetxController {
           createdAt: timeSent.toString(),
           senderPhoneNumber: senderuserData?.phoneNumber,
           messageType: msg.messageType,
-          isForwarded: msg.senderId == senderuserData?.userId ?false: true, ///showForwarded
+          isForwarded:  true, ///showForwarded
           forwardedMessageId: msg.messageId,
+          showForwarded: msg.senderId == senderuserData?.userId ? false : true,
           isRepliedMessage: false,
-          messageRepliedOnId: 0,
+          messageRepliedOnId: 0,  
           messageRepliedOn: '',
           messageRepliedOnType: null,
           isAsset: msg.isAsset,

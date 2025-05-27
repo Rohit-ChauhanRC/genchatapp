@@ -391,6 +391,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       messageType: MessageType.text,
       isForwarded: false,
       forwardedMessageId: 0,
+      showForwarded: false,
       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
       messageRepliedOn: messageReply == null ? '' : messageReply.message,

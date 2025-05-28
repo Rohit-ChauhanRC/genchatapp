@@ -277,6 +277,7 @@ class CreateProfileController extends GetxController {
           showCancel: true,
           onCancel: () {
             Get.back();
+            navigateBack();
           },
           onConfirm: () async {
             Get.back();

@@ -59,7 +59,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,
@@ -76,7 +76,7 @@ class DataBaseService {
   }
 
   void onUpgrade(Database database, int oldVersion, int newVersion) async {
-    // MilkCollectionDB().onUpgrade(database, oldVersion, newVersion);
+    MessageTable().onUpgrade(database, oldVersion, newVersion);
     // VendorDB().onUpgrade(database, oldVersion, newVersion);
     // ReceivingDB().onUpgrade(database, oldVersion, newVersion);
     // SellDB().onUpgrade(database, oldVersion, newVersion);

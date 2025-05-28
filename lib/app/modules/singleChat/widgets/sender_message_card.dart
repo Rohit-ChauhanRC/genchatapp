@@ -24,6 +24,7 @@ class SenderMessageCard extends StatelessWidget {
     this.isHighlighted = false,
     this.onReplyTap,
     this.isForwarded = false,
+    this.showForwarded = false,
   });
   final String message;
   final String date;
@@ -37,6 +38,7 @@ class SenderMessageCard extends StatelessWidget {
   final bool? isHighlighted;
   final VoidCallback? onReplyTap;
   final bool isForwarded;
+  final bool showForwarded;
 
   @override
   Widget build(BuildContext context) {
@@ -85,18 +87,32 @@ class SenderMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        type != MessageType.deleted && isForwarded ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor,size: 18,),
-                            SizedBox(width: 10,),
-                            Text("Forwarded",style: TextStyle(
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.greyMsgColor)),
-                          ],
-                        ) :  SizedBox.shrink(),
+                        type != MessageType.deleted && isForwarded
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: showForwarded
+                                    ? [
+                                        Icon(
+                                          Symbols.forward_sharp,
+                                          color: AppColors.greyMsgColor,
+                                          size: 18,
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        showForwarded
+                                            ? Text("Forwarded",
+                                                style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontStyle: FontStyle.italic,
+                                                    fontWeight: FontWeight.w400,
+                                                    color:
+                                                        AppColors.greyMsgColor))
+                                            : const SizedBox(),
+                                      ]
+                                    : [],
+                              )
+                            : SizedBox.shrink(),
                         type != MessageType.deleted &&
                                 repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"

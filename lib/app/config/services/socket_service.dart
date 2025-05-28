@@ -110,6 +110,7 @@ class SocketService extends GetxService {
             assetServerName: data["assetServerName"] ?? '',
             assetUrl: data["assetUrl"] ?? '',
             isForwarded: data["isForwarded"] ?? false,
+            showForwarded: data["showForwarded"] ?? false,
             forwardedMessageId: data['forwardedMessageId'] ?? 0,
             messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
 

@@ -10,6 +10,7 @@ import '../modules/createProfile/bindings/create_profile_binding.dart';
 import '../modules/createProfile/views/create_profile_view.dart';
 import '../modules/forward_messages/bindings/forward_messages_binding.dart';
 import '../modules/forward_messages/views/forward_messages_view.dart';
+
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/landing/bindings/landing_binding.dart';
@@ -106,5 +107,6 @@ class AppPages {
       page: () => const ChatBackupView(),
       binding: ChatBackupBinding(),
     ),
+   
   ];
 }

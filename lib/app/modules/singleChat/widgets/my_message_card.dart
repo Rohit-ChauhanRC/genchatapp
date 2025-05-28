@@ -21,6 +21,7 @@ class MyMessageCard extends StatelessWidget {
   final VoidCallback? onReplyTap;
   final bool? isHighlighted;
   final bool isForwarded;
+  final bool showForwarded;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -35,7 +36,8 @@ class MyMessageCard extends StatelessWidget {
     this.repliedUserName,
     this.onReplyTap,
     this.isHighlighted = false,
-    this.isForwarded =false,
+    this.isForwarded = false,
+    this.showForwarded = false,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -67,8 +69,8 @@ class MyMessageCard extends StatelessWidget {
                 ),
               ),
               color:
-              // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
-              mySideBgColor,
+                  // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
+                  mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
@@ -85,19 +87,31 @@ class MyMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
-                        type != MessageType.deleted && isForwarded ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor,size: 18,),
-                              SizedBox(width: 10,),
-                              Text("Forwarded",style: TextStyle(
-                                  fontSize: 14,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.greyMsgColor)),
-                            ],
-                          ) :  SizedBox.shrink(),
+                        type != MessageType.deleted && isForwarded
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: showForwarded
+                                    ? [
+                                        Icon(
+                                          Symbols.forward_sharp,
+                                          color: AppColors.greyMsgColor,
+                                          size: 18,
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text("Forwarded",
+                                                style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontStyle: FontStyle.italic,
+                                                    fontWeight: FontWeight.w400,
+                                                    color:
+                                                        AppColors.greyMsgColor))
+                                        ,
+                                      ]
+                                    : [],
+                              )
+                            : SizedBox.shrink(),
                         Obx(() {
                           final replyText = repliedText.value.trim();
                           final hasReply = replyText.isNotEmpty &&

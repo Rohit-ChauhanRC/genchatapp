@@ -164,7 +164,7 @@ class CreateProfileController extends GetxController {
     if (userData?.userId != null) {
        sharedPreferenceService.setString(UserDefaultsKeys.backupUserId, userData!.userId.toString());
       dbService
-          .setUserId(userData!.userId.toString()); // Set before accessing DB
+          .setUserId(userData.userId.toString()); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized
     } else {
       print("⚠️ No user ID found, DB not initialized.");

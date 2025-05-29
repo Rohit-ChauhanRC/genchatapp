@@ -1,8 +1,6 @@
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
@@ -94,7 +92,7 @@ class ChatsView extends GetView<ChatsController> {
                       Get.back();
                       Get.toNamed(Routes.SETTINGS);
                     } else if (value == newGroup) {
-                      Get.toNamed(Routes.SELECT_CONTACTS);
+                      Get.toNamed(Routes.CREATE_GROUP);
                     }
                   },
                   itemBuilder: (context) => [

@@ -8,9 +8,12 @@ import '../modules/chats/bindings/chats_binding.dart';
 import '../modules/chats/views/chats_view.dart';
 import '../modules/createProfile/bindings/create_profile_binding.dart';
 import '../modules/createProfile/views/create_profile_view.dart';
+import '../modules/create_group/bindings/create_group_binding.dart';
+import '../modules/create_group/views/create_group_view.dart';
 import '../modules/forward_messages/bindings/forward_messages_binding.dart';
 import '../modules/forward_messages/views/forward_messages_view.dart';
-
+import '../modules/group_name/bindings/group_name_binding.dart';
+import '../modules/group_name/views/group_name_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/landing/bindings/landing_binding.dart';
@@ -107,6 +110,15 @@ class AppPages {
       page: () => const ChatBackupView(),
       binding: ChatBackupBinding(),
     ),
-   
+    GetPage(
+      name: _Paths.CREATE_GROUP,
+      page: () => const CreateGroupView(),
+      binding: CreateGroupBinding(),
+    ),
+    GetPage(
+      name: _Paths.GROUP_NAME,
+      page: () => const GroupNameView(),
+      binding: GroupNameBinding(),
+    ),
   ];
 }

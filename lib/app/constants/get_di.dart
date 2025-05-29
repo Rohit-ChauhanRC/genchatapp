@@ -1,10 +1,13 @@
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
+import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
 import 'package:genchatapp/app/modules/createProfile/controllers/create_profile_controller.dart';
+import 'package:genchatapp/app/modules/create_group/controllers/create_group_controller.dart';
 import 'package:genchatapp/app/modules/forward_messages/controllers/forward_messages_controller.dart';
+import 'package:genchatapp/app/modules/group_name/controllers/group_name_controller.dart';
 import 'package:genchatapp/app/modules/home/controllers/home_controller.dart';
 import 'package:genchatapp/app/modules/landing/controllers/landing_controller.dart';
 import 'package:genchatapp/app/modules/verifyPhoneNumber/controllers/verify_phone_number_controller.dart';
@@ -39,6 +42,8 @@ init() async {
       apiClient: Get.find<ApiClient>(),
       sharedPreferences: Get.find<SharedPreferenceService>()));
   Get.lazyPut(() => ProfileRepository(apiClient: Get.find<ApiClient>()));
+  // GroupRepository
+  Get.lazyPut(() => GroupRepository(apiClient: Get.find<ApiClient>(), sharedPreferences: Get.find<SharedPreferenceService>()));
   Get.lazyPut<IContactRepository>(
       () => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
@@ -58,4 +63,8 @@ init() async {
   Get.lazyPut(() => SettingsController());
   Get.lazyPut(() => SelectContactsController());
   Get.lazyPut(() => ForwardMessagesController());
+   Get.lazyPut(() => CreateGroupController());
+   Get.lazyPut(() =>
+      GroupNameController(groupRepository: Get.find<GroupRepository>()));
+  
 }

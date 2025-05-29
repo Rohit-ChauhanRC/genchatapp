@@ -19,6 +19,7 @@ class ApiEndpoints {
   static const String updateUser = "user/update-user";
   static const String updateUserProPic = "user/update-display-picture";
   static const String fetchUser = "user/fetch-users-existed";
+  static const String createGroup = "group/create";
 
 }
 

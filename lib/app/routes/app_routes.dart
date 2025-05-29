@@ -17,6 +17,8 @@ abstract class Routes {
   static const SETTINGS = _Paths.SETTINGS;
   static const FORWARD_MESSAGES = _Paths.FORWARD_MESSAGES;
   static const CHAT_BACKUP = _Paths.CHAT_BACKUP;
+  static const CREATE_GROUP = _Paths.CREATE_GROUP;
+  static const GROUP_NAME = _Paths.GROUP_NAME;
 }
 
 abstract class _Paths {
@@ -35,4 +37,6 @@ abstract class _Paths {
   static const SETTINGS = '/settings';
   static const FORWARD_MESSAGES = '/forward-messages';
   static const CHAT_BACKUP = '/chat-backup';
+  static const CREATE_GROUP = '/create-group';
+  static const GROUP_NAME = '/group-name';
 }

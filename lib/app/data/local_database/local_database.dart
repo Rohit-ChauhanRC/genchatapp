@@ -1,4 +1,5 @@
 
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -72,6 +73,7 @@ class DataBaseService {
     await ContactsTable().createTable(database);
     await ChatConectTable().createTable(database);
     await MessageTable().createDeletionQueueTable(database);
+    await GroupsTable().createTable(database);
     // await ProfileDB().createTable(database);
   }
 

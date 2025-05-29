@@ -30,3 +30,8 @@ const messageTable = "messageTable";
 const deleteQueueTable = "deletion_queue";
 const contactsSynced = "contactsSynced";
 const chatConnectTable = "chatConnectTable";
+const groupTable = "groupTable";
+const usersTable = "usersTable";
+const userGroupsTable = "userGroupsTable";
+
+

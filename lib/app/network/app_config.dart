@@ -1,6 +1,5 @@
 enum AppEnvironment { dev, staging, prod }
 
-
 class AppConfig {
   static late AppEnvironment _env;
 

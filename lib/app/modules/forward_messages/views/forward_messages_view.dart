@@ -122,7 +122,11 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
                                     placeholder: (context, url) =>
                                     const CircularProgressIndicator(),
                                     errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
+                                        CircleAvatar(
+                                            radius: 25,
+                                            backgroundColor: Colors.grey,
+                                            child: const Icon(Icons.error,color: Colors.white)
+                                        ),
                                   ),
                   )
                   : const Padding(

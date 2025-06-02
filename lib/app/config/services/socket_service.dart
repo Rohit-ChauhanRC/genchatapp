@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import '../../data/local_database/contacts_table.dart';
+import '../../data/models/new_models/response_model/message_ack_model.dart';
 
 class SocketService extends GetxService {
   IO.Socket? _socket;
@@ -27,6 +28,9 @@ class SocketService extends GetxService {
   bool get isConnected => _socket?.connected == true;
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
+  final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
+  final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
+  final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
@@ -115,6 +119,7 @@ class SocketService extends GetxService {
             messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
 
         messageTable.insertMessage(newMessage);
+        incomingMessage.value = newMessage;
 
         final chatContactMessage = NewMessageModel(
           message: data["message"],
@@ -147,6 +152,12 @@ class SocketService extends GetxService {
           state: data["state"],
         );
       }
+
+      messageAcknowledgement.value = MessageAckModel(
+        clientSystemMessageId: data["clientSystemMessageId"].toString(),
+        state: data["state"],
+        messageId: data["messageId"],
+      );
       //
     });
 
@@ -196,32 +207,91 @@ class SocketService extends GetxService {
       final bool isDeleteFromEveryOne = data['deleteState'];
 
       bool existsLocally = await messageTable.messageExists(messageId);
+      // if (existsLocally) {
+      //
+      //   final msg = await messageTable.getMessageById(messageId);
+      //   final isLast = await messageTable.isLastMessage(messageId: messageId, senderId: msg?.senderId ?? 0, receiverId: msg?.recipientId ?? 0);
+      //   if (isDeleteFromEveryOne) {
+      //     // Delete for everyone: mark as "This message was deleted"
+      //     await messageTable.updateMessageContent(
+      //       messageId: messageId,
+      //       newText: "This message was deleted",
+      //       newType: MessageType.deleted,
+      //     );
+      //
+      //     if (isLast) {
+      //       await chatConectTable.updateContact(
+      //         uid: msg!.senderId.toString(),
+      //         lastMessageId: 0,
+      //         lastMessage: "This message was deleted",
+      //         timeSent: msg.messageSentFromDeviceTime,
+      //       );
+      //     }
+      //   } else {
+      //     // Delete for me only: remove the message locally
+      //     await messageTable.deleteMessage(messageId);
+      //     if (isLast) {
+      //       final newLast = await messageTable.getLatestMessageForUser(
+      //           msg?.recipientId ?? 0, msg?.senderId ?? 0);
+      //       if (newLast != null) {
+      //         await chatConectTable.updateContact(
+      //           lastMessageId: newLast.messageId,
+      //           uid: msg!.recipientId.toString(),
+      //           lastMessage: newLast.message,
+      //           timeSent: newLast.clientSystemMessageId,
+      //         );
+      //       } else {
+      //         // Optional: reset chat contact if all messages deleted
+      //         await chatConectTable.updateContact(
+      //           lastMessageId: 0,
+      //           uid: msg!.recipientId.toString(),
+      //           lastMessage: '',
+      //           timeSent: '',
+      //         );
+      //       }
+      //     }
+      //   }
+      // } else {
+      //   print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
+      // }
       if (existsLocally) {
-
         final msg = await messageTable.getMessageById(messageId);
-        final isLast = await messageTable.isLastMessage(messageId: messageId, senderId: msg?.senderId ?? 0, receiverId: msg?.recipientId ?? 0);
+        final isLast = await messageTable.isLastMessage(
+          messageId: messageId,
+          senderId: msg?.senderId ?? 0,
+          receiverId: msg?.recipientId ?? 0,
+        );
+
         if (isDeleteFromEveryOne) {
-          // Delete for everyone: mark as "This message was deleted"
           await messageTable.updateMessageContent(
             messageId: messageId,
             newText: "This message was deleted",
             newType: MessageType.deleted,
           );
+        } else {
+          await messageTable.deleteMessage(messageId);
+        }
 
-          if (isLast) {
+        // 🔔 Notify controller
+        deletedMessage.value = DeletedMessageModel(
+          messageId: messageId,
+          isDeleteFromEveryone: isDeleteFromEveryOne,
+        );
+
+        // Optional: update chat contact if last message
+        if (isLast) {
+          if (isDeleteFromEveryOne) {
             await chatConectTable.updateContact(
               uid: msg!.senderId.toString(),
               lastMessageId: 0,
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
             );
-          }
-        } else {
-          // Delete for me only: remove the message locally
-          await messageTable.deleteMessage(messageId);
-          if (isLast) {
+          } else {
             final newLast = await messageTable.getLatestMessageForUser(
-                msg?.recipientId ?? 0, msg?.senderId ?? 0);
+              msg?.recipientId ?? 0,
+              msg?.senderId ?? 0,
+            );
             if (newLast != null) {
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
@@ -230,7 +300,6 @@ class SocketService extends GetxService {
                 timeSent: newLast.clientSystemMessageId,
               );
             } else {
-              // Optional: reset chat contact if all messages deleted
               await chatConectTable.updateContact(
                 lastMessageId: 0,
                 uid: msg!.recipientId.toString(),

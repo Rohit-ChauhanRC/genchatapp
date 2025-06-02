@@ -149,7 +149,7 @@ class ChatList extends StatelessWidget {
                                       messages.messageRepliedOnType ??
                                           MessageType.text,
                                   repliedText:
-                                      (messages.messageRepliedOn!.isNotEmpty
+                                      (messages.messageRepliedOn != ''
                                               ? messages
                                                       .messageRepliedOn
                                                       .toString()

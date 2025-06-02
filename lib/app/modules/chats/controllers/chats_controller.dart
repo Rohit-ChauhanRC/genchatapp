@@ -79,6 +79,8 @@ class ChatsController extends GetxController {
     selectedChatUids.clear();
   }
 
+  
+
   Stream<List<ChatConntactModel>> getChatUsersStream(
       {Duration interval = const Duration(seconds: 1)}) async* {
     while (true) {

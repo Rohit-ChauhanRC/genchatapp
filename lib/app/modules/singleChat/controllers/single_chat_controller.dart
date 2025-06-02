@@ -9,10 +9,13 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -38,6 +41,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final socketService = Get.find<SocketService>();
 
   final ChatConectTable chatConectTable = ChatConectTable();
+
+  // final GroupRepository groupRepository = Get.find< GroupRepository>();
+
 
   final EncryptionService encryptionService = Get.find();
 
@@ -150,6 +156,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final Map<String, int> messageIdToIndex = {};
 
   final ValueNotifier<String?> highlightedMessageId = ValueNotifier(null);
+
+  final GroupsTable groupsTable = GroupsTable();
+
 
   @override
   void onInit() async {
@@ -767,6 +776,27 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   Future<void> deleteMedia() async {
     await folderCreation.clearMediaFiles();
+  }
+
+
+  Future<void> getGroup() async {
+    
+    // try {
+     
+    //   final response =
+    //       await groupRepository.fetchGroup();
+    //   if (response != null && response.statusCode == 200) {
+    //     final getVerifyNumberResponse =
+    //         CreateGroupModel.fromJson(response.data);
+    //     if (getVerifyNumberResponse.status == true) {
+    //       groupsTable.insertGroup(getVerifyNumberResponse.data!);
+    //       Get.until((route) => route.settings.name == Routes.HOME);
+    //     }
+    //   }
+    // } catch (e) {
+    //   showAlertMessage("Something went wrong: $e");
+    // } finally {
+    // }
   }
 }
 

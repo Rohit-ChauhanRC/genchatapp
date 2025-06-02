@@ -28,6 +28,7 @@ import '../../../config/services/folder_creation.dart';
 import '../../../config/services/socket_service.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
+import '../../../data/models/new_models/response_model/message_ack_model.dart';
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 
@@ -190,7 +191,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     closeKeyboard();
     // _startLoadingTimer();
-    bindMessageStream();
+    // bindMessageStream();
+    await loadInitialMessages();
+    bindSocketEvents();
     monitorScrollPosition();
     // scrollController.addListener(_scrollListener);
   }
@@ -205,7 +208,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     super.onClose();
     WidgetsBinding.instance.removeObserver(this);
     selectedMessages.clear();
-    messageSubscription.cancel();
+    messageList.clear();
+    // messageSubscription.cancel();
     receiverUserSubscription.cancel();
     scrollController.dispose();
     typingTimer?.cancel();
@@ -309,6 +313,125 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
       return await contactsTable.getUserById(userId);
     }).asyncMap((event) async => await event);
+  }
+
+  void bindSocketEvents() {
+    ever(socketService.incomingMessage, (NewMessageModel? message) {
+      bool isFromCurrentChat(NewMessageModel msg) {
+        return (msg.senderId == receiverUserData?.userId && msg.recipientId == senderuserData?.userId) ||
+            (msg.senderId == receiverUserData?.userId && msg.recipientId == senderuserData?.userId);
+      }
+      if (message != null && isFromCurrentChat(message)) {
+        messageList.add(message);
+        // Acknowledge seen if message is incoming and not already seen
+        if (message.senderId == receiverUserData?.userId && socketService.isConnected &&
+            (message.state == MessageState.sent ||
+                message.state == MessageState.unsent ||
+                message.state == MessageState.delivered) &&
+            message.messageId != null) {
+          socketService.sendMessageSeen(message.messageId!);
+        }
+        // scrollToBottomIfNear();
+      }
+    });
+
+    ever(socketService.deletedMessage, (DeletedMessageModel? del) {
+      if (del == null) return;
+
+      int index = messageList.indexWhere((m) => m.messageId == del.messageId);
+
+      if (index != -1) {
+        if (del.isDeleteFromEveryone) {
+          final updated = messageList[index].copyWith(
+            message: "This message was deleted",
+            messageType: MessageType.deleted,
+          );
+          messageList[index] = updated;
+        } else {
+          messageList.removeAt(index);
+        }
+        messageList.refresh(); // Update UI
+      }
+    });
+
+
+    ever(socketService.messageAcknowledgement, (MessageAckModel? ack) {
+      if (ack == null) return;
+
+      int index = messageList.indexWhere((msg) =>
+      msg.clientSystemMessageId == ack.clientSystemMessageId ||
+          msg.messageId == ack.messageId);
+
+      if (index != -1) {
+        if(ack.state == 1) {
+          final updatedMessage = messageList[index].copyWith(
+            state: MessageState.sent,
+            messageId: ack.messageId,
+            syncStatus: SyncStatus.synced,
+          );
+          messageList[index] = updatedMessage;
+          messageList.refresh(); // Notify UI
+        }else if(ack.state == 2){
+          final updatedMessage = messageList[index].copyWith(
+            state: MessageState.delivered,
+            messageId: ack.messageId,
+            syncStatus: SyncStatus.synced,
+          );
+          messageList[index] = updatedMessage;
+          messageList.refresh();
+        }else if(ack.state == 3){
+          final updatedMessage = messageList[index].copyWith(
+            state: MessageState.read,
+            messageId: ack.messageId,
+            syncStatus: SyncStatus.synced,
+          );
+          messageList[index] = updatedMessage;
+          messageList.refresh();
+        }
+      }
+    });
+  }
+
+  Future<void> loadInitialMessages() async{
+    final messages = await MessageTable().fetchMessages(
+      receiverId: receiverUserData?.userId ?? 0,
+      senderId: senderuserData?.userId ?? 0,
+    );
+    messageKeys.clear();
+    for (final item in messages) {
+      messageKeys[item.messageId.toString()] = GlobalKey();
+    }
+    messageList.assignAll(messages);
+    if (messages.isNotEmpty) {
+      for (var i in messages) {
+        if ((i.state == MessageState.sent ||
+            i.state == MessageState.unsent ||
+            i.state == MessageState.delivered) &&
+            i.messageId != null) {
+          if (receiverUserData!.userId == i.senderId &&
+              socketService.isConnected) {
+            socketService.sendMessageSeen(i.messageId!);
+          }
+        } else if (senderuserData!.userId == i.senderId &&
+            i.syncStatus == SyncStatus.pending &&
+            i.messageId == null) {
+          if (socketService.isConnected) {
+            if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+              socketService.sendMessageSync(i);
+            }
+          }
+        } else if (senderuserData!.userId == i.senderId &&
+            i.syncStatus == SyncStatus.pending &&
+            i.messageId != null) {
+          if (socketService.isConnected) {
+            if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+              socketService.sendMessageSync(i);
+            }
+          }
+        }
+      }
+    }
+
   }
 
   void _startLoadingTimer() {
@@ -418,6 +541,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
+    messageList.add(newMessage);
     await MessageTable().insertMessage(newMessage).then((onValue) {
       Future.delayed(Durations.medium4);
       if (socketService.isConnected) {
@@ -435,7 +559,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       });
     });
 
-    // messageList.add(newMessage);
     messageController.clear();
     var receiverUserId = receiverUserData?.userId.toString() ?? '';
     socketService.emitTypingStatus(
@@ -518,12 +641,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       if (!hasMessageId && message.clientSystemMessageId != null) {
         await MessageTable().deleteMessageByClientSystemMessageId(
             message.clientSystemMessageId.toString());
+        // 🟢 Remove from message list (offline messages)
+        messageList.removeWhere(
+              (m) => m.clientSystemMessageId == message.clientSystemMessageId,
+        );
         continue;
       }
 
       if (hasMessageId) {
         if (deleteForEveryone) {
-          // Emit socket event
+          // 🔵 Emit socket event or mark for deletion
           if (isOnline) {
             socketService.emitMessageDelete(
               messageId: message.messageId!,
@@ -534,12 +661,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                 messageId: message.messageId!, isDeleteFromEveryone: true);
           }
 
-          // Update UI and local DB
+          // 🔵 Update local DB
           await MessageTable().updateMessageContent(
             messageId: message.messageId!,
             newText: "This message was deleted",
             newType: MessageType.deleted,
           );
+
+          // 🟢 Update messageList manually
+          final index = messageList.indexWhere((m) => m.messageId == message.messageId);
+          if (index != -1) {
+            messageList[index] = messageList[index].copyWith(
+              message: "This message was deleted",
+              messageType: MessageType.deleted,
+            );
+          }
 
           if (isLast) {
             await ChatConectTable().updateContact(
@@ -550,8 +686,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
             );
           }
         } else {
-          // Delete for me (self only)
+          // 🟣 Delete for me only
           await MessageTable().deleteMessage(message.messageId!);
+          // 🟣 Remove from messageList
+          messageList.removeWhere((m) => m.messageId == message.messageId);
           if (isOnline) {
             if (message.senderId != receiverUserData?.userId) {
               socketService.emitMessageDelete(

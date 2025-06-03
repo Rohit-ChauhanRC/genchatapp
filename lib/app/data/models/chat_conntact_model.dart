@@ -10,7 +10,9 @@ class ChatConntactModel extends Equatable {
   final String? lastMessage;
   final String? uid;
   final int? unreadCount;
-  final int? lastMessageId;
+  final int? lastMessageId;   
+  final int? isGroup;
+
 
   const ChatConntactModel({
     this.name,
@@ -21,6 +23,7 @@ class ChatConntactModel extends Equatable {
     this.lastMessageId,
     this.uid,
     this.unreadCount = 0,
+    this.isGroup = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -33,6 +36,8 @@ class ChatConntactModel extends Equatable {
       'lastMessageId': lastMessageId,
       'uid': uid,
       "unreadCount": unreadCount,
+      'isGroup': isGroup,
+
     };
   }
 
@@ -45,7 +50,8 @@ class ChatConntactModel extends Equatable {
         lastMessage: map['lastMessage'] as String,
         lastMessageId: map['lastMessageId'],
         uid: map['uid'] as String,
-        unreadCount: map["unreadCount"]);
+        unreadCount: map["unreadCount"],
+        isGroup: map["isGroup"]);
   }
 
   String toJson() => json.encode(toMap());
@@ -62,6 +68,7 @@ class ChatConntactModel extends Equatable {
     final int? lastMessageId,
     final String? uid,
     final int? unreadCount,
+    final int? isGroup,
   }) {
     return ChatConntactModel(
       contactId: contactId ?? this.contactId,
@@ -72,10 +79,12 @@ class ChatConntactModel extends Equatable {
       uid: uid ?? this.uid,
       lastMessageId: lastMessageId ?? this.lastMessageId,
       unreadCount: unreadCount ?? this.unreadCount,
+      isGroup: isGroup?? this.isGroup,
     );
   }
 
   @override
   List<Object?> get props =>
-      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount, lastMessageId];
+      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount, lastMessageId, isGroup
+      ];
 }

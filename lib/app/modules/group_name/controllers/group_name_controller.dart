@@ -22,7 +22,6 @@ class GroupNameController extends GetxController {
   final GroupsTable groupsTable = GroupsTable();
   final ChatConectTable chatConectTable = ChatConectTable();
 
-
   FocusNode focusNode = FocusNode();
 
   final RxString _searchQuery = ''.obs;
@@ -79,7 +78,7 @@ class GroupNameController extends GetxController {
         if (getVerifyNumberResponse.status == true) {
           groupsTable.insertGroup(getVerifyNumberResponse.data!);
           final data = getVerifyNumberResponse.data!;
-           await chatConectTable.insert(
+          await chatConectTable.insert(
             contact: ChatConntactModel(
               lastMessageId: 0,
               contactId: data.id.toString(),
@@ -88,6 +87,7 @@ class GroupNameController extends GetxController {
               profilePic: data.displayPicture ?? '',
               timeSent: data.createdAt,
               uid: data.id.toString(),
+              isGroup: 1,
             ),
           );
           Get.until((route) => route.settings.name == Routes.HOME);

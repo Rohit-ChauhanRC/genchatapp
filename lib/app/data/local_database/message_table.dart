@@ -77,23 +77,25 @@ class MessageTable {
     return result.map((map) => NewMessageModel.fromMap(map)).toList();
   }
 
-  Future<List<NewMessageModel>> fetchMessagesPaginated(
-      {required int receiverId,
-      required int senderId,
-      required int limit,
-      required int offset}) async {
+  Future<List<NewMessageModel>> fetchMessagesPaginated({
+    required int receiverId,
+    required int senderId,
+    int offset = 0,
+    int limit = 10,
+      }) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
       where:
           '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
       whereArgs: [senderId, receiverId, receiverId, senderId],
-      orderBy: 'messageSentFromDeviceTime ASC',
+      orderBy: 'messageSentFromDeviceTime DESC',
       limit: limit,
       offset: offset,
     );
 
-    return result.map((map) => NewMessageModel.fromMap(map)).toList();
+    final messages = result.map((map) => NewMessageModel.fromMap(map)).toList();
+    return messages.reversed.toList();
   }
 
   // Insert a new message

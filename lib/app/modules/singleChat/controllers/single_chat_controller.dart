@@ -152,6 +152,26 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final ValueNotifier<String?> highlightedMessageId = ValueNotifier(null);
 
+  final RxBool _isInCurrentChat = true.obs;
+  bool get isInCurrentChat => _isInCurrentChat.value;
+  set isInCurrentChat(bool b) => _isInCurrentChat.value = b;
+
+  final RxInt _currentOffset = 0.obs;
+  int get currentOffset => _currentOffset.value;
+  set currentOffset(int a) => _currentOffset.value = a;
+
+  final RxInt _pageSize = 10.obs;
+  int get pageSize => _pageSize.value;
+  set pageSize(int a) => _pageSize.value = a;
+
+  final RxBool _isPaginating = false.obs;
+  bool get isPaginating => _isPaginating.value;
+  set isPaginating(bool b) => _isPaginating.value = b;
+
+  final RxBool _hasMoreMessages = true.obs;
+  bool get hasMoreMessages => _hasMoreMessages.value;
+  set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
+
   @override
   void onInit() async {
     super.onInit();
@@ -186,7 +206,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     await loadInitialMessages();
     bindSocketEvents();
     monitorScrollPosition();
+    isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
+    hasScrolledInitially.value = false;
   }
 
   @override
@@ -206,6 +228,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     typingTimer?.cancel();
     _sendingMessageIds.clear();
     replyId.dispose();
+    isInCurrentChat = false;
   }
 
   @override
@@ -262,17 +285,22 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   void monitorScrollPosition() {
-    itemPositionsListener.itemPositions.addListener(() {
+    itemPositionsListener.itemPositions.addListener(() async{
       final positions = itemPositionsListener.itemPositions.value;
 
       if (positions.isNotEmpty) {
-        final lastVisibleIndex =
-            positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        final minIndex = positions.map((e) => e.index).reduce((a, b) => a < b ? a : b);
 
+        // 👇 Check if user reached top
+        if (minIndex <= 3 && !isPaginating && hasMoreMessages) {
+          await loadMoreMessages();
+        }
+
+        final maxIndex = positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
         final totalCount = messageList.length + (isReceiverTyping ? 1 : 0);
 
         // If the last visible index is less than the last item, show the button
-        showScrollToBottom.value = lastVisibleIndex < totalCount - 1;
+        showScrollToBottom.value = maxIndex < totalCount - 1;
       }
     });
   }
@@ -308,6 +336,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   void bindSocketEvents() {
     ever(socketService.incomingMessage, (NewMessageModel? message) {
+      if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
         return (msg.senderId == receiverUserData?.userId && msg.recipientId == senderuserData?.userId) ||
             (msg.senderId == receiverUserData?.userId && msg.recipientId == senderuserData?.userId);
@@ -327,6 +356,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     });
 
     ever(socketService.deletedMessage, (DeletedMessageModel? del) {
+      if (!isInCurrentChat) return;
       if (del == null) return;
 
       int index = messageList.indexWhere((m) => m.messageId == del.messageId);
@@ -347,6 +377,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
 
     ever(socketService.messageAcknowledgement, (MessageAckModel? ack) {
+      if (!isInCurrentChat) return;
       if (ack == null) return;
 
       int index = messageList.indexWhere((msg) =>
@@ -384,16 +415,32 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> loadInitialMessages() async{
-    final messages = await MessageTable().fetchMessages(
+    currentOffset = 0;
+    hasMoreMessages = true;
+    messageList.clear();
+    await loadMoreMessages();
+  }
+
+  Future<void> loadMoreMessages() async{
+    // if (isPaginating || !hasMoreMessages) return;
+    isPaginating = true;
+    final messages = await MessageTable().fetchMessagesPaginated(
       receiverId: receiverUserData?.userId ?? 0,
       senderId: senderuserData?.userId ?? 0,
+      offset: currentOffset,
+      limit: pageSize,
     );
-    messageKeys.clear();
-    for (final item in messages) {
-      messageKeys[item.messageId.toString()] = GlobalKey();
-    }
-    messageList.assignAll(messages);
     if (messages.isNotEmpty) {
+      // Add message keys
+      messageKeys.clear();
+      for (final item in messages) {
+        messageKeys[item.messageId.toString()] = GlobalKey();
+      }
+
+      messageList.insertAll(0,messages);
+
+      currentOffset += messages.length;
+
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
             i.state == MessageState.unsent ||
@@ -421,8 +468,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           }
         }
       }
-    }
+    }else{
+      hasMoreMessages = false;
 
+    }
+    isPaginating = false;
   }
 
   void _startLoadingTimer() {
@@ -437,57 +487,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   bool _isAlreadyBeingSent(String clientSystemMessageId) {
     return _sendingMessageIds.contains(clientSystemMessageId);
-  }
-
-  void bindMessageStream() {
-    messageStream = getMessageStream();
-    messageSubscription = messageStream.listen((messages) {
-      // print(messages);
-      messageKeys.clear();
-      for (final item in messages) {
-        messageKeys[item.messageId.toString()] = GlobalKey();
-      }
-      messageList.assignAll(messages);
-
-      if (messages.isNotEmpty) {
-        for (var i in messages) {
-          if ((i.state == MessageState.sent ||
-                  i.state == MessageState.unsent ||
-                  i.state == MessageState.delivered) &&
-              i.messageId != null) {
-            if (receiverUserData!.userId == i.senderId &&
-                socketService.isConnected) {
-              socketService.sendMessageSeen(i.messageId!);
-            }
-          } else if (senderuserData!.userId == i.senderId &&
-              i.syncStatus == SyncStatus.pending &&
-              i.messageId == null) {
-            if (socketService.isConnected) {
-              if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
-                socketService.sendMessageSync(i);
-              }
-            }
-          } else if (senderuserData!.userId == i.senderId &&
-              i.syncStatus == SyncStatus.pending &&
-              i.messageId != null) {
-            if (socketService.isConnected) {
-              if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
-                socketService.sendMessageSync(i);
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  Stream<List<NewMessageModel>> getMessageStream() async* {
-    yield* Stream.periodic(const Duration(seconds: 1), (_) async {
-      return await MessageTable().fetchMessages(
-        receiverId: receiverUserData?.userId ?? 0,
-        senderId: senderuserData?.userId ?? 0,
-      );
-    }).asyncMap((event) async => await event);
   }
 
   Future<void> sendTextMessage() async {
@@ -911,8 +910,59 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
 
 
+///message stream code
+// void bindMessageStream() {
+//   messageStream = getMessageStream();
+//   messageSubscription = messageStream.listen((messages) {
+//     // print(messages);
+//     messageKeys.clear();
+//     for (final item in messages) {
+//       messageKeys[item.messageId.toString()] = GlobalKey();
+//     }
+//     messageList.assignAll(messages);
+//
+//     if (messages.isNotEmpty) {
+//       for (var i in messages) {
+//         if ((i.state == MessageState.sent ||
+//             i.state == MessageState.unsent ||
+//             i.state == MessageState.delivered) &&
+//             i.messageId != null) {
+//           if (receiverUserData!.userId == i.senderId &&
+//               socketService.isConnected) {
+//             socketService.sendMessageSeen(i.messageId!);
+//           }
+//         } else if (senderuserData!.userId == i.senderId &&
+//             i.syncStatus == SyncStatus.pending &&
+//             i.messageId == null) {
+//           if (socketService.isConnected) {
+//             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+//               socketService.sendMessageSync(i);
+//             }
+//           }
+//         } else if (senderuserData!.userId == i.senderId &&
+//             i.syncStatus == SyncStatus.pending &&
+//             i.messageId != null) {
+//           if (socketService.isConnected) {
+//             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+//               socketService.sendMessageSync(i);
+//             }
+//           }
+//         }
+//       }
+//     }
+//   });
+// }
+//
+// Stream<List<NewMessageModel>> getMessageStream() async* {
+//   yield* Stream.periodic(const Duration(seconds: 1), (_) async {
+//     return await MessageTable().fetchMessages(
+//       receiverId: receiverUserData?.userId ?? 0,
+//       senderId: senderuserData?.userId ?? 0,
+//     );
+//   }).asyncMap((event) async => await event);
+// }
 
-
+/// last used code form last firebase changes
 // _saveDataToContactsSubcollection(MessageModel message) async {
 //   // users -> reciever user id => chats -> current user id -> set data
 //   var recieverChatContact = ChatConntactModel(

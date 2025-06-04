@@ -18,6 +18,7 @@ class ChatConectTable {
     "lastMessageId" INTEGER,
     "uid" TEXT UNIQUE,
     "unreadCount" Integer,
+    "isGroup" INTEGER
     PRIMARY KEY("id" AUTOINCREMENT)
   );
 """);
@@ -71,6 +72,7 @@ class ChatConectTable {
     String? timeSent,
     String? name,
     int? unreadCount,
+    int? isGroup,
   }) async {
     final db = await DataBaseService().database;
 
@@ -81,6 +83,7 @@ class ChatConectTable {
     if (timeSent != null) updatedValues['timeSent'] = timeSent;
     if (name != null) updatedValues['name'] = name;
     if (unreadCount != 0) updatedValues["unreadCount"] = unreadCount;
+    if(isGroup != null) updatedValues["isGroup"] = isGroup;
 
     print(
         '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');

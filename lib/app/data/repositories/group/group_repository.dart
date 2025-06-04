@@ -26,4 +26,16 @@ class GroupRepository {
       return null;
     }
   }
+
+
+   Future<Response?> fetchGroup() async {
+    try {
+     
+      return await apiClient.get(ApiEndpoints.groupFetch);
+    } catch (e) {
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
 }

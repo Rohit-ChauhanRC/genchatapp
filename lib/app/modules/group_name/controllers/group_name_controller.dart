@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
+import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -18,6 +20,7 @@ class GroupNameController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final GroupsTable groupsTable = GroupsTable();
+  final ChatConectTable chatConectTable = ChatConectTable();
 
   FocusNode focusNode = FocusNode();
 
@@ -74,6 +77,19 @@ class GroupNameController extends GetxController {
             CreateGroupModel.fromJson(response.data);
         if (getVerifyNumberResponse.status == true) {
           groupsTable.insertGroup(getVerifyNumberResponse.data!);
+          final data = getVerifyNumberResponse.data!;
+          await chatConectTable.insert(
+            contact: ChatConntactModel(
+              lastMessageId: 0,
+              contactId: data.id.toString(),
+              lastMessage: "",
+              name: data.name,
+              profilePic: data.displayPicture ?? '',
+              timeSent: data.createdAt,
+              uid: data.id.toString(),
+              isGroup: 1,
+            ),
+          );
           Get.until((route) => route.settings.name == Routes.HOME);
         }
       }

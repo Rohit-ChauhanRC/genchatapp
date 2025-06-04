@@ -60,7 +60,7 @@ class MyMessageCard extends StatelessWidget {
             onTap: hasReply1 ? onReplyTap : null,
             child: Card(
               elevation: 1,
-              shape: RoundedRectangleBorder(
+              shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.zero,
@@ -97,21 +97,19 @@ class MyMessageCard extends StatelessWidget {
                                           color: AppColors.greyMsgColor,
                                           size: 18,
                                         ),
-                                        SizedBox(
+                                        const SizedBox(
                                           width: 10,
                                         ),
                                         Text("Forwarded",
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontStyle: FontStyle.italic,
-                                                    fontWeight: FontWeight.w400,
-                                                    color:
-                                                        AppColors.greyMsgColor))
-                                        ,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w400,
+                                                color: AppColors.greyMsgColor)),
                                       ]
                                     : [],
                               )
-                            : SizedBox.shrink(),
+                            : const SizedBox.shrink(),
                         Obx(() {
                           final replyText = repliedText.value.trim();
                           final hasReply = replyText.isNotEmpty &&

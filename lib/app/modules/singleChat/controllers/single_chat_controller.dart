@@ -283,11 +283,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     final index = messageIdToIndex[repliedId.toString()];
     if (index != null) {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      // scrollController.animateTo(
+      //   scrollController.position.maxScrollExtent,
+      //   duration: const Duration(milliseconds: 300),
+      //   curve: Curves.easeOut,
+      // );
       itemScrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 300),
@@ -534,12 +534,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final positions = itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
 
-    final firstVisibleIndex = positions
-        .where((e) => e.itemLeadingEdge >= 0)
-        .reduce((a, b) => a.index < b.index ? a : b);
+    // final firstVisibleIndex = positions
+    //     .where((e) => e.itemLeadingEdge >= 0)
+    //     .reduce((a, b) => a.index < b.index ? a : b);
 
-    final preIndex = firstVisibleIndex.index;
-    final preOffset = firstVisibleIndex.itemLeadingEdge;
+    // final preIndex = firstVisibleIndex.index;
+    // final preOffset = firstVisibleIndex.itemLeadingEdge;
 
     final preCount = messageList.length;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
@@ -14,6 +15,7 @@ import '../../../data/repositories/select_contacts/select_contact_repository.dar
 class SelectContactsController extends GetxController {
   final IContactRepository contactRepository = Get.find<IContactRepository>();
   final ContactsTable contactsTable = ContactsTable();
+  final ChatConectTable chatConectTable = ChatConectTable();
   final ConnectivityService connectivityService =
       Get.find<ConnectivityService>();
 
@@ -46,6 +48,12 @@ class SelectContactsController extends GetxController {
     loadInitialContacts();
   }
 
+  @override
+  void onClose(){
+    super.onClose();
+    filteredContacts.clear();
+    contacts.clear();
+  }
   Future<void> loadInitialContacts() async {
     final localContacts = await contactsTable.fetchAll();
     if (localContacts.isNotEmpty) {
@@ -103,6 +111,13 @@ class SelectContactsController extends GetxController {
         }).toList();
 
         await contactsTable.createBulk(enrichedUsers);
+        for(var user in enrichedUsers){
+          await chatConectTable.updateContact(
+            uid: user.userId.toString(),
+            profilePic:user.displayPictureUrl,
+            name: user.localName,
+          );
+        }
         contacts = enrichedUsers;
       }
     } catch (e) {

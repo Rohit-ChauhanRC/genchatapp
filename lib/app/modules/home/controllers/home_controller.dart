@@ -36,7 +36,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
 
     controllerInit();
-    await selectedContactController.loadInitialContacts();
+
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
     socketService.initSocket(userId!, onConnected: () {
       print('Initial socket connection established in HomeController: UserId for socket connection: $userId');
@@ -73,7 +73,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         print('📱 App Resumed: Trying to reconnect socket...');
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
-          connectSocket();
+          await connectSocket();
+          await selectedContactController.syncContactsWithServer();
         }
 
         break;
@@ -88,7 +89,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void connectSocket() async {
+  Future<void> connectSocket() async {
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
     if (userId != null && !socketService.isConnected) {
       await socketService.initSocket(userId);

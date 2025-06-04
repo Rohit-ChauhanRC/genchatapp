@@ -3,6 +3,7 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -312,6 +313,25 @@ class SocketService extends GetxService {
       } else {
         print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
       }
+    });
+
+    _socket?.on('user-update', (data) async{
+      print('✅ User Details Update: $data');
+      UserData userDetails = UserData.fromJson(data["userData"]);
+      // print("userData after json to model: $userDetails");
+      await chatConectTable.updateContact(
+        uid: userDetails.userId.toString(),
+        profilePic:userDetails.displayPictureUrl,
+      );
+      await contactsTable.updateUserFields(
+        userId: userDetails.userId ?? 0,
+        name: userDetails.name,
+        phoneNumber: userDetails.phoneNumber,
+        email: userDetails.email,
+        userDescription: userDetails.userDescription,
+        displayPicture: userDetails.displayPicture,
+        displayPictureUrl: userDetails.displayPictureUrl,
+      );
     });
 
     _socket?.on('custom-error', (data) {

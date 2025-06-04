@@ -112,6 +112,55 @@ class ContactsTable {
     );
   }
 
+  Future<void> updateUserFields({
+    required int userId,
+    String? name,
+    String? localName,
+    String? phoneNumber,
+    String? email,
+    String? userDescription,
+    String? displayPicture,
+    String? displayPictureUrl,
+  }) async {
+    final db = await DataBaseService().database;
+
+    // Build only non-null values to update
+    final Map<String, dynamic> updateFields = {};
+      if (name != null) updateFields['name'] = name;
+      if (localName != null) updateFields['localName'] = localName;
+      if (phoneNumber != null) updateFields['phoneNumber'] = phoneNumber;
+      if (email != null) updateFields['email'] = email;
+      if (userDescription != null) updateFields['userDescription'] = userDescription;
+      if (displayPicture != null) updateFields['displayPicture'] = displayPicture;
+      if (displayPictureUrl != null) updateFields['displayPictureUrl'] = displayPictureUrl;
+
+
+    print('📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields');
+
+    if (updateFields.isEmpty) {
+      print('⚠️ No fields to update for userId=$userId');
+      return;
+    }
+
+    // Try update — will update only if userId exists
+    if (updateFields.isNotEmpty) {
+      await db.update(
+        tableName,
+        updateFields,
+        where: 'userId = ?',
+        whereArgs: [userId],
+      );
+    }else {
+      print('⚠️ [updateContact] No values to update for uid=$userId');
+    }
+    // if (rowsAffected == 0) {
+    //   print('ℹ️ No user found with userId=$userId. Skipping update.');
+    // } else {
+    //   print('✅ Updated $rowsAffected row(s) for userId=$userId');
+    // }
+  }
+
+
 
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;

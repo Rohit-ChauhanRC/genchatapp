@@ -102,13 +102,13 @@ class SelectContactsView extends GetView<SelectContactsController> {
                                   fontSize: 18,
                                 ),
                               ),
-                              leading: contact.displayPictureUrl == null
+                              leading: contact.displayPictureUrl == null || contact.displayPictureUrl == ""
                                   ? const CircleAvatar(
                                 child: Icon(Icons.person),
                                 radius: 30,
                               )
                                   : CachedNetworkImage(
-                                imageUrl: contact.displayPictureUrl!,
+                                imageUrl: contact.displayPictureUrl.toString(),
                                 imageBuilder: (context, imageProvider) => CircleAvatar(
                                   backgroundImage: imageProvider,
                                   radius: 30,

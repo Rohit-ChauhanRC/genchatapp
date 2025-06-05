@@ -326,19 +326,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void handleDeletedMessage(NewMessageModel msg) {
     // You can still show a greyed-out bubble in the chat
     print("Message '${msg.message}' was deleted.");
-    Get.snackbar(
-      "Original message deleted",
-      "The message you're replying to has been deleted.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // Get.snackbar(
+    //   "Original message deleted",
+    //   "The message you're replying to has been deleted.",
+    //   snackPosition: SnackPosition.BOTTOM,
+    // );
+    showAlertMessage("The message does not exit or lost.");
   }
 
   void handleMessageNotExist(int repliedId) {
-    Get.snackbar(
-      "Message not found",
-      "The message you're replying to does not exist in the database.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // Get.snackbar(
+    //   "Message not found",
+    //   "The message you're replying to does not exist in the database.",
+    //   snackPosition: SnackPosition.BOTTOM,
+    // );
+    showAlertMessage("The message does not exit or lost.");
   }
 
   Future<void> checkMessageInList(int repliedId) async {
@@ -849,6 +851,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       }
     }
     selectedMessages.clear();
+    messageList.refresh();
   }
 
   Future<void> cancelReply() async {

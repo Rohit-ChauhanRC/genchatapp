@@ -1,17 +1,12 @@
   import 'dart:async';
   import 'package:flutter/material.dart';
-  import 'package:flutter/scheduler.dart';
-  import 'package:genchatapp/app/config/services/firebase_controller.dart';
   import 'package:genchatapp/app/config/theme/app_colors.dart';
   import 'package:genchatapp/app/constants/message_enum.dart';
   import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-  import 'package:genchatapp/app/modules/singleChat/widgets/measure_size.dart';
   import 'package:genchatapp/app/modules/singleChat/widgets/typping_bubble.dart';
-  import 'package:genchatapp/app/utils/utils.dart';
   import 'package:get/get.dart';
   import 'package:intl/intl.dart';
   import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-  import '../../../constants/colors.dart';
   import 'my_message_card.dart';
   import 'sender_message_card.dart';
 
@@ -90,13 +85,11 @@
                         (messages.messageId ?? messages.clientSystemMessageId)
                             .toString();
 
-                    final key = singleChatController.messageKeys
-                        .putIfAbsent(id, () => GlobalKey());
+                  
 
                     singleChatController.messageIdToIndex[id] = index;
 
-                    // singleChatController.messageKeys
-                    //     .putIfAbsent(id, () => GlobalKey());
+                   
                     return ValueListenableBuilder<String?>(
                         valueListenable:
                             singleChatController.highlightedMessageId,
@@ -105,11 +98,9 @@
                               highlightId == messages.messageId.toString();
 
                           return InkWell(
-                            // key: key,
                             onLongPress: () {
                               singleChatController
                                   .toggleMessageSelection(messages);
-                              print("selected Multiple Taps");
                             },
                             onTap: () {
                               singleChatController.hideKeyboard();
@@ -117,7 +108,6 @@
                                   .selectedMessages.isNotEmpty) {
                                 singleChatController
                                     .toggleMessageSelection(messages);
-                                print("selected tap");
                               }
                             },
                             child: Obx(() {
@@ -169,7 +159,7 @@
                                                           MessageType.text,
                                                   isReplied: true,
                                                   messageId:
-                                                      messages.messageId ?? 0,
+                                                      messages.messageId!.toInt() ,
                                                 );
                                               },
                                         repliedMessageType:

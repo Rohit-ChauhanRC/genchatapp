@@ -53,226 +53,195 @@ class ChatList extends StatelessWidget {
           });
 
           return NotificationListener<ScrollNotification>(
-            onNotification: (ScrollNotification notification) {
-              if (notification.metrics.pixels <= 0) {
-                // At the top, allow pull-to-refresh
-                return true; // Let RefreshIndicator receive it
-              }
-              return false;
-            },
-            child: RefreshIndicator(
-              onRefresh: () async {
-                // Optional: show a loader for a second for smooth UX
-                await Future.delayed(const Duration(milliseconds: 500));
-                await singleChatController.loadMoreMessages();
+              onNotification: (ScrollNotification notification) {
+                if (notification.metrics.pixels <= 0) {
+                  // At the top, allow pull-to-refresh
+                  return true; // Let RefreshIndicator receive it
+                }
+                return false;
               },
-              edgeOffset: 0,
-              displacement: 40,
-              child: ScrollablePositionedList.builder(
-                itemScrollController: singleChatController.itemScrollController,
-                itemPositionsListener:
-                    singleChatController.itemPositionsListener,
-                itemCount: messageCount + (isTyping ? 1 : 0),
-                // physics: const ClampingScrollPhysics(),
-                physics: const ClampingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  if (isTyping && index == messageCount) {
-                    return const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      child: TypingBubble(), // 👈 your animated dots widget
-                    );
-                  }
-
-                  var messages = singleChatController.messageList[index];
-
-                  final id =
-                      (messages.messageId ?? messages.clientSystemMessageId)
-                          .toString();
-
-                  final key = singleChatController.messageKeys
-                      .putIfAbsent(id, () => GlobalKey());
-
-                  singleChatController.messageIdToIndex[id] = index;
-
-                  // singleChatController.messageKeys
-                  //     .putIfAbsent(id, () => GlobalKey());
-                  return ValueListenableBuilder<String?>(
-                      valueListenable:
-                          singleChatController.highlightedMessageId,
-                      builder: (context, highlightId, _) {
-                        final isHighlighted =
-                            highlightId == messages.messageId.toString();
-
-                        return InkWell(
-                          // key: key,
-                          onLongPress: () {
-                            singleChatController
-                                .toggleMessageSelection(messages);
-                            print("selected Multiple Taps");
-                          },
-                          onTap: () {
-                            singleChatController.hideKeyboard();
-                            if (singleChatController
-                                .selectedMessages.isNotEmpty) {
-                              singleChatController
-                                  .toggleMessageSelection(messages);
-                              print("selected tap");
-                            }
-                          },
-                          child: Obx(() {
-                            bool isMsgSelected = singleChatController
-                                .selectedMessages
-                                .contains(messages);
-                            final bgColor = isMsgSelected || isHighlighted
-                                ? AppColors.mySideBgColor.withOpacity(0.3)
-                                : Colors.transparent;
-                            final isMine = messages.senderId ==
-                                singleChatController.senderuserData?.userId;
-                            return Container(
-                              color: bgColor,
-                              child: isMine
-                                  ? MyMessageCard(
-                                      message: messages.messageType ==
-                                                  MessageType.text ||
-                                              messages.messageType ==
-                                                  MessageType.deleted
-                                          ? (messages.message!.isNotEmpty
-                                              ? messages.message.toString()
-                                              : '') // NULL-SAFE
-                                          : (messages
-                                                  .assetServerName!.isNotEmpty
-                                              ? messages.assetServerName
-                                                  .toString()
-                                              : ''),
-                                      date: DateFormat('hh:mm a').format(
-                                          DateTime.parse(messages
-                                                  .messageSentFromDeviceTime ??
-                                              '')),
-                                      // date: "",
-                                      type: messages.messageType ??
-                                          MessageType.text,
-                                      status:
-                                          messages.state ?? MessageState.unsent,
-                                      onLeftSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
-                                              singleChatController
-                                                  .onMessageSwipe(
-                                                isMe: true,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  // Optional: show a loader for a second for smooth UX
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  await singleChatController.loadMoreMessages();
+                },
+                edgeOffset: 0,
+                displacement: 40,
+            child: ScrollablePositionedList.builder(
+              itemScrollController: singleChatController.itemScrollController,
+              itemPositionsListener: singleChatController.itemPositionsListener,
+              itemCount: messageCount + (isTyping ? 1 : 0),
+              // physics: const ClampingScrollPhysics(),
+              physics: const BouncingScrollPhysics(
+                  decelerationRate: ScrollDecelerationRate.normal),
+              itemBuilder: (context, index) {
+                if (isTyping && index == messageCount) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: TypingBubble(), // 👈 your animated dots widget
+                  );
+                }
+            
+                var messages = singleChatController.messageList[index];
+            
+                final id = (messages.messageId ?? messages.clientSystemMessageId)
+                    .toString();
+            
+                final key = singleChatController.messageKeys
+                    .putIfAbsent(id, () => GlobalKey());
+            
+                singleChatController.messageIdToIndex[id] = index;
+            
+                // singleChatController.messageKeys
+                //     .putIfAbsent(id, () => GlobalKey());
+                return ValueListenableBuilder<String?>(
+                    valueListenable: singleChatController.highlightedMessageId,
+                    builder: (context, highlightId, _) {
+                      final isHighlighted =
+                          highlightId == messages.messageId.toString();
+            
+                      return InkWell(
+                        key: key,
+                        onLongPress: () {
+                          singleChatController.toggleMessageSelection(messages);
+                          print("selected Multiple Taps");
+                        },
+                        onTap: () {
+                          singleChatController.hideKeyboard();
+                          if (singleChatController.selectedMessages.isNotEmpty) {
+                            singleChatController.toggleMessageSelection(messages);
+                            print("selected tap");
+                          }
+                        },
+                        child: Obx(() {
+                          bool isMsgSelected = singleChatController
+                              .selectedMessages
+                              .contains(messages);
+                          final bgColor = isMsgSelected || isHighlighted
+                              ? AppColors.mySideBgColor.withOpacity(0.3)
+                              : Colors.transparent;
+                          final isMine = messages.senderId ==
+                              singleChatController.senderuserData?.userId;
+                          return Container(
+                            color: bgColor,
+                            child: isMine
+                                ? MyMessageCard(
+                                    message: messages.messageType ==
+                                                MessageType.text ||
+                                            messages.messageType ==
+                                                MessageType.deleted
+                                        ? (messages.message!.isNotEmpty
+                                            ? 
+                                                    messages.message.toString()
+                                            : '') // NULL-SAFE
+                                        : (messages.assetServerName!.isNotEmpty
+                                            ? messages
+                                                    .assetServerName
+                                                    .toString()
+                                            : ''),
+                                    date: DateFormat('hh:mm a').format(
+                                        DateTime.parse(
+                                            messages.messageSentFromDeviceTime ??
+                                                '')),
+                                    // date: "",
+                                    type:
+                                        messages.messageType ?? MessageType.text,
+                                    status: messages.state ?? MessageState.unsent,
+                                    onLeftSwipe: messages.messageType ==
+                                            MessageType.deleted
+                                        ? null
+                                        : (v) {
+                                            singleChatController.onMessageSwipe(
+                                              isMe: true,
+                                              message: messages.message ?? '',
+                                              messageType: messages.messageType ??
+                                                  MessageType.text,
+                                              isReplied: true,
+                                              messageId: messages.messageId ?? 0,
+                                            );
+                                          },
+                                    repliedMessageType:
+                                        messages.messageRepliedOnType ??
+                                            MessageType.text,
+                                    repliedText:
+                                        (messages.messageRepliedOn != ''
+                                                ? messages
+                                                        .messageRepliedOn
+                                                        .toString()
+                                                : '')
+                                            .obs,
+                                    // username: messages.,
+                                    repliedUserId: messages.messageRepliedUserId,
+                                    repliedUserName:
+                                        messages.messageRepliedUserId != 0
+                                            ? messages.messageRepliedUserId ==
+                                                    singleChatController
+                                                        .senderuserData!.userId
+                                                ? "You"
+                                                : singleChatController
+                                                    .receiverUserData!.localName
+                                            : "username",
+                                    onReplyTap: () => singleChatController
+                                        .scrollToOriginalMessage(
+                                            messages.messageRepliedOnId!),
+                                    isHighlighted: isHighlighted,
+                              isForwarded: messages.isForwarded!,
+                            showForwarded: messages.showForwarded!,
+                                  )
+                                : SenderMessageCard(
+                                    message: messages.messageType == MessageType.text ||
+                                            messages.messageType ==
+                                                MessageType.deleted
+                                        ? (messages.message!.isNotEmpty
+                                            ? 
+                                                    messages.message.toString()
+                                            : '')
+                                        : (messages.assetServerName ?? ''),
+                                    date: DateFormat('hh:mm a').format(
+                                        DateTime.parse(
+                                            messages.messageSentFromDeviceTime ??
+                                                '')),
+                                    type:
+                                        messages.messageType ?? MessageType.text,
+                                    onRightSwipe: messages.messageType ==
+                                            MessageType.deleted
+                                        ? null
+                                        : (v) {
+                                            // singleChatController.isRepUpdate = true;
+                                            singleChatController.onMessageSwipe(
+                                                isMe: false,
                                                 message: messages.message ?? '',
                                                 messageType:
                                                     messages.messageType ??
                                                         MessageType.text,
                                                 isReplied: true,
                                                 messageId:
-                                                    messages.messageId ?? 0,
-                                              );
-                                            },
-                                      repliedMessageType:
-                                          messages.messageRepliedOnType ??
-                                              MessageType.text,
-                                      repliedText:
-                                          (messages.messageRepliedOn != ''
-                                                  ? messages.messageRepliedOn
-                                                      .toString()
-                                                  : '')
-                                              .obs,
-                                      // username: messages.,
-                                      repliedUserId:
-                                          messages.messageRepliedUserId,
-                                      repliedUserName:
-                                          messages.messageRepliedUserId != 0
-                                              ? messages.messageRepliedUserId ==
-                                                      singleChatController
-                                                          .senderuserData!
-                                                          .userId
-                                                  ? "You"
-                                                  : singleChatController
-                                                      .receiverUserData!
-                                                      .localName
-                                              : "username",
-                                      onReplyTap: () => singleChatController
-                                          .scrollToOriginalMessage(
-                                              messages.messageRepliedOnId!),
-                                      isHighlighted: isHighlighted,
-                                      isForwarded: messages.isForwarded!,
-                                      showForwarded: messages.showForwarded!,
-                                    )
-                                  : SenderMessageCard(
-                                      message: messages.messageType ==
-                                                  MessageType.text ||
-                                              messages.messageType ==
-                                                  MessageType.deleted
-                                          ? (messages.message!.isNotEmpty
-                                              ? messages.message.toString()
-                                              : '')
-                                          : (messages.assetServerName ?? ''),
-                                      date: DateFormat('hh:mm a').format(
-                                          DateTime.parse(messages
-                                                  .messageSentFromDeviceTime ??
-                                              '')),
-                                      type: messages.messageType ??
-                                          MessageType.text,
-                                      onRightSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
-                                              // singleChatController.isRepUpdate = true;
-                                              singleChatController
-                                                  .onMessageSwipe(
-                                                      isMe: false,
-                                                      message:
-                                                          messages.message ??
-                                                              '',
-                                                      messageType: messages
-                                                              .messageType ??
-                                                          MessageType.text,
-                                                      isReplied: true,
-                                                      messageId:
-                                                          messages.messageId ??
-                                                              0);
-                                            },
-                                      repliedMessageType:
-                                          messages.messageRepliedOnType ??
-                                              MessageType.text,
-                                      repliedText:
-                                          (messages.messageRepliedOn!.isNotEmpty
-                                                  ? messages.messageRepliedOn
-                                                      .toString()
-                                                  : '')
-                                              .obs,
-                                      // username: messages.repliedTo,
-                                      repliedUserId:
-                                          messages.messageRepliedUserId,
-                                      repliedUserName: messages
-                                                      .messageRepliedUserId !=
-                                                  0 &&
-                                              messages.messageRepliedUserId !=
-                                                  null
-                                          ? messages.messageRepliedUserId ==
-                                                  singleChatController
-                                                      .senderuserData!.userId
-                                              ? "You"
-                                              : singleChatController
-                                                  .receiverUserData!.localName
-                                          : "username",
-                                      onReplyTap: () => singleChatController
-                                          .scrollToOriginalMessage(
-                                              messages.messageRepliedOnId!),
-                                      isHighlighted: isHighlighted,
-                                      isForwarded: messages.isForwarded!,
-                                      showForwarded: messages.showForwarded!,
-                                    ),
-                            );
-                          }),
-                        );
-                      });
-                  // }
-                },
-              ),
+                                                    messages.messageId ?? 0);
+                                          },
+                                    repliedMessageType:
+                                        messages.messageRepliedOnType ?? MessageType.text,
+                                    repliedText: (messages.messageRepliedOn!.isNotEmpty ? messages.messageRepliedOn.toString() : '').obs,
+                                    // username: messages.repliedTo,
+                                    repliedUserId: messages.messageRepliedUserId,
+                                    repliedUserName: messages.messageRepliedUserId != 0 && messages.messageRepliedUserId != null
+                                        ? messages.messageRepliedUserId == singleChatController.senderuserData!.userId
+                                            ? "You"
+                                            : singleChatController.receiverUserData!.localName
+                                        : "username",
+                                    onReplyTap: () => singleChatController.scrollToOriginalMessage(messages.messageRepliedOnId!),
+                                    isHighlighted: isHighlighted,
+                                    isForwarded: messages.isForwarded!,
+                                    showForwarded: messages.showForwarded!,
+                            ),
+                          );
+                        }),
+                      );
+                    });
+                // }
+              },
             ),
+              ),
           );
         }),
         Obx(() {

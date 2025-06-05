@@ -111,6 +111,23 @@ class MessageTable {
     );
   }
 
+  Future<NewMessageModel?> fetchMessageById(int messageId) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return NewMessageModel.fromMap(result.first);
+    }
+
+    return null; // message does not exist at all
+  }
+
   // Update message by messageId
   Future<int> updateMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;

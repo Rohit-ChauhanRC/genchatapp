@@ -9,13 +9,10 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
-import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
-import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
-import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -42,8 +39,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   final socketService = Get.find<SocketService>();
 
   final ChatConectTable chatConectTable = ChatConectTable();
-
-  // final GroupRepository groupRepository = Get.find< GroupRepository>();
 
   final EncryptionService encryptionService = Get.find();
 
@@ -173,11 +168,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get isPaginating => _isPaginating.value;
   set isPaginating(bool b) => _isPaginating.value = b;
 
-  final RxBool _hasMoreMessages = false.obs;
+  final RxBool _hasMoreMessages = true.obs;
   bool get hasMoreMessages => _hasMoreMessages.value;
   set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
-
-  final GroupsTable groupsTable = GroupsTable();
 
   @override
   void onInit() async {
@@ -216,26 +209,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
     hasScrolledInitially.value = false;
-
-    // itemPositionsListener.itemPositions.addListener(() {
-    //   final positions = itemPositionsListener.itemPositions.value;
-    //   final maxVisbleIndex = positions
-    //       .map((e) => e.index)
-    //       .fold(0, (prev, idx) => idx > prev ? idx : prev);
-    //       final max = maxVisbleIndex ;
-    //   if (max >= messageList.length - 1 && hasMoreMessages) {
-    //     loadMoreMessages();
-    //   }
-
-    //   // final minVisibleIndex =
-    //   //     positions.map((e) => e.index).reduce((a, b) => a < b ? a : b);
-
-    //   // if (minVisibleIndex <= 1 && hasMoreMessages && !isPaginating) {
-    //   //   loadMoreMessages();
-    //   // }
-
-    //   // monitorScrollPosition();
-    // });
   }
 
   @override
@@ -283,11 +256,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
     final index = messageIdToIndex[repliedId.toString()];
     if (index != null) {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
       itemScrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 300),
@@ -305,14 +273,121 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       });
     } else {
       print('Original message not currently visible');
+      checkMessageInList(repliedId);
     }
   }
+
+//  Future<void> checkMessageInList(int repliedId) async {
+//     bool messageFound = false;
+//     int localOffset = currentOffset;
+
+//     while (!messageFound) {
+//       final messages = await MessageTable().fetchMessagesPaginated(
+//         receiverId: receiverUserData?.userId ?? 0,
+//         senderId: senderuserData?.userId ?? 0,
+//         offset: localOffset,
+//         limit: pageSize,
+//       );
+
+//       if (messages.isEmpty) {
+//         print("Reached end of messages. Message not found.");
+//         break;
+//       }
+
+//       final index = messages.indexWhere((e) => e.messageId == repliedId);
+//       if (index != -1) {
+//         final foundMessage = messages[index];
+//         print("Found message: ${foundMessage.messageText}");
+
+//         // Optionally add this to message list
+//         messageList.insertAll(0, messages); // or a smarter merge logic
+
+//         // Update index map and scroll
+//         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
+
+//         scrollToOriginalMessage(repliedId);
+//         messageFound = true;
+//       } else {
+//         localOffset += messages.length;
+//         messageList.insertAll(
+//             0, messages); // Prepend as new messages load upward
+//       }
+//     }
+
+//     currentOffset = localOffset; // Maintain progress
+//   }
 
   void checkUserOnline(UserList? user) async {
     if (user == null) return;
     var params = {"recipientId": user.userId};
     if (socketService.isConnected) {
       socketService.checkUserOnline(params);
+    }
+  }
+
+  void handleDeletedMessage(NewMessageModel msg) {
+    // You can still show a greyed-out bubble in the chat
+    print("Message '${msg.message}' was deleted.");
+    Get.snackbar(
+      "Original message deleted",
+      "The message you're replying to has been deleted.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  void handleMessageNotExist(int repliedId) {
+    Get.snackbar(
+      "Message not found",
+      "The message you're replying to does not exist in the database.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  Future<void> checkMessageInList(int repliedId) async {
+    int localOffset = currentOffset;
+    bool messageFound = false;
+
+    while (!messageFound) {
+      final messages = await MessageTable().fetchMessagesPaginated(
+        receiverId: receiverUserData?.userId ?? 0,
+        senderId: senderuserData?.userId ?? 0,
+        offset: localOffset,
+        limit: pageSize,
+      );
+
+      if (messages.isEmpty) {
+        // All pages scanned, message not found. Check if it existed and is deleted
+        final deletedMsg = await MessageTable().fetchMessageById(repliedId);
+        if (deletedMsg != null) {
+          print("Message existed but was deleted.");
+          handleDeletedMessage(deletedMsg);
+        } else {
+          print("Message never existed.");
+          handleMessageNotExist(repliedId);
+        }
+        break;
+      }
+
+      // Only insert if message is in this page
+      final index = messages.indexWhere((e) => e.messageId == repliedId);
+      if (index != -1) {
+        messageList.insertAll(0, messages);
+        updateMessageIdToIndex();
+        scrollToOriginalMessage(repliedId);
+        messageFound = true;
+
+        currentOffset = localOffset + messages.length;
+      } else {
+        // Don't insert, just go to next page
+        localOffset += messages.length;
+      }
+    }
+  }
+
+  void updateMessageIdToIndex() {
+    messageIdToIndex.clear();
+    for (int i = 0; i < messageList.length; i++) {
+      messageIdToIndex[messageList[i].messageId.toString()] = i;
     }
   }
 
@@ -346,33 +421,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         itemScrollController.scrollTo(
           index: lastIndex,
           duration: const Duration(milliseconds: 300),
-          curve: Curves.fastOutSlowIn,
+          curve: Curves.easeInOut,
         );
       } else {
-        itemScrollController.scrollTo(
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.fastOutSlowIn,
-        );
-      }
-    }
-  }
-
-  void scrollToTop({bool animated = false}) {
-    if (itemScrollController.isAttached) {
-      final firstIndex = pageSize - 5;
-      if (animated) {
-        itemScrollController.scrollTo(
-          index: firstIndex,
-          duration: const Duration(seconds: 1),
-          curve: Curves.fastOutSlowIn,
-        );
-      } else {
-        itemScrollController.scrollTo(
-          index: firstIndex,
-          duration: const Duration(seconds: 1),
-          curve: Curves.fastOutSlowIn,
-        );
+        itemScrollController.jumpTo(index: lastIndex);
       }
     }
   }
@@ -474,15 +526,36 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  void scrollToTop({bool animated = false}) {
+    if (itemScrollController.isAttached) {
+      final firstIndex = pageSize - 5;
+      if (animated) {
+        itemScrollController.scrollTo(
+          index: firstIndex,
+          duration: const Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+        );
+      } else {
+        itemScrollController.scrollTo(
+          index: firstIndex,
+          duration: const Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+        );
+      }
+    }
+  }
+
   Future<void> loadInitialMessages() async {
     currentOffset = 0;
     hasMoreMessages = true;
     messageList.clear();
-
-    await checkO();
+    await loadMoreMessages();
   }
 
-  checkO() async {
+  Future<void> loadMoreMessages() async {
+    if (isPaginating || !hasMoreMessages) return;
+
+    isPaginating = true;
     final messages = await MessageTable().fetchMessagesPaginated(
       receiverId: receiverUserData?.userId ?? 0,
       senderId: senderuserData?.userId ?? 0,
@@ -490,11 +563,18 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       limit: pageSize,
     );
     if (messages.isNotEmpty) {
+      // Add message keys
+      messageKeys.clear();
+      for (final item in messages) {
+        messageKeys[item.messageId.toString()] = GlobalKey();
+      }
+      // if (currentOffset != messageList.length) {
+      //   messageList.clear();
+      // }
+      // messageList.clear();
       messageList.insertAll(0, messages);
 
       currentOffset += messages.length;
-
-      // hasMoreMessages = false;
 
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
@@ -523,167 +603,12 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           }
         }
       }
+      scrollToTop();
     } else {
-      // hasMoreMessages = true;
+      hasMoreMessages = false;
     }
+    isPaginating = false;
   }
-
-  Future<void> loadMoreMessages() async {
-    // if (isPaginating || !hasMoreMessages) return;
-
-    final positions = itemPositionsListener.itemPositions.value;
-    if (positions.isEmpty) return;
-
-    final firstVisibleIndex = positions
-        .where((e) => e.itemLeadingEdge >= 0)
-        .reduce((a, b) => a.index < b.index ? a : b);
-
-    final preIndex = firstVisibleIndex.index;
-    final preOffset = firstVisibleIndex.itemLeadingEdge;
-
-    final preCount = messageList.length;
-
-    hasMoreMessages = true;
-
-    await Future.delayed(Duration(seconds: 1));
-
-    // await lodmsg();
-    await lodmsg();
-
-    final newCount = messageList.length;
-
-    final addedCount = newCount - preCount;
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // itemScrollController.scrollTo(
-    //     index: preIndex + messageList.length,
-    //     duration: Duration(seconds: 1),
-    //     alignment: preOffset);
-    scrollToTop();
-    // });
-  }
-
-  Future<void> lodmsg() async {
-    try {
-      final newMessages = await MessageTable().fetchMessagesPaginated(
-        receiverId: receiverUserData?.userId ?? 0,
-        senderId: senderuserData?.userId ?? 0,
-        offset: currentOffset,
-        limit: pageSize,
-      );
-
-      if (newMessages.isNotEmpty) {
-        messageList.insertAll(0, newMessages);
-        currentOffset += pageSize;
-        hasMoreMessages = true;
-
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        for (var msg in newMessages) {
-          final isReceiverMsg = msg.senderId == receiverUserData?.userId;
-          final isSenderMsg = msg.senderId == senderuserData?.userId;
-
-          if ((msg.state == MessageState.sent ||
-                  msg.state == MessageState.unsent ||
-                  msg.state == MessageState.delivered) &&
-              msg.messageId != null &&
-              isReceiverMsg &&
-              socketService.isConnected) {
-            socketService.sendMessageSeen(msg.messageId!);
-          }
-
-          final shouldSync = isSenderMsg &&
-              msg.syncStatus == SyncStatus.pending &&
-              socketService.isConnected;
-
-          if (shouldSync &&
-              !_isAlreadyBeingSent(msg.clientSystemMessageId.toString())) {
-            socketService.sendMessageSync(msg);
-          }
-        }
-      } else {
-        hasMoreMessages = false;
-      }
-    } catch (e) {
-      print("Error loading more messages: $e");
-    } finally {
-      isPaginating = false;
-    }
-  }
-
-  // Future<void> loadMoreMessages() async {
-  //   if (isPaginating || !hasMoreMessages) return;
-
-  //   print("currentOffset:$currentOffset");
-  //   final positions = itemPositionsListener.itemPositions.value;
-  //   if (positions.isEmpty) return;
-  //   final firstVisibleIndex =
-  //       positions.map((e) => e.index).reduce((a, b) => a < b ? a : b);
-  //   // ItemPosition? firstVisible;
-  //   // for (final pos in positions) {
-  //   //   if (firstVisible == null || pos.index < firstVisible.index) {
-  //   //     firstVisible = pos;
-  //   //   }
-  //   // }
-  //   if (firstVisibleIndex <= 2) {
-  //     isPaginating = true;
-  //     currentOffset += pageSize;
-  //     final messages = await MessageTable().fetchMessagesPaginated(
-  //       receiverId: receiverUserData?.userId ?? 0,
-  //       senderId: senderuserData?.userId ?? 0,
-  //       offset: currentOffset,
-  //       limit: pageSize,
-  //     );
-  //     final oldTopId = messageList[firstVisibleIndex].messageId;
-  //     if (messages.isNotEmpty) {
-  //       // Add message keys
-  //       // messageKeys.clear();
-  //       // for (final item in messages) {
-  //       // messageKeys[item.messageId.toString()] = GlobalKey();
-  //       // }
-  //             await Future.delayed(const Duration(milliseconds: 100));
-
-  //       messageList.insertAll(0, messages);
-
-  //       currentOffset += messages.length;
-  //       final newIndex = messageList.indexWhere((m) => m.messageId == oldTopId);
-  //       if (newIndex != -1) {
-  //         itemScrollController.jumpTo(index: newIndex);
-  //       }
-
-  //       for (var i in messages) {
-  //         if ((i.state == MessageState.sent ||
-  //                 i.state == MessageState.unsent ||
-  //                 i.state == MessageState.delivered) &&
-  //             i.messageId != null) {
-  //           if (receiverUserData!.userId == i.senderId &&
-  //               socketService.isConnected) {
-  //             socketService.sendMessageSeen(i.messageId!);
-  //           }
-  //         } else if (senderuserData!.userId == i.senderId &&
-  //             i.syncStatus == SyncStatus.pending &&
-  //             i.messageId == null) {
-  //           if (socketService.isConnected) {
-  //             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
-  //               socketService.sendMessageSync(i);
-  //             }
-  //           }
-  //         } else if (senderuserData!.userId == i.senderId &&
-  //             i.syncStatus == SyncStatus.pending &&
-  //             i.messageId != null) {
-  //           if (socketService.isConnected) {
-  //             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
-  //               socketService.sendMessageSync(i);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       hasMoreMessages = false;
-  //     }
-  //   }
-  //   isPaginating = false;
-  // }
 
   void _startLoadingTimer() {
     Timer(const Duration(seconds: 3), () {
@@ -1121,8 +1046,59 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
 
 
+///message stream code
+// void bindMessageStream() {
+//   messageStream = getMessageStream();
+//   messageSubscription = messageStream.listen((messages) {
+//     // print(messages);
+//     messageKeys.clear();
+//     for (final item in messages) {
+//       messageKeys[item.messageId.toString()] = GlobalKey();
+//     }
+//     messageList.assignAll(messages);
+//
+//     if (messages.isNotEmpty) {
+//       for (var i in messages) {
+//         if ((i.state == MessageState.sent ||
+//             i.state == MessageState.unsent ||
+//             i.state == MessageState.delivered) &&
+//             i.messageId != null) {
+//           if (receiverUserData!.userId == i.senderId &&
+//               socketService.isConnected) {
+//             socketService.sendMessageSeen(i.messageId!);
+//           }
+//         } else if (senderuserData!.userId == i.senderId &&
+//             i.syncStatus == SyncStatus.pending &&
+//             i.messageId == null) {
+//           if (socketService.isConnected) {
+//             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+//               socketService.sendMessageSync(i);
+//             }
+//           }
+//         } else if (senderuserData!.userId == i.senderId &&
+//             i.syncStatus == SyncStatus.pending &&
+//             i.messageId != null) {
+//           if (socketService.isConnected) {
+//             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+//               socketService.sendMessageSync(i);
+//             }
+//           }
+//         }
+//       }
+//     }
+//   });
+// }
+//
+// Stream<List<NewMessageModel>> getMessageStream() async* {
+//   yield* Stream.periodic(const Duration(seconds: 1), (_) async {
+//     return await MessageTable().fetchMessages(
+//       receiverId: receiverUserData?.userId ?? 0,
+//       senderId: senderuserData?.userId ?? 0,
+//     );
+//   }).asyncMap((event) async => await event);
+// }
 
-
+/// last used code form last firebase changes
 // _saveDataToContactsSubcollection(MessageModel message) async {
 //   // users -> reciever user id => chats -> current user id -> set data
 //   var recieverChatContact = ChatConntactModel(

@@ -141,7 +141,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final Set<String> _sendingMessageIds = {};
 
-
   Map<int, double> itemHeights = {}; // messageId : height
   final ValueNotifier<String?> replyId = ValueNotifier(null);
 
@@ -204,7 +203,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     // bindMessageStream();
     await loadInitialMessages();
     bindSocketEvents();
-    // monitorScrollPosition();
+    monitorScrollPosition();
     isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
     hasScrolledInitially.value = false;
@@ -395,14 +394,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       final positions = itemPositionsListener.itemPositions.value;
 
       if (positions.isNotEmpty) {
-        final minIndex =
-            positions.map((e) => e.index).reduce((a, b) => a < b ? a : b);
-
-        // 👇 Check if user reached top
-        if (minIndex <= 3 && !isPaginating && hasMoreMessages) {
-          await loadMoreMessages();
-        }
-
         final maxIndex =
             positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
         final totalCount = messageList.length + (isReceiverTyping ? 1 : 0);
@@ -563,7 +554,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
     if (messages.isNotEmpty) {
       // Add message keys
-     
+
       // if (currentOffset != messageList.length) {
       //   messageList.clear();
       // }

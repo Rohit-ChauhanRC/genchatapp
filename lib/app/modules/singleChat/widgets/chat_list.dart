@@ -88,8 +88,7 @@ class ChatList extends StatelessWidget {
                 final id = (messages.messageId ?? messages.clientSystemMessageId)
                     .toString();
             
-                final key = singleChatController.messageKeys
-                    .putIfAbsent(id, () => GlobalKey());
+               
             
                 singleChatController.messageIdToIndex[id] = index;
             
@@ -102,7 +101,7 @@ class ChatList extends StatelessWidget {
                           highlightId == messages.messageId.toString();
             
                       return InkWell(
-                        key: key,
+                        key: UniqueKey(),
                         onLongPress: () {
                           singleChatController.toggleMessageSelection(messages);
                           print("selected Multiple Taps");

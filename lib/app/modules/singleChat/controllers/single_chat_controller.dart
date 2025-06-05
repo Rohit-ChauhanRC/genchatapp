@@ -141,7 +141,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   final Set<String> _sendingMessageIds = {};
 
-  final RxMap<String, GlobalKey> messageKeys = <String, GlobalKey>{}.obs;
 
   Map<int, double> itemHeights = {}; // messageId : height
   final ValueNotifier<String?> replyId = ValueNotifier(null);
@@ -564,10 +563,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
     if (messages.isNotEmpty) {
       // Add message keys
-      messageKeys.clear();
-      for (final item in messages) {
-        messageKeys[item.messageId.toString()] = GlobalKey();
-      }
+     
       // if (currentOffset != messageList.length) {
       //   messageList.clear();
       // }

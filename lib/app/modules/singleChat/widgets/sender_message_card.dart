@@ -66,7 +66,7 @@ class SenderMessageCard extends StatelessWidget {
                       bottomRight: Radius.circular(8))),
               color:
                   // isHighlighted! ? Colors.pinkAccent.shade100 :
-                  whiteColor,
+                  AppColors.bgColor.withOpacity(0.80),
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [

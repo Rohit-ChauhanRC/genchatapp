@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_text_image_gif.dart';
 import 'package:get/get.dart';
@@ -15,14 +16,22 @@ class MessageReplyPreview extends StatelessWidget {
     BuildContext context,
   ) {
     return Container(
-      width: 350,
+      width: Get.width,
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.bgColor,
+        // borderRadius: const BorderRadius.only(
+        //   topLeft: Radius.circular(12),
+        //   topRight: Radius.circular(12),
+        // ),
+        boxShadow: [
+          BoxShadow(
+            color:AppColors.blackColor,
+            spreadRadius: -26,
+            blurRadius: 20,
+            offset: const Offset(0, -10), // changes position of shadow
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -43,10 +52,10 @@ class MessageReplyPreview extends StatelessWidget {
               ),
               Obx(
                 () => singleChatController.messageReply.message != null
-                    ? GestureDetector(
+                    ? InkWell(
                         child: const Icon(
                           Icons.close,
-                          size: 16,
+                          size: 20,
                         ),
                         onTap: () {
                           singleChatController.cancelReply();

@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
@@ -18,6 +20,8 @@ class SelectContactsController extends GetxController {
   final ChatConectTable chatConectTable = ChatConectTable();
   final ConnectivityService connectivityService =
       Get.find<ConnectivityService>();
+
+  final socketService = Get.find<SocketService>();
 
   final RxBool _isContactRefreshed = false.obs;
   bool get isContactRefreshed => _isContactRefreshed.value;
@@ -46,14 +50,16 @@ class SelectContactsController extends GetxController {
     super.onInit();
     // contactsTable.deleteTable();
     loadInitialContacts();
+    bindSocketEvents();
   }
 
   @override
-  void onClose(){
+  void onClose() {
     super.onClose();
     filteredContacts.clear();
     contacts.clear();
   }
+
   Future<void> loadInitialContacts() async {
     final localContacts = await contactsTable.fetchAll();
     if (localContacts.isNotEmpty) {
@@ -111,10 +117,10 @@ class SelectContactsController extends GetxController {
         }).toList();
 
         await contactsTable.createBulk(enrichedUsers);
-        for(var user in enrichedUsers){
+        for (var user in enrichedUsers) {
           await chatConectTable.updateContact(
             uid: user.userId.toString(),
-            profilePic:user.displayPictureUrl,
+            profilePic: user.displayPictureUrl,
             name: user.localName,
           );
         }
@@ -127,5 +133,26 @@ class SelectContactsController extends GetxController {
 
   void selectContact(UserList user) {
     Get.toNamed(Routes.SINGLE_CHAT, arguments: user);
+  }
+
+  void bindSocketEvents() {
+    ever<UserData?>(socketService.updateContactUser, (UserData? data) {
+      if (data == null) return;
+
+      final index = contacts.indexWhere((e) => e.userId == data.userId);
+      if (index != -1) {
+        // contacts[index] = data!; // Replace the whole object
+        // OR update fields manually if needed:
+        contacts[index].name = data.name;
+        contacts[index].email = data.email;
+        contacts[index].phoneNumber = data.phoneNumber;
+        contacts[index].userDescription = data.userDescription;
+        contacts[index].displayPicture = data.displayPicture;
+        contacts[index].displayPictureUrl = data.displayPictureUrl;
+        update();
+        // Optionally trigger refresh if needed (depends on your list type)
+        // contacts.refresh(); // Only needed if `contacts` is an RxList
+      }
+    });
   }
 }

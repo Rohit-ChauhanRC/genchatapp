@@ -32,6 +32,8 @@ class SocketService extends GetxService {
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
+  final Rxn<UserData> updateContactUser = Rxn<UserData>();
+
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
@@ -318,6 +320,7 @@ class SocketService extends GetxService {
     _socket?.on('user-update', (data) async{
       print('✅ User Details Update: $data');
       UserData userDetails = UserData.fromJson(data["userData"]);
+      updateContactUser.value = userDetails;
       // print("userData after json to model: $userDetails");
       await chatConectTable.updateContact(
         uid: userDetails.userId.toString(),

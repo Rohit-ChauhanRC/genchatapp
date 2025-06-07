@@ -211,6 +211,26 @@ Widget loadingWidget({required String text}){
   );
 }
 
+/// Function to get the correct content type for images dynamically
+String getImageMimeType(File file) {
+  String extension = file.path.split('.').last.toLowerCase();
+
+  switch (extension) {
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    case 'bmp':
+      return 'image/bmp';
+    case 'webp':
+      return 'image/webp';
+    default:
+      return 'application/octet-stream'; // Default if unknown
+  }
+}
 
 extension StringCasingExtension on String {
   String get toCapitalized => length > 0 ?'${this[0].toUpperCase()}${substring(1).toLowerCase()}':'';

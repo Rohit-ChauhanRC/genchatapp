@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:genchatapp/app/network/api_client.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
+
+import '../../../utils/ApiUtils/form_data_helper.dart';
+import '../../../utils/utils.dart';
 
 class GroupRepository {
   final SharedPreferenceService sharedPreferences;
@@ -37,5 +42,31 @@ class GroupRepository {
       showAlertMessage("Error: $e");
       return null;
     }
+  }
+
+  /// Upload Profile Picture (Multipart FormData)
+  Future<Response?> uploadGroupPic(File imageFile, int groupId) async {
+    String fileName = imageFile.path.split('/').last;
+    String mimeType = getImageMimeType(imageFile);
+
+    // print("FileName: $fileName\nFileType: $mimeType\nImagePath: ${imageFile.path} ");
+
+    FormData buildFormData() {
+      return FormData.fromMap({
+        "groupId": groupId,
+        "display-picture": MultipartFile.fromFileSync(
+          imageFile.path,
+          filename: fileName,
+          contentType: DioMediaType.parse(mimeType),
+        ),
+      });
+    }
+
+    return await retryFormDataUpload(
+      url: ApiEndpoints.uploadGroupIcon,
+      formDataBuilder: buildFormData,
+      uploadCall: (formData) =>
+          apiClient.uploadFile(ApiEndpoints.uploadGroupIcon, formData),
+    );
   }
 }

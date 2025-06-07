@@ -24,9 +24,9 @@ class GroupNameController extends GetxController {
 
   FocusNode focusNode = FocusNode();
 
-  final RxString _searchQuery = ''.obs;
-  String get searchQuery => _searchQuery.value;
-  set searchQuery(String searchText) => _searchQuery.value = searchText;
+  final RxString _groupName = ''.obs;
+  String get groupName => _groupName.value;
+  set groupName(String searchText) => _groupName.value = searchText;
 
   final RxList<int> _selectedUserIds = <int>[].obs;
   List<int> get selectedUserIds => _selectedUserIds;
@@ -70,36 +70,85 @@ class GroupNameController extends GetxController {
     try {
       circularProgress = true;
 
-      final response =
-          await groupRepository.createGroup(searchQuery, selectedUserIds);
+      // Step 1: Create group
+      final response = await groupRepository.createGroup(groupName, selectedUserIds);
+
       if (response != null && response.statusCode == 200) {
-        final getVerifyNumberResponse =
-            CreateGroupModel.fromJson(response.data);
-        if (getVerifyNumberResponse.status == true) {
-          groupsTable.insertGroup(getVerifyNumberResponse.data!);
-          final data = getVerifyNumberResponse.data!;
-          await chatConectTable.insert(
-            contact: ChatConntactModel(
-              lastMessageId: 0,
-              contactId: data.id.toString(),
-              lastMessage: "",
-              name: data.name,
-              profilePic: data.displayPicture ?? '',
-              timeSent: data.createdAt,
-              uid: data.id.toString(),
-              isGroup: 1,
-            ),
-          );
+        final createGroupModelResponse = CreateGroupModel.fromJson(response.data);
+
+        if (createGroupModelResponse.status == true) {
+          final data = createGroupModelResponse.data;
+          final groupId = data?.group?.id ?? 0;
+
+          // Step 2: Insert initial group data into DB
+          await groupsTable.insertOrUpdateGroup(data!);
+
+
+          // Step 3: Only upload image if selected
+          if (image != null) {
+            await uploadGroupIcon(groupId: groupId);
+          } else {
+            await chatConectTable.insert(
+              contact: ChatConntactModel(
+                lastMessageId: 0,
+                contactId: groupId.toString(),
+                lastMessage: "",
+                name: data.group?.name ?? '',
+                profilePic: data.group?.displayPictureUrl ?? '',
+                timeSent:  DateTime.now().toString(), //?? data.group?.createdAt,
+                uid: groupId.toString(),
+                isGroup: 1,
+              ),
+            );
+          }
+
+          print("✅ Create group response: $data");
           Get.until((route) => route.settings.name == Routes.HOME);
         }
       }
     } catch (e) {
-      // print("Error in verifyOTPCred: $e");
       showAlertMessage("Something went wrong: $e");
     } finally {
       circularProgress = false;
     }
-    // Get.toNamed(Routes.GROUP_NAME, arguments: selectedUserIds);
+  }
+
+  Future<void> uploadGroupIcon({required int groupId}) async {
+    if (image == null) return;
+
+    try {
+      final processedImage = image!;
+      final uploadResponse = await groupRepository.uploadGroupPic(processedImage, groupId);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ Group icon uploaded: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupsTable.insertOrUpdateGroup(responseModel.data!);
+            final data = responseModel.data;
+            final groupId = data?.group?.id ?? 0;
+            await chatConectTable.insert(
+              contact: ChatConntactModel(
+                lastMessageId: 0,
+                contactId: groupId.toString(),
+                lastMessage: "",
+                name: data?.group?.name ?? '',
+                profilePic: data?.group?.displayPictureUrl ?? '',
+                timeSent:  DateTime.now().toString(),//data?.group?.createdAt ?? '',
+                uid: groupId.toString(),
+                isGroup: 1,
+              ),
+            );
+          }
+        }
+      } else {
+        showAlertMessage('Failed to upload group picture.');
+      }
+    } catch (e) {
+      showAlertMessage("Error uploading group icon: $e");
+    }
   }
 
   void showKeyboard() => focusNode.requestFocus();

@@ -7,6 +7,7 @@ import '../../../network/api_client.dart';
 import '../../../network/api_interceptor.dart';
 import '../../../utils/ApiUtils/form_data_helper.dart';
 import '../../../utils/alert_popup_utils.dart';
+import '../../../utils/utils.dart';
 
 class ProfileRepository {
   final ApiClient apiClient;
@@ -51,24 +52,5 @@ class ProfileRepository {
     );
   }
 
-  /// Function to get the correct content type for images dynamically
-  String getImageMimeType(File file) {
-    String extension = file.path.split('.').last.toLowerCase();
 
-    switch (extension) {
-      case 'png':
-        return 'image/png';
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'gif':
-        return 'image/gif';
-      case 'bmp':
-        return 'image/bmp';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'application/octet-stream'; // Default if unknown
-    }
-  }
 }

@@ -23,7 +23,7 @@ class ChatConntactModel extends Equatable {
     this.lastMessageId,
     this.uid,
     this.unreadCount = 0,
-    this.isGroup = 0,
+    this.isGroup,
   });
 
   Map<String, dynamic> toMap() {

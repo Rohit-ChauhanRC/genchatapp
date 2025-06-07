@@ -199,7 +199,8 @@ class ChatsView extends GetView<ChatsController> {
                                       controller.toggleChatSelection(
                                           chatConntactModel.uid!);
                                     } else {
-                                      Get.toNamed(Routes.SINGLE_CHAT,
+                                      if (chatConntactModel.isGroup != 1) {
+                                        Get.toNamed(Routes.SINGLE_CHAT,
                                           arguments: UserList(
                                             userId: int.parse(
                                                 chatConntactModel.uid!),
@@ -208,6 +209,7 @@ class ChatsView extends GetView<ChatsController> {
                                                 chatConntactModel.profilePic,
                                             localName: chatConntactModel.name,
                                           ));
+                                      }
                                     }
                                   },
                                   onLongPress: () {
@@ -231,7 +233,7 @@ class ChatsView extends GetView<ChatsController> {
                                                   color: textBarColor,
                                                   child: CircleAvatar(
                                                     radius: 25,
-                                                    child: Icon(
+                                                    child: Icon( chatConntactModel.isGroup == 1 ?Icons.group_rounded:
                                                       Icons.person,
                                                       color: whiteColor,
                                                       // size: 25,

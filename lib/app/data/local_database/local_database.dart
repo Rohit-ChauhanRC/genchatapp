@@ -97,6 +97,7 @@ class DataBaseService {
     await ContactsTable().deleteTable();
     await ChatConectTable().deleteTable();
     await MessageTable().deleteQueueMessageTable();
+    await GroupsTable().deleteGroupsTable();
   }
 }
 

@@ -4,224 +4,201 @@ import 'package:sqflite/sqflite.dart';
 import 'local_database.dart';
 
 class GroupsTable {
-  final groupsTableName = groupTable;
-  final usersTableName = usersTable;
-  final userGroupsTableName = userGroupsTable;
+  final String groupsTableName = groupTable;
+  final String usersTableName = usersTable;
+  final String userGroupsTableName = userGroupsTable;
 
-  Future<void> createTable(Database database) async {
-    await createTableGroup(database);
-    await createTableUsers(database);
-
-    await createTableUserGroups(database);
-  }
-
-  Future<void> createTableGroup(Database database) async {
-    await database.execute("""
+  Future<void> createTable(Database db) async {
+    await db.execute( '''
       CREATE TABLE IF NOT EXISTS $groupsTableName (
-            id INTEGER PRIMARY KEY,
-            name TEXT,
-            displayPicture TEXT,
-            groupDescription TEXT,
-            creatorId INTEGER,
-            isActive INTEGER
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        displayPicture TEXT,
+        groupDescription TEXT,
+        creatorId INTEGER,
+        createdAt TEXT,
+        updatedAt TEXT,
+        displayPictureUrl TEXT,
+        isActive INTEGER
       );
-    """);
-  }
+    ''');
 
-  Future<void> createTableUsers(Database database) async {
-    await database.execute("""
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS $usersTableName (
-            userId INTEGER PRIMARY KEY,
-            countryCode INTEGER,
-            phoneNumber TEXT,
-            name TEXT,
-            email TEXT,
-            userDescription TEXT,
-            isOnline INTEGER,
-            displayPicture TEXT,
-            displayPictureUrl TEXT
+        userId INTEGER PRIMARY KEY,
+        countryCode INTEGER,
+        phoneNumber TEXT,
+        name TEXT,
+        email TEXT,
+        userDescription TEXT,
+        isOnline INTEGER,
+        displayPicture TEXT,
+        displayPictureUrl TEXT
       );
-    """);
-  }
+    ''');
 
-  Future<void> createTableUserGroups(Database database) async {
-    await database.execute("""
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS $userGroupsTableName (
-            groupId INTEGER,
-            userId INTEGER,
-            isAdmin INTEGER,
-            updaterId INTEGER,
-            PRIMARY KEY (groupId, userId),
-            FOREIGN KEY (groupId) REFERENCES groups(id) ON DELETE CASCADE,
-            FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
+        groupId INTEGER,
+        userId INTEGER,
+        isAdmin INTEGER,
+        updaterId INTEGER,
+        createdAt TEXT,
+        updatedAt TEXT,
+        isRemoved INTEGER,
+        PRIMARY KEY (groupId, userId),
+        FOREIGN KEY (groupId) REFERENCES $groupsTableName(id) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES $usersTableName(userId) ON DELETE CASCADE
       );
-    """);
+    ''');
   }
 
-  Future<void> insertGroupWithUsers(CreateGroupModel data) async {
-    final db = await DataBaseService().database;
-    final dataDb = data.data!;
-    final group = {
-      'id': dataDb.id,
-      'name': dataDb.name,
-      'displayPicture': dataDb.displayPicture,
-      'groupDescription': dataDb.groupDescription,
-      'creatorId': dataDb.creatorId,
-      'isActive': dataDb.isActive,
-    };
+  /// ⚠️ Call this in `onUpgrade` inside your database service
+  Future<void> migrate(Database db) async {
+    // Example: Add a column if not exists
+    final columns = await db.rawQuery("PRAGMA table_info($groupsTableName)");
+    final hasGroupDescription = columns.any((col) => col['name'] == 'groupDescription');
 
-    await db.insert('groups', group,
-        conflictAlgorithm: ConflictAlgorithm.replace);
-
-    for (var user in dataDb.users!) {
-      final userInfo = user.userInfo!;
-      final userGroupInfo = user.userGroupInfo!;
-
-      await db.insert(
-          'users',
-          {
-            'userId': userInfo.userId,
-            'countryCode': userInfo.countryCode,
-            'phoneNumber': userInfo.phoneNumber,
-            'name': userInfo.name,
-            'email': userInfo.email,
-            'userDescription': userInfo.userDescription,
-            'isOnline': userInfo.isOnline,
-            'displayPicture': userInfo.displayPicture,
-            'displayPictureUrl': userInfo.displayPictureUrl,
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace);
-
-      await db.insert(
-          'user_groups',
-          {
-            'groupId': userGroupInfo.groupId,
-            'userId': userGroupInfo.userId,
-            'isAdmin': userGroupInfo.isAdmin!,
-            'updaterId': userGroupInfo.updaterId,
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace);
+    if (!hasGroupDescription) {
+      await db.execute('ALTER TABLE $groupsTableName ADD COLUMN groupDescription TEXT;');
     }
+    // Repeat for any other missing columns
   }
 
-  // Future<List<CreateGroupModel>> fetchAll() async {
-  //   final db = await DataBaseService().database;
-  //   final result = await db.query(userGroupsTable);
-  //   return result.map((e) => CreateGroupModel.fromJson(e)).toList();
-  // }
-
-  Future<void> insertGroup(GroupData group) async {
+  Future<void> insertOrUpdateGroup(GroupData groupData) async {
     final db = await DataBaseService().database;
+    final group = groupData.group;
 
     await db.insert(groupsTableName, {
-      'id': group.id,
-      'name': group.name,
-      'displayPicture': group.displayPicture,
-      'groupDescription': group.groupDescription,
-      'creatorId': group.creatorId,
-      'isActive': group.isActive!,
-    });
+      'id': group?.id,
+      'name': group?.name,
+      'displayPicture': group?.displayPicture,
+      'groupDescription': group?.groupDescription,
+      'creatorId': group?.creatorId,
+      'createdAt': group?.createdAt,
+      'updatedAt': group?.updatedAt,
+      'displayPictureUrl': group?.displayPictureUrl,
+      'isActive': group?.isActive == true ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-    for (var user in group.users!) {
-      final info = user.userInfo!;
-      final groupInfo = user.userGroupInfo!;
+    for (User user in groupData.users ?? []) {
+      final u = user.userInfo!;
+      final g = user.userGroupInfo!;
 
       await db.insert(usersTableName, {
-        'userId': info.userId,
-        'countryCode': info.countryCode,
-        'phoneNumber': info.phoneNumber,
-        'name': info.name,
-        'email': info.email,
-        'userDescription': info.userDescription,
-        'isOnline': info.isOnline!,
-        'displayPicture': info.displayPicture,
-        'displayPictureUrl': info.displayPictureUrl,
-      });
+        'userId': u.userId,
+        'countryCode': u.countryCode,
+        'phoneNumber': u.phoneNumber,
+        'name': u.name,
+        'email': u.email,
+        'userDescription': u.userDescription,
+        'isOnline': u.isOnline == true ? 1 : 0,
+        'displayPicture': u.displayPicture,
+        'displayPictureUrl': u.displayPictureUrl,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
 
       await db.insert(userGroupsTableName, {
-        'groupId': groupInfo.groupId,
-        'userId': groupInfo.userId,
-        'isAdmin': groupInfo.isAdmin!,
-        'updaterId': groupInfo.updaterId,
-      });
+        'groupId': g.groupId,
+        'userId': g.userId,
+        'isAdmin': g.isAdmin == true ? 1 : 0,
+        'updaterId': g.updaterId,
+        'createdAt': g.createdAt,
+        'updatedAt': g.updatedAt,
+        'isRemoved': g.isRemoved == true ? 1 : 0,
+
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
   }
 
-  Future<List<GroupData>> getAllGroups(Database db) async {
-    final groupMaps = await db.query('groups');
-    List<GroupData> groups = [];
+  Future<List<GroupData>> fetchAllGroups() async {
+    final db = await DataBaseService().database;
+    final groupRows = await db.query(groupsTableName);
 
-    for (var groupMap in groupMaps) {
-      final groupId = groupMap['id'] as int;
+    List<GroupData> groupList = [];
 
-      final userGroupMaps = await db.rawQuery('''
-      SELECT * FROM user_group_info 
-      INNER JOIN user_info ON user_info.userId = user_group_info.userId 
-      WHERE user_group_info.groupId = ?
-    ''', [groupId]);
+    for (final group in groupRows) {
+      final groupId = group['id'] as int;
 
-      final users = userGroupMaps.map((map) {
-        return Users(
+      final joined = await db.rawQuery('''
+        SELECT u.*, ug.groupId, ug.isAdmin, ug.updaterId
+        FROM $userGroupsTableName ug
+        JOIN $usersTableName u ON u.userId = ug.userId
+        WHERE ug.groupId = ?
+      ''', [groupId]);
+
+      final users = joined.map((row) {
+        return User(
           userInfo: UserInfo(
-            userId: map['userId'] as int,
-            countryCode: map['countryCode'] as int,
-            phoneNumber: map['phoneNumber'] as String,
-            name: map['name'] as String,
-            email: map['email'] as String,
-            userDescription: map['userDescription'] as String?,
-            isOnline: map['isOnline'] as int,
-            displayPicture: map['displayPicture'] as String,
-            displayPictureUrl: map['displayPictureUrl'] as String,
+            userId: row['userId'] as int,
+            countryCode: row['countryCode'] as int,
+            phoneNumber: row['phoneNumber'] as String,
+            name: row['name'] as String,
+            email: row['email'] as String,
+            userDescription: row['userDescription'] as String?,
+            isOnline: row['isOnline'] == 1,
+            displayPicture: row['displayPicture'] as String?,
+            displayPictureUrl: row['displayPictureUrl'] as String?,
           ),
           userGroupInfo: UserGroupInfo(
-            groupId: map['groupId'] as int,
-            userId: map['userId'] as int,
-            isAdmin: map['isAdmin'] as int,
-            updaterId: map['updaterId'] as int,
+            groupId: row['groupId'] as int,
+            userId: row['userId'] as int,
+            isAdmin: row['isAdmin'] == 1,
+            updaterId: row['updaterId'] as int?,
           ),
         );
       }).toList();
 
-      groups.add(GroupData(
-        id: groupMap['id'] as int,
-        name: groupMap['name'] as String,
-        displayPicture: groupMap['displayPicture'] as String,
-        groupDescription: groupMap['groupDescription'] as String?,
-        creatorId: groupMap['creatorId'] as int,
-        isActive: groupMap['isActive'] as int,
+      groupList.add(GroupData(
+        group: Group(
+          id: group['id'] as int,
+          name: group['name'] as String,
+          displayPicture: group['displayPicture'] as String?,
+          groupDescription: group['groupDescription'] as String?,
+          creatorId: group['creatorId'] as int,
+          isActive: group['isActive'] == 1,
+        ),
         users: users,
       ));
     }
 
-    return groups;
+    return groupList;
   }
 
-  Future<void> deleteGroup(int groupId, Database db) async {
-    await db.delete(userGroupsTableName,
-        where: 'groupId = ?', whereArgs: [groupId]);
-    await db.delete('groups', where: 'id = ?', whereArgs: [groupId]);
-  }
-
-  Future<void> updateGroup(GroupData group, Database db) async {
-    await db.update(
-      'groups',
-      {
-        'name': group.name,
-        'displayPicture': group.displayPicture,
-        'groupDescription': group.groupDescription,
-        'creatorId': group.creatorId,
-        'isActive': group.isActive!,
-      },
-      where: 'id = ?',
-      whereArgs: [group.id],
-    );
-  }
-
-  Future<void> deleteTable() async {
+  Future<void> deleteGroup(int groupId) async {
     final db = await DataBaseService().database;
-    await db.execute('DROP TABLE IF EXISTS $groupsTableName');
-    await createTableGroup(db);
-    await createTableUsers(db);
-    await createTableUserGroups(db);
+    await db.delete(groupsTableName, where: 'id = ?', whereArgs: [groupId]);
+    // users table is NOT deleted — only user_groups cascades
   }
+
+  Future<void> updateGroupDetails(int groupId, {
+    String? name,
+    String? description,
+    String? displayPicture,
+  }) async {
+    final db = await DataBaseService().database;
+    final Map<String, dynamic> updateData = {};
+    if (name != null) updateData['name'] = name;
+    if (description != null) updateData['groupDescription'] = description;
+    if (displayPicture != null) updateData['displayPicture'] = displayPicture;
+
+    if (updateData.isNotEmpty) {
+      await db.update(
+        groupsTableName,
+        updateData,
+        where: 'id = ?',
+        whereArgs: [groupId],
+      );
+    }
+  }
+
+  Future<void> deleteGroupsTable() async {
+    final db = await DataBaseService().database;
+
+    // Drop user_groups first due to foreign key constraints
+    await db.execute('DROP TABLE IF EXISTS $userGroupsTableName;');
+    await db.execute('DROP TABLE IF EXISTS $usersTableName;');
+    await db.execute('DROP TABLE IF EXISTS $groupsTableName;');
+    await createTable(db);
+  }
+
 }

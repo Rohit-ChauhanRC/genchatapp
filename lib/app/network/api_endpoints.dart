@@ -22,6 +22,8 @@ class ApiEndpoints {
   static const String createGroup = "group/create";
   // group/fetch
   static const String groupFetch = "group/fetch";
+  static const String uploadGroupIcon = "group/update-display-picture";
+
 
 
 }

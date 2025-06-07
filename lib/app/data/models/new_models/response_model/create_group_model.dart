@@ -1,31 +1,62 @@
+// To parse this JSON data, do
+//
+//     final createGroupModel = createGroupModelFromJson(jsonString);
+
+import 'dart:convert';
+
+CreateGroupModel createGroupModelFromJson(String str) => CreateGroupModel.fromJson(json.decode(str));
+
+String createGroupModelToJson(CreateGroupModel data) => json.encode(data.toJson());
+
 class CreateGroupModel {
   bool? status;
   String? message;
   int? statusCode;
   GroupData? data;
 
-  CreateGroupModel({this.status, this.message, this.statusCode, this.data});
+  CreateGroupModel({
+    this.status,
+    this.message,
+    this.statusCode,
+    this.data,
+  });
 
-  CreateGroupModel.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    message = json['message'];
-    statusCode = json['statusCode'];
-    data = json['data'] != null ? GroupData.fromJson(json['data']) : null;
-  }
+  factory CreateGroupModel.fromJson(Map<String, dynamic> json) => CreateGroupModel(
+    status: json["status"],
+    message: json["message"],
+    statusCode: json["statusCode"],
+    data: json["data"] == null ? null : GroupData.fromJson(json["data"]),
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['status'] = status;
-    data['message'] = message;
-    data['statusCode'] = statusCode;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "message": message,
+    "statusCode": statusCode,
+    "data": data?.toJson(),
+  };
 }
 
 class GroupData {
+  Group? group;
+  List<User>? users;
+
+  GroupData({
+    this.group,
+    this.users,
+  });
+
+  factory GroupData.fromJson(Map<String, dynamic> json) => GroupData(
+    group: json["group"] == null ? null : Group.fromJson(json["group"]),
+    users: json["users"] == null ? [] : List<User>.from(json["users"]!.map((x) => User.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "group": group?.toJson(),
+    "users": users == null ? [] : List<dynamic>.from(users!.map((x) => x.toJson())),
+  };
+}
+
+class Group {
   int? id;
   String? name;
   String? displayPicture;
@@ -33,78 +64,64 @@ class GroupData {
   int? creatorId;
   String? createdAt;
   String? updatedAt;
-  int? isActive;
-  List<Users>? users;
+  bool? isActive;
+  String? displayPictureUrl;
 
-  GroupData(
-      {this.id,
-      this.name,
-      this.displayPicture,
-      this.groupDescription,
-      this.creatorId,
-      this.createdAt,
-      this.updatedAt,
-      this.isActive,
-      this.users});
+  Group({
+    this.id,
+    this.name,
+    this.displayPicture,
+    this.groupDescription,
+    this.creatorId,
+    this.createdAt,
+    this.updatedAt,
+    this.isActive,
+    this.displayPictureUrl,
+  });
 
-  GroupData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    displayPicture = json['displayPicture'];
-    groupDescription = json['groupDescription'];
-    creatorId = json['creatorId'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-    isActive = json['isActive'] == true ? 1: 0;
-    if (json['users'] != null) {
-      users = <Users>[];
-      json['users'].forEach((v) {
-        users!.add(Users.fromJson(v));
-      });
-    }
-  }
+  factory Group.fromJson(Map<String, dynamic> json) => Group(
+    id: json["id"],
+    name: json["name"],
+    displayPicture: json["displayPicture"],
+    groupDescription: json["groupDescription"],
+    creatorId: json["creatorId"],
+    createdAt: json["createdAt"],
+    updatedAt: json["updatedAt"],
+    isActive: json["isActive"] == 1 || json['isActive'],
+    displayPictureUrl: json["displayPictureUrl"],
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['name'] = name;
-    data['displayPicture'] = displayPicture;
-    data['groupDescription'] = groupDescription;
-    data['creatorId'] = creatorId;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    data['isActive'] = isActive;
-    if (users != null) {
-      data['users'] = users!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "displayPicture": displayPicture,
+    "groupDescription": groupDescription,
+    "creatorId": creatorId,
+    "createdAt": createdAt,
+    "updatedAt": updatedAt,
+    "isActive": isActive == true ? 1 : 0,
+    "displayPictureUrl": displayPictureUrl,
+  };
 }
 
-class Users {
+class User {
   UserInfo? userInfo;
   UserGroupInfo? userGroupInfo;
 
-  Users({this.userInfo, this.userGroupInfo});
+  User({
+    this.userInfo,
+    this.userGroupInfo,
+  });
 
-  Users.fromJson(Map<String, dynamic> json) {
-    userInfo =
-        json['userInfo'] != null ? UserInfo.fromJson(json['userInfo']) : null;
-    userGroupInfo = json['userGroupInfo'] != null
-        ? UserGroupInfo.fromJson(json['userGroupInfo'])
-        : null;
-  }
+  factory User.fromJson(Map<String, dynamic> json) => User(
+    userInfo: json["userInfo"] == null ? null : UserInfo.fromJson(json["userInfo"]),
+    userGroupInfo: json["userGroupInfo"] == null ? null : UserGroupInfo.fromJson(json["userGroupInfo"]),
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (userInfo != null) {
-      data['userInfo'] = userInfo!.toJson();
-    }
-    if (userGroupInfo != null) {
-      data['userGroupInfo'] = userGroupInfo!.toJson();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "userInfo": userInfo?.toJson(),
+    "userGroupInfo": userGroupInfo?.toJson(),
+  };
 }
 
 class UserInfo {
@@ -114,81 +131,85 @@ class UserInfo {
   String? name;
   String? email;
   String? userDescription;
-  int? isOnline;
+  bool? isOnline;
   String? displayPicture;
   String? displayPictureUrl;
 
-  UserInfo(
-      {this.userId,
-      this.countryCode,
-      this.phoneNumber,
-      this.name,
-      this.email,
-      this.userDescription,
-      this.isOnline,
-      this.displayPicture,
-      this.displayPictureUrl});
+  UserInfo({
+    this.userId,
+    this.countryCode,
+    this.phoneNumber,
+    this.name,
+    this.email,
+    this.userDescription,
+    this.isOnline,
+    this.displayPicture,
+    this.displayPictureUrl,
+  });
 
-  UserInfo.fromJson(Map<String, dynamic> json) {
-    userId = json['userId'];
-    countryCode = json['countryCode'];
-    phoneNumber = json['phoneNumber'];
-    name = json['name'];
-    email = json['email'];
-    userDescription = json['userDescription'];
-    isOnline = json['isOnline'] == true? 1:0;
-    displayPicture = json['displayPicture'];
-    displayPictureUrl = json['displayPictureUrl'];
-  }
+  factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
+    userId: json["userId"],
+    countryCode: json["countryCode"],
+    phoneNumber: json["phoneNumber"],
+    name: json["name"],
+    email: json["email"],
+    userDescription: json["userDescription"],
+    isOnline: json["isOnline"] == 1 || json["isOnline"],
+    displayPicture: json["displayPicture"],
+    displayPictureUrl: json["displayPictureUrl"],
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['userId'] = userId;
-    data['countryCode'] = countryCode;
-    data['phoneNumber'] = phoneNumber;
-    data['name'] = name;
-    data['email'] = email;
-    data['userDescription'] = userDescription;
-    data['isOnline'] = isOnline;
-    data['displayPicture'] = displayPicture;
-    data['displayPictureUrl'] = displayPictureUrl;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "userId": userId,
+    "countryCode": countryCode,
+    "phoneNumber": phoneNumber,
+    "name": name,
+    "email": email,
+    "userDescription": userDescription,
+    "isOnline": isOnline == true ? 1 : 0,
+    "displayPicture": displayPicture,
+    "displayPictureUrl": displayPictureUrl,
+  };
 }
 
 class UserGroupInfo {
   int? groupId;
   int? userId;
-  int? isAdmin;
+  bool? isAdmin;
   int? updaterId;
   String? createdAt;
   String? updatedAt;
+  bool? isRemoved;
 
-  UserGroupInfo(
-      {this.groupId,
-      this.userId,
-      this.isAdmin,
-      this.updaterId,
-      this.createdAt,
-      this.updatedAt});
+  UserGroupInfo({
+    this.groupId,
+    this.userId,
+    this.isAdmin,
+    this.updaterId,
+    this.createdAt,
+    this.updatedAt,
+    this.isRemoved,
+  });
 
-  UserGroupInfo.fromJson(Map<String, dynamic> json) {
-    groupId = json['groupId'];
-    userId = json['userId'];
-    isAdmin = json['isAdmin'] == true? 1: 0;
-    updaterId = json['updaterId'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-  }
+  factory UserGroupInfo.fromJson(Map<String, dynamic> json) => UserGroupInfo(
+    groupId: json["groupId"],
+    userId: json["userId"],
+    isAdmin: json["isAdmin"] == 1 || json["isAdmin"],
+    updaterId: json["updaterId"],
+    createdAt: json["createdAt"],
+    updatedAt: json["updatedAt"],
+    isRemoved: json["isRemoved"] == 1 || json["isRemoved"],
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['groupId'] = groupId;
-    data['userId'] = userId;
-    data['isAdmin'] = isAdmin;
-    data['updaterId'] = updaterId;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "groupId": groupId,
+    "userId": userId,
+    "isAdmin": isAdmin == true ? 1 : 0,
+    "updaterId": updaterId,
+    "createdAt": createdAt,
+    "updatedAt": updatedAt,
+    "isRemoved": isRemoved == true ? 1 : 0,
+  };
 }
+
+

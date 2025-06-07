@@ -46,7 +46,7 @@ class GroupNameView extends GetView<GroupNameController> {
               ),
               TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                onChanged: (v) => controller.searchQuery = v,
+                onChanged: (v) => controller.groupName = v,
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.group),
                   hintText: 'Group Name',
@@ -60,7 +60,7 @@ class GroupNameView extends GetView<GroupNameController> {
                 height: 50,
               ),
               Obx(
-                () => controller.searchQuery.isNotEmpty
+                () => controller.groupName.isNotEmpty
                     ? SizedBox(
                         width: Get.width * 0.8,
                         child: ElevatedButton(

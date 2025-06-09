@@ -126,6 +126,7 @@ class ChatsController extends GetxController {
             profilePic: contact.profilePic,
             timeSent: contact.timeSent,
             contactId: contact.contactId,
+            isGroup: contact.isGroup,
           );
         }).toList();
 

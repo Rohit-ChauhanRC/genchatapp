@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
@@ -201,14 +200,18 @@ class ChatsView extends GetView<ChatsController> {
                                     } else {
                                       if (chatConntactModel.isGroup != 1) {
                                         Get.toNamed(Routes.SINGLE_CHAT,
-                                          arguments: UserList(
-                                            userId: int.parse(
-                                                chatConntactModel.uid!),
-                                            name: chatConntactModel.name,
-                                            displayPictureUrl:
-                                                chatConntactModel.profilePic,
-                                            localName: chatConntactModel.name,
-                                          ));
+                                            arguments: UserList(
+                                              userId: int.parse(
+                                                  chatConntactModel.uid!),
+                                              name: chatConntactModel.name,
+                                              displayPictureUrl:
+                                                  chatConntactModel.profilePic,
+                                              localName: chatConntactModel.name,
+                                            ));
+                                      } else if (chatConntactModel.isGroup ==
+                                          1) {
+                                        Get.toNamed(Routes.GROUP_CHATS,
+                                            arguments: chatConntactModel.uid);
                                       }
                                     }
                                   },
@@ -233,8 +236,12 @@ class ChatsView extends GetView<ChatsController> {
                                                   color: textBarColor,
                                                   child: CircleAvatar(
                                                     radius: 25,
-                                                    child: Icon( chatConntactModel.isGroup == 1 ?Icons.group_rounded:
-                                                      Icons.person,
+                                                    child: Icon(
+                                                      chatConntactModel
+                                                                  .isGroup ==
+                                                              1
+                                                          ? Icons.group_rounded
+                                                          : Icons.person,
                                                       color: whiteColor,
                                                       // size: 25,
                                                     ),

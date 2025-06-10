@@ -32,7 +32,7 @@ class SplashController extends GetxController {
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE, arguments: false);
     } else if (isCreatedUserProfile == true) {
-      Get.put(ChatsController());
+      Get.put(ChatsController(groupRepository: Get.find()));
       Get.offNamed(Routes.HOME);
     } else {
       Get.offNamed(Routes.LANDING);

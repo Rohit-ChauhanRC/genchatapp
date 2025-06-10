@@ -6,7 +6,9 @@ class ChatsBinding extends Bindings {
   @override
   void dependencies() {
     Get.put<ChatsController>(
-      ChatsController(),
+      ChatsController(
+        groupRepository: Get.find(),
+      ),
     );
   }
 }

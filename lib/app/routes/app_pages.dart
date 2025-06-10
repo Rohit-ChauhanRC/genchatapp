@@ -12,6 +12,8 @@ import '../modules/create_group/bindings/create_group_binding.dart';
 import '../modules/create_group/views/create_group_view.dart';
 import '../modules/forward_messages/bindings/forward_messages_binding.dart';
 import '../modules/forward_messages/views/forward_messages_view.dart';
+import '../modules/group_chats/bindings/group_chats_binding.dart';
+import '../modules/group_chats/views/group_chats_view.dart';
 import '../modules/group_name/bindings/group_name_binding.dart';
 import '../modules/group_name/views/group_name_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -119,6 +121,11 @@ class AppPages {
       name: _Paths.GROUP_NAME,
       page: () => const GroupNameView(),
       binding: GroupNameBinding(),
+    ),
+    GetPage(
+      name: _Paths.GROUP_CHATS,
+      page: () => const GroupChatsView(),
+      binding: GroupChatsBinding(),
     ),
   ];
 }

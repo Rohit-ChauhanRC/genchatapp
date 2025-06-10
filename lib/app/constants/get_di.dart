@@ -4,6 +4,7 @@ import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
+import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/createProfile/controllers/create_profile_controller.dart';
 import 'package:genchatapp/app/modules/create_group/controllers/create_group_controller.dart';
 import 'package:genchatapp/app/modules/forward_messages/controllers/forward_messages_controller.dart';
@@ -43,7 +44,9 @@ init() async {
       sharedPreferences: Get.find<SharedPreferenceService>()));
   Get.lazyPut(() => ProfileRepository(apiClient: Get.find<ApiClient>()));
   // GroupRepository
-  Get.lazyPut(() => GroupRepository(apiClient: Get.find<ApiClient>(), sharedPreferences: Get.find<SharedPreferenceService>()));
+  Get.lazyPut(() => GroupRepository(
+      apiClient: Get.find<ApiClient>(),
+      sharedPreferences: Get.find<SharedPreferenceService>()));
   Get.lazyPut<IContactRepository>(
       () => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
@@ -60,11 +63,14 @@ init() async {
   Get.lazyPut(() => CreateProfileController(
       profileRepository: Get.find<ProfileRepository>()));
   Get.lazyPut(() => HomeController());
-  Get.lazyPut(() => SettingsController());
   Get.lazyPut(() => SelectContactsController());
+  Get.lazyPut(() => SettingsController());
+
   Get.lazyPut(() => ForwardMessagesController());
-   Get.lazyPut(() => CreateGroupController());
-   Get.lazyPut(() =>
-      GroupNameController(groupRepository: Get.find<GroupRepository>()));
-  
+  Get.lazyPut(() => CreateGroupController());
+  Get.lazyPut(
+      () => GroupNameController(groupRepository: Get.find<GroupRepository>()));
+  // ChatsController
+
+  // Get.lazyPut(() => ChatsController());
 }

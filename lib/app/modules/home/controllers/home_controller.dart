@@ -17,8 +17,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   //
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final connectivityService = Get.find<ConnectivityService>();
-  final selectedContactController =
-      Get.find<SelectContactsController>();
+  final selectedContactController = Get.find<SelectContactsController>();
 
   final socketService = Get.find<SocketService>();
 
@@ -39,7 +38,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
     socketService.initSocket(userId!, onConnected: () {
-      print('Initial socket connection established in HomeController: UserId for socket connection: $userId');
+      print(
+          'Initial socket connection established in HomeController: UserId for socket connection: $userId');
     });
     // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
@@ -81,7 +81,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-      print('📴 App Backgrounded: Disposing socket...');
+        print('📴 App Backgrounded: Disposing socket...');
         disConnectSocket();
 
         break;
@@ -102,7 +102,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   void controllerInit() {
     Get.lazyPut<ChatsController>(
-      () => ChatsController(),
+      () => ChatsController(groupRepository: Get.find()),
     );
     Get.lazyPut<UpdatesController>(
       () => UpdatesController(),

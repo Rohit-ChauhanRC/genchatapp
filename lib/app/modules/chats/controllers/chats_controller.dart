@@ -7,12 +7,15 @@ import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
@@ -21,16 +24,23 @@ import 'package:rxdart/rxdart.dart' as rx;
 class ChatsController extends GetxController {
   //
 
+  final GroupRepository groupRepository;
+
+  ChatsController({required this.groupRepository});
+  // GroupRepository(apiClient: Get.find(), sharedPreferences: Get.find());
+  final GroupsTable groupsTable = GroupsTable();
+
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final MessageTable messageTable = MessageTable();
 
   final EncryptionService encryptionService = Get.find();
 
-
   FocusNode focusNode = FocusNode();
 
   final RxList<ChatConntactModel> contactsList = <ChatConntactModel>[].obs;
+  // CreateGroupModel
+  final RxList<GroupData> groupsList = <GroupData>[].obs;
 
   final ChatConectTable chatConectTable = ChatConectTable();
 
@@ -56,7 +66,6 @@ class ChatsController extends GetxController {
 
   final RxList<ChatConntactModel> filteredContacts = <ChatConntactModel>[].obs;
 
-
   @override
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
@@ -65,6 +74,8 @@ class ChatsController extends GetxController {
     ever<String>(_searchText, (_) => filterContacts());
     // bindChatUsersStream();
     bindCombinedStreams();
+
+    getGroups();
     super.onInit();
   }
 
@@ -79,8 +90,6 @@ class ChatsController extends GetxController {
     contactsList.clear();
     selectedChatUids.clear();
   }
-
-  
 
   Stream<List<ChatConntactModel>> getChatUsersStream(
       {Duration interval = const Duration(seconds: 1)}) async* {
@@ -134,14 +143,15 @@ class ChatsController extends GetxController {
       },
     ).listen((updatedList) {
       updatedList.sort((a, b) {
-        final aTime = DateTime.tryParse(a.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime = DateTime.tryParse(b.timeSent ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final aTime = DateTime.tryParse(a.timeSent ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = DateTime.tryParse(b.timeSent ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0);
         return bTime.compareTo(aTime); // descending (latest first)
       });
       contactsList.assignAll(updatedList);
     });
   }
-
 
   void filterContacts() {
     if (searchText.isEmpty) {
@@ -156,7 +166,6 @@ class ChatsController extends GetxController {
     }
   }
 
-
   void toggleChatSelection(String uid) {
     if (selectedChatUids.contains(uid)) {
       selectedChatUids.remove(uid);
@@ -166,7 +175,7 @@ class ChatsController extends GetxController {
     selectedChatUids.refresh();
   }
 
-  void clearChatSelection(){
+  void clearChatSelection() {
     selectedChatUids.clear();
   }
 
@@ -175,7 +184,8 @@ class ChatsController extends GetxController {
       final uidsToDelete = selectedChatUids.toList();
 
       for (String uid in uidsToDelete) {
-        final userId = int.parse(uid); // Assuming UIDs are stored as String but are numeric
+        final userId = int.parse(
+            uid); // Assuming UIDs are stored as String but are numeric
 
         await messageTable.deleteMessagesForUser(userId);
 
@@ -183,7 +193,7 @@ class ChatsController extends GetxController {
       }
 
       selectedChatUids.clear();
-      
+
       update();
 
       // Get.snackbar("Deleted", "Selected chats were deleted from your side only");
@@ -196,4 +206,50 @@ class ChatsController extends GetxController {
   void showKeyboard() => focusNode.requestFocus();
   void hideKeyboard() => focusNode.unfocus();
 
+  Future<void> getGroups() async {
+    try {
+      // Step 1: Create group
+      final response = await groupRepository.fetchGroup();
+
+      if (response != null && response.statusCode == 200) {
+        List<GroupData> modelList = (response.data['data'] as List)
+            .map((e) => GroupData.fromJson(e))
+            .toList();
+        groupsList.assignAll(modelList);
+
+        // final rawList = response.data as List;
+        // groupsList.assignAll(
+        //     rawList.map((e) => CreateGroupModel.fromJson(e)).toList());
+
+        // groupsList.assignAll(response.data);
+        // final createGroupModelResponse =
+        //     CreateGroupModel.fromJson(response.data);
+        if (groupsList.isNotEmpty) {
+          for (var i in groupsList) {
+            final groupId = i.group!.id ?? 0;
+
+            // Step 2: Insert initial group data into DB
+            await groupsTable.insertOrUpdateGroup(i);
+
+            // Step 3: Only upload image if selected
+
+            await chatConectTable.insert(
+              contact: ChatConntactModel(
+                lastMessageId: 0,
+                contactId: groupId.toString(),
+                lastMessage: "",
+                name: i.group?.name ?? '',
+                profilePic: i.group?.displayPictureUrl ?? '',
+                timeSent: DateTime.now().toString(), //?? data.group?.createdAt,
+                uid: groupId.toString(),
+                isGroup: 1,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      // showAlertMessage("Something went wrong: $e");
+    } finally {}
+  }
 }

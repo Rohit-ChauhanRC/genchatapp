@@ -19,6 +19,7 @@ abstract class Routes {
   static const CHAT_BACKUP = _Paths.CHAT_BACKUP;
   static const CREATE_GROUP = _Paths.CREATE_GROUP;
   static const GROUP_NAME = _Paths.GROUP_NAME;
+  static const GROUP_CHATS = _Paths.GROUP_CHATS;
 }
 
 abstract class _Paths {
@@ -39,4 +40,5 @@ abstract class _Paths {
   static const CHAT_BACKUP = '/chat-backup';
   static const CREATE_GROUP = '/create-group';
   static const GROUP_NAME = '/group-name';
+  static const GROUP_CHATS = '/group-chats';
 }

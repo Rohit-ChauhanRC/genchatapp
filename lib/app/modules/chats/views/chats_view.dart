@@ -211,7 +211,14 @@ class ChatsView extends GetView<ChatsController> {
                                       } else if (chatConntactModel.isGroup ==
                                           1) {
                                         Get.toNamed(Routes.GROUP_CHATS,
-                                            arguments: chatConntactModel.uid);
+                                            arguments: UserList(
+                                              userId: int.parse(
+                                                  chatConntactModel.uid!),
+                                              name: chatConntactModel.name,
+                                              displayPictureUrl:
+                                                  chatConntactModel.profilePic,
+                                              localName: chatConntactModel.name,
+                                            ));
                                       }
                                     }
                                   },

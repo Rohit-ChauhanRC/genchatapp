@@ -24,10 +24,9 @@ import 'package:rxdart/rxdart.dart' as rx;
 class ChatsController extends GetxController {
   //
 
-  final GroupRepository groupRepository;
-
-  ChatsController({required this.groupRepository});
-  // GroupRepository(apiClient: Get.find(), sharedPreferences: Get.find());
+  // final GroupRepository groupRepository;
+  //
+  // ChatsController({required this.groupRepository});
   final GroupsTable groupsTable = GroupsTable();
 
   final socketService = Get.find<SocketService>();
@@ -75,7 +74,7 @@ class ChatsController extends GetxController {
     // bindChatUsersStream();
     bindCombinedStreams();
 
-    getGroups();
+    // getGroups();
     super.onInit();
   }
 
@@ -206,50 +205,50 @@ class ChatsController extends GetxController {
   void showKeyboard() => focusNode.requestFocus();
   void hideKeyboard() => focusNode.unfocus();
 
-  Future<void> getGroups() async {
-    try {
-      // Step 1: Create group
-      final response = await groupRepository.fetchGroup();
-
-      if (response != null && response.statusCode == 200) {
-        List<GroupData> modelList = (response.data['data'] as List)
-            .map((e) => GroupData.fromJson(e))
-            .toList();
-        groupsList.assignAll(modelList);
-
-        // final rawList = response.data as List;
-        // groupsList.assignAll(
-        //     rawList.map((e) => CreateGroupModel.fromJson(e)).toList());
-
-        // groupsList.assignAll(response.data);
-        // final createGroupModelResponse =
-        //     CreateGroupModel.fromJson(response.data);
-        if (groupsList.isNotEmpty) {
-          for (var i in groupsList) {
-            final groupId = i.group!.id ?? 0;
-
-            // Step 2: Insert initial group data into DB
-            await groupsTable.insertOrUpdateGroup(i);
-
-            // Step 3: Only upload image if selected
-
-            await chatConectTable.insert(
-              contact: ChatConntactModel(
-                lastMessageId: 0,
-                contactId: groupId.toString(),
-                lastMessage: "",
-                name: i.group?.name ?? '',
-                profilePic: i.group?.displayPictureUrl ?? '',
-                timeSent: DateTime.now().toString(), //?? data.group?.createdAt,
-                uid: groupId.toString(),
-                isGroup: 1,
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      // showAlertMessage("Something went wrong: $e");
-    } finally {}
-  }
+  // Future<void> getGroups() async {
+  //   try {
+  //     // Step 1: Create group
+  //     final response = await groupRepository.fetchGroup();
+  //
+  //     if (response != null && response.statusCode == 200) {
+  //       List<GroupData> modelList = (response.data['data'] as List)
+  //           .map((e) => GroupData.fromJson(e))
+  //           .toList();
+  //       groupsList.assignAll(modelList);
+  //
+  //       // final rawList = response.data as List;
+  //       // groupsList.assignAll(
+  //       //     rawList.map((e) => CreateGroupModel.fromJson(e)).toList());
+  //
+  //       // groupsList.assignAll(response.data);
+  //       // final createGroupModelResponse =
+  //       //     CreateGroupModel.fromJson(response.data);
+  //       if (groupsList.isNotEmpty) {
+  //         for (var i in groupsList) {
+  //           final groupId = i.group!.id ?? 0;
+  //
+  //           // Step 2: Insert initial group data into DB
+  //           await groupsTable.insertOrUpdateGroup(i);
+  //
+  //           // Step 3: Only upload image if selected
+  //
+  //           await chatConectTable.insert(
+  //             contact: ChatConntactModel(
+  //               lastMessageId: 0,
+  //               contactId: groupId.toString(),
+  //               lastMessage: "",
+  //               name: i.group?.name ?? '',
+  //               profilePic: i.group?.displayPictureUrl ?? '',
+  //               timeSent: DateTime.now().toString(), //?? data.group?.createdAt,
+  //               uid: groupId.toString(),
+  //               isGroup: 1,
+  //             ),
+  //           );
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     // showAlertMessage("Something went wrong: $e");
+  //   } finally {}
+  // }
 }

@@ -20,6 +20,7 @@ abstract class Routes {
   static const CREATE_GROUP = _Paths.CREATE_GROUP;
   static const GROUP_NAME = _Paths.GROUP_NAME;
   static const GROUP_CHATS = _Paths.GROUP_CHATS;
+  static const GROUP_PROFILE = _Paths.GROUP_PROFILE;
 }
 
 abstract class _Paths {
@@ -41,4 +42,5 @@ abstract class _Paths {
   static const CREATE_GROUP = '/create-group';
   static const GROUP_NAME = '/group-name';
   static const GROUP_CHATS = '/group-chats';
+  static const GROUP_PROFILE = '/group-profile';
 }

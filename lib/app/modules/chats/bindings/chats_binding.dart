@@ -5,10 +5,9 @@ import '../controllers/chats_controller.dart';
 class ChatsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put<ChatsController>(
-      ChatsController(
-        groupRepository: Get.find(),
-      ),
+    Get.put(
+      ChatsController(),
     );
+    // Get.lazyPut<ChatsController>(()=>ChatsController());
   }
 }

@@ -63,6 +63,7 @@ init() async {
   Get.lazyPut(() => CreateProfileController(
       profileRepository: Get.find<ProfileRepository>()));
   Get.lazyPut(() => HomeController());
+  Get.lazyPut(() => ChatsController());
   Get.lazyPut(() => SelectContactsController());
   Get.lazyPut(() => SettingsController());
 
@@ -72,5 +73,5 @@ init() async {
       () => GroupNameController(groupRepository: Get.find<GroupRepository>()));
   // ChatsController
 
-  // Get.lazyPut(() => ChatsController());
+
 }

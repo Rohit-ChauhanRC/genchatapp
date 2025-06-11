@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_bottom_chat_field.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_chat_list.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
 
 import 'package:get/get.dart';
@@ -50,81 +51,84 @@ class GroupChatsView extends GetView<GroupChatsController> {
                     fontWeight: FontWeight.bold,
                   ),
                 )
-              : Row(
-                  children: [
-                    (user?.displayPictureUrl?.isNotEmpty ?? false)
-                        ? CachedNetworkImage(
-                            imageUrl: user!.displayPictureUrl.toString(),
-                            imageBuilder: (context, image) {
-                              return CircleAvatar(
-                                  backgroundColor: greyColor.withOpacity(0.4),
-                                  radius: 20,
-                                  backgroundImage: image);
-                            },
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
-                          )
-                        : const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    SizedBox(
-                      width: Get.width * 0.32,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${user?.localName}',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: whiteColor,
-                              fontWeight: FontWeight.w400,
+              : InkWell(
+            onTap: ()=> Get.toNamed(Routes.GROUP_PROFILE),
+                child: Row(
+                    children: [
+                      (user?.displayPictureUrl?.isNotEmpty ?? false)
+                          ? CachedNetworkImage(
+                              imageUrl: user!.displayPictureUrl.toString(),
+                              imageBuilder: (context, image) {
+                                return CircleAvatar(
+                                    backgroundColor: greyColor.withOpacity(0.4),
+                                    radius: 20,
+                                    backgroundImage: image);
+                              },
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            )
+                          : const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person, color: Colors.white),
                             ),
-                          ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      SizedBox(
+                        width: Get.width * 0.32,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${user?.localName}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: whiteColor,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
 
-                          // 👇 Wrap with Obx to reactively update UI
-                          Obx(() {
-                            if (!controller
-                                .connectivityService.isConnected.value) {
-                              return const SizedBox.shrink();
-                            }
+                            // 👇 Wrap with Obx to reactively update UI
+                            Obx(() {
+                              if (!controller
+                                  .connectivityService.isConnected.value) {
+                                return const SizedBox.shrink();
+                              }
 
-                            if (controller.isReceiverTyping) {
-                              return const Text(
-                                "Typing...",
-                                style: TextStyle(
+                              if (controller.isReceiverTyping) {
+                                return const Text(
+                                  "Typing...",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w200,
+                                    color: whiteColor,
+                                    fontSize: 12,
+                                  ),
+                                );
+                              }
+
+                              return Text(
+                                user?.isOnline == true
+                                    ? "Online"
+                                    : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
+                                maxLines: 2,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w200,
                                   color: whiteColor,
                                   fontSize: 12,
                                 ),
                               );
-                            }
-
-                            return Text(
-                              user?.isOnline == true
-                                  ? "Online"
-                                  : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
-                              maxLines: 2,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w200,
-                                color: whiteColor,
-                                fontSize: 12,
-                              ),
-                            );
-                          }),
-                        ],
+                            }),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                );
+                    ],
+                  ),
+              );
         }),
         // actions: [
         //   Obx(() => controller.selectedMessages.isNotEmpty

@@ -44,6 +44,20 @@ class GroupRepository {
     }
   }
 
+  Future<Response?> updateGroupNameAndDescription(bool isGroupName, int? groupId, String? groupName, String? groupDescription) async{
+    try{
+      final param = {
+        'groupId': groupId,
+        'groupName': groupName
+      };
+      return await apiClient.post(ApiEndpoints.createGroup, param);
+    }catch(e){
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
   /// Upload Profile Picture (Multipart FormData)
   Future<Response?> uploadGroupPic(File imageFile, int groupId) async {
     String fileName = imageFile.path.split('/').last;

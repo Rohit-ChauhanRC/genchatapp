@@ -156,7 +156,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
                 lastMessage: "",
                 name: i.group?.name ?? '',
                 profilePic: i.group?.displayPictureUrl ?? '',
-                timeSent: DateTime.now().toString(), //?? data.group?.createdAt,
+                timeSent: i.group?.updatedAt ?? "",//DateTime.now().toString(), //?? data.group?.createdAt,
                 uid: groupId.toString(),
                 isGroup: 1,
               ),

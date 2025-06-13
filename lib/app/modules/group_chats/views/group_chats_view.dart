@@ -72,7 +72,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                           : const CircleAvatar(
                               radius: 20,
                               backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, color: Colors.white),
+                              child: Icon(Icons.group, color: Colors.white),
                             ),
                       const SizedBox(
                         width: 10,

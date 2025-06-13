@@ -1,16 +1,24 @@
+import 'dart:io';
+import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
+import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
 import '../../../data/local_database/groups_table.dart';
+import '../../../data/models/chat_conntact_model.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
+import '../../../utils/alert_popup_utils.dart';
+import '../../../utils/utils.dart';
 
 class GroupProfileController extends GetxController {
 
   final GroupsTable groupTable = GroupsTable();
   final ContactsTable contactsTable = ContactsTable();
+  final ChatConectTable chatConectTable = ChatConectTable();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
+  final GroupRepository groupRepository = Get.find<GroupRepository>();
 
   final RxInt _groupId = 0.obs;
   int get groupId => _groupId.value;
@@ -27,6 +35,10 @@ class GroupProfileController extends GetxController {
   final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
   set currentUserPermission(UserGroupInfo? info) => _currentUserPermission.value = info;
+
+  final Rx<File?> _image = Rx<File?>(null);
+  File? get image => _image.value;
+  set image(File? img) => _image.value = img;
 
   bool get isSuperAdmin =>
       groupDetails.group?.creatorId == currentUserPermission?.userId;
@@ -61,6 +73,7 @@ class GroupProfileController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    groupId = 0;
   }
 
   Future<void> getGroupDetails({required int groupId}) async{
@@ -84,7 +97,56 @@ class GroupProfileController extends GetxController {
     }
   }
 
+  Future<String> getLocalName(int? userId, String? name) async{
+    if (userId == null) return name ?? "";
+    final contact = await contactsTable.getUserById(userId);
+    return contact?.localName ?? name ?? "";
+  }
+
+  Future<void> selectImage() async {
+    showImagePicker(onGetImage: (img) async {
+      if (img != null) {
+        image = img;
+
+        try {
+          final processedImage = image!;
+          final uploadResponse = await groupRepository.uploadGroupPic(processedImage, groupId);
+
+          if (uploadResponse != null && uploadResponse.statusCode == 200) {
+            print("✅ Group icon uploaded: ${uploadResponse.data}");
+            final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+            if (responseModel.status == true && responseModel.data != null) {
+              if (responseModel.status == true) {
+                await groupTable.insertOrUpdateGroup(responseModel.data!);
+                final data = responseModel.data;
+                final groupId = data?.group?.id ?? 0;
+                await chatConectTable.insert(
+                  contact: ChatConntactModel(
+                    lastMessageId: 0,
+                    contactId: groupId.toString(),
+                    lastMessage: "",
+                    name: data?.group?.name ?? '',
+                    profilePic: data?.group?.displayPictureUrl ?? '',
+                    timeSent:  data?.group?.updatedAt ?? "",//DateTime.now().toString(),//data?.group?.createdAt ?? '',
+                    uid: groupId.toString(),
+                    isGroup: 1,
+                  ),
+                );
+              }
+            }
+          } else {
+            showAlertMessage('Failed to upload group picture.');
+          }
+        } catch (e) {
+          showAlertMessage("Error uploading group icon: $e");
+        }
+      }
+    });
+  }
+
   void updateGroupName(String newName) async {
+
     // await groupTable.updateGroupName(groupId, newName);
     // await getGroupDetails(groupId: groupId);
   }

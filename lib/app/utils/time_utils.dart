@@ -48,3 +48,14 @@ String formatLastMessageTime(String dateString) {
     return '';
   }
 }
+
+String formatDateTime(String? utcString) {
+  if (utcString == null || utcString.trim().isEmpty) return 'N/A';
+  try {
+    final dateTime = DateTime.parse(utcString).toLocal(); // Convert to local
+    final formatter = DateFormat('d/M/yyyy, h:mm a');
+    return formatter.format(dateTime);
+  } catch (e) {
+    return 'Invalid date';
+  }
+}

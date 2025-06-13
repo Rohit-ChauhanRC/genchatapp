@@ -19,6 +19,7 @@ import '../config/services/connectivity_service.dart';
 import '../config/services/folder_creation.dart';
 import '../config/services/socket_service.dart';
 import '../data/repositories/select_contacts/select_contact_repository.dart';
+import '../modules/group_profile/controllers/group_profile_controller.dart';
 import '../modules/otp/controllers/otp_controller.dart';
 import '../modules/select_contacts/controllers/select_contacts_controller.dart';
 import '../modules/settings/controllers/settings_controller.dart';
@@ -69,9 +70,9 @@ init() async {
 
   Get.lazyPut(() => ForwardMessagesController());
   Get.lazyPut(() => CreateGroupController());
-  Get.lazyPut(
-      () => GroupNameController(groupRepository: Get.find<GroupRepository>()));
-  // ChatsController
+  Get.lazyPut(() => GroupNameController(groupRepository: Get.find<GroupRepository>()));
+  Get.lazyPut(() => GroupProfileController());
+
 
 
 }

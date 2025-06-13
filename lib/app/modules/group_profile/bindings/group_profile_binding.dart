@@ -5,8 +5,8 @@ import '../controllers/group_profile_controller.dart';
 class GroupProfileBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<GroupProfileController>(
-      () => GroupProfileController(),
+    Get.put<GroupProfileController>(
+       GroupProfileController(),
     );
   }
 }

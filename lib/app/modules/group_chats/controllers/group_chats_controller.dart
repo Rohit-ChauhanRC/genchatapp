@@ -170,6 +170,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   bool get hasMoreMessages => _hasMoreMessages.value;
   set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
 
+  final RxInt _groupId = 0.obs;
+  int get groupId => _groupId.value;
+  set groupId(int a) => _groupId.value = a;
+
   @override
   void onInit() async {
     super.onInit();
@@ -184,6 +188,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     if (user != null) {
       checkUserOnline(user);
       receiverUserData = user;
+      groupId = user.userId ?? 0;
       bindReceiverUserStream(user.userId ?? 0);
     }
     socketService.monitorReceiverTyping(

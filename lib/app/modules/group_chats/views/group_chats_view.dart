@@ -52,7 +52,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                   ),
                 )
               : InkWell(
-            onTap: ()=> Get.toNamed(Routes.GROUP_PROFILE),
+            onTap: ()=> Get.toNamed(Routes.GROUP_PROFILE,arguments: controller.groupId),
                 child: Row(
                     children: [
                       (user?.displayPictureUrl?.isNotEmpty ?? false)

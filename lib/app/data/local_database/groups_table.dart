@@ -191,6 +191,70 @@ class GroupsTable {
     }
   }
 
+  Future<GroupData?> getGroupById(int groupId) async {
+    final db = await DataBaseService().database;
+
+    // Fetch the group row
+    final groupRows = await db.query(
+      groupsTableName,
+      where: 'id = ?',
+      whereArgs: [groupId],
+    );
+
+    if (groupRows.isEmpty) return null;
+
+    final group = groupRows.first;
+
+    // Fetch users in this group
+    final joined = await db.rawQuery('''
+    SELECT u.*, ug.groupId, ug.isAdmin, ug.updaterId, ug.createdAt, ug.updatedAt, ug.isRemoved
+    FROM $userGroupsTableName ug
+    JOIN $usersTableName u ON u.userId = ug.userId
+    WHERE ug.groupId = ?
+  ''', [groupId]);
+
+    final users = joined.map((row) {
+      return User(
+        userInfo: UserInfo(
+          userId: row['userId'] as int,
+          countryCode: row['countryCode'] as int,
+          phoneNumber: row['phoneNumber'] as String,
+          name: row['name'] as String,
+          email: row['email'] as String,
+          userDescription: row['userDescription'] as String?,
+          isOnline: row['isOnline'] == 1,
+          displayPicture: row['displayPicture'] as String?,
+          displayPictureUrl: row['displayPictureUrl'] as String?,
+        ),
+        userGroupInfo: UserGroupInfo(
+          groupId: row['groupId'] as int,
+          userId: row['userId'] as int,
+          isAdmin: row['isAdmin'] == 1,
+          updaterId: row['updaterId'] as int?,
+          createdAt: row['createdAt'] as String?,
+          updatedAt: row['updatedAt'] as String?,
+          isRemoved: row['isRemoved'] == 1,
+        ),
+      );
+    }).toList();
+
+    return GroupData(
+      group: Group(
+        id: group['id'] as int,
+        name: group['name'] as String,
+        displayPicture: group['displayPicture'] as String?,
+        groupDescription: group['groupDescription'] as String?,
+        creatorId: group['creatorId'] as int,
+        createdAt: group['createdAt'] as String?,
+        updatedAt: group['updatedAt'] as String?,
+        displayPictureUrl: group['displayPictureUrl'] as String?,
+        isActive: group['isActive'] == 1,
+      ),
+      users: users,
+    );
+  }
+
+
   Future<void> deleteGroupsTable() async {
     final db = await DataBaseService().database;
 

@@ -12,6 +12,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../constants/constants.dart';
+import 'document_message_widget.dart';
 
 class DisplayTextImageGIF extends StatelessWidget {
   final String message;
@@ -70,6 +71,12 @@ class DisplayTextImageGIF extends StatelessWidget {
                   ),
                 );
               })
+        : type == MessageType.document
+            ? DocumentMessageWidget(
+                localFilePath: '${rootFolderPath}Document/$message', // or extract from metadata
+                url: message, // the full URL
+                isReply: isReply ?? false,
+              )
             // : type == MessageType.video
             //     ? VideoPlayerItem(
             //         videoUrl: message,

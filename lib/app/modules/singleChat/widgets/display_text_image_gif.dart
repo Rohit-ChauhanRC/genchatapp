@@ -32,6 +32,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     bool isPlaying = false;
     // final AudioPlayer audioPlayer = AudioPlayer();
     var rootFolderPath = singleChatController.rootPath;
+    // rootFolderPath = "${rootFolderPath}/${}"
 
     // print("FullFolderPath:--------->${rootFolderPath+message}");
     return type == MessageType.text || type == MessageType.deleted
@@ -80,7 +81,7 @@ class DisplayTextImageGIF extends StatelessWidget {
             : ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.file(
-                  File('$rootFolderPath$message'),
+                  File('${rootFolderPath}Image/$message'),
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
                   height: isReply == true ?20 :200,

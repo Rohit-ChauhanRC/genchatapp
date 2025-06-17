@@ -23,11 +23,11 @@ class FolderCreation {
         // Define subfolders
         final List<String> subFolders = [
           '$rootFolderPath/Database',
-          '$rootFolderPath/Images',
-          '$rootFolderPath/Videos',
+          '$rootFolderPath/Image',
+          '$rootFolderPath/Video',
           '$rootFolderPath/Audio',
           '$rootFolderPath/GIFs',
-          '$rootFolderPath/Files',
+          '$rootFolderPath/Document',
           '$rootFolderPath/Backups',
         ];
 
@@ -124,12 +124,13 @@ class FolderCreation {
 
   Future<String?> checkAndHandleFile(
       {required String fileName,
+        required String subFolderName,
       required String messageType,
       required String fileUrl}) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
 
-      final filePath = "${directory.path}/$appName/$fileName";
+      final filePath = "${directory.path}/$appName/$subFolderName/$fileName";
 
       if (await File(filePath).exists()) {
         return filePath;
@@ -168,11 +169,11 @@ class FolderCreation {
 
     final List<String> subFolders = [
       '$rootFolderPath/Database',
-      '$rootFolderPath/Images',
-      '$rootFolderPath/Videos',
+      '$rootFolderPath/Image',
+      '$rootFolderPath/Video',
       '$rootFolderPath/Audio',
       '$rootFolderPath/GIFs',
-      '$rootFolderPath/Files',
+      '$rootFolderPath/Document',
       '$rootFolderPath/Backups',
     ];
     try {

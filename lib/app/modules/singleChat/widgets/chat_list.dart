@@ -193,9 +193,7 @@ class ChatList extends StatelessWidget {
                                             messages.messageType ==
                                                 MessageType.deleted
                                         ? (messages.message!.isNotEmpty
-                                            ? 
-                                                    messages.message.toString()
-                                            : '')
+                                            ? messages.message.toString() : '')
                                         : (messages.assetServerName ?? ''),
                                     date: DateFormat('hh:mm a').format(
                                         DateTime.parse(

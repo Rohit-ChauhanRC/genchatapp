@@ -1,3 +1,4 @@
+import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
@@ -5,6 +6,7 @@ import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -20,6 +22,7 @@ class SocketService extends GetxService {
   final ChatConectTable chatConectTable = ChatConectTable();
 
   final MessageTable messageTable = MessageTable();
+  final FolderCreation folderCreation = FolderCreation();
 
   // final EncryptionService encryptionService = Get.find();
 
@@ -92,6 +95,7 @@ class SocketService extends GetxService {
       int messageId = data["messageId"];
       bool existsLocally = await messageTable.messageExists(messageId);
       //
+
       if (!existsLocally) {
         print("message not found");
         final newMessage = NewMessageModel(
@@ -121,6 +125,46 @@ class SocketService extends GetxService {
             forwardedMessageId: data['forwardedMessageId'] ?? 0,
             messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
 
+        if (newMessage.isAsset == true &&
+            newMessage.assetUrl != null &&
+            newMessage.assetUrl!.isNotEmpty &&
+            newMessage.assetServerName != null &&
+            newMessage.assetServerName!.isNotEmpty) {
+          print("🟢 isAsset is TRUE and all asset fields are present");
+
+          final fileExtension = newMessage.assetServerName!.split('.').last;
+          final messageType = newMessage.messageType;
+
+          // Define the folder name based on message type
+          final subFolder = messageType == MessageType.image
+              ? 'Image'
+              : messageType == MessageType.video
+              ? 'Video'
+              : messageType == MessageType.audio
+              ? 'Audio'
+              : 'Document';
+          //
+          // Download and save file
+          try {
+            final downloadedFilePath = await folderCreation.checkAndHandleFile(
+              fileUrl: newMessage.assetUrl.toString(),
+              fileName: newMessage.assetServerName.toString(),
+              subFolderName: subFolder,
+              messageType: messageType?.value ?? "",
+            );
+
+            // Optionally update local path in message DB
+            // newMessage.assetLocalPath = '$subFolder/${newMessage.assetServerName}';
+            // await messageTable.updateMessage(newMessage);
+            print("📥 Asset saved locally at $downloadedFilePath");
+          } catch (e) {
+            print("❌ Failed to save asset locally: $e");
+          }
+        } else {
+          print("🔴 Skipping asset saving. isAsset: ${newMessage.isAsset}, "
+              "assetUrl: ${newMessage.assetUrl}, "
+              "assetServerName: ${newMessage.assetServerName}");
+        }
         messageTable.insertMessage(newMessage);
         incomingMessage.value = newMessage;
 
@@ -130,6 +174,9 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          messageType: data['messageType'] != null
+              ? MessageTypeExtension.fromValue(data['messageType'])
+              : MessageType.text,
           state: MessageState.sent,
           senderPhoneNumber: data["senderPhoneNumber"],
         );
@@ -413,7 +460,7 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: user.userId.toString(),
-          lastMessage: data.message,
+          lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: user.displayPictureUrl,
@@ -424,7 +471,7 @@ class SocketService extends GetxService {
           contact: ChatConntactModel(
             lastMessageId:data.messageId,
             contactId: user.userId.toString(),
-            lastMessage: data.message,
+            lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
             name: user.localName,
             profilePic: user.displayPictureUrl,
             timeSent: data.messageSentFromDeviceTime,
@@ -444,7 +491,7 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: fallbackUid.toString(),
-          lastMessage: data.message,
+          lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: '', // or a default avatar
@@ -455,7 +502,7 @@ class SocketService extends GetxService {
           contact: ChatConntactModel(
             contactId: fallbackUid.toString(),
             lastMessageId: data.messageId,
-            lastMessage: data.message,
+            lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
             name: fallbackName,
             profilePic: '',
             timeSent: data.messageSentFromDeviceTime,

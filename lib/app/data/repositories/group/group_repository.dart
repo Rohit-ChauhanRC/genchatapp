@@ -43,7 +43,7 @@ class GroupRepository {
         // showAlertMessage("Group not found.");
       } else {
         print("Error in fetchGroup: $e");
-        showAlertMessage("Error: $e");
+        // showAlertMessage("Error: $e");
       }
       return null;
     }

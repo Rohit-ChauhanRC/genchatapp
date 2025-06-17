@@ -938,6 +938,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<List<File>> pickImageAndVideo() async {
+    Completer<List<File>> completer = Completer<List<File>>();
+    await showMediaPickerBottomSheet(onSendFiles: (img, fileType) {
+      completer.complete(img);
+    });
+
+    return completer.future;
+  }
+
   Future<String> saveFileLocally(File file, String fileType, String fileExtension) async {
     final subFolderName = fileType.toTitleCase;
     final fileName =
@@ -949,17 +958,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     );
     // print("FileName for saving locally:----------------> $fileName");
     // print("FilePath for saving locally:----------------> $filePath");
-    return '$subFolderName/$fileName';
+    return fileName;
   }
 
-  Future<List<File>> pickImageAndVideo() async {
-    Completer<List<File>> completer = Completer<List<File>>();
-    await showMediaPickerBottomSheet(onSendFiles: (img, fileType) {
-      completer.complete(img);
-    });
 
-    return completer.future;
-  }
 
   Future<void> sendFileMessage({
     required File file,
@@ -998,7 +1000,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
         assetOriginalName: fileData == null ? "":fileData.data?.originalName,
-        assetServerName: fileData == null ? "":fileData.data?.serverFileName,
+        assetServerName: localFilePath,
         assetUrl: fileData == null ? "":fileData.data?.url,
         messageRepliedUserId: messageReply.message == null
             ? 0

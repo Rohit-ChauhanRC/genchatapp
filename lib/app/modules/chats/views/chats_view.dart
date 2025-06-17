@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -299,14 +300,10 @@ class ChatsView extends GetView<ChatsController> {
                                                     ? "Typing..."
                                                     : (chatConntactModel
                                                             .lastMessage!
-                                                            .isNotEmpty
-                                                        ? controller
-                                                            .encryptionService
-                                                            .decryptText(
-                                                                chatConntactModel
-                                                                    .lastMessage
-                                                                    .toString())
-                                                        : ""),
+                                                            .isNotEmpty && chatConntactModel.lastMessage != MessageType.image.value
+                                                        ? controller.encryptionService
+                                                            .decryptText(chatConntactModel.lastMessage.toString())
+                                                        : chatConntactModel.lastMessage.toString()),
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,

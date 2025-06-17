@@ -38,8 +38,13 @@ class GroupRepository {
      
       return await apiClient.get(ApiEndpoints.groupFetch);
     } catch (e) {
-      // print('Error in verifyOTPAPI: $e');
-      showAlertMessage("Error: $e");
+      if (e == "404_NOT_FOUND") {
+        print("Group not found.");
+        // showAlertMessage("Group not found.");
+      } else {
+        print("Error in fetchGroup: $e");
+        showAlertMessage("Error: $e");
+      }
       return null;
     }
   }

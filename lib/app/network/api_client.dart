@@ -82,6 +82,11 @@ class ApiClient {
 
   String _handleError(dynamic error) {
     if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+
+      if (statusCode == 404) {
+        return "404_NOT_FOUND";
+      }
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
           return "Connection Timeout!";

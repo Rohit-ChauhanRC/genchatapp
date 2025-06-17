@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 // import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,11 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:tenor_flutter/tenor_flutter.dart';
 
+import '../config/services/filePickerService.dart';
 import '../constants/colors.dart';
+import '../constants/message_enum.dart';
+import '../modules/singleChat/mediaPickerFiles/media_preview_screen.dart';
+import 'alert_popup_utils.dart';
 
 void showSnackBar({required BuildContext context, required String content}) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -232,7 +237,213 @@ String getImageMimeType(File file) {
   }
 }
 
+String getFileMimeType(File file) {
+  final extension = file.path.split('.').last.toLowerCase();
+
+  switch (extension) {
+  // Images
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    case 'bmp':
+      return 'image/bmp';
+    case 'webp':
+      return 'image/webp';
+
+  // Videos
+    case 'mp4':
+      return 'video/mp4';
+    case 'mov':
+      return 'video/quicktime';
+    case 'avi':
+      return 'video/x-msvideo';
+    case 'mkv':
+      return 'video/x-matroska';
+
+  // Documents
+    case 'pdf':
+      return 'application/pdf';
+    case 'doc':
+      return 'application/msword';
+    case 'docx':
+      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    case 'xls':
+      return 'application/vnd.ms-excel';
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case 'ppt':
+      return 'application/vnd.ms-powerpoint';
+    case 'pptx':
+      return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    case 'txt':
+      return 'text/plain';
+    case 'csv':
+      return 'text/csv';
+    case 'rtf':
+      return 'application/rtf';
+
+    default:
+      return 'application/octet-stream'; // fallback for unknown types
+  }
+}
+
+
 extension StringCasingExtension on String {
   String get toCapitalized => length > 0 ?'${this[0].toUpperCase()}${substring(1).toLowerCase()}':'';
   String get toTitleCase => replaceAll(RegExp(' +'), ' ').split(' ').map((str) => str.toCapitalized).join(' ');
 }
+
+
+// open from chat input or wherever you want
+Future<void> showMediaPickerBottomSheet({
+  required Function(List<File> files, String type) onSendFiles,
+}) {
+  return showModalBottomSheet(
+    context: Get.context!,
+    builder: (_) {
+      return SafeArea(
+        minimum: const EdgeInsets.all(10),
+        child: Wrap(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      Get.back();
+                      final files = await FilePickerService().pickFromGallery();
+                      if (files.isNotEmpty) {
+                        Get.to(() => MediaPreviewScreen(
+                          files: files,
+                          fileType: getMessageType(files.first).value,
+                          onSend: (selectedFiles) {
+                            onSendFiles(selectedFiles, getMessageType(files.first).value);
+                          },
+                        ));
+                      }
+                    },
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.image,
+                          size: 60,
+                          color: textBarColor,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Gallery",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: greyColor,
+                            fontSize: 16,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      Get.back();
+                      final files = await FilePickerService().pickFromCamera();
+                      if (files.isNotEmpty) {
+                        Get.to(() => MediaPreviewScreen(
+                          files: files,
+                          fileType: getMessageType(files.first).value,
+                          onSend: (selectedFiles) {
+                            onSendFiles(selectedFiles, getMessageType(files.first).value);
+                          },
+                        ));
+                      }
+                    },
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.camera,
+                          size: 60,
+                          color: textBarColor,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          "Camera",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: greyColor,
+                            fontSize: 16,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
+  List<File> files = await FilePickerService().pickDocuments();
+  if (files.isEmpty) return;
+
+  // Create a completer to wait for the result manually
+  final completer = Completer<bool>();
+
+  // Show the dialog (even if it returns void)
+  showAlertMessageWithAction(
+    message: "Do you want to send ${files.length} document(s)?",
+    confirmText: "Send",
+    cancelText: "Cancel",
+    onCancel: () {
+      Get.back(); // close dialog
+      completer.complete(false); // complete with false
+    },
+    onConfirm: () {
+      Get.back(); // close dialog
+      completer.complete(true); // complete with true
+    },
+    showCancel: true,
+    title: 'Genchat',
+    context: Get.context!,
+  );
+
+  // Wait for the user's decision
+  bool shouldSend = await completer.future;
+
+  if (shouldSend) {
+    onConfirmedSend(files);
+  }
+}
+
+
+
+
+MessageType getMessageType(File file) {
+  final ext = file.path.toLowerCase();
+
+  if (ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.webp')) {
+    return MessageType.image;
+  } else if (ext.endsWith('.mp4') || ext.endsWith('.mov') || ext.endsWith('.avi') || ext.endsWith('.mkv')) {
+    return MessageType.video;
+  } else if (ext.endsWith('.gif')){
+    return MessageType.gif;
+  }
+
+  return MessageType.document; // Fallback
+}
+
+

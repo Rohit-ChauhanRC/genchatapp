@@ -6,8 +6,10 @@ import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../utils/alert_popup_utils.dart';
+import '../../../utils/utils.dart';
 import 'message_reply_preview.dart';
 
 class BottomChatField extends StatelessWidget {
@@ -111,10 +113,10 @@ class BottomChatField extends StatelessWidget {
                             !singleChatController.isShowSendButton ?IconButton(
                               onPressed: () {
                                 singleChatController
-                                    .selectFile(MessageEnum.image.type);
+                                    .selectFile(MessageType.image.value);
                               },
                               icon: const Icon(
-                                Icons.camera_alt,
+                                Symbols.camera_alt_rounded,size: 20,
                                 color: greyMsgColor,
                               ),
                             )
@@ -123,7 +125,8 @@ class BottomChatField extends StatelessWidget {
                               onPressed: () {
                                 // singleChatController.selectVideo();
                                 singleChatController.cancelReply();
-                                Get.to(() => AttachmentPopupDemo());
+                                // Get.to(() => AttachmentPopupDemo());
+                                singleChatController.selectFile(MessageType.document.value);
                               },
                               icon: const Icon(
                                 Icons.attach_file,

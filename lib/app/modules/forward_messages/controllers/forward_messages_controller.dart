@@ -139,6 +139,7 @@ class ForwardMessagesController extends GetxController {
           senderPhoneNumber: senderuserData?.phoneNumber,
           messageType: msg.messageType,
           isForwarded:  true, ///showForwarded
+          isGroupMessage:  false, ///showForwarded
           forwardedMessageId: msg.messageId,
           showForwarded: msg.senderId == senderuserData?.userId ? false : true,
           isRepliedMessage: false,

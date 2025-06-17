@@ -52,5 +52,30 @@ class ProfileRepository {
     );
   }
 
+  /// Upload Files like doc and image video (Multipart FormData)
+  Future<Response?> uploadMessageFiles(File imageFile) async {
+    String fileName = imageFile.path.split('/').last;
+    String mimeType = getFileMimeType(imageFile);
+
+    // print("FileName: $fileName\nFileType: $mimeType\nImagePath: ${imageFile.path} ");
+
+    FormData buildFormData() {
+      return FormData.fromMap({
+        "message-asset": MultipartFile.fromFileSync(
+          imageFile.path,
+          filename: fileName,
+          contentType: DioMediaType.parse(mimeType),
+        ),
+      });
+    }
+
+    return await retryFormDataUpload(
+      url: ApiEndpoints.uploadMessageFiles,
+      formDataBuilder: buildFormData,
+      uploadCall: (formData) =>
+          apiClient.uploadFile(ApiEndpoints.uploadMessageFiles, formData),
+    );
+  }
+
 
 }

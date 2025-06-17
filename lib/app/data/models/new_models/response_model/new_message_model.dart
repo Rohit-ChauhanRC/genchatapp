@@ -24,6 +24,7 @@ class NewMessageModel extends Equatable {
   final String? messageRepliedOn;
   final MessageType? messageRepliedOnType;
   final bool? isAsset;
+  final bool? isGroupMessage;
   final String? assetOriginalName;
   final String? assetServerName;
   final String? assetUrl;
@@ -45,6 +46,7 @@ class NewMessageModel extends Equatable {
     this.senderPhoneNumber,
     this.messageType,
     this.isForwarded,
+    this.isGroupMessage,
     this.forwardedMessageId,
     this.isRepliedMessage,
     this.messageRepliedOnId,
@@ -82,6 +84,7 @@ class NewMessageModel extends Equatable {
           ? MessageTypeExtension.fromValue(map['messageType'])
           : MessageType.text,
       isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
+      isGroupMessage: map['isGroupMessage'] == 1 || map['isGroupMessage'] == true,
       showForwarded: map['showForwarded'] == 1 || map['showForwarded'] == true,
       forwardedMessageId: map['forwardedMessageId'],
       isRepliedMessage:
@@ -113,6 +116,7 @@ class NewMessageModel extends Equatable {
       'senderPhoneNumber': senderPhoneNumber,
       'messageType': messageType?.value,
       'isForwarded': isForwarded == true ? 1 : 0,
+      'isGroupMessage': isGroupMessage == true ? 1 : 0,
       'forwardedMessageId': forwardedMessageId,
       'isRepliedMessage': isRepliedMessage == true ? 1 : 0,
       'messageRepliedOnId': messageRepliedOnId ?? 0,
@@ -140,6 +144,7 @@ class NewMessageModel extends Equatable {
     String? senderPhoneNumber,
     MessageType? messageType,
     bool? isForwarded,
+    bool? isGroupMessage,
     int? forwardedMessageId,
     bool? isRepliedMessage,
     int? messageRepliedOnId,
@@ -167,6 +172,7 @@ class NewMessageModel extends Equatable {
       senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
       messageType: messageType ?? this.messageType,
       isForwarded: isForwarded ?? this.isForwarded,
+      isGroupMessage: isGroupMessage ?? this.isGroupMessage,
       forwardedMessageId: forwardedMessageId ?? this.forwardedMessageId,
       isRepliedMessage: isRepliedMessage ?? this.isRepliedMessage,
       messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,

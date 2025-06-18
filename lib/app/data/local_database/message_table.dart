@@ -140,6 +140,16 @@ class MessageTable {
     );
   }
 
+  Future<int> updateMessageByClientId(NewMessageModel message) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      message.toMap(),
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [message.clientSystemMessageId],
+    );
+  }
+
 //     final database = await DataBaseService().database;
 //     return await database.update(
 //       tableName,

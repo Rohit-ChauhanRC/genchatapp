@@ -13,6 +13,7 @@ class MyMessageCard extends StatelessWidget {
   final String date;
   final MessageType type;
   final MessageState status;
+  final SyncStatus syncStatus;
   final void Function(DragUpdateDetails)? onLeftSwipe;
   final RxString repliedText;
   final int? repliedUserId;
@@ -22,6 +23,8 @@ class MyMessageCard extends StatelessWidget {
   final bool? isHighlighted;
   final bool isForwarded;
   final bool showForwarded;
+  final VoidCallback? onRetryTap;
+  final bool isAsset;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -29,6 +32,7 @@ class MyMessageCard extends StatelessWidget {
     required this.date,
     required this.type,
     required this.status,
+    required this.syncStatus,
     required this.onLeftSwipe,
     required this.repliedText,
     required this.repliedMessageType,
@@ -38,6 +42,8 @@ class MyMessageCard extends StatelessWidget {
     this.isHighlighted = false,
     this.isForwarded = false,
     this.showForwarded = false,
+    this.onRetryTap,
+    this.isAsset = false,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -68,8 +74,7 @@ class MyMessageCard extends StatelessWidget {
                   bottomRight: Radius.circular(8),
                 ),
               ),
-              color:
-                  // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
+              color: // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
                   mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
@@ -145,9 +150,32 @@ class MyMessageCard extends StatelessWidget {
                             ],
                           );
                         }),
-                        DisplayTextImageGIF(
-                          message: message,
-                          type: type,
+                        Stack(
+                          alignment: Alignment.center,
+                          children:[
+                            DisplayTextImageGIF(
+                              message: message,
+                              type: type,
+                            ),
+
+                            if (syncStatus == SyncStatus.pending && isAsset &&
+                                (type == MessageType.image || type == MessageType.video || type == MessageType.document))
+                              InkWell(
+                                onTap: onRetryTap,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black45,
+                                  ),
+                                  padding: const EdgeInsets.all(8),
+                                  child: const Icon(
+                                    Icons.refresh, // or Icons.refresh_rounded
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
+                          ]
                         ),
                       ],
                     ),

@@ -1040,9 +1040,32 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return null; // return empty result on error
   }
 
+  Future<void> retryPendingMediaFile(NewMessageModel messages) async{
+    final rootPaths = rootPath;
+    final messageType = messages.messageType?.value;
+    final fileType = messageType?.toTitleCase;
+    final fileName = messages.assetServerName;
+    final file = File("$rootPaths$fileType/$fileName");
+    print("Full file name with path: $file");
+    final result = await uploadFileToServer(file);
+    if(result != null){
+      final updatedMessage = messages.copyWith(
+          assetOriginalName: result.data?.originalName,
+          assetServerName: fileName,
+          assetUrl: result.data?.url);
+      if(socketService.isConnected) {
+        print("updatedMessage:----> ${updatedMessage.toMap()}");
+        await MessageTable().updateMessageByClientId(updatedMessage);
+        socketService.sendMessageSync(updatedMessage);
+
+      }
+    }
+  }
+
   void selectGif() async {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
+      print("gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url}");
       // sendGIFMessage(
       //   context: Get.context!,
       //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
@@ -1164,81 +1187,4 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 //       senderId: senderuserData?.userId ?? 0,
 //     );
 //   }).asyncMap((event) async => await event);
-// }
-
-/// last used code form last firebase changes
-
-// Future<void> sendFileMessage({
-//   required File file,
-//   required MessageEnum messageEnum,
-// }) async {
-//   final messageId = const Uuid().v1();
-//   final timeSent = DateTime.now();
-//   final fileType = messageEnum.type.split('.').last;
-//   final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-//   try {
-//     // Save file locally
-//     final localFilePath = await saveFileLocally(file, fileType, fileExtension);
-//
-//     // Upload file to the server
-//     final fileUrl = await uploadFileToServer(file, fileType);
-//
-//     final newMessage = MessageModel(
-//       senderId: senderuserData!.userId.toString(),
-//       receiverId: id.toString(),
-//       text: fileType,
-//       type: messageEnum,
-//       timeSent: timeSent,
-//       messageId: messageId,
-//       status: MessageStatus.uploading,
-//       repliedMessage: messageReply == null
-//           ? '' : messageReply.message.toString(),
-//       repliedTo: messageReply.message == null ? '' :
-//       messageReply.isMe!
-//           ? senderuserData?.name ?? ""
-//           : receiveruserDataModel.value.name ?? "",
-//       repliedMessageType: messageReply.message == null
-//           ? MessageEnum.text
-//           : messageReply.messageEnum!,
-//       syncStatus: 'pending',
-//       fileUrl: fileUrl,
-//       filePath: localFilePath,
-//       fileSize: 0,
-//       thumbnailPath: ""
-//     );
-//
-//     // Save message locally
-//     await MessageTable().insertMessage(newMessage);
-//     messageList.add(newMessage);
-//
-//     // Sync message with Firebase if online
-//     if (connectivityService.isConnected.value) {
-//       // await _syncMessageToFirebase(newMessage.copyWith(
-//       //   status: receiveruserDataModel.value.isOnline!
-//       //       ? MessageStatus.delivered
-//       //       : MessageStatus.sent,
-//       // ));
-//     }
-//   } catch (e) {
-//     if (kDebugMode) {
-//       print("Error sending file message: $e");
-//     }
-//   }
-// }
-
-// Future<String> uploadFileToServer(File file, String fileType) async {
-//   try {
-//     final fileName = 'GENCHAT_$fileType${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}';
-//     final serverPath = 'chat/$fileType/${senderuserData!.userId.toString()}/$fileName';
-//
-//     // Upload file to Firebase Storage or server
-//     final uploadTask = firebaseController.firebaseStorage.ref(serverPath).putFile(file);
-//     final snapshot = await uploadTask;
-//     final fileUrl = await snapshot.ref.getDownloadURL();
-//     print("FileURL from server:-----------------> $fileUrl");
-//
-//     return fileUrl; // Return public file URL
-//   } catch (e) {
-//     throw Exception("File upload failed: $e");
-//   }
 // }

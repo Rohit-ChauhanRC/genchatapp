@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/measure_size.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/typping_bubble.dart';
@@ -147,6 +150,7 @@ class ChatList extends StatelessWidget {
                                     type:
                                         messages.messageType ?? MessageType.text,
                                     status: messages.state ?? MessageState.unsent,
+                                    syncStatus: messages.syncStatus ?? SyncStatus.pending,
                                     onLeftSwipe: messages.messageType ==
                                             MessageType.deleted
                                         ? null
@@ -185,9 +189,13 @@ class ChatList extends StatelessWidget {
                                         .scrollToOriginalMessage(
                                             messages.messageRepliedOnId!),
                                     isHighlighted: isHighlighted,
-                              isForwarded: messages.isForwarded!,
-                            showForwarded: messages.showForwarded!,
-                                  )
+                                    isForwarded: messages.isForwarded!,
+                                    showForwarded: messages.showForwarded!,
+                                    isAsset: messages.isAsset!,
+                                    onRetryTap: () async {
+                                      await singleChatController.retryPendingMediaFile(messages);
+                                    }
+                              )
                                 : SenderMessageCard(
                                     message: messages.messageType == MessageType.text ||
                                             messages.messageType ==

@@ -38,8 +38,10 @@ class DisplayTextImageGIF extends StatelessWidget {
     // print("FullFolderPath:--------->${rootFolderPath+message}");
     return type == MessageType.text || type == MessageType.deleted
         ? SelectableText(
-        type ==   MessageType.text?  singleChatController.encryptionService.decryptText(message): message,
-            maxLines: isReply == true ?2: null,
+            type == MessageType.text
+                ? singleChatController.encryptionService.decryptText(message)
+                : message,
+            maxLines: isReply == true ? 2 : null,
             style: TextStyle(
                 fontSize: 16,
                 fontStyle: type == MessageType.deleted
@@ -71,29 +73,30 @@ class DisplayTextImageGIF extends StatelessWidget {
                   ),
                 );
               })
-        : type == MessageType.document
-            ? DocumentMessageWidget(
-                localFilePath: '${rootFolderPath}Document/$message', // or extract from metadata
-                url: message, // the full URL
-                isReply: isReply ?? false,
-              )
-            // : type == MessageType.video
-            //     ? VideoPlayerItem(
-            //         videoUrl: message,
-            //       )
-            //     : type == MessageType.gif
-            //         ? CachedNetworkImage(
-            //             imageUrl: message,
-            //           )
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.file(
-                  File('${rootFolderPath}Image/$message'),
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                  height: isReply == true ?20 :200,
-                  width: isReply == true ?30:300,
-                ));
+            : type == MessageType.document
+                ? DocumentMessageWidget(
+                    localFilePath:
+                        '${rootFolderPath}Document/$message', // or extract from metadata
+                    url: message, // the full URL
+                    isReply: isReply ?? false,
+                  )
+                // : type == MessageType.video
+                //     ? VideoPlayerItem(
+                //         videoUrl: message,
+                //       )
+                //     : type == MessageType.gif
+                //         ? CachedNetworkImage(
+                //             imageUrl: message,
+                //           )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(
+                      File('${rootFolderPath}Image/$message'),
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.medium,
+                      height: isReply == true ? 20 : 200,
+                      width: isReply == true ? 30 : 300,
+                    ));
     // CachedNetworkImage(
     //             imageUrl: message,
     //           );

@@ -18,7 +18,7 @@ class FolderCreation {
         // final Directory appDir = await getApplicationDocumentsDirectory();
         final Directory appDir;
         if(Platform.isAndroid) {
-          appDir = Directory("/storage/emulated/0/");
+          appDir = Directory("/storage/emulated/0");
         }else{
           appDir = await getApplicationDocumentsDirectory();
         }
@@ -67,7 +67,7 @@ class FolderCreation {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
       if(Platform.isAndroid) {
-        appDir = Directory("/storage/emulated/0/");
+        appDir = Directory("/storage/emulated/0");
       }else{
         appDir = await getApplicationDocumentsDirectory();
       }
@@ -97,7 +97,7 @@ class FolderCreation {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
       if(Platform.isAndroid) {
-        appDir = Directory("/storage/emulated/0/");
+        appDir = Directory("/storage/emulated/0");
       }else{
         appDir = await getApplicationDocumentsDirectory();
       }
@@ -153,7 +153,7 @@ class FolderCreation {
       // final directory = await getApplicationDocumentsDirectory();
       final Directory directory;
       if(Platform.isAndroid) {
-        directory = Directory("/storage/emulated/0/");
+        directory = Directory("/storage/emulated/0");
       }else{
         directory = await getApplicationDocumentsDirectory();
       }
@@ -195,7 +195,7 @@ class FolderCreation {
     // Directory appDir = await getApplicationDocumentsDirectory();
     final Directory appDir;
     if(Platform.isAndroid) {
-      appDir = Directory("/storage/emulated/0/");
+      appDir = Directory("/storage/emulated/0");
     }else{
       appDir = await getApplicationDocumentsDirectory();
     }

@@ -7,23 +7,22 @@ class FilePickerService {
   final ImagePicker _picker = ImagePicker();
 
   /// Pick either image or video from camera (let user decide)
+  /// Pick from camera (either image or fallback to video)
   Future<List<File>> pickFromCamera() async {
-    // Camera cannot choose both media types in one prompt, so we prompt twice
-    final media = await _picker.pickImage(
+    final image = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 80,
       preferredCameraDevice: CameraDevice.rear,
     );
 
-    // If media is null, fallback to video (or prompt separately if needed)
-    if (media == null) {
-      final video = await _picker.pickVideo(source: ImageSource.camera);
-      if (video != null) return [File(video.path)];
-      return [];
-    }
+    if (image != null) return [File(image.path)];
 
-    return [File(media.path)];
+    final video = await _picker.pickVideo(source: ImageSource.camera);
+    if (video != null) return [File(video.path)];
+
+    return [];
   }
+
 
   /// Pick multiple images/videos from gallery
   Future<List<File>> pickFromGallery() async {
@@ -31,7 +30,6 @@ class FilePickerService {
       type: FileType.media, // This allows images & videos both
       allowMultiple: true,
     );
-
     if (result == null || result.files.isEmpty) return [];
 
     return result.paths.whereType<String>().map((path) => File(path)).toList();

@@ -326,12 +326,12 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final List<XFile> pickedFiles =
-                          await ImagePicker().pickMultipleMedia();
-
-                      List<File> files =
-                          convertXFileListToFileList(pickedFiles);
-                      // final files = await FilePickerService().pickFromGallery();
+                      // final List<XFile> pickedFiles =
+                      //     await ImagePicker().pickMultipleMedia();
+                      //
+                      // List<File> files =
+                      //     convertXFileListToFileList(pickedFiles);
+                      final files = await FilePickerService().pickFromGallery();
                       if (files.isNotEmpty) {
                         Get.to(() => MediaPreviewScreen(
                               files: files,
@@ -368,9 +368,9 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final xfiles = await ImagePicker()
-                          .pickImage(source: ImageSource.camera);
-                      final files = [File(xfiles!.path)];
+                      final files = await FilePickerService().pickFromCamera();
+                          // .pickImage(source: ImageSource.camera);
+                      // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
                         Get.to(() => MediaPreviewScreen(
                               files: files,

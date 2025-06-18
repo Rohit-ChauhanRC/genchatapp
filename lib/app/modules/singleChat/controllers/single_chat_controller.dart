@@ -580,15 +580,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           }
         } else if (senderuserData!.userId == i.senderId &&
             i.syncStatus == SyncStatus.pending &&
-            i.messageId == null) {
-          if (socketService.isConnected) {
-            if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
-              socketService.sendMessageSync(i);
-            }
-          }
-        } else if (senderuserData!.userId == i.senderId &&
-            i.syncStatus == SyncStatus.pending &&
-            i.messageId != null) {
+            i.messageId == null && i.isAsset == false) {
           if (socketService.isConnected) {
             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
               socketService.sendMessageSync(i);

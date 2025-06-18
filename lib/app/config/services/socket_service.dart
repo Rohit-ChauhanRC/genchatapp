@@ -548,7 +548,9 @@ class SocketService extends GetxService {
   Future<void> syncPendingMessages({required int loginUserId}) async{
     final dbMessages = await messageTable.fetchAllPendingMessages(loginUserId: loginUserId);
     for(final msg in dbMessages){
-      sendMessageSync(msg);
+      if(msg.isAsset == false) {
+        sendMessageSync(msg);
+      }
     }
   }
   void _clearSocketListeners() {

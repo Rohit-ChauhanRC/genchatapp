@@ -13,7 +13,7 @@ class ImagePreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: bgColor,
       appBar: AppBar(
           backgroundColor: textBarColor,
           iconTheme: const IconThemeData(color: Colors.white),
@@ -27,7 +27,8 @@ class ImagePreviewScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           )),
-      body: SizedBox(
+      body: Container(
+        padding: const EdgeInsets.all(18),
         height: Get.height,
         child: InteractiveViewer(
           boundaryMargin: const EdgeInsets.all(20.0),

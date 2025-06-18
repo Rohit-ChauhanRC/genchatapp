@@ -1014,8 +1014,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       messageList.add(newMessage);
 
       // Sync message with Firebase if online
-      if (connectivityService.isConnected.value) {
+      if (socketService.isConnected) {
         socketService.sendMessage(newMessage);
+      }else{
+        socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {

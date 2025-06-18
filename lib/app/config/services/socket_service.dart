@@ -460,7 +460,9 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: user.userId.toString(),
-          lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
+          lastMessage: data.messageType == MessageType.image ?MessageType.image.value
+              :data.messageType == MessageType.video ?MessageType.video.value
+              :data.messageType == MessageType.document ?MessageType.document.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: user.displayPictureUrl,
@@ -471,7 +473,9 @@ class SocketService extends GetxService {
           contact: ChatConntactModel(
             lastMessageId:data.messageId,
             contactId: user.userId.toString(),
-            lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
+            lastMessage: data.messageType == MessageType.image ?MessageType.image.value
+                :data.messageType == MessageType.video ?MessageType.video.value
+                :data.messageType == MessageType.document ?MessageType.document.value:data.message,
             name: user.localName,
             profilePic: user.displayPictureUrl,
             timeSent: data.messageSentFromDeviceTime,
@@ -491,7 +495,9 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: fallbackUid.toString(),
-          lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
+          lastMessage: data.messageType == MessageType.image ?MessageType.image.value
+              :data.messageType == MessageType.video ?MessageType.video.value
+              :data.messageType == MessageType.document ?MessageType.document.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: '', // or a default avatar
@@ -502,7 +508,9 @@ class SocketService extends GetxService {
           contact: ChatConntactModel(
             contactId: fallbackUid.toString(),
             lastMessageId: data.messageId,
-            lastMessage: data.messageType == MessageType.image ?MessageType.image.value:data.message,
+            lastMessage: data.messageType == MessageType.image ?MessageType.image.value
+                :data.messageType == MessageType.video ?MessageType.video.value
+                :data.messageType == MessageType.document ?MessageType.document.value:data.message,
             name: fallbackName,
             profilePic: '',
             timeSent: data.messageSentFromDeviceTime,

@@ -7,6 +7,7 @@ import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:path_provider/path_provider.dart';
@@ -77,10 +78,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                 url: message, // the full URL
                 isReply: isReply ?? false,
               )
-            // : type == MessageType.video
-            //     ? VideoPlayerItem(
-            //         videoUrl: message,
-            //       )
+            : type == MessageType.video
+                ? VideoPlayerItem(
+                    videoUrl: '${rootFolderPath}Video/$message',
+                    isReply: isReply ?? false,
+                  )
             //     : type == MessageType.gif
             //         ? CachedNetworkImage(
             //             imageUrl: message,

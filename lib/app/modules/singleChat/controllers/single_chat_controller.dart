@@ -919,8 +919,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   void selectFile(String fileType) async {
-
-    if (fileType == MessageType.image.value || fileType == MessageType.video.value) {
+    if (fileType == MessageType.image.value ||
+        fileType == MessageType.video.value) {
       final selectedFiles = await pickImageAndVideo();
       for (File file in selectedFiles) {
         print("Yes Getting back all files:---> $file");
@@ -929,11 +929,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     } else if (fileType == MessageType.audio.value) {
       // selectedFile = await pickAudio();
     } else if (fileType == MessageType.document.value) {
-       await pickAndSendDocuments((selectedFiles) async {
-         for (File file in selectedFiles) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
           await sendFileMessage(file: file, messageEnum: getMessageType(file));
-         }
+        }
       });
     }
   }
@@ -947,7 +947,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return completer.future;
   }
 
-  Future<String> saveFileLocally(File file, String fileType, String fileExtension) async {
+  Future<String> saveFileLocally(
+      File file, String fileType, String fileExtension) async {
     final subFolderName = fileType.toTitleCase;
     final fileName =
         "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
@@ -961,8 +962,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return fileName;
   }
 
-
-
   Future<void> sendFileMessage({
     required File file,
     required MessageType messageEnum,
@@ -973,7 +972,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
     try {
       // Save file locally
-      final localFilePath = await saveFileLocally(file, fileType, fileExtension);
+      final localFilePath =
+          await saveFileLocally(file, fileType, fileExtension);
 
       // Upload file to the server
       final fileData = await uploadFileToServer(file);
@@ -997,16 +997,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
         messageRepliedOnType:
-        messageReply == null ? MessageType.text : messageReply.messageType,
+            messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
-        assetOriginalName: fileData == null ? "":fileData.data?.originalName,
+        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: localFilePath,
-        assetUrl: fileData == null ? "":fileData.data?.url,
+        assetUrl: fileData == null ? "" : fileData.data?.url,
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-            ? senderuserData?.userId
-            : receiverUserData?.userId,
+                ? senderuserData?.userId
+                : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       // Save message locally
@@ -1016,7 +1016,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       // Sync message with Firebase if online
       if (socketService.isConnected) {
         socketService.sendMessage(newMessage);
-      }else{
+      } else {
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
@@ -1036,13 +1036,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           print("response of upload Files:----> ${result.data?.toJson()}");
           return result;
         } else {
-          showAlertMessage('Upload failed: Invalid response status.');
+          // showAlertMessage('Upload failed: Invalid response status.');
         }
       } else {
-        showAlertMessage('Failed to upload file: ${response?.statusCode}');
+        // showAlertMessage('Failed to upload file: ${response?.statusCode}');
       }
     } catch (e) {
-      showAlertMessage('Error uploading file: ${e.toString()}');
+      // showAlertMessage('Error uploading file: ${e.toString()}');
     }
 
     return null; // return empty result on error

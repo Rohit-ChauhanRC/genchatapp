@@ -7,7 +7,7 @@ import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/imaage_preview.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/image_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -94,11 +94,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                     : GestureDetector(
                         onTap: () {
                           // Option A: Show as dialog
-                          showImagePreview('${rootFolderPath}Image/$message');
+                          // showImagePreview('${rootFolderPath}Image/$message');
 
                           // Option B: Navigate to full screen
-                          // Get.to(() => ImagePreviewScreen(
-                          //     imagePath: '${rootFolderPath}Image/$message'));
+                          Get.to(() => ImagePreviewScreen(
+                              imagePath: '${rootFolderPath}Image/$message'));
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),

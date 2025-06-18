@@ -301,6 +301,8 @@ class ChatsView extends GetView<ChatsController> {
                                                     : (chatConntactModel
                                                             .lastMessage!
                                                             .isNotEmpty && chatConntactModel.lastMessage != MessageType.image.value
+                                                    && chatConntactModel.lastMessage != MessageType.video.value
+                                                    && chatConntactModel.lastMessage != MessageType.document.value
                                                         ? controller.encryptionService
                                                             .decryptText(chatConntactModel.lastMessage.toString())
                                                         : chatConntactModel.lastMessage.toString()),

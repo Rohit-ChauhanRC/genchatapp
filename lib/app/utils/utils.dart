@@ -195,7 +195,7 @@ bool isEmail(String value) {
       .hasMatch(value);
 }
 
-Widget loadingWidget({required String text}){
+Widget loadingWidget({required String text}) {
   return Center(
     child: Container(
         padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
@@ -203,14 +203,17 @@ Widget loadingWidget({required String text}){
         width: 150,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-            color: mySideBgColor,
-            borderRadius: BorderRadius.circular(20)
-        ),
+            color: mySideBgColor, borderRadius: BorderRadius.circular(20)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CircularProgressIndicator(color: textBarColor ),
-            Text(text, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: blackColor),),
+            CircularProgressIndicator(color: textBarColor),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w500, color: blackColor),
+            ),
           ],
         )),
   );
@@ -241,7 +244,7 @@ String getFileMimeType(File file) {
   final extension = file.path.split('.').last.toLowerCase();
 
   switch (extension) {
-  // Images
+    // Images
     case 'png':
       return 'image/png';
     case 'jpg':
@@ -254,7 +257,7 @@ String getFileMimeType(File file) {
     case 'webp':
       return 'image/webp';
 
-  // Videos
+    // Videos
     case 'mp4':
       return 'video/mp4';
     case 'mov':
@@ -264,7 +267,7 @@ String getFileMimeType(File file) {
     case 'mkv':
       return 'video/x-matroska';
 
-  // Documents
+    // Documents
     case 'pdf':
       return 'application/pdf';
     case 'doc':
@@ -291,12 +294,18 @@ String getFileMimeType(File file) {
   }
 }
 
-
 extension StringCasingExtension on String {
-  String get toCapitalized => length > 0 ?'${this[0].toUpperCase()}${substring(1).toLowerCase()}':'';
-  String get toTitleCase => replaceAll(RegExp(' +'), ' ').split(' ').map((str) => str.toCapitalized).join(' ');
+  String get toCapitalized =>
+      length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
+  String get toTitleCase => replaceAll(RegExp(' +'), ' ')
+      .split(' ')
+      .map((str) => str.toCapitalized)
+      .join(' ');
 }
 
+List<File> convertXFileListToFileList(List<XFile> xfileList) {
+  return xfileList.map((xfile) => File(xfile.path)).toList();
+}
 
 // open from chat input or wherever you want
 Future<void> showMediaPickerBottomSheet({
@@ -317,15 +326,21 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickFromGallery();
+                      final List<XFile> pickedFiles =
+                          await ImagePicker().pickMultipleMedia();
+
+                      List<File> files =
+                          convertXFileListToFileList(pickedFiles);
+                      // final files = await FilePickerService().pickFromGallery();
                       if (files.isNotEmpty) {
                         Get.to(() => MediaPreviewScreen(
-                          files: files,
-                          fileType: getMessageType(files.first).value,
-                          onSend: (selectedFiles) {
-                            onSendFiles(selectedFiles, getMessageType(files.first).value);
-                          },
-                        ));
+                              files: files,
+                              fileType: getMessageType(files.first).value,
+                              onSend: (selectedFiles) {
+                                onSendFiles(selectedFiles,
+                                    getMessageType(files.first).value);
+                              },
+                            ));
                       }
                     },
                     child: const Column(
@@ -353,15 +368,18 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickFromCamera();
+                      final xfiles = await ImagePicker()
+                          .pickImage(source: ImageSource.camera);
+                      final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
                         Get.to(() => MediaPreviewScreen(
-                          files: files,
-                          fileType: getMessageType(files.first).value,
-                          onSend: (selectedFiles) {
-                            onSendFiles(selectedFiles, getMessageType(files.first).value);
-                          },
-                        ));
+                              files: files,
+                              fileType: getMessageType(files.first).value,
+                              onSend: (selectedFiles) {
+                                onSendFiles(selectedFiles,
+                                    getMessageType(files.first).value);
+                              },
+                            ));
                       }
                     },
                     child: const Column(
@@ -429,21 +447,22 @@ Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
   }
 }
 
-
-
-
 MessageType getMessageType(File file) {
   final ext = file.path.toLowerCase();
 
-  if (ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.webp')) {
+  if (ext.endsWith('.jpg') ||
+      ext.endsWith('.jpeg') ||
+      ext.endsWith('.png') ||
+      ext.endsWith('.webp')) {
     return MessageType.image;
-  } else if (ext.endsWith('.mp4') || ext.endsWith('.mov') || ext.endsWith('.avi') || ext.endsWith('.mkv')) {
+  } else if (ext.endsWith('.mp4') ||
+      ext.endsWith('.mov') ||
+      ext.endsWith('.avi') ||
+      ext.endsWith('.mkv')) {
     return MessageType.video;
-  } else if (ext.endsWith('.gif')){
+  } else if (ext.endsWith('.gif')) {
     return MessageType.gif;
   }
 
   return MessageType.document; // Fallback
 }
-
-

@@ -7,6 +7,7 @@ import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/image_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -74,32 +75,74 @@ class DisplayTextImageGIF extends StatelessWidget {
                   ),
                 );
               })
-        : type == MessageType.document
-            ? DocumentMessageWidget(
-                localFilePath: '${rootFolderPath}Document/$message', // or extract from metadata
-                url: message, // the full URL
-                isReply: isReply ?? false,
-              )
-            : type == MessageType.video
-                ? VideoPlayerItem(
-                    videoUrl: '${rootFolderPath}Video/$message',
+            : type == MessageType.document
+                ? DocumentMessageWidget(
+                    localFilePath:
+                        '${rootFolderPath}Document/$message', // or extract from metadata
+                    url: message, // the full URL
                     isReply: isReply ?? false,
                   )
-            //     : type == MessageType.gif
-            //         ? CachedNetworkImage(
-            //             imageUrl: message,
-            //           )
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.file(
-                  File('${rootFolderPath}Image/$message'),
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                  height: isReply == true ?20 :200,
-                  width: isReply == true ?30:300,
-                ));
+                : type == MessageType.video
+                    ? VideoPlayerItem(
+                        videoUrl: '${rootFolderPath}Video/$message',
+                        isReply: isReply ?? false,
+                      )
+                    //     : type == MessageType.gif
+                    //         ? CachedNetworkImage(
+                    //             imageUrl: message,
+                    //           )
+                    : GestureDetector(
+                        onTap: () {
+                          // Option A: Show as dialog
+                          // showImagePreview('${rootFolderPath}Image/$message');
+
+                          // Option B: Navigate to full screen
+                          Get.to(() => ImagePreviewScreen(
+                              imagePath: '${rootFolderPath}Image/$message'));
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            File('${rootFolderPath}Image/$message'),
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.medium,
+                            height: isReply == true ? 20 : 200,
+                            width: isReply == true ? 30 : 300,
+                          ),
+                        ),
+                      );
     // CachedNetworkImage(
     //             imageUrl: message,
     //           );
   }
+}
+
+void showImagePreview(String imagePath) {
+  Get.dialog(
+    Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(10),
+      child: Stack(
+        children: [
+          GestureDetector(
+            onTap: () {}, // disable outside tap to prevent accidental close
+            child: Center(
+              child: InteractiveViewer(
+                child: Image.file(File(imagePath)),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 28),
+              onPressed: () => Get.back(),
+            ),
+          ),
+        ],
+      ),
+    ),
+    barrierDismissible: false,
+  );
 }

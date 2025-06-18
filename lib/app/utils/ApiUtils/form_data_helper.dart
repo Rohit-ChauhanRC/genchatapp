@@ -4,7 +4,6 @@ import 'package:get/instance_manager.dart';
 import '../../network/api_interceptor.dart';
 import '../alert_popup_utils.dart';
 
-
 Future<Response?> retryFormDataUpload({
   required String url,
   required FormData Function() formDataBuilder,
@@ -14,7 +13,8 @@ Future<Response?> retryFormDataUpload({
     return await uploadCall(formDataBuilder());
   } on DioException catch (e) {
     final isUnauthorized = e.response?.statusCode == 401 ||
-        e.response?.data['message']?.toString().toLowerCase() == 'invalid token';
+        e.response?.data['message']?.toString().toLowerCase() ==
+            'invalid token';
 
     if (isUnauthorized) {
       print("🛑 DioException: 401 or invalid token. Refreshing...");
@@ -26,14 +26,14 @@ Future<Response?> retryFormDataUpload({
           return await uploadCall(formDataBuilder());
         } catch (e) {
           print("❌ Retry after DioException failed: $e");
-          showAlertMessage("Retry failed: ${e.toString()}");
+          // showAlertMessage("Retry failed: ${e.toString()}");
           return null;
         }
       }
     }
 
     print("🔥 DioException (not auth): ${e.message}");
-    showAlertMessage("Upload failed: ${e.message}");
+    // showAlertMessage("Upload failed: ${e.message}");
     return null;
   } catch (e) {
     final message = e.toString().toLowerCase();
@@ -44,13 +44,13 @@ Future<Response?> retryFormDataUpload({
         return await uploadCall(formDataBuilder());
       } catch (e) {
         print("❌ Retry after generic catch failed: $e");
-        showAlertMessage("Retry failed: ${e.toString()}");
+        // showAlertMessage("Retry failed: ${e.toString()}");
         return null;
       }
     }
 
     print("🔥 Unexpected error: $e");
-    showAlertMessage("Unexpected error: ${e.toString()}");
+    // showAlertMessage("Unexpected error: ${e.toString()}");
     return null;
   }
 }

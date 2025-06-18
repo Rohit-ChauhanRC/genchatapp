@@ -76,6 +76,4 @@ class ProfileRepository {
           apiClient.uploadFile(ApiEndpoints.uploadMessageFiles, formData),
     );
   }
-
-
 }

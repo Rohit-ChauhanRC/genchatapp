@@ -2,16 +2,21 @@ import 'dart:async';
 import 'dart:io';
 // import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:tenor_flutter/tenor_flutter.dart';
+import 'package:video_compress/video_compress.dart';
 
 import '../config/services/filePickerService.dart';
 import '../constants/colors.dart';
 import '../constants/message_enum.dart';
 import '../modules/singleChat/mediaPickerFiles/media_preview_screen.dart';
 import 'alert_popup_utils.dart';
+
+import 'package:path/path.dart' as p;
 
 void showSnackBar({required BuildContext context, required String content}) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -369,7 +374,7 @@ Future<void> showMediaPickerBottomSheet({
                     onTap: () async {
                       Get.back();
                       final files = await FilePickerService().pickFromCamera();
-                          // .pickImage(source: ImageSource.camera);
+                      // .pickImage(source: ImageSource.camera);
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
                         Get.to(() => MediaPreviewScreen(
@@ -465,4 +470,77 @@ MessageType getMessageType(File file) {
   }
 
   return MessageType.document; // Fallback
+}
+
+Future<File?> compressImage(File file, String extension) async {
+  final dir = await getTemporaryDirectory();
+  final targetPath = p.join(
+    dir.path,
+    '${DateTime.now().millisecondsSinceEpoch}.${extension.toLowerCase()}',
+  );
+
+  try {
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path, targetPath,
+      quality: 60, // You can adjust this from 0 to 100
+    );
+    return File(result!.path);
+  } catch (e) {
+    print("Image compression failed: $e");
+    return null;
+  }
+}
+
+Future<String> getReadableFileSize(File file) async {
+  final bytes = await file.length();
+  if (bytes < 1024)
+    return '$bytes B';
+  else if (bytes < 1024 * 1024)
+    return '${(bytes / 1024).toStringAsFixed(2)} KB';
+  else
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+}
+
+Future<MediaInfo?> compressVideo(File file) async {
+  try {
+    await VideoCompress.setLogLevel(0); // reduce logs
+    return await VideoCompress.compressVideo(
+      file.path,
+      quality: VideoQuality.Res960x540Quality,
+      deleteOrigin: false,
+      includeAudio: true,
+    );
+  } catch (e) {
+    print("Video compression error: $e");
+    return null;
+  }
+}
+
+Future<Map<String, File?>> compressFiles(File file, String extension) async {
+  File processedFile = file;
+  String newExtension = extension.toLowerCase();
+
+  final imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
+  final videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+  if (imageExtensions.contains(extension.toLowerCase())) {
+    final compressedFile = await compressImage(file, extension);
+    if (compressedFile != null) {
+      processedFile = compressedFile;
+      newExtension = 'jpeg';
+    }
+  } else if (videoExtensions.contains(extension.toLowerCase())) {
+    final compressed = await compressVideo(file);
+
+    if (compressed != null) {
+      processedFile = File(compressed.path!);
+      newExtension = 'mp4'; // force final format
+      print(
+          "Compressed video size: ${await getReadableFileSize(processedFile)}");
+    }
+  }
+
+  //  final fileName =
+  //     "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.$newExtension";
+
+  return {newExtension: processedFile};
 }

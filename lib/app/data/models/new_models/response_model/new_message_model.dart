@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/route_manager.dart';
 
 import '../../../../constants/message_enum.dart';
@@ -32,6 +33,8 @@ class NewMessageModel extends Equatable {
   final BuildContext? context;
   final GlobalKey? keys;
   final bool? showForwarded;
+  final RxBool? isRetrying;
+
 
   NewMessageModel({
     this.messageId,
@@ -58,6 +61,7 @@ class NewMessageModel extends Equatable {
     this.assetUrl,
     this.messageRepliedUserId,
     this.showForwarded,
+    this.isRetrying,
   })  : context = Get.context,
         keys = GlobalKey();
 
@@ -99,6 +103,7 @@ class NewMessageModel extends Equatable {
       assetServerName: map['assetServerName'] ?? '',
       assetUrl: map['assetUrl'] ?? '',
       messageRepliedUserId: map['messageRepliedUserId'],
+      isRetrying: false.obs,
     );
   }
 

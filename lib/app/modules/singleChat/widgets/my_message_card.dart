@@ -25,6 +25,7 @@ class MyMessageCard extends StatelessWidget {
   final bool showForwarded;
   final VoidCallback? onRetryTap;
   final bool isAsset;
+  final RxBool isRetryUploadFile;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -44,6 +45,7 @@ class MyMessageCard extends StatelessWidget {
     this.showForwarded = false,
     this.onRetryTap,
     this.isAsset = false,
+    required this.isRetryUploadFile,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -158,23 +160,48 @@ class MyMessageCard extends StatelessWidget {
                               type: type,
                             ),
 
-                            if (syncStatus == SyncStatus.pending && isAsset &&
-                                (type == MessageType.image || type == MessageType.video || type == MessageType.document))
-                              InkWell(
-                                onTap: onRetryTap,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black45,
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: const Icon(
-                                    Icons.refresh, // or Icons.refresh_rounded
-                                    color: Colors.white,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
+                            if (isAsset &&
+                                (type == MessageType.image ||
+                                    type == MessageType.video ||
+                                    type == MessageType.document)) ...[
+                              Obx(() {
+                                if (isRetryUploadFile.value) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black45,
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                } else if (syncStatus == SyncStatus.pending) {
+                                  return InkWell(
+                                    onTap: onRetryTap,
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black45,
+                                      ),
+                                      padding: const EdgeInsets.all(8),
+                                      child: const Icon(
+                                        Icons.refresh,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              }),
+                            ]
                           ]
                         ),
                       ],

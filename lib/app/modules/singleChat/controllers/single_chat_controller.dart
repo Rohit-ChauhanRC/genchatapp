@@ -1077,23 +1077,28 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> retryPendingMediaFile(NewMessageModel messages) async {
-    final rootPaths = rootPath;
-    final messageType = messages.messageType?.value;
-    final fileType = messageType?.toTitleCase;
-    final fileName = messages.assetServerName;
-    final file = File("$rootPaths$fileType/$fileName");
-    print("Full file name with path: $file");
-    final result = await uploadFileToServer(file);
-    if (result != null) {
-      final updatedMessage = messages.copyWith(
-          assetOriginalName: result.data?.originalName,
-          assetServerName: fileName,
-          assetUrl: result.data?.url);
-      if (socketService.isConnected) {
-        print("updatedMessage:----> ${updatedMessage.toMap()}");
-        await MessageTable().updateMessageByClientId(updatedMessage);
-        socketService.sendMessageSync(updatedMessage);
+    try {
+      messages.isRetrying?.value = true;
+      final rootPaths = rootPath;
+      final messageType = messages.messageType?.value;
+      final fileType = messageType?.toTitleCase;
+      final fileName = messages.assetServerName;
+      final file = File("$rootPaths$fileType/$fileName");
+      print("Full file name with path: $file");
+      final result = await uploadFileToServer(file);
+      if (result != null) {
+        final updatedMessage = messages.copyWith(
+            assetOriginalName: result.data?.originalName,
+            assetServerName: fileName,
+            assetUrl: result.data?.url);
+        if (socketService.isConnected) {
+          print("updatedMessage:----> ${updatedMessage.toMap()}");
+          await MessageTable().updateMessageByClientId(updatedMessage);
+          socketService.sendMessageSync(updatedMessage);
+        }
       }
+    } finally {
+      messages.isRetrying?.value = false;
     }
   }
 

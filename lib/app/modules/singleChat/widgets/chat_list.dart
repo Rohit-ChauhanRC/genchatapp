@@ -194,7 +194,8 @@ class ChatList extends StatelessWidget {
                                     isAsset: messages.isAsset!,
                                     onRetryTap: () async {
                                       await singleChatController.retryPendingMediaFile(messages);
-                                    }
+                                    },
+                                isRetryUploadFile: messages.isRetrying ?? false.obs,
                               )
                                 : SenderMessageCard(
                                     message: messages.messageType == MessageType.text ||

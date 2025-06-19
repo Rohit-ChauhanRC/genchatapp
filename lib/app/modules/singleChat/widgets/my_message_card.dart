@@ -187,7 +187,11 @@ class MyMessageCard extends StatelessWidget {
                                   );
                                 } else if (syncStatus == SyncStatus.pending) {
                                   return InkWell(
-                                    onTap: isRetryUploadFile.value ? null :onRetryTap,
+                                    onTap: isRetryUploadFile.value ? null : () {
+                                      if (!isRetryUploadFile.value) {
+                                        onRetryTap?.call(); // Only call if allowed
+                                      }
+                                    },
                                     child: Container(
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,

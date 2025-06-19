@@ -25,6 +25,7 @@ class SenderMessageCard extends StatelessWidget {
     this.onReplyTap,
     this.isForwarded = false,
     this.showForwarded = false,
+    this.url,
   });
   final String message;
   final String date;
@@ -39,6 +40,7 @@ class SenderMessageCard extends StatelessWidget {
   final VoidCallback? onReplyTap;
   final bool isForwarded;
   final bool showForwarded;
+  final String? url;
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +140,7 @@ class SenderMessageCard extends StatelessWidget {
                                       message: repliedText.value,
                                       type: repliedMessageType,
                                       isReply: true,
+                                      url: url,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -146,6 +149,7 @@ class SenderMessageCard extends StatelessWidget {
                         DisplayTextImageGIF(
                           message: message,
                           type: type,
+                          url: url,
                         ),
                       ],
                     ),

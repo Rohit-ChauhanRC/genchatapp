@@ -22,6 +22,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint((widget.videoUrl));
     _controller = VideoPlayerController.file(File(widget.videoUrl))
       ..initialize().then((_) {
         setState(() {});

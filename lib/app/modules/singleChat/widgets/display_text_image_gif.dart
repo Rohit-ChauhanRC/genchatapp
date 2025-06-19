@@ -8,6 +8,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_preview.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -20,10 +21,12 @@ class DisplayTextImageGIF extends StatelessWidget {
   final String message;
   final MessageType type;
   final bool? isReply;
+  final String? url;
   DisplayTextImageGIF({
     Key? key,
     required this.message,
     required this.type,
+    this.url,
     this.isReply = false,
   }) : super(key: key);
 
@@ -79,37 +82,27 @@ class DisplayTextImageGIF extends StatelessWidget {
                 ? DocumentMessageWidget(
                     localFilePath:
                         '${rootFolderPath}Document/$message', // or extract from metadata
-                    url: message, // the full URL
+                    url: url.toString(), // the full URL
                     isReply: isReply ?? false,
                   )
                 : type == MessageType.video
                     ? VideoPlayerItem(
                         videoUrl: '${rootFolderPath}Video/$message',
                         isReply: isReply ?? false,
+                        localFilePath:
+                            '${rootFolderPath}Video/$message', // or extract from metadata
+                        url: url.toString(),
                       )
                     //     : type == MessageType.gif
                     //         ? CachedNetworkImage(
                     //             imageUrl: message,
                     //           )
-                    : GestureDetector(
-                        onTap: () {
-                          // Option A: Show as dialog
-                          // showImagePreview('${rootFolderPath}Image/$message');
 
-                          // Option B: Navigate to full screen
-                          Get.to(() => ImagePreviewScreen(
-                              imagePath: '${rootFolderPath}Image/$message'));
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            File('${rootFolderPath}Image/$message'),
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.medium,
-                            height: isReply == true ? 20 : 200,
-                            width: isReply == true ? 30 : 300,
-                          ),
-                        ),
+                    // '${rootFolderPath}Image/$message'
+                    : ImageWidget(
+                        rootFolderPath: '${rootFolderPath}Image/$message',
+                        url: url.toString(),
+                        isReply: isReply,
                       );
     // CachedNetworkImage(
     //             imageUrl: message,

@@ -1077,6 +1077,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> retryPendingMediaFile(NewMessageModel messages) async {
+    if (messages.isRetrying?.value == true) return;
     try {
       messages.isRetrying?.value = true;
       final rootPaths = rootPath;

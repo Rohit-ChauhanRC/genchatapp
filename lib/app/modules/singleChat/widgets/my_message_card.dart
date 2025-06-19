@@ -187,7 +187,7 @@ class MyMessageCard extends StatelessWidget {
                                   );
                                 } else if (syncStatus == SyncStatus.pending) {
                                   return InkWell(
-                                    onTap: onRetryTap,
+                                    onTap: isRetryUploadFile.value ? null :onRetryTap,
                                     child: Container(
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,

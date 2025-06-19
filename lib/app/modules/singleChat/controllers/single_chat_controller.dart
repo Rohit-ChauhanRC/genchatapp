@@ -580,7 +580,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           }
         } else if (senderuserData!.userId == i.senderId &&
             i.syncStatus == SyncStatus.pending &&
-            i.messageId == null && i.isAsset == false) {
+            i.messageId == null &&
+            i.isAsset == false) {
           if (socketService.isConnected) {
             if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
               socketService.sendMessageSync(i);
@@ -941,14 +942,48 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   Future<String> saveFileLocally(
       File file, String fileType, String fileExtension) async {
+    // print(file.length());
+
+    String newExtension = fileExtension.toLowerCase();
+
+    print("Original file size: ${await getReadableFileSize(file)}");
     final subFolderName = fileType.toTitleCase;
+    // final fileName =
+    //     "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+
+    File processedFile = file;
+    // final imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
+    // final videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+    // if (imageExtensions.contains(fileExtension.toLowerCase())) {
+    //   final compressedFile = await compressImage(file, fileExtension);
+    //   if (compressedFile != null) {
+    //     processedFile = compressedFile;
+    //     newExtension = 'jpeg';
+    //   }
+    // } else if (videoExtensions.contains(fileExtension.toLowerCase())) {
+    //   final compressed = await compressVideo(file);
+
+    //   if (compressed != null) {
+    //     processedFile = File(compressed.path!);
+    //     newExtension = 'mp4'; // force final format
+    //     print(
+    //         "Compressed video size: ${await getReadableFileSize(processedFile)}");
+    //   }
+    // }
+    Map<String, File?> f = await compressFiles(file, fileExtension);
     final fileName =
-        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+        "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.${f.keys.first}";
+
     final filePath = await folderCreation.saveFileFromFile(
-      sourceFile: file,
+      sourceFile: f.values.first!,
       fileName: fileName,
       subFolder: subFolderName,
     );
+
+    // print(processedFile.length());
+    print(
+        "processedFile file size: ${await getReadableFileSize(processedFile)}");
+
     // print("FileName for saving locally:----------------> $fileName");
     // print("FilePath for saving locally:----------------> $filePath");
     return fileName;
@@ -968,7 +1003,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           await saveFileLocally(file, fileType, fileExtension);
 
       // Upload file to the server
-      final fileData = await uploadFileToServer(file);
+      Map<String, File?> f = await compressFiles(file, fileExtension);
+      final fileData = await uploadFileToServer(f.values.first!);
 
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
@@ -1040,7 +1076,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return null; // return empty result on error
   }
 
-  Future<void> retryPendingMediaFile(NewMessageModel messages) async{
+  Future<void> retryPendingMediaFile(NewMessageModel messages) async {
     final rootPaths = rootPath;
     final messageType = messages.messageType?.value;
     final fileType = messageType?.toTitleCase;
@@ -1048,16 +1084,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final file = File("$rootPaths$fileType/$fileName");
     print("Full file name with path: $file");
     final result = await uploadFileToServer(file);
-    if(result != null){
+    if (result != null) {
       final updatedMessage = messages.copyWith(
           assetOriginalName: result.data?.originalName,
           assetServerName: fileName,
           assetUrl: result.data?.url);
-      if(socketService.isConnected) {
+      if (socketService.isConnected) {
         print("updatedMessage:----> ${updatedMessage.toMap()}");
         await MessageTable().updateMessageByClientId(updatedMessage);
         socketService.sendMessageSync(updatedMessage);
-
       }
     }
   }
@@ -1065,7 +1100,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   void selectGif() async {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
-      print("gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url}");
+      print(
+          "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url}");
       // sendGIFMessage(
       //   context: Get.context!,
       //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
@@ -1133,9 +1169,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     await folderCreation.clearMediaFiles();
   }
 }
-
-
-
 
 ///message stream code
 // void bindMessageStream() {

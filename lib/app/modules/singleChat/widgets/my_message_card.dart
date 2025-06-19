@@ -25,6 +25,7 @@ class MyMessageCard extends StatelessWidget {
   final bool showForwarded;
   final VoidCallback? onRetryTap;
   final bool isAsset;
+  final String? url;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -44,6 +45,7 @@ class MyMessageCard extends StatelessWidget {
     this.showForwarded = false,
     this.onRetryTap,
     this.isAsset = false,
+    this.url,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -144,39 +146,40 @@ class MyMessageCard extends StatelessWidget {
                                   message: replyText,
                                   type: repliedMessageType,
                                   isReply: true,
+                                  url: url,
                                 ),
                               ),
                               const SizedBox(height: 8),
                             ],
                           );
                         }),
-                        Stack(
-                          alignment: Alignment.center,
-                          children:[
-                            DisplayTextImageGIF(
-                              message: message,
-                              type: type,
-                            ),
-
-                            if (syncStatus == SyncStatus.pending && isAsset &&
-                                (type == MessageType.image || type == MessageType.video || type == MessageType.document))
-                              InkWell(
-                                onTap: onRetryTap,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black45,
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: const Icon(
-                                    Icons.refresh, // or Icons.refresh_rounded
-                                    color: Colors.white,
-                                    size: 32,
-                                  ),
+                        Stack(alignment: Alignment.center, children: [
+                          DisplayTextImageGIF(
+                            message: message,
+                            type: type,
+                            url: url,
+                          ),
+                          if (syncStatus == SyncStatus.pending &&
+                              isAsset &&
+                              (type == MessageType.image ||
+                                  type == MessageType.video ||
+                                  type == MessageType.document))
+                            InkWell(
+                              onTap: onRetryTap,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.black45,
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: const Icon(
+                                  Icons.refresh, // or Icons.refresh_rounded
+                                  color: Colors.white,
+                                  size: 32,
                                 ),
                               ),
-                          ]
-                        ),
+                            ),
+                        ]),
                       ],
                     ),
                   ),

@@ -63,6 +63,13 @@ class CreateProfileController extends GetxController {
   final TextEditingController profileNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
+  final RxDouble restoreProgress = 0.0.obs;
+  final RxInt restoreCopiedFiles = 0.obs;
+  final RxInt restoreTotalFiles = 0.obs;
+  final RxString restoreSize = ''.obs;
+  final RxString restoreCopiedSize = ''.obs;
+
+
   @override
   void onInit() {
     super.onInit();
@@ -283,7 +290,20 @@ class CreateProfileController extends GetxController {
           onConfirm: () async {
             Get.back();
             try {
-              await dbService.restoreDatabase();
+              restoreProgress.value = 0;
+              restoreCopiedFiles.value = 0;
+              restoreTotalFiles.value = 0;
+
+              await dbService.restoreAllData(
+                onProgress: (done,total, copiedBytes, totalBytes) {
+                  restoreCopiedFiles.value = done;
+                  restoreTotalFiles.value = total;
+                  restoreProgress.value = done / total;
+                  restoreCopiedSize.value = (copiedBytes / (1024 * 1024)).toStringAsFixed(2);
+                  restoreSize.value = (totalBytes / (1024 * 1024)).toStringAsFixed(2);
+                },
+              );
+
               showAlertMessage("Backup restored successfully.");
             } catch (e) {
               showAlertMessage("Failed to restore backup.");

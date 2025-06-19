@@ -106,48 +106,174 @@ class DataBaseService {
 extension BackupRestore on DataBaseService {
 
   /// Backup the database file to external storage
-  Future<void> backupDatabase() async {
+  // Future<void> backupDatabase() async {
+  //   if (_userId == null) throw Exception("User ID not set.");
+  //
+  //   final permissionGranted = await Permission.manageExternalStorage.request();
+  //   if (!permissionGranted.isGranted) {
+  //     throw Exception("Storage permission not granted");
+  //   }
+  //
+  //   final sourcePath = await fullPath;
+  //   final backupDir = Directory('/storage/emulated/0/GenChatBackup');
+  //   if (!await backupDir.exists()) await backupDir.create(recursive: true);
+  //
+  //   final backupPath = '${backupDir.path}/genchat_$_userId.db';
+  //   final dbFile = File(sourcePath);
+  //
+  //   if (await dbFile.exists()) {
+  //     await dbFile.copy(backupPath);
+  //   } else {
+  //     throw Exception("Database file does not exist.");
+  //   }
+  // }
+
+  Future<void> backupAllData({
+    required void Function(int done, int total, int uploadedBytes, int totalBytes) onProgress,
+  }) async {
     if (_userId == null) throw Exception("User ID not set.");
 
-    final permissionGranted = await Permission.manageExternalStorage.request();
-    if (!permissionGranted.isGranted) {
-      throw Exception("Storage permission not granted");
+    final root = await folderCreation.getRootFolderPath();
+    final dbPath = await fullPath;
+    final userBackupDir = Directory('/storage/emulated/0/GenChatBackup/$_userId');
+    if (!userBackupDir.existsSync()) userBackupDir.createSync(recursive: true);
+
+    final mediaTypes = ['Image', 'Video', 'Document'];
+    int totalFiles = 0;
+    int copiedFiles = 0;
+    int totalBytes = 0;
+    int uploadedBytes = 0;
+
+    // Calculate total size first
+    final allFiles = <File>[];
+
+    for (final type in mediaTypes) {
+      final dir = Directory('$root$type');
+      if (dir.existsSync()) {
+        allFiles.addAll(dir.listSync().whereType<File>());
+      }
     }
 
-    final sourcePath = await fullPath;
-    final backupDir = Directory('/storage/emulated/0/GenChatBackup');
-    if (!await backupDir.exists()) await backupDir.create(recursive: true);
-
-    final backupPath = '${backupDir.path}/genchat_$_userId.db';
-    final dbFile = File(sourcePath);
-
+    // Add DB file to the list
+    final dbFile = File(dbPath);
     if (await dbFile.exists()) {
-      await dbFile.copy(backupPath);
-    } else {
-      throw Exception("Database file does not exist.");
+      allFiles.insert(0, dbFile); // Ensure DB is first
+    }
+
+    totalFiles = allFiles.length;
+    for (final file in allFiles) {
+      totalBytes += await file.length();
+    }
+
+    // Start copying files
+    for (final file in allFiles) {
+      final isDb = file.path == dbPath;
+      String destPath;
+
+      if (isDb) {
+        destPath = '${userBackupDir.path}/genchat_$_userId.db';
+      } else {
+        final name = file.path.split('/').last;
+        final type = file.parent.path.split('/').last;
+        final toDir = Directory('${userBackupDir.path}/$type');
+        if (!toDir.existsSync()) toDir.createSync(recursive: true);
+        destPath = '${toDir.path}/$name';
+      }
+
+      final newFile = await file.copy(destPath);
+      copiedFiles++;
+      uploadedBytes += await newFile.length();
+
+      onProgress(copiedFiles, totalFiles, uploadedBytes, totalBytes);
     }
   }
+
 
   /// Restore the database file from backup
-  Future<void> restoreDatabase() async {
+  // Future<void> restoreDatabase() async {
+  //   if (_userId == null) throw Exception("User ID not set.");
+  //
+  //   final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
+  //   final sourcePath = await fullPath;
+  //   final backupFile = File(backupPath);
+  //
+  //   if (!await backupFile.exists()) {
+  //     throw Exception("No backup found for user $_userId.");
+  //   }
+  //
+  //   await closeDb(); // Important: close connection before overwriting
+  //   await File(sourcePath).writeAsBytes(await backupFile.readAsBytes());
+  // }
+
+  Future<void> restoreAllData({
+    required void Function(int done, int total, int copiedBytes, int totalBytes) onProgress,
+  }) async {
     if (_userId == null) throw Exception("User ID not set.");
 
-    final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
-    final sourcePath = await fullPath;
-    final backupFile = File(backupPath);
+    final backupDir = Directory('/storage/emulated/0/GenChatBackup/$_userId');
+    final dbFile = File('${backupDir.path}/genchat_$_userId.db');
+    final destDbPath = await fullPath;
 
-    if (!await backupFile.exists()) {
-      throw Exception("No backup found for user $_userId.");
+    if (!await dbFile.exists()) throw Exception("No backup found for user $_userId.");
+
+    final mediaFolders = ['Image', 'Video', 'Document'];
+    int totalFiles = 1;
+    int copied = 0;
+    int totalBytes = 0;
+    int copiedBytes = 0;
+
+    // Get total size of all files
+    if (await backupDir.exists()) {
+      await for (final entity in backupDir.list(recursive: true, followLinks: false)) {
+        if (entity is File) {
+          totalBytes += await entity.length();
+        }
+      }
     }
 
-    await closeDb(); // Important: close connection before overwriting
-    await File(sourcePath).writeAsBytes(await backupFile.readAsBytes());
+    // 1. Copy DB file
+    final dbData = await dbFile.readAsBytes();
+    await closeDb();
+    await File(destDbPath).writeAsBytes(dbData);
+    copied++;
+    copiedBytes += dbData.length;
+    onProgress(copied, totalFiles, copiedBytes, totalBytes);
+
+    // 2. Copy media files
+    final rootFolder = await folderCreation.getRootFolderPath();
+    for (final folder in mediaFolders) {
+      final fromDir = Directory('${backupDir.path}/$folder');
+      final toDir = Directory('$rootFolder$folder');
+
+      if (!await toDir.exists()) await toDir.create(recursive: true);
+
+      if (await fromDir.exists()) {
+        final files = fromDir.listSync().whereType<File>();
+        totalFiles += files.length;
+
+        for (final file in files) {
+          final name = file.path.split('/').last;
+          final newFile = File('${toDir.path}/$name');
+          final bytes = await file.readAsBytes();
+          await newFile.writeAsBytes(bytes);
+
+          copied++;
+          copiedBytes += bytes.length;
+          onProgress(copied, totalFiles, copiedBytes, totalBytes);
+        }
+      }
+    }
   }
+
+
 
   Future<bool> hasBackup() async {
     if (_userId == null) return false;
-    final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
-    return File(backupPath).exists();
+    // final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
+    // return File(backupPath).exists();
+    final basePath = '/storage/emulated/0/GenChatBackup/$_userId';
+    return File('$basePath/genchat_$_userId.db').exists();
+
   }
 
 }

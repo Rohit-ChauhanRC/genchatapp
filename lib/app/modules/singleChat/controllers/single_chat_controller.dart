@@ -1059,16 +1059,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
   Future<void> clearFilePickerCache() async {
     try {
-      // final Directory appDir;
-      if (Platform.isAndroid) {
-        Directory("/storage/emulated/0/GenChat/cache");
-      } else {
-        // appDir =  await getApplicationDocumentsDirectory();
-      }
       Directory appDir = await getApplicationDocumentsDirectory();
 
       final tempDir = Platform.isAndroid
-          ? Directory("/storage/emulated/0/GenChat/cache")
+          ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
           : Directory('${appDir.path}/picked_images');
       if (tempDir.existsSync()) {
         tempDir.deleteSync(recursive: true);

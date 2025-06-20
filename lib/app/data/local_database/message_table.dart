@@ -32,6 +32,7 @@ class MessageTable {
         messageRepliedOn TEXT,
         messageRepliedOnType TEXT,
         isAsset INTEGER,
+        assetThumbnail TEXT,
         assetOriginalName TEXT,
         assetServerName TEXT,
         assetUrl TEXT,
@@ -435,7 +436,7 @@ class MessageTable {
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {
     if (oldVersion < newVersion) {
-      db.execute("ALTER TABLE $tableName ADD COLUMN showForwarded INTEGER;");
+      db.execute("ALTER TABLE $tableName ADD COLUMN assetThumbnail TEXT;");
     }
   }
 }

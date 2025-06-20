@@ -643,6 +643,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       messageRepliedOnType:
           messageReply == null ? MessageType.text : messageReply.messageType,
       isAsset: false,
+      assetThumbnail: "",
       assetOriginalName: "",
       assetServerName: "",
       assetUrl: "",
@@ -1030,6 +1031,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOnType:
             messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
+        assetThumbnail:"",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: localFilePath,
         assetUrl: fileData == null ? "" : fileData.data?.url,

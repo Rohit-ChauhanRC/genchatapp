@@ -26,6 +26,7 @@ class NewMessageModel extends Equatable {
   final MessageType? messageRepliedOnType;
   final bool? isAsset;
   final bool? isGroupMessage;
+  final String? assetThumbnail;
   final String? assetOriginalName;
   final String? assetServerName;
   final String? assetUrl;
@@ -55,6 +56,7 @@ class NewMessageModel extends Equatable {
     this.messageRepliedOn,
     this.messageRepliedOnType,
     this.isAsset,
+    this.assetThumbnail,
     this.assetOriginalName,
     this.assetServerName,
     this.assetUrl,
@@ -99,6 +101,7 @@ class NewMessageModel extends Equatable {
           ? MessageTypeExtension.fromValue(map['messageRepliedOnType'])
           : null,
       isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
+      assetThumbnail: map['assetThumbnail'] ?? '',
       assetOriginalName: map['assetOriginalName'] ?? '',
       assetServerName: map['assetServerName'] ?? '',
       assetUrl: map['assetUrl'] ?? '',
@@ -128,6 +131,7 @@ class NewMessageModel extends Equatable {
       'messageRepliedOn': messageRepliedOn ?? '',
       'messageRepliedOnType': messageRepliedOnType?.value ?? '',
       'isAsset': isAsset == true ? 1 : 0,
+      'assetThumbnail': assetThumbnail,
       'assetOriginalName': assetOriginalName,
       'assetServerName': assetServerName,
       'assetUrl': assetUrl,
@@ -156,6 +160,7 @@ class NewMessageModel extends Equatable {
     String? messageRepliedOn,
     MessageType? messageRepliedOnType,
     bool? isAsset,
+    String? assetThumbnail,
     String? assetOriginalName,
     String? assetServerName,
     String? assetUrl,
@@ -185,6 +190,7 @@ class NewMessageModel extends Equatable {
       messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
       messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
       isAsset: isAsset ?? this.isAsset,
+      assetThumbnail: assetThumbnail ?? this.assetThumbnail,
       assetOriginalName: assetOriginalName ?? this.assetOriginalName,
       assetServerName: assetServerName ?? this.assetServerName,
       assetUrl: assetUrl ?? this.assetUrl,

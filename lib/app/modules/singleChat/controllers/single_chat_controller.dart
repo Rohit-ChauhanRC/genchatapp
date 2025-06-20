@@ -918,6 +918,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       for (File file in selectedFiles) {
         print("Yes Getting back all files:---> $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        cancelReply();
       }
     } else if (fileType == MessageType.audio.value) {
       // selectedFile = await pickAudio();
@@ -928,6 +929,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           await sendFileMessage(file: file, messageEnum: getMessageType(file));
         }
       });
+      cancelReply();
     }
   }
 

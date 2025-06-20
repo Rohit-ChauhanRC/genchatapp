@@ -50,9 +50,9 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
       });
     } catch (e) {
       print("Thumbnail error: $e");
-      setState(() {
-        _isLoading = false;
-      });
+      // setState(() {
+      //   _isLoading = false;
+      // });
     }
   }
 

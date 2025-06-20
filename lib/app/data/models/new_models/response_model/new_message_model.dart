@@ -33,8 +33,7 @@ class NewMessageModel extends Equatable {
   final BuildContext? context;
   final GlobalKey? keys;
   final bool? showForwarded;
-  final RxBool? isRetrying;
-
+  RxBool? isRetrying = false.obs;
 
   NewMessageModel({
     this.messageId,
@@ -88,7 +87,8 @@ class NewMessageModel extends Equatable {
           ? MessageTypeExtension.fromValue(map['messageType'])
           : MessageType.text,
       isForwarded: map['isForwarded'] == 1 || map['isForwarded'] == true,
-      isGroupMessage: map['isGroupMessage'] == 1 || map['isGroupMessage'] == true,
+      isGroupMessage:
+          map['isGroupMessage'] == 1 || map['isGroupMessage'] == true,
       showForwarded: map['showForwarded'] == 1 || map['showForwarded'] == true,
       forwardedMessageId: map['forwardedMessageId'],
       isRepliedMessage:
@@ -161,6 +161,7 @@ class NewMessageModel extends Equatable {
     String? assetUrl,
     int? messageRepliedUserId,
     bool? showForwarded,
+    RxBool? isRetrying,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -189,9 +190,10 @@ class NewMessageModel extends Equatable {
       assetUrl: assetUrl ?? this.assetUrl,
       messageRepliedUserId: messageRepliedUserId ?? this.messageRepliedUserId,
       showForwarded: showForwarded ?? this.showForwarded,
+      isRetrying: isRetrying ?? this.isRetrying,
     );
   }
 
   @override
-  List<Object?> get props => [messageId ?? clientSystemMessageId];
+  List<Object?> get props => [messageId ?? clientSystemMessageId, isRetrying];
 }

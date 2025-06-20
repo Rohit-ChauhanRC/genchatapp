@@ -19,7 +19,7 @@ class ImagePreviewScreen extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           // automaticallyImplyLeading: false,
           centerTitle: false,
-          title: Text(
+          title: const Text(
             "Image Preview",
             style: TextStyle(
               fontSize: 20,
@@ -28,18 +28,22 @@ class ImagePreviewScreen extends StatelessWidget {
             ),
           )),
       body: Container(
-        padding: const EdgeInsets.all(18),
-        height: Get.height,
-        child: InteractiveViewer(
-          boundaryMargin: const EdgeInsets.all(20.0),
-          minScale: 0.1,
-          maxScale: 3,
-          // panAxis: PanAxis.aligned,
-          clipBehavior: Clip.antiAliasWithSaveLayer,
-          // maxScale: 3,
-          alignment: Alignment.center,
-          // constrained: true,
-          child: Image.file(File(imagePath)),
+        margin: const EdgeInsets.all(20),
+        alignment: Alignment.center,
+        // width: Get.width * 0.7,
+        height: Get.height * 0.7,
+        child: Center(
+          child: InteractiveViewer(
+            // boundaryMargin: const EdgeInsets.all(20.0),
+            // minScale: 0.1,
+            // maxScale: 3,
+            // panAxis: PanAxis.aligned,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            // maxScale: 3,
+            alignment: Alignment.center,
+            // constrained: true,
+            child: Image.file(File(imagePath)),
+          ),
         ),
       ),
     );

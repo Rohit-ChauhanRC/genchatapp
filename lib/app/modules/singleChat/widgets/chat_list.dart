@@ -164,7 +164,12 @@ class ChatList extends StatelessWidget {
                                               singleChatController
                                                   .onMessageSwipe(
                                                 isMe: true,
-                                                message: messages.message ?? '',
+                                                message: messages.messageType !=
+                                                        MessageType.text
+                                                    ? messages.assetServerName
+                                                        .toString()
+                                                    : messages.message
+                                                        .toString(),
                                                 messageType:
                                                     messages.messageType ??
                                                         MessageType.text,
@@ -208,7 +213,8 @@ class ChatList extends StatelessWidget {
                                             .retryPendingMediaFile(messages);
                                       },
                                       url: messages.assetUrl,
-                                isRetryUploadFile: messages.isRetrying ?? false.obs,
+                                      isRetryUploadFile:
+                                          messages.isRetrying ?? false.obs,
                                     )
                                   : SenderMessageCard(
                                       message: messages.messageType ==
@@ -225,17 +231,22 @@ class ChatList extends StatelessWidget {
                                               '')),
                                       type: messages.messageType ??
                                           MessageType.text,
-                                      onRightSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
-                                              // singleChatController.isRepUpdate = true;
-                                              singleChatController
-                                                  .onMessageSwipe(
+                                      onRightSwipe:
+                                          messages.messageType ==
+                                                  MessageType.deleted
+                                              ? null
+                                              : (v) {
+                                                  // singleChatController.isRepUpdate = true;
+                                                  singleChatController.onMessageSwipe(
                                                       isMe: false,
-                                                      message:
-                                                          messages.message ??
-                                                              '',
+                                                      message: messages
+                                                                  .messageType !=
+                                                              MessageType.text
+                                                          ? messages
+                                                              .assetServerName
+                                                              .toString()
+                                                          : messages.message
+                                                              .toString(),
                                                       messageType: messages
                                                               .messageType ??
                                                           MessageType.text,
@@ -243,7 +254,7 @@ class ChatList extends StatelessWidget {
                                                       messageId:
                                                           messages.messageId ??
                                                               0);
-                                            },
+                                                },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??
                                               MessageType.text,

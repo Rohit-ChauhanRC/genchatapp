@@ -155,63 +155,62 @@ class MyMessageCard extends StatelessWidget {
                             ],
                           );
                         }),
-                        Stack(
-                          alignment: Alignment.center,
-                          children:[
-                            DisplayTextImageGIF(
-                              message: message,
-                              type: type,
-                              url: url,
-                            ),
-
-                            if (isAsset &&
-                                (type == MessageType.image ||
-                                    type == MessageType.video ||
-                                    type == MessageType.document)) ...[
-                              Obx(() {
-                                if (isRetryUploadFile.value) {
-                                  return Container(
+                        Stack(alignment: Alignment.center, children: [
+                          DisplayTextImageGIF(
+                            message: message,
+                            type: type,
+                            url: url,
+                          ),
+                          if (isAsset &&
+                              (type == MessageType.image ||
+                                  type == MessageType.video ||
+                                  type == MessageType.document)) ...[
+                            Obx(() {
+                              if (isRetryUploadFile.value) {
+                                return Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black45,
+                                  ),
+                                  padding: const EdgeInsets.all(12),
+                                  child: const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              } else if (syncStatus == SyncStatus.pending) {
+                                return InkWell(
+                                  onTap: isRetryUploadFile.value
+                                      ? null
+                                      : () {
+                                          if (!isRetryUploadFile.value) {
+                                            onRetryTap
+                                                ?.call(); // Only call if allowed
+                                          }
+                                        },
+                                  child: Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.black45,
                                     ),
-                                    padding: const EdgeInsets.all(12),
-                                    child: const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
+                                    padding: const EdgeInsets.all(8),
+                                    child: const Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                      size: 28,
                                     ),
-                                  );
-                                } else if (syncStatus == SyncStatus.pending) {
-                                  return InkWell(
-                                    onTap: isRetryUploadFile.value ? null : () {
-                                      if (!isRetryUploadFile.value) {
-                                        onRetryTap?.call(); // Only call if allowed
-                                      }
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.black45,
-                                      ),
-                                      padding: const EdgeInsets.all(8),
-                                      child: const Icon(
-                                        Icons.refresh,
-                                        color: Colors.white,
-                                        size: 28,
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return const SizedBox.shrink();
-                                }
-                              }),
-                            ]
+                                  ),
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }),
                           ]
-                        ),
+                        ]),
                       ],
                     ),
                   ),

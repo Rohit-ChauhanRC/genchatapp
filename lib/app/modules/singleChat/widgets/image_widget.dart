@@ -54,8 +54,8 @@ class ImageWidget extends StatelessWidget {
           File(rootFolderPath),
           fit: BoxFit.cover,
           filterQuality: FilterQuality.medium,
-          height: isReply == true ? 20 : 200,
-          width: isReply == true ? 30 : 300,
+          height: isReply == true ? 80 : 200,
+          width: isReply == true ? 80 : 300,
         ),
       ),
     );

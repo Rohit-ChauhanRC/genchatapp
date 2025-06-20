@@ -58,7 +58,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
           iconTheme: const IconThemeData(color: Colors.white),
           // automaticallyImplyLeading: false,
           centerTitle: false,
-          title: Text(
+          title: const Text(
             "Video Preview",
             style: TextStyle(
               fontSize: 20,
@@ -68,7 +68,8 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
           )),
       backgroundColor: bgColor,
       body: _controller.value.isInitialized
-          ? Padding(
+          ? Container(
+              height: Get.height * 0.8,
               padding: const EdgeInsets.all(18.0),
               child: Stack(
                 alignment: Alignment.bottomCenter,

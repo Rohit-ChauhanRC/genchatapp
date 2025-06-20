@@ -1086,6 +1086,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       final fileName = messages.assetServerName;
       final file = File("$rootPaths$fileType/$fileName");
       print("Full file name with path: $file");
+      update();
       final result = await uploadFileToServer(file);
       if (result != null) {
         final updatedMessage = messages.copyWith(
@@ -1098,8 +1099,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
           socketService.sendMessageSync(updatedMessage);
         }
       }
-    } finally {
       messages.isRetrying?.value = false;
+    } finally {
+      // messages.isRetrying?.value = false;
     }
   }
 

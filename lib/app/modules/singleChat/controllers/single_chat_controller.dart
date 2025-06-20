@@ -19,6 +19,7 @@ import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -1056,6 +1057,28 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<void> clearFilePickerCache() async {
+    try {
+      // final Directory appDir;
+      if (Platform.isAndroid) {
+        Directory("/storage/emulated/0/GenChat/cache");
+      } else {
+        // appDir =  await getApplicationDocumentsDirectory();
+      }
+      Directory appDir = await getApplicationDocumentsDirectory();
+
+      final tempDir = Platform.isAndroid
+          ? Directory("/storage/emulated/0/GenChat/cache")
+          : Directory('${appDir.path}/picked_images');
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+        print("Temp directory cleared.");
+      }
+    } catch (e) {
+      print("Failed to clear temp directory: $e");
+    }
+  }
+
   Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
     try {
       final response = await profileRepository.uploadMessageFiles(imageFile);
@@ -1064,6 +1087,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         final result = UploadFileModel.fromJson(response?.data);
         if (result.status == true) {
           print("response of upload Files:----> ${result.data?.toJson()}");
+          await clearFilePickerCache();
           return result;
         } else {
           // showAlertMessage('Upload failed: Invalid response status.');

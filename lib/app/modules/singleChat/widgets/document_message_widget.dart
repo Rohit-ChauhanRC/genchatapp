@@ -69,7 +69,7 @@ class DocumentMessageWidget extends StatelessWidget {
     final fileExtension = fileName.contains('.') ? fileName.split('.').last : '';
 
     return GestureDetector(
-      onTap: () => _downloadAndOpenFile(context),
+      onTap: () => isReply == true ? null:_downloadAndOpenFile(context),
       child: Container(
         margin: const EdgeInsets.all(4),
         padding: const EdgeInsets.all(12),

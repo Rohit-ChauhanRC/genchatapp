@@ -85,10 +85,10 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _downloadAndOpenFile(context),
+      onTap: () => widget.isReply?null:_downloadAndOpenFile(context),
       child: SizedBox(
-        width: 280,
-        height: 200,
+        width: widget.isReply?80:280,
+        height: widget.isReply?80:200,
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Stack(
@@ -107,8 +107,8 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
                         ),
                   Container(
                     color: Colors.black38,
-                    child: const Icon(Icons.play_circle_filled,
-                        color: Colors.white, size: 64),
+                    child: Icon(Icons.play_circle_filled,
+                        color: Colors.white, size: widget.isReply?32:64),
                   ),
                 ],
               ),

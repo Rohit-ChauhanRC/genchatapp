@@ -46,7 +46,7 @@ class ImageWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        _downloadAndOpenFile(context);
+        isReply == true ?null:_downloadAndOpenFile(context);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),

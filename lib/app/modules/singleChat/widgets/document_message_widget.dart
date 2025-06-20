@@ -78,20 +78,20 @@ class DocumentMessageWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           // border: Border.all(color: Colors.grey.shade400),
         ),
-        width: isReply ? 180 : 280,
+        width: isReply ? 100 : 280,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               _getIconForExtension(fileExtension),
-              size: 36,
+              size: isReply? 20:36,
               color: AppColors.textBarColor,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 fileName,
-                maxLines: 3,
+                maxLines: isReply? 1:3,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 16),
               ),

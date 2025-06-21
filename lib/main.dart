@@ -19,7 +19,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  AppConfig.setEnvironment(AppEnvironment.dev);
+  AppConfig.setEnvironment(AppEnvironment.prod);
   await di.init();
 
   runApp(const App());

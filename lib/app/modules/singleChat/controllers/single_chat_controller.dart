@@ -674,6 +674,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     });
 
     messageController.clear();
+    isShowSendButton = false;
     var receiverUserId = receiverUserData?.userId.toString() ?? '';
     socketService.emitTypingStatus(
       recipientId: receiverUserId,
@@ -1009,7 +1010,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       // Upload file to the server
       Map<String, File?> f = await compressFiles(file, fileExtension);
       final fileData = await uploadFileToServer(f.values.first!);
-
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1029,7 +1029,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
         messageRepliedOnType:
-            messageReply == null ? MessageType.text : messageReply.messageType,
+        messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
         assetThumbnail:"",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
@@ -1038,18 +1038,21 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-                ? senderuserData?.userId
-                : receiverUserData?.userId,
+            ? senderuserData?.userId
+            : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       // Save message locally
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
+      if(fileData?.statusCode == 200 && fileData?.status == true){
+        if (socketService.isConnected) {
+          socketService.sendMessage(newMessage);
+        }
+      }
       // Sync message with Firebase if online
-      if (socketService.isConnected) {
-        socketService.sendMessage(newMessage);
-      } else {
+      else {
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {

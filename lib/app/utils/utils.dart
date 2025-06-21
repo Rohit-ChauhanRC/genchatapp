@@ -528,16 +528,17 @@ Future<Map<String, File?>> compressFiles(File file, String extension) async {
       processedFile = compressedFile;
       newExtension = 'jpeg';
     }
-  } else if (videoExtensions.contains(extension.toLowerCase())) {
-    final compressed = await compressVideo(file);
-
-    if (compressed != null) {
-      processedFile = File(compressed.path!);
-      newExtension = 'mp4'; // force final format
-      print(
-          "Compressed video size: ${await getReadableFileSize(processedFile)}");
-    }
   }
+  // else if (videoExtensions.contains(extension.toLowerCase())) {
+  //   final compressed = await compressVideo(file);
+
+  //   if (compressed != null) {
+  //     processedFile = File(compressed.path!);
+  //     newExtension = 'mp4'; // force final format
+  //     print(
+  //         "Compressed video size: ${await getReadableFileSize(processedFile)}");
+  //   }
+  // }
 
   //  final fileName =
   //     "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.$newExtension";

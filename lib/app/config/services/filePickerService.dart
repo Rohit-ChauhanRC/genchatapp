@@ -17,17 +17,16 @@ class FilePickerService {
 
     if (image != null) return [File(image.path)];
 
-    final video = await _picker.pickVideo(source: ImageSource.camera);
-    if (video != null) return [File(video.path)];
+    // final video = await _picker.pickVideo(source: ImageSource.camera);
+    // if (video != null) return [File(video.path)];
 
     return [];
   }
 
-
   /// Pick multiple images/videos from gallery
   Future<List<File>> pickFromGallery() async {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.media, // This allows images & videos both
+      type: FileType.image, // This allows images & videos both
       allowMultiple: true,
     );
     if (result == null || result.files.isEmpty) return [];
@@ -47,6 +46,4 @@ class FilePickerService {
 
     return result.paths.whereType<String>().map((path) => File(path)).toList();
   }
-
 }
-

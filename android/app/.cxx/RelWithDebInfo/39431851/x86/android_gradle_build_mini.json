@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/genmak/development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/genmak/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/genmak/Documents/genchat/genchatapp/android/app/.cxx/RelWithDebInfo/39431851/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/genmak/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/genmak/Documents/genchat/genchatapp/android/app/.cxx/RelWithDebInfo/39431851/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

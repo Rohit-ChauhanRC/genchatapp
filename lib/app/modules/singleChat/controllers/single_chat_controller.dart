@@ -1201,6 +1201,56 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   Future<void> deleteMedia() async {
     await folderCreation.clearMediaFiles();
   }
+
+
+  RxMap<String, bool> isDownloading = <String, bool>{}.obs;
+  RxMap<String, bool> isDownloaded = <String, bool>{}.obs;
+
+  Future<void> checkIfFileExists(MessageType type, String fileName) async {
+    final path = getFilePath(type, fileName);
+    final exists = await File(path).exists();
+    isDownloaded[fileName] = exists;
+  }
+
+  Future<void> downloadFile(MessageType type, String fileName, String url) async {
+    if (isDownloading[fileName] == true || isDownloaded[fileName] == true) return;
+
+    isDownloading[fileName] = true;
+    try {
+      await FolderCreation().checkAndHandleFile(
+        fileUrl: url,
+        fileName: fileName,
+        subFolderName: getFolderName(type),
+        messageType: type.value,
+      );
+      isDownloaded[fileName] = true;
+    } catch (e) {
+      showAlertMessage("Download failed: $e");
+    } finally {
+      isDownloading[fileName] = false;
+    }
+  }
+
+  String getFolderName(MessageType type) {
+    switch (type) {
+      case MessageType.image:
+        return "Image";
+      case MessageType.video:
+        return "Video";
+      case MessageType.document:
+        return "Document";
+      case MessageType.audio:
+        return "Audio";
+      case MessageType.gif:
+        return "GIFs";
+      default:
+        return "Unknown";
+    }
+  }
+
+  String getFilePath(MessageType type, String fileName) {
+    return '$rootPath${getFolderName(type)}/$fileName';
+  }
 }
 
 ///message stream code

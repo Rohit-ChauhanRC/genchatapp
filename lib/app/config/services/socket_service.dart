@@ -125,47 +125,6 @@ class SocketService extends GetxService {
             showForwarded: data["showForwarded"] ?? false,
             forwardedMessageId: data['forwardedMessageId'] ?? 0,
             messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
-
-        if (newMessage.isAsset == true &&
-            newMessage.assetUrl != null &&
-            newMessage.assetUrl!.isNotEmpty &&
-            newMessage.assetServerName != null &&
-            newMessage.assetServerName!.isNotEmpty) {
-          print("🟢 isAsset is TRUE and all asset fields are present");
-
-          final fileExtension = newMessage.assetServerName!.split('.').last;
-          final messageType = newMessage.messageType;
-
-          // Define the folder name based on message type
-          final subFolder = messageType == MessageType.image
-              ? 'Image'
-              : messageType == MessageType.video
-              ? 'Video'
-              : messageType == MessageType.audio
-              ? 'Audio'
-              : 'Document';
-          //
-          // Download and save file
-          try {
-            final downloadedFilePath = await folderCreation.checkAndHandleFile(
-              fileUrl: newMessage.assetUrl.toString(),
-              fileName: newMessage.assetServerName.toString(),
-              subFolderName: subFolder,
-              messageType: messageType?.value ?? "",
-            );
-
-            // Optionally update local path in message DB
-            // newMessage.assetLocalPath = '$subFolder/${newMessage.assetServerName}';
-            // await messageTable.updateMessage(newMessage);
-            print("📥 Asset saved locally at $downloadedFilePath");
-          } catch (e) {
-            print("❌ Failed to save asset locally: $e");
-          }
-        } else {
-          print("🔴 Skipping asset saving. isAsset: ${newMessage.isAsset}, "
-              "assetUrl: ${newMessage.assetUrl}, "
-              "assetServerName: ${newMessage.assetServerName}");
-        }
         messageTable.insertMessage(newMessage);
         incomingMessage.value = newMessage;
 

@@ -49,6 +49,7 @@ dependencies:
   flutter_image_compress: ^2.4.0
   video_compress: ^3.1.4
   image: ^4.5.4
+  image_cropper: ^9.1.0
 #  image: ^4.5.4
 
 

@@ -73,13 +73,30 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
     img.Image rotatedImage = img.copyRotate(image, angle: 90);
 
     // Save the rotated image to a temporary file
-    final dir = await getTemporaryDirectory();
+
+    Directory appDir = await getApplicationDocumentsDirectory();
+
+    final dir = Platform.isAndroid
+        ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
+        : Directory('${appDir.path}/picked_images');
+
+    if (!await dir.exists()) {
+      await dir.create(
+          recursive: true); // Create the directory if it doesn't exist
+    }
+
     final rotatedFilePath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
     final rotatedFile = File(rotatedFilePath);
 
-    // Encode the rotated image back to bytes and write it to the file
+    // // Encode the rotated image back to bytes and write it to the file
     await rotatedFile.writeAsBytes(img.encodeJpg(rotatedImage));
 
+    // final rotatedBytes = img.encodeJpg(rotatedImage);
+
+    // Create a File object from the bytes without writing to disk
+    // final rotatedFile = File.fromRawPath(Uint8List.fromList(rotatedBytes));
+
+    // Return the rotated image file (in memory, not saved on disk)
     return rotatedFile;
   }
 
@@ -109,29 +126,29 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
       ),
       body: Column(
         children: [
-          if (previewFile != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Align(
-                alignment: Alignment.center,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.rotate_right,
-                    size: 40,
-                    color: AppColors.whiteColor,
-                  ),
-                  onPressed: () async {
-                    File rotatedImage = await rotateImage(previewFile!);
-                    setState(() {
-                      // Replace the original file with the rotated one
-                      selectedFiles[selectedFiles.indexOf(previewFile!)] =
-                          rotatedImage;
-                      previewFile = rotatedImage; // Update preview
-                    });
-                  },
-                ),
-              ),
-            ),
+          // if (previewFile != null)
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 16.0),
+          //     child: Align(
+          //       alignment: Alignment.center,
+          //       child: IconButton(
+          //         icon: Icon(
+          //           Icons.rotate_right,
+          //           size: 40,
+          //           color: AppColors.whiteColor,
+          //         ),
+          //         onPressed: () async {
+          //           File rotatedImage = await rotateImage(previewFile!);
+          //           setState(() {
+          //             // Replace the original file with the rotated one
+          //             selectedFiles[selectedFiles.indexOf(previewFile!)] =
+          //                 rotatedImage;
+          //             previewFile = rotatedImage; // Update preview
+          //           });
+          //         },
+          //       ),
+          //     ),
+          //   ),
           Expanded(
             child: Center(
               child: previewFile != null

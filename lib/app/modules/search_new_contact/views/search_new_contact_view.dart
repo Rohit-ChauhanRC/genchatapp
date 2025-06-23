@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 
@@ -42,18 +43,22 @@ class SearchNewContactView extends GetView<SearchNewContactController> {
                     await controller.seachNewContactsWithServer();
                   }
                 },
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(10),
+                  FilteringTextInputFormatter.digitsOnly
+                ],
                 decoration: const InputDecoration(
                   isDense: true,
                   filled: true,
                   // fillColor: whiteColor,
-                  hintText: 'Search',
+                  hintText: 'Search without country code',
                   hintStyle: TextStyle(
                     color: greyColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w200,
                   ),
                 ),
-                keyboardType: TextInputType.text,
+                keyboardType: TextInputType.phone,
               ),
               const SizedBox(
                 height: 10,
@@ -63,8 +68,9 @@ class SearchNewContactView extends GetView<SearchNewContactController> {
                 child: Obx(() {
                   var filteredContacts = controller.searchNewContacts;
                   if (filteredContacts.isEmpty) {
-                    return const Center(
-                      child: Text("No contacts found."),
+                    return Center(
+                      child: Text(
+                          "No contacts found for ${controller.searchNewQuery}"),
                     );
                   }
                   return ListView.builder(

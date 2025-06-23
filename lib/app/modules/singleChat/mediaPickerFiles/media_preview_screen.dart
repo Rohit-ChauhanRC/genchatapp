@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
@@ -7,6 +8,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+
+import 'package:image/image.dart' as img;
 
 class MediaPreviewScreen extends StatefulWidget {
   final List<File> files;
@@ -56,6 +59,29 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
     super.dispose();
   }
 
+  Future<File> rotateImage(File file) async {
+    // Load the image from the file
+    final bytes = await file.readAsBytes();
+    img.Image? image = img.decodeImage(Uint8List.fromList(bytes));
+
+    // Check if the image is valid
+    if (image == null) {
+      throw Exception("Failed to load image");
+    }
+
+    // Rotate the image by 90 degrees (you can change the angle if needed)
+    img.Image rotatedImage = img.copyRotate(image, angle: 90);
+
+    // Save the rotated image to a temporary file
+    final dir = await getTemporaryDirectory();
+    final rotatedFilePath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
+    final rotatedFile = File(rotatedFilePath);
+
+    // Encode the rotated image back to bytes and write it to the file
+    await rotatedFile.writeAsBytes(img.encodeJpg(rotatedImage));
+
+    return rotatedFile;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +91,10 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
         backgroundColor: AppColors.textBarColor,
         title: Text("Preview", style: TextStyle(color: AppColors.whiteColor)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.whiteColor,),
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppColors.whiteColor,
+          ),
           onPressed: () => Get.back(), // triggers dispose()
         ),
         actions: [
@@ -80,90 +109,154 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
       ),
       body: Column(
         children: [
+          if (previewFile != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Align(
+                alignment: Alignment.center,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.rotate_right,
+                    size: 40,
+                    color: AppColors.whiteColor,
+                  ),
+                  onPressed: () async {
+                    File rotatedImage = await rotateImage(previewFile!);
+                    setState(() {
+                      // Replace the original file with the rotated one
+                      selectedFiles[selectedFiles.indexOf(previewFile!)] =
+                          rotatedImage;
+                      previewFile = rotatedImage; // Update preview
+                    });
+                  },
+                ),
+              ),
+            ),
           Expanded(
             child: Center(
               child: previewFile != null
                   ? isVideo(previewFile!)
-                  ? VideoPreviewWidget(file: previewFile!)
-                  : Image.file(previewFile!, fit: BoxFit.contain, width: Get.width,)
+                      ? VideoPreviewWidget(file: previewFile!)
+                      : Image.file(
+                          previewFile!,
+                          fit: BoxFit.contain,
+                          width: Get.width,
+                        )
                   : const Text('No media selected',
-                  style: TextStyle(color: Colors.white)),
+                      style: TextStyle(color: Colors.white)),
             ),
           ),
           // const SizedBox(height: 10),
           Obx(() => SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: selectedFiles.length,
-              itemBuilder: (context, index) {
-                final file = selectedFiles[index];
-                final isSelected = previewFile == file;
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: selectedFiles.length,
+                  itemBuilder: (context, index) {
+                    final file = selectedFiles[index];
+                    final isSelected = previewFile == file;
 
-                return GestureDetector(
-                  onTap: () {
-                    if (isSelected) {
-                      selectedFiles.remove(file);
-                      if (previewFile == file) {
-                        previewFile = selectedFiles.isNotEmpty ? selectedFiles.first : null;
-                      }
-                      setState(() {});
-                    } else {
-                      setState(() {
-                        previewFile = file;
-                      });
-                    }
-                  },
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected ? AppColors.whiteColor : Colors.transparent,
-                            width: 2,
+                    return GestureDetector(
+                      onTap: () {
+                        if (isSelected) {
+                          selectedFiles.remove(file);
+                          if (previewFile == file) {
+                            previewFile = selectedFiles.isNotEmpty
+                                ? selectedFiles.first
+                                : null;
+                          }
+                          setState(() {});
+                        } else {
+                          setState(() {
+                            previewFile = file;
+                          });
+                        }
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.whiteColor
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: isVideo(file)
+                                  ? FutureBuilder(
+                                      future: _getThumbnail(file),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                                ConnectionState.done &&
+                                            snapshot.hasData) {
+                                          return Image.file(
+                                              snapshot.data as File,
+                                              fit: BoxFit.cover);
+                                        }
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      },
+                                    )
+                                  : Image.file(file, fit: BoxFit.cover),
+                            ),
                           ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: isVideo(file)
-                              ? FutureBuilder(
-                            future: _getThumbnail(file),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.done &&
-                                  snapshot.hasData) {
-                                return Image.file(snapshot.data as File, fit: BoxFit.cover);
-                              }
-                              return const Center(child: CircularProgressIndicator());
-                            },
-                          )
-                              : Image.file(file, fit: BoxFit.cover),
-                        ),
+
+                          // Overlay with delete icon when selected
+                          // if (isSelected)
+                          //   Container(
+                          //     width: 80,
+                          //     height: 80,
+                          //     decoration: BoxDecoration(
+                          //       color: Colors.black.withOpacity(0.4),
+                          //       borderRadius: BorderRadius.circular(
+                          //           10), // match outer radius
+                          //     ),
+                          //     child: Center(
+                          //       child: Icon(Icons.delete,
+                          //           size: 30, color: AppColors.whiteColor),
+                          //     ),
+                          //   ),
+                          if (isSelected)
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.delete,
+                                  size: 30,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedFiles
+                                        .removeAt(index); // Remove from list
+                                    if (previewFile == file) {
+                                      previewFile = selectedFiles.isNotEmpty
+                                          ? selectedFiles.first
+                                          : null;
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                        ],
                       ),
-
-                      // Overlay with delete icon when selected
-                      if (isSelected)
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(10), // match outer radius
-                          ),
-                          child: Center(
-                            child: Icon(Icons.delete, size: 30, color: AppColors.whiteColor),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          )),
+                    );
+                  },
+                ),
+              )),
           // const SizedBox(height: 10),
         ],
       ),
@@ -182,8 +275,6 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
     return thumb != null ? File(thumb) : null;
   }
 }
-
-
 
 class VideoPreviewWidget extends StatefulWidget {
   final File file;
@@ -230,9 +321,9 @@ class _VideoPreviewWidgetState extends State<VideoPreviewWidget> {
       children: [
         _controller.value.isInitialized
             ? AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
-        )
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
             : const CircularProgressIndicator(),
         GestureDetector(
           onTap: togglePlayPause,
@@ -250,4 +341,3 @@ class _VideoPreviewWidgetState extends State<VideoPreviewWidget> {
     );
   }
 }
-

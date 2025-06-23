@@ -217,53 +217,6 @@ class SocketService extends GetxService {
       final bool isDeleteFromEveryOne = data['deleteState'];
 
       bool existsLocally = await messageTable.messageExists(messageId);
-      // if (existsLocally) {
-      //
-      //   final msg = await messageTable.getMessageById(messageId);
-      //   final isLast = await messageTable.isLastMessage(messageId: messageId, senderId: msg?.senderId ?? 0, receiverId: msg?.recipientId ?? 0);
-      //   if (isDeleteFromEveryOne) {
-      //     // Delete for everyone: mark as "This message was deleted"
-      //     await messageTable.updateMessageContent(
-      //       messageId: messageId,
-      //       newText: "This message was deleted",
-      //       newType: MessageType.deleted,
-      //     );
-      //
-      //     if (isLast) {
-      //       await chatConectTable.updateContact(
-      //         uid: msg!.senderId.toString(),
-      //         lastMessageId: 0,
-      //         lastMessage: "This message was deleted",
-      //         timeSent: msg.messageSentFromDeviceTime,
-      //       );
-      //     }
-      //   } else {
-      //     // Delete for me only: remove the message locally
-      //     await messageTable.deleteMessage(messageId);
-      //     if (isLast) {
-      //       final newLast = await messageTable.getLatestMessageForUser(
-      //           msg?.recipientId ?? 0, msg?.senderId ?? 0);
-      //       if (newLast != null) {
-      //         await chatConectTable.updateContact(
-      //           lastMessageId: newLast.messageId,
-      //           uid: msg!.recipientId.toString(),
-      //           lastMessage: newLast.message,
-      //           timeSent: newLast.clientSystemMessageId,
-      //         );
-      //       } else {
-      //         // Optional: reset chat contact if all messages deleted
-      //         await chatConectTable.updateContact(
-      //           lastMessageId: 0,
-      //           uid: msg!.recipientId.toString(),
-      //           lastMessage: '',
-      //           timeSent: '',
-      //         );
-      //       }
-      //     }
-      //   }
-      // } else {
-      //   print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
-      // }
       if (existsLocally) {
         final msg = await messageTable.getMessageById(messageId);
         final isLast = await messageTable.isLastMessage(

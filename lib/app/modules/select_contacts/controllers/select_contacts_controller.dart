@@ -155,4 +155,6 @@ class SelectContactsController extends GetxController {
       }
     });
   }
+
+  // search new contact
 }

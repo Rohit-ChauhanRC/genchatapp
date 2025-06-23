@@ -21,6 +21,7 @@ abstract class Routes {
   static const GROUP_NAME = _Paths.GROUP_NAME;
   static const GROUP_CHATS = _Paths.GROUP_CHATS;
   static const GROUP_PROFILE = _Paths.GROUP_PROFILE;
+  static const SEARCH_NEW_CONTACT = _Paths.SEARCH_NEW_CONTACT;
 }
 
 abstract class _Paths {
@@ -43,4 +44,5 @@ abstract class _Paths {
   static const GROUP_NAME = '/group-name';
   static const GROUP_CHATS = '/group-chats';
   static const GROUP_PROFILE = '/group-profile';
+  static const SEARCH_NEW_CONTACT = '/search-new-contact';
 }

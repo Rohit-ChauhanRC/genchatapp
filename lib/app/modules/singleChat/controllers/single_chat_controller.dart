@@ -212,6 +212,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
     hasScrolledInitially.value = false;
+    await clearFilePickerCache();
   }
 
   @override
@@ -1029,24 +1030,24 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
         messageRepliedOnType:
-        messageReply == null ? MessageType.text : messageReply.messageType,
+            messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
-        assetThumbnail:"",
+        assetThumbnail: "",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: localFilePath,
         assetUrl: fileData == null ? "" : fileData.data?.url,
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-            ? senderuserData?.userId
-            : receiverUserData?.userId,
+                ? senderuserData?.userId
+                : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       // Save message locally
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      if(fileData?.statusCode == 200 && fileData?.status == true){
+      if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
           socketService.sendMessage(newMessage);
         }
@@ -1086,7 +1087,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         final result = UploadFileModel.fromJson(response?.data);
         if (result.status == true) {
           print("response of upload Files:----> ${result.data?.toJson()}");
-          await clearFilePickerCache();
           return result;
         } else {
           // showAlertMessage('Upload failed: Invalid response status.');

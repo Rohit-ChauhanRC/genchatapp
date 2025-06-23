@@ -26,7 +26,8 @@ class ApiClient {
       },
     ));
 
-    dio.interceptors.add(ApiInterceptor(sharedPrefrence, this,db, socketService )); // ✅ Pass `this`
+    dio.interceptors.add(ApiInterceptor(
+        sharedPrefrence, this, db, socketService)); // ✅ Pass `this`
   }
 
   Future<Response> get(String url, {Map<String, dynamic>? queryParams}) async {
@@ -67,13 +68,15 @@ class ApiClient {
 
   Future<Response> uploadFile(String url, FormData formData) async {
     try {
-      Response response = await dio.post(url, data: formData, options: Options(
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "multipart/form-data",
-          "Authorization": "Bearer ${getAccessToken()}",
-        },
-      ));
+      Response response = await dio.post(url,
+          data: formData,
+          options: Options(
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "multipart/form-data",
+              "Authorization": "Bearer ${getAccessToken()}",
+            },
+          ));
       return response;
     } catch (e) {
       throw _handleError(e);
@@ -116,4 +119,3 @@ class ApiClient {
     return sharedPrefrence.getString(UserDefaultsKeys.accessToken);
   }
 }
-

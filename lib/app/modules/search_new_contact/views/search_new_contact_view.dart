@@ -1,52 +1,32 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/routes/app_pages.dart';
-import 'package:get/get.dart';
-import '../../../constants/colors.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
-import '../controllers/select_contacts_controller.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 
-class SelectContactsView extends GetView<SelectContactsController> {
-  const SelectContactsView({super.key});
+import 'package:get/get.dart';
 
+import '../controllers/search_new_contact_controller.dart';
+
+class SearchNewContactView extends GetView<SearchNewContactController> {
+  const SearchNewContactView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: ListTile(
-          title: const Text(
-            'Select contact',
+        title: const ListTile(
+          title: Text(
+            'Search contact',
             style: TextStyle(
               fontSize: 18,
               color: whiteColor,
               fontWeight: FontWeight.w400,
             ),
           ),
-          subtitle: Obx(() => controller.contacts.isNotEmpty
-              ? Text('${controller.contacts.length} contacts',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w200,
-                      color: whiteColor,
-                      fontSize: 12))
-              : const Text("0  contact",
-                  style: TextStyle(
-                      fontWeight: FontWeight.w200,
-                      color: whiteColor,
-                      fontSize: 12))),
+
           // trailing: ,
         ),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await controller.refreshSync();
-            },
-            icon: const Icon(
-              Icons.refresh,
-            ),
-          ),
-        ],
         centerTitle: true,
       ),
       body: GradientContainer(
@@ -56,7 +36,12 @@ class SelectContactsView extends GetView<SelectContactsController> {
             children: [
               // Search Input
               TextFormField(
-                onChanged: (value) => controller.searchQuery = value,
+                onChanged: (value) async {
+                  if (value.length == 10) {
+                    controller.searchNewQuery = value;
+                    await controller.seachNewContactsWithServer();
+                  }
+                },
                 decoration: const InputDecoration(
                   isDense: true,
                   filled: true,
@@ -73,41 +58,10 @@ class SelectContactsView extends GetView<SelectContactsController> {
               const SizedBox(
                 height: 10,
               ),
-              InkWell(
-                onTap: () {
-                  // controller.selectContact(contact);
-                  Get.toNamed(Routes.SEARCH_NEW_CONTACT,
-                      arguments: controller.filteredContacts);
-                },
-                child: Container(
-                  // height: 50,
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: const ListTile(
-                    title: Text(
-                      "New Contact",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    leading: CircleAvatar(
-                      child: Icon(Icons.person),
-                      radius: 30,
-                    ),
-                  ),
-                ),
-              ),
 
-              const SizedBox(
-                height: 10,
-              ),
               Expanded(
                 child: Obx(() {
-                  if (!controller.isContactRefreshed) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: textBarColor),
-                    );
-                  }
-                  var filteredContacts = controller.filteredContacts;
+                  var filteredContacts = controller.searchNewContacts;
                   if (filteredContacts.isEmpty) {
                     return const Center(
                       child: Text("No contacts found."),

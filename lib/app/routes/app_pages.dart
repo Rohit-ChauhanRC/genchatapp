@@ -24,6 +24,8 @@ import '../modules/landing/bindings/landing_binding.dart';
 import '../modules/landing/views/landing_view.dart';
 import '../modules/otp/bindings/otp_binding.dart';
 import '../modules/otp/views/otp_view.dart';
+import '../modules/search_new_contact/bindings/search_new_contact_binding.dart';
+import '../modules/search_new_contact/views/search_new_contact_view.dart';
 import '../modules/select_contacts/bindings/select_contacts_binding.dart';
 import '../modules/select_contacts/views/select_contacts_view.dart';
 import '../modules/settings/bindings/settings_binding.dart';
@@ -133,6 +135,11 @@ class AppPages {
       name: _Paths.GROUP_PROFILE,
       page: () => const GroupProfileView(),
       binding: GroupProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.SEARCH_NEW_CONTACT,
+      page: () => const SearchNewContactView(),
+      binding: SearchNewContactBinding(),
     ),
   ];
 }

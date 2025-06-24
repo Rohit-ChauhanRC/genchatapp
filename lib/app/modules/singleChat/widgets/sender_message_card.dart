@@ -26,6 +26,7 @@ class SenderMessageCard extends StatelessWidget {
     this.isForwarded = false,
     this.showForwarded = false,
     this.url,
+    this.assetThumbnail,
   });
   final String message;
   final String date;
@@ -41,6 +42,7 @@ class SenderMessageCard extends StatelessWidget {
   final bool isForwarded;
   final bool showForwarded;
   final String? url;
+  final String? assetThumbnail;
 
   @override
   Widget build(BuildContext context) {
@@ -141,16 +143,17 @@ class SenderMessageCard extends StatelessWidget {
                                       type: repliedMessageType,
                                       isReply: true,
                                       url: url,
+                                      assetThumbnail: assetThumbnail,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                 ]))
                             : const SizedBox(),
                         DisplayTextImageGIF(
-                          message: message,
-                          type: type,
-                          url: url,
-                        ),
+                            message: message,
+                            type: type,
+                            url: url,
+                            assetThumbnail: assetThumbnail),
                       ],
                     ),
                   ),

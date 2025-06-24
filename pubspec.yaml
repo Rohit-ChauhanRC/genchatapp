@@ -50,6 +50,7 @@ dependencies:
   video_compress: ^3.1.4
   image: ^4.5.4
   image_cropper: ^9.1.0
+  ffmpeg_kit_flutter_new: ^2.0.0
 #  image: ^4.5.4
 
 

@@ -2,21 +2,15 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/image_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:path_provider/path_provider.dart';
 
-import '../../../constants/constants.dart';
-import '../../../utils/alert_popup_utils.dart';
 import 'document_message_widget.dart';
 
 class DisplayTextImageGIF extends StatelessWidget {
@@ -25,12 +19,15 @@ class DisplayTextImageGIF extends StatelessWidget {
   final bool? isReply;
   final String? url;
 
+  final String? assetThumbnail;
+
   const DisplayTextImageGIF({
     Key? key,
     required this.message,
     required this.type,
     this.url,
     this.isReply = false,
+    this.assetThumbnail,
   }) : super(key: key);
 
   @override
@@ -46,7 +43,8 @@ class DisplayTextImageGIF extends StatelessWidget {
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
           fontSize: 16,
-          fontStyle: type == MessageType.deleted ? FontStyle.italic : FontStyle.normal,
+          fontStyle:
+              type == MessageType.deleted ? FontStyle.italic : FontStyle.normal,
           color: type == MessageType.deleted ? greyMsgColor : blackColor,
         ),
       );
@@ -136,13 +134,21 @@ class DisplayTextImageGIF extends StatelessWidget {
           // Already downloaded → show real widget
           switch (type) {
             case MessageType.document:
-              return DocumentMessageWidget(localFilePath: path, url: url ?? '', isReply: isReply ?? false);
+              return DocumentMessageWidget(
+                  localFilePath: path,
+                  url: url ?? '',
+                  isReply: isReply ?? false);
             case MessageType.video:
-              return VideoPlayerItem(videoUrl: path, localFilePath: path, url: url ?? '', isReply: isReply ?? false);
+              return VideoPlayerItem(
+                  videoUrl: path,
+                  localFilePath: assetThumbnail ?? "",
+                  url: url ?? '',
+                  isReply: isReply ?? false);
             case MessageType.image:
-              return ImageWidget(rootFolderPath: path, url: url ?? '', isReply: isReply);
+              return ImageWidget(
+                  rootFolderPath: path, url: url ?? '', isReply: isReply);
             case MessageType.audio:
-              // return AudioMessageWidget(localPath: path); // if using
+            // return AudioMessageWidget(localPath: path); // if using
             default:
               return const SizedBox();
           }
@@ -196,7 +202,8 @@ class DisplayTextImageGIF extends StatelessWidget {
   Future<String> _getRemoteFileSize(String url) async {
     try {
       final uri = Uri.parse(url);
-      final response = await HttpClient().headUrl(uri).then((req) => req.close());
+      final response =
+          await HttpClient().headUrl(uri).then((req) => req.close());
       final contentLength = response.contentLength;
       if (contentLength < 0) return '';
       return _formatBytes(contentLength, 2);

@@ -241,9 +241,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         print('💬 SingleChatController resumed.');
-        if (connectivityService.isConnected.value &&
-            socketService.isConnected) {
-          checkUserOnline(receiverUserData);
+        if (connectivityService.isConnected.value){
+          socketService.runWhenConnected(() {
+            checkUserOnline(receiverUserData);
+          });
         }
 
         break;
@@ -522,6 +523,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         }
       }
     });
+
   }
 
   void scrollToTop({bool animated = false}) {

@@ -61,11 +61,11 @@ class DisplayTextImageGIF extends StatelessWidget {
 
           if (!isDownloaded) {
             return GestureDetector(
-              onTap: () => controller.downloadFile(type, message, url ?? ''),
+              onTap: () => isReply == true? null:controller.downloadFile(type, message, url ?? ''),
               child: Container(
-                width: 200,
+                width: isReply == true? 80:200,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                height: 200,
+                height: isReply == true? 80:200,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -84,7 +84,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(_getIcon(type, message), size: 50, color: Colors.grey[700]),
+                        Icon(_getIcon(type, message), size: isReply == true? 25:50, color: Colors.grey[700]),
                         const SizedBox(height: 10),
                         Text(
                           _getLabel(type, message),
@@ -97,7 +97,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                         const SizedBox(height: 5),
                         Text(
                           _truncate(message),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: isReply == true? 4:12, color: Colors.grey[600]),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 5),
@@ -106,7 +106,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                           builder: (context, snapshot) {
                             return Text(
                               snapshot.hasData ? snapshot.data! : '',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                              style: TextStyle(fontSize: isReply == true? 3:11, color: Colors.grey[500]),
                             );
                           },
                         ),
@@ -124,7 +124,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(6),
-                          child: const Icon(Icons.download, size: 20, color: Colors.white),
+                          child: Icon(Icons.download, size:isReply == true? 10: 20, color: Colors.white),
                         ),
                       ),
                   ],

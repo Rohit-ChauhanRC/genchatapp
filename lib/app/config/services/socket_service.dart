@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
@@ -24,12 +25,9 @@ class SocketService extends GetxService {
   final MessageTable messageTable = MessageTable();
   final FolderCreation folderCreation = FolderCreation();
 
-  // final EncryptionService encryptionService = Get.find();
-
-  // final RxBool _isConnected = false.obs;
-  // bool get isConnected => _isConnected.value;
-
   bool get isConnected => _socket?.connected == true;
+
+  final List<VoidCallback> _onSocketConnectedQueue = [];
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
@@ -69,6 +67,11 @@ class SocketService extends GetxService {
       // _isConnected.value = true;
       await retryPendingDeletions();
       await syncPendingMessages(loginUserId: int.parse(userId));
+      // ✅ Run queued actions
+      for (final action in _onSocketConnectedQueue) {
+        action();
+      }
+      _onSocketConnectedQueue.clear();
       onConnected?.call();
     });
 
@@ -466,6 +469,15 @@ class SocketService extends GetxService {
       }
     }
   }
+
+  void runWhenConnected(VoidCallback action) {
+    if (isConnected) {
+      action();
+    } else {
+      _onSocketConnectedQueue.add(action);
+    }
+  }
+
   void _clearSocketListeners() {
     _socket?.clearListeners();
     // _socket?.off('message-event');

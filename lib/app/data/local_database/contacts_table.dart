@@ -19,7 +19,7 @@ class ContactsTable {
         isOnline INTEGER,
         displayPicture TEXT,
         displayPictureUrl TEXT,
-        lastSeenTime TEXT,
+        lastSeen TEXT,
         isBlocked INTEGER
       );
     """);
@@ -59,7 +59,7 @@ class ContactsTable {
     final rowsUpdated = await db.update(
       tableName,
       {'isOnline': isOnline,
-      'lastSeenTime': lastSeenTime},
+      'lastSeen': lastSeenTime},
       where: 'userId = ?',
       whereArgs: [userId],
     );
@@ -101,7 +101,7 @@ class ContactsTable {
       'isOnline': isOnline,
       'displayPicture': '',
       'displayPictureUrl': '',
-      'lastSeenTime': '',
+      'lastSeen': '',
       'isBlocked': 0,
     };
 
@@ -160,7 +160,11 @@ class ContactsTable {
     // }
   }
 
-
+  void onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE $tableName RENAME COLUMN lastSeenTime to lastSeen;");
+    }
+  }
 
   Future<void> deleteTable() async {
     final db = await DataBaseService().database;

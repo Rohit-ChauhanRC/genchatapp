@@ -77,7 +77,7 @@ class UserList {
     displayPicture: json["displayPicture"],
     displayPictureUrl: json["displayPictureUrl"],
     isBlocked: json["isBlocked"],
-    lastSeenTime: json["lastSeenTime"],
+    lastSeenTime: json["lastSeen"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -92,7 +92,7 @@ class UserList {
     "displayPicture": displayPicture,
     "displayPictureUrl": displayPictureUrl,
     "isBlocked": isBlocked,
-    "lastSeenTime": lastSeenTime,
+    "lastSeen": lastSeenTime,
   };
 
   factory UserList.fromMap(Map<String, dynamic> map) {
@@ -108,7 +108,7 @@ class UserList {
       displayPicture: map["displayPicture"],
       displayPictureUrl: map["displayPictureUrl"],
       isBlocked: map["isBlocked"] == 1,
-      lastSeenTime: map["lastSeenTime"],
+      lastSeenTime: map["lastSeen"],
     );
   }
 
@@ -125,7 +125,7 @@ class UserList {
       "displayPicture": displayPicture,
       "displayPictureUrl": displayPictureUrl,
       "isBlocked": isBlocked == true ? 1 : 0,
-      "lastSeenTime": lastSeenTime,
+      "lastSeen": lastSeenTime,
     };
   }
 

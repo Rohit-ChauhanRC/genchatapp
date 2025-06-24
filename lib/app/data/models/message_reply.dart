@@ -6,6 +6,7 @@ class MessageReply {
   late final MessageType? messageType;
   late final int? messageId;
   late final bool? isReplied;
+  late final String? assetsThumbnail;
 
   MessageReply({
     this.message,
@@ -13,5 +14,6 @@ class MessageReply {
     this.messageType,
     this.messageId,
     this.isReplied,
+    this.assetsThumbnail,
   });
 }

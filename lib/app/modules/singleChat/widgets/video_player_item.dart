@@ -61,14 +61,20 @@ class VideoPlayerItem extends StatelessWidget {
             : Stack(
                 alignment: Alignment.center,
                 children: [
-                  Image.file(
-                    File(localFilePath),
-                    width: 280,
-                    height: 200,
-                    fit: BoxFit.cover,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(
+                      File(localFilePath),
+                      width: 280,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   Container(
-                    color: Colors.black38,
+                    decoration: BoxDecoration(
+                      color: Colors.black38,
+                      borderRadius: BorderRadius.circular(30)
+                    ),
                     child: Icon(Icons.play_circle_filled,
                         color: Colors.white, size: isReply ? 32 : 64),
                   ),

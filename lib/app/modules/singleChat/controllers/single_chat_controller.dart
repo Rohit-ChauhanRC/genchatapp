@@ -1233,13 +1233,16 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     required MessageType messageType,
     required bool isReplied,
     required int messageId,
+    required String assetsThumbnail
   }) {
     messageReply = MessageReply(
         messageId: messageId,
         message: message,
         isMe: isMe,
         messageType: messageType,
-        isReplied: isReplied);
+        isReplied: isReplied,
+        assetsThumbnail:assetsThumbnail
+    );
   }
 
   void showKeyboard() => focusNode.requestFocus();

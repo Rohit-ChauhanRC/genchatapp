@@ -176,6 +176,7 @@ class ChatList extends StatelessWidget {
                                                 isReplied: true,
                                                 messageId:
                                                     messages.messageId ?? 0,
+                                                assetsThumbnail: messages.assetThumbnail ?? "",
                                               );
                                             },
                                       repliedMessageType:
@@ -252,9 +253,8 @@ class ChatList extends StatelessWidget {
                                                               .messageType ??
                                                           MessageType.text,
                                                       isReplied: true,
-                                                      messageId:
-                                                          messages.messageId ??
-                                                              0);
+                                                      messageId: messages.messageId ?? 0,
+                                                      assetsThumbnail: messages.assetThumbnail ?? "",);
                                                 },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??

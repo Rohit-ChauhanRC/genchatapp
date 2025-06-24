@@ -72,7 +72,8 @@ class MessageReplyPreview extends StatelessWidget {
                     message: 
                         singleChatController.messageReply.message.toString(),
                     type: singleChatController.messageReply.messageType!,
-              isReply: true,
+                    isReply: true,
+                    assetThumbnail: singleChatController.messageReply.assetsThumbnail,
                   )
                 : const SizedBox.shrink(),
           ),

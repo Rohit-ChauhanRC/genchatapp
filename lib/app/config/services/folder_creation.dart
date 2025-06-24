@@ -17,9 +17,9 @@ class FolderCreation {
       if (status.isGranted || statusAndroid.isGranted) {
         // final Directory appDir = await getApplicationDocumentsDirectory();
         final Directory appDir;
-        if(Platform.isAndroid) {
+        if (Platform.isAndroid) {
           appDir = Directory("/storage/emulated/0");
-        }else{
+        } else {
           appDir = await getApplicationDocumentsDirectory();
         }
 
@@ -35,6 +35,7 @@ class FolderCreation {
           '$rootFolderPath/GIFs',
           '$rootFolderPath/Document',
           '$rootFolderPath/Backups',
+          '$rootFolderPath/Thumbnail',
         ];
 
         // Create the root and subfolders
@@ -66,9 +67,9 @@ class FolderCreation {
     try {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         appDir = Directory("/storage/emulated/0");
-      }else{
+      } else {
         appDir = await getApplicationDocumentsDirectory();
       }
       final String subFolderPath = '${appDir.path}/$appName/$subFolder';
@@ -96,9 +97,9 @@ class FolderCreation {
     try {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         appDir = Directory("/storage/emulated/0");
-      }else{
+      } else {
         appDir = await getApplicationDocumentsDirectory();
       }
 
@@ -134,9 +135,9 @@ class FolderCreation {
   Future<String> getRootFolderPath() async {
     // final directory = await getApplicationDocumentsDirectory();
     final Directory directory;
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       directory = Directory("/storage/emulated/0");
-    }else{
+    } else {
       directory = await getApplicationDocumentsDirectory();
     }
     final filePath = "${directory.path}/$appName/";
@@ -146,15 +147,15 @@ class FolderCreation {
 
   Future<String?> checkAndHandleFile(
       {required String fileName,
-        required String subFolderName,
+      required String subFolderName,
       required String messageType,
       required String fileUrl}) async {
     try {
       // final directory = await getApplicationDocumentsDirectory();
       final Directory directory;
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         directory = Directory("/storage/emulated/0");
-      }else{
+      } else {
         directory = await getApplicationDocumentsDirectory();
       }
 
@@ -194,9 +195,9 @@ class FolderCreation {
   Future<void> clearMediaFiles() async {
     // Directory appDir = await getApplicationDocumentsDirectory();
     final Directory appDir;
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       appDir = Directory("/storage/emulated/0");
-    }else{
+    } else {
       appDir = await getApplicationDocumentsDirectory();
     }
     final String rootFolderPath = '${appDir.path}/$appName';
@@ -251,9 +252,9 @@ class FolderCreation {
     try {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         appDir = Directory("/storage/emulated/0/");
-      }else{
+      } else {
         appDir = await getApplicationDocumentsDirectory();
       }
       final String filePath = '${appDir.path}/$appName/$subFolder/$fileName';

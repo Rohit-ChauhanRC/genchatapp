@@ -84,7 +84,7 @@ class MessageTable {
     required int senderId,
     int offset = 0,
     int limit = 10,
-      }) async {
+  }) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
@@ -138,6 +138,17 @@ class MessageTable {
       message.toMap(),
       where: 'messageId = ?',
       whereArgs: [message.messageId],
+    );
+  }
+
+  Future<int> updateMessageForAsset(
+      {required String assetPath, required String fileName}) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      {"assetThumbnail": assetPath},
+      where: 'assetServerName = ?',
+      whereArgs: [fileName],
     );
   }
 

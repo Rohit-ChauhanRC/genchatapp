@@ -946,54 +946,120 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     return completer.future;
   }
 
+  // Future<String> saveFileLocally(
+  //     File file, String fileType, String fileExtension) async {
+  //   String newExtension = fileExtension.toLowerCase();
+
+  //   print("Original file size: ${await getReadableFileSize(file)}");
+  //   final subFolderName = fileType.toTitleCase;
+
+  //   File processedFile = file;
+
+  //   // Map<String, File?> f = await compressFiles(file, fileExtension);
+  //   final fileName =
+  //       "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.${file.path}";
+
+  //   final filePath = await folderCreation.saveFileFromFile(
+  //     sourceFile: file,
+  //     fileName: fileName,
+  //     subFolder: subFolderName,
+  //   );
+
+  //   print(
+  //       "processedFile file size: ${await getReadableFileSize(processedFile)}");
+
+  //   return fileName;
+  // }
+
   Future<String> saveFileLocally(
       File file, String fileType, String fileExtension) async {
-    // print(file.length());
-
-    String newExtension = fileExtension.toLowerCase();
-
-    print("Original file size: ${await getReadableFileSize(file)}");
     final subFolderName = fileType.toTitleCase;
-    // final fileName =
-    //     "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
-
-    File processedFile = file;
-    // final imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
-    // final videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
-    // if (imageExtensions.contains(fileExtension.toLowerCase())) {
-    //   final compressedFile = await compressImage(file, fileExtension);
-    //   if (compressedFile != null) {
-    //     processedFile = compressedFile;
-    //     newExtension = 'jpeg';
-    //   }
-    // } else if (videoExtensions.contains(fileExtension.toLowerCase())) {
-    //   final compressed = await compressVideo(file);
-
-    //   if (compressed != null) {
-    //     processedFile = File(compressed.path!);
-    //     newExtension = 'mp4'; // force final format
-    //     print(
-    //         "Compressed video size: ${await getReadableFileSize(processedFile)}");
-    //   }
-    // }
-    Map<String, File?> f = await compressFiles(file, fileExtension);
     final fileName =
-        "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.${f.keys.first}";
-
+        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
     final filePath = await folderCreation.saveFileFromFile(
-      sourceFile: f.values.first!,
+      sourceFile: file,
       fileName: fileName,
       subFolder: subFolderName,
     );
-
-    // print(processedFile.length());
-    print(
-        "processedFile file size: ${await getReadableFileSize(processedFile)}");
-
     // print("FileName for saving locally:----------------> $fileName");
     // print("FilePath for saving locally:----------------> $filePath");
     return fileName;
   }
+
+  // Future<void> sendFileMessage({
+  //   required File file,
+  //   required MessageType messageEnum,
+  // }) async {
+  //   final clientSystemMessageId = const Uuid().v1();
+  //   final timeSent = DateTime.now();
+  //   final fileType = messageEnum.value.split('.').last;
+  //   final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+
+  //   try {
+  //     // Compress the file and get both video and thumbnail
+  //     Map<String, File?> f = await compressFiles(file, fileExtension);
+
+  //     // Save compressed video locally
+  //     final localFilePath = await saveFileLocally(f['video']!, fileType, 'mp4');
+
+  //     // Upload the file to the server
+  //     final fileData = await uploadFileToServer(f['video']!);
+
+  //     // Create the new message
+  //     final newMessage = NewMessageModel(
+  //       senderId: senderuserData?.userId,
+  //       recipientId: receiverUserData?.userId,
+  //       message: '',
+  //       messageSentFromDeviceTime: timeSent.toString(),
+  //       clientSystemMessageId: clientSystemMessageId,
+  //       state: MessageState.unsent,
+  //       syncStatus: SyncStatus.pending,
+  //       createdAt: timeSent.toString(),
+  //       senderPhoneNumber: senderuserData?.phoneNumber,
+  //       messageType: messageEnum,
+  //       isForwarded: false,
+  //       isGroupMessage: false,
+  //       forwardedMessageId: 0,
+  //       showForwarded: false,
+  //       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+  //       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+  //       messageRepliedOn: messageReply == null ? '' : messageReply.message,
+  //       messageRepliedOnType:
+  //           messageReply == null ? MessageType.text : messageReply.messageType,
+  //       isAsset: true,
+  //       assetThumbnail: f['thumbnail']?.path ?? "", // Use the thumbnail here
+  //       assetOriginalName: fileData?.data?.originalName ?? "",
+  //       assetServerName: localFilePath,
+  //       assetUrl: fileData?.data?.url ?? "",
+  //       messageRepliedUserId: messageReply?.message == null
+  //           ? 0
+  //           : messageReply.isMe == true
+  //               ? senderuserData?.userId
+  //               : receiverUserData?.userId,
+  //     );
+
+  //     print("Message All details Request: ${newMessage.toMap()}");
+
+  //     // Save message locally
+  //     await MessageTable().insertMessage(newMessage);
+  //     messageList.add(newMessage);
+
+  //     // Send the message via socket if online
+  //     if (fileData?.statusCode == 200 && fileData?.status == true) {
+  //       if (socketService.isConnected) {
+  //         socketService.sendMessage(newMessage);
+  //       }
+  //     }
+  //     // Sync message with Firebase if online
+  //     else {
+  //       socketService.saveChatContacts(newMessage);
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("Error sending file message: $e");
+  //     }
+  //   }
+  // }
 
   Future<void> sendFileMessage({
     required File file,
@@ -1005,11 +1071,18 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
     try {
       // Save file locally
+
+      Map<String, File?> f = await compressFiles(
+        file,
+        fileExtension,
+      );
+
       final localFilePath =
-          await saveFileLocally(file, fileType, fileExtension);
+          await saveFileLocally(f.values.first!, fileType, f.keys.first);
+      final String? assetThumnail =
+          f.keys.first == "mp4" ? await getThumbnail(f.values.first!) : "";
 
       // Upload file to the server
-      Map<String, File?> f = await compressFiles(file, fileExtension);
       final fileData = await uploadFileToServer(f.values.first!);
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
@@ -1032,7 +1105,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOnType:
             messageReply == null ? MessageType.text : messageReply.messageType,
         isAsset: true,
-        assetThumbnail: "",
+        assetThumbnail: assetThumnail ?? "",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: localFilePath,
         assetUrl: fileData == null ? "" : fileData.data?.url,
@@ -1202,7 +1275,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     await folderCreation.clearMediaFiles();
   }
 
-
   RxMap<String, bool> isDownloading = <String, bool>{}.obs;
   RxMap<String, bool> isDownloaded = <String, bool>{}.obs;
 
@@ -1212,18 +1284,25 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     isDownloaded[fileName] = exists;
   }
 
-  Future<void> downloadFile(MessageType type, String fileName, String url) async {
-    if (isDownloading[fileName] == true || isDownloaded[fileName] == true) return;
+  Future<void> downloadFile(
+      MessageType type, String fileName, String url) async {
+    if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
+      return;
 
     isDownloading[fileName] = true;
     try {
-      await FolderCreation().checkAndHandleFile(
+      final filePath = await FolderCreation().checkAndHandleFile(
         fileUrl: url,
         fileName: fileName,
         subFolderName: getFolderName(type),
         messageType: type.value,
       );
       isDownloaded[fileName] = true;
+      if (type == MessageType.video) {
+        final assetPath = await getThumbnail(File(filePath.toString()));
+        MessageTable().updateMessageForAsset(
+            assetPath: assetPath.toString(), fileName: fileName);
+      }
     } catch (e) {
       showAlertMessage("Download failed: $e");
     } finally {
@@ -1249,6 +1328,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   }
 
   String getFilePath(MessageType type, String fileName) {
+    return '$rootPath${getFolderName(type)}/$fileName';
+  }
+
+  String getThumbnailFilePath(MessageType type, String fileName) {
     return '$rootPath${getFolderName(type)}/$fileName';
   }
 }

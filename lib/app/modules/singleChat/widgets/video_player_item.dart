@@ -1,21 +1,20 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_preview.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
-import 'package:open_file/open_file.dart';
-import 'package:video_compress/video_compress.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:get/get.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
-class VideoPlayerItem extends StatefulWidget {
+class VideoPlayerItem extends StatelessWidget {
   final String videoUrl;
   final bool isReply;
 
   final String localFilePath;
   final String url;
 
-  const VideoPlayerItem({
+  VideoPlayerItem({
     Key? key,
     required this.videoUrl,
     this.isReply = false,
@@ -23,55 +22,21 @@ class VideoPlayerItem extends StatefulWidget {
     required this.url,
   }) : super(key: key);
 
-  @override
-  State<VideoPlayerItem> createState() => _VideoPlayerItemState();
-}
-
-class _VideoPlayerItemState extends State<VideoPlayerItem> {
-  Uint8List? _thumbnailBytes;
+  File? _thumbnailBytes;
   bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _generateThumbnail();
-  }
-
-  Future<void> _generateThumbnail() async {
-    try {
-      final thumb = await VideoCompress.getByteThumbnail(
-        widget.videoUrl,
-        quality: 60,
-        position: -1,
-      );
-      setState(() {
-        _thumbnailBytes = thumb;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print("Thumbnail error: $e");
-      // setState(() {
-      //   _isLoading = false;
-      // });
-    }
-  }
-
-  void _openPreviewScreen() {
-    Get.to(() => VideoPreviewScreen(videoUrl: widget.videoUrl));
-  }
-
   Future<void> _downloadAndOpenFile(BuildContext context) async {
-    final file = File(widget.localFilePath);
+    final file = File(videoUrl);
     if (file.existsSync()) {
-      Get.to(() => VideoPreviewScreen(videoUrl: widget.localFilePath));
+      Get.to(() => VideoPreviewScreen(videoUrl: videoUrl));
       return;
     }
 
     try {
       final dio = Dio();
-      await dio.download(widget.url, widget.localFilePath);
-      // await OpenFile.open(widget.localFilePath);
-      Get.to(() => VideoPreviewScreen(videoUrl: widget.localFilePath));
+      await dio.download(url, url);
+      // await OpenFile.open(localFilePath);
+      Get.to(() => VideoPreviewScreen(videoUrl: videoUrl));
       return;
     } catch (e) {
       // Replace this with your own error handler if needed
@@ -84,31 +49,28 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
 
   @override
   Widget build(BuildContext context) {
+    // _generateThumbnail();
+    print(localFilePath);
     return GestureDetector(
-      onTap: () => widget.isReply?null:_downloadAndOpenFile(context),
+      onTap: () => isReply ? null : _downloadAndOpenFile(context),
       child: SizedBox(
-        width: widget.isReply?80:280,
-        height: widget.isReply?80:200,
-        child: _isLoading
+        width: isReply ? 80 : 280,
+        height: isReply ? 80 : 200,
+        child: localFilePath.isEmpty && localFilePath != "null"
             ? const Center(child: CircularProgressIndicator())
             : Stack(
                 alignment: Alignment.center,
                 children: [
-                  _thumbnailBytes != null
-                      ? Image.memory(
-                          _thumbnailBytes!,
-                          width: 280,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          color: Colors.black12,
-                          child: const Icon(Icons.broken_image, size: 64),
-                        ),
+                  Image.file(
+                    File(localFilePath),
+                    width: 280,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
                   Container(
                     color: Colors.black38,
                     child: Icon(Icons.play_circle_filled,
-                        color: Colors.white, size: widget.isReply?32:64),
+                        color: Colors.white, size: isReply ? 32 : 64),
                   ),
                 ],
               ),

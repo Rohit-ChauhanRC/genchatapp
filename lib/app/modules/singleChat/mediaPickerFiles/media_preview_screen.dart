@@ -126,29 +126,6 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
       ),
       body: Column(
         children: [
-          // if (previewFile != null)
-          //   Padding(
-          //     padding: const EdgeInsets.only(top: 16.0),
-          //     child: Align(
-          //       alignment: Alignment.center,
-          //       child: IconButton(
-          //         icon: Icon(
-          //           Icons.rotate_right,
-          //           size: 40,
-          //           color: AppColors.whiteColor,
-          //         ),
-          //         onPressed: () async {
-          //           File rotatedImage = await rotateImage(previewFile!);
-          //           setState(() {
-          //             // Replace the original file with the rotated one
-          //             selectedFiles[selectedFiles.indexOf(previewFile!)] =
-          //                 rotatedImage;
-          //             previewFile = rotatedImage; // Update preview
-          //           });
-          //         },
-          //       ),
-          //     ),
-          //   ),
           Expanded(
             child: Center(
               child: previewFile != null

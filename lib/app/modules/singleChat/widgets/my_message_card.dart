@@ -27,6 +27,7 @@ class MyMessageCard extends StatelessWidget {
   final bool isAsset;
   final RxBool isRetryUploadFile;
   final String? url;
+  final String? assetThumbnail;
 
   const MyMessageCard({
     Key? key, // 👈 Ensure this is passed properly in ChatList
@@ -48,6 +49,7 @@ class MyMessageCard extends StatelessWidget {
     this.isAsset = false,
     required this.isRetryUploadFile,
     this.url,
+    this.assetThumbnail,
   }) : super(key: key); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -149,6 +151,7 @@ class MyMessageCard extends StatelessWidget {
                                   type: repliedMessageType,
                                   isReply: true,
                                   url: url,
+                                  assetThumbnail: assetThumbnail,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -160,6 +163,7 @@ class MyMessageCard extends StatelessWidget {
                             message: message,
                             type: type,
                             url: url,
+                            assetThumbnail: assetThumbnail,
                           ),
                           if (isAsset &&
                               (type == MessageType.image ||

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 // import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
+import 'package:ffmpeg_kit_flutter_new/return_code.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
@@ -9,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:video_compress/video_compress.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../config/services/filePickerService.dart';
 import '../constants/colors.dart';
@@ -17,6 +20,8 @@ import '../modules/singleChat/mediaPickerFiles/media_preview_screen.dart';
 import 'alert_popup_utils.dart';
 
 import 'package:path/path.dart' as p;
+
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 
 void showSnackBar({required BuildContext context, required String content}) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -516,7 +521,137 @@ Future<MediaInfo?> compressVideo(File file) async {
   }
 }
 
-Future<Map<String, File?>> compressFiles(File file, String extension) async {
+Future<String?> getThumbnail(File videoFile) async {
+  final Directory thumDir;
+  if (Platform.isAndroid) {
+    thumDir = Directory("/storage/emulated/0");
+  } else {
+    thumDir = await getApplicationDocumentsDirectory();
+  }
+
+  final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
+
+  final Directory dirThum = Directory(rootFolderPath);
+  if (!await dirThum.exists()) {
+    await dirThum.create(recursive: true);
+  } else {
+    if (kDebugMode) {
+      print(dirThum.path);
+    }
+  }
+  final thumbnailPath = dirThum.path;
+
+  final thumb = await VideoThumbnail.thumbnailFile(
+    video: videoFile.path,
+    thumbnailPath: thumbnailPath,
+    imageFormat: ImageFormat.JPEG,
+    maxHeight: 200,
+    quality: 60,
+  );
+  return thumb;
+}
+
+Future<File?> compressVideoFfmpeg(
+  File file,
+) async {
+  try {
+    Directory appDir = await getApplicationDocumentsDirectory();
+
+    final dir = Platform.isAndroid
+        ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
+        : Directory('${appDir.path}/picked_images');
+
+    if (!await dir.exists()) {
+      await dir.create(
+          recursive: true); // Create the directory if it doesn't exist
+    }
+
+    getReadableFileSize(file);
+
+    final outputPath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
+
+    final command =
+        '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k $outputPath';
+    // final command =
+    //     '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
+
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
+
+    if (ReturnCode.isSuccess(returnCode)) {
+      print("Video compressed successfully!");
+      getReadableFileSize(File(outputPath));
+
+      // File(thumbnailPath);
+
+      return File(outputPath);
+    } else {
+      print("Compression failed: $returnCode");
+      return null;
+    }
+  } catch (e) {
+    print("Video compression error: $e");
+    return null;
+  }
+}
+
+// Future<Map<String, File?>> compressVideoFfmpeg(File file) async {
+//   try {
+//     Directory appDir = await getApplicationDocumentsDirectory();
+
+//     final dir = Platform.isAndroid
+//         ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
+//         : Directory('${appDir.path}/picked_images');
+
+//     if (!await dir.exists()) {
+//       await dir.create(recursive: true);
+//     }
+
+//     // Define the directory for storing the thumbnail
+//     final thumDir = Platform.isAndroid
+//         ? Directory("/storage/emulated/0")
+//         : await getApplicationDocumentsDirectory();
+
+//     final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
+//     final Directory dirThum = Directory(rootFolderPath);
+
+//     if (!await dirThum.exists()) {
+//       await dirThum.create(recursive: true);
+//     }
+
+//     getReadableFileSize(file);
+
+//     final outputPath = '${dirThum.path}/rotated_${file.uri.pathSegments.last}';
+//     final thumbnailPath =
+//         '${dir.path}/thumbnail_${file.uri.pathSegments.last}.jpg';
+
+//     final command =
+//         '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
+
+//     final session = await FFmpegKit.execute(command);
+//     final returnCode = await session.getReturnCode();
+
+//     if (ReturnCode.isSuccess(returnCode)) {
+//       print("Video compressed successfully!");
+//       getReadableFileSize(File(outputPath));
+
+//       // Return both the compressed video and the thumbnail
+//       return {
+//         'video': File(outputPath),
+//         'thumbnail': File(thumbnailPath),
+//       };
+//     } else {
+//       print("Compression failed: $returnCode");
+//       return {};
+//     }
+//   } catch (e) {
+//     print("Video compression error: $e");
+//     return {};
+//   }
+// }
+
+Future<Map<String, File?>> compressFiles(File file, String extension,
+    {File? thumbnail}) async {
   File processedFile = file;
   String newExtension = extension.toLowerCase();
 
@@ -528,20 +663,53 @@ Future<Map<String, File?>> compressFiles(File file, String extension) async {
       processedFile = compressedFile;
       newExtension = 'jpeg';
     }
-  }
-  // else if (videoExtensions.contains(extension.toLowerCase())) {
-  //   final compressed = await compressVideo(file);
+  } else if (videoExtensions.contains(extension.toLowerCase())) {
+    final compressed = await compressVideoFfmpeg(
+      file,
+    );
 
-  //   if (compressed != null) {
-  //     processedFile = File(compressed.path!);
-  //     newExtension = 'mp4'; // force final format
-  //     print(
-  //         "Compressed video size: ${await getReadableFileSize(processedFile)}");
-  //   }
-  // }
+    if (compressed != null) {
+      processedFile = File(compressed.path);
+      newExtension = 'mp4'; // force final format
+      print(
+          "Compressed video size: ${await getReadableFileSize(processedFile)}");
+    }
+  }
 
   //  final fileName =
   //     "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.$newExtension";
 
   return {newExtension: processedFile};
 }
+
+// Future<Map<String, File?>> compressFiles(File file, String extension) async {
+//   try {
+//     File processedFile = file;
+//     String newExtension = extension.toLowerCase();
+
+//     final imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
+//     final videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+
+//     if (imageExtensions.contains(extension.toLowerCase())) {
+//       // Handle image compression (not implemented here, assuming you have compressImage)
+//       final compressedFile = await compressImage(file, extension);
+//       if (compressedFile != null) {
+//         processedFile = compressedFile;
+//         newExtension = 'jpeg'; // Force JPEG for image
+//       }
+//     } else if (videoExtensions.contains(extension.toLowerCase())) {
+//       // Handle video compression and thumbnail generation
+//       final result = await compressVideoFfmpeg(file);
+//       if (result.isNotEmpty) {
+//         processedFile = result['video']!;
+//         // Here we could return both the compressed video and the thumbnail if needed
+//         return result;  // { 'video': processedFile, 'thumbnail': thumbnailFile }
+//       }
+//     }
+
+//     return {newExtension: processedFile};
+//   } catch (e) {
+//     print("Error during file compression: $e");
+//     return {};
+//   }
+// }

@@ -215,6 +215,7 @@ class ChatList extends StatelessWidget {
                                       url: messages.assetUrl,
                                       isRetryUploadFile:
                                           messages.isRetrying ?? false.obs,
+                                      assetThumbnail: messages.assetThumbnail,
                                     )
                                   : SenderMessageCard(
                                       message: messages.messageType ==
@@ -286,6 +287,7 @@ class ChatList extends StatelessWidget {
                                       isForwarded: messages.isForwarded!,
                                       showForwarded: messages.showForwarded!,
                                       url: messages.assetUrl,
+                                      assetThumbnail: messages.assetThumbnail,
                                     ),
                             );
                           }),

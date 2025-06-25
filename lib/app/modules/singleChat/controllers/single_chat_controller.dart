@@ -1230,8 +1230,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         // MessageTable().updateMessageForAsset(
         //     assetPath: assetName.toString(), fileName: fileName);
         Future.delayed(Duration(seconds: 1));
-        isDownloaded[fileName] = true;
       }
+      isDownloaded[fileName] = true;
     } catch (e) {
       showAlertMessage("Download failed: $e");
     } finally {

@@ -1,60 +1,152 @@
-import 'dart:convert';
+// import 'dart:convert';
 
+// import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+// import 'package:genchatapp/app/constants/constants.dart';
+// import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+// import 'package:genchatapp/app/data/models/user_model.dart';
+// import 'package:get/get.dart';
+// import 'package:get/get_core/src/get_main.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+
+// import '../data/local_database/local_database.dart';
+// import '../routes/app_pages.dart';
+
+// class SharedPreferenceService {
+//   late SharedPreferences _prefs;
+
+//   final DataBaseService db = Get.find<DataBaseService>();
+
+//   Future<void> init() async {
+//     _prefs = await SharedPreferences.getInstance();
+//   }
+
+//   // Setters
+//   Future<void> setString(String key, String value) async {
+//     await _prefs.setString(key, value);
+//   }
+
+//   Future<void> setBool(String key, bool value) async {
+//     await _prefs.setBool(key, value);
+//   }
+
+//   Future<void> setInt(String key, int value) async {
+//     await _prefs.setInt(key, value);
+//   }
+
+//   Future<void> setDouble(String key, double value) async {
+//     await _prefs.setDouble(key, value);
+//   }
+
+//   Future<void> setList(String key, List<String> value) async {
+//     await _prefs.setStringList(key, value);
+//   }
+
+//   // Getters
+//   String? getString(String key) => _prefs.getString(key);
+
+//   bool? getBool(String key) => _prefs.getBool(key);
+
+//   int? getInt(String key) => _prefs.getInt(key);
+
+//   double? getDouble(String key) => _prefs.getDouble(key);
+
+//   List<String>? getList(String key) => _prefs.getStringList(key);
+
+//   // Remove specific key
+//   Future<void> remove(String key) async {
+//     await _prefs.remove(key);
+//   }
+
+//   // Clear all preferences
+//   Future<void> clear() async {
+//     await remove(UserDefaultsKeys.userDetail);
+//     await remove(UserDefaultsKeys.accessToken);
+//     await remove(UserDefaultsKeys.refreshToken);
+//     await remove(UserDefaultsKeys.userId);
+//     await remove(UserDefaultsKeys.isNumVerify);
+//     await remove(UserDefaultsKeys.createUserProfile);
+//     await remove(UserDefaultsKeys.userMobileNum);
+//     await remove(UserDefaultsKeys.permissionAsked);
+//     await remove(UserDefaultsKeys.backupUserId);
+//     await _prefs.clear();
+//     await _prefs.reload();
+//   }
+
+//   UserData? getUserData() {
+//     if (getString(UserDefaultsKeys.userDetail) == null ||
+//         getString(UserDefaultsKeys.userDetail) == "") {
+//       // print(
+//       //     "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
+//       db.closeDb();
+//       clear();
+//       Get.offAllNamed(Routes.LANDING);
+//       return null;
+//     } else {
+//       // print("UserExits:--------> ${getString(UserDefaultsKeys.userDetail)}");
+//       UserData user =
+//           userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
+//       // print("UserDetails:------> ${json.decode(getString(UserDefaultsKeys.userDetail) ?? "")}");
+//       return user;
+//     }
+//   }
+// }
+import 'dart:convert';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/models/user_model.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/local_database/local_database.dart';
 import '../routes/app_pages.dart';
 
 class SharedPreferenceService {
-  late SharedPreferences _prefs;
+  late GetStorage _storage;
 
-  final DataBaseService db = Get.find<DataBaseService>();
+  final DataBaseService db = Get.put<DataBaseService>(DataBaseService());
 
+  // Initialize GetStorage
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    await GetStorage.init();
+    _storage = GetStorage();
   }
 
   // Setters
   Future<void> setString(String key, String value) async {
-    await _prefs.setString(key, value);
+    await _storage.write(key, value);
   }
 
   Future<void> setBool(String key, bool value) async {
-    await _prefs.setBool(key, value);
+    await _storage.write(key, value);
   }
 
   Future<void> setInt(String key, int value) async {
-    await _prefs.setInt(key, value);
+    await _storage.write(key, value);
   }
 
   Future<void> setDouble(String key, double value) async {
-    await _prefs.setDouble(key, value);
+    await _storage.write(key, value);
   }
 
   Future<void> setList(String key, List<String> value) async {
-    await _prefs.setStringList(key, value);
+    await _storage.write(key, value);
   }
 
   // Getters
-  String? getString(String key) => _prefs.getString(key);
+  String? getString(String key) => _storage.read<String>(key);
 
-  bool? getBool(String key) => _prefs.getBool(key);
+  bool? getBool(String key) => _storage.read<bool>(key);
 
-  int? getInt(String key) => _prefs.getInt(key);
+  int? getInt(String key) => _storage.read<int>(key);
 
-  double? getDouble(String key) => _prefs.getDouble(key);
+  double? getDouble(String key) => _storage.read<double>(key);
 
-  List<String>? getList(String key) => _prefs.getStringList(key);
+  List<String>? getList(String key) => _storage.read<List<String>>(key);
 
   // Remove specific key
   Future<void> remove(String key) async {
-    await _prefs.remove(key);
+    await _storage.remove(key);
   }
 
   // Clear all preferences
@@ -68,24 +160,19 @@ class SharedPreferenceService {
     await remove(UserDefaultsKeys.userMobileNum);
     await remove(UserDefaultsKeys.permissionAsked);
     await remove(UserDefaultsKeys.backupUserId);
-    await _prefs.clear();
-    await _prefs.reload();
+    await _storage.erase();
   }
 
   UserData? getUserData() {
     if (getString(UserDefaultsKeys.userDetail) == null ||
         getString(UserDefaultsKeys.userDetail) == "") {
-      // print(
-      //     "UserIsNotEmpty:-----------> ${getString(UserDefaultsKeys.userDetail)}");
       db.closeDb();
       clear();
       Get.offAllNamed(Routes.LANDING);
       return null;
     } else {
-      // print("UserExits:--------> ${getString(UserDefaultsKeys.userDetail)}");
       UserData user =
           userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
-      // print("UserDetails:------> ${json.decode(getString(UserDefaultsKeys.userDetail) ?? "")}");
       return user;
     }
   }

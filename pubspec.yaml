@@ -51,6 +51,7 @@ dependencies:
   image: ^4.5.4
   image_cropper: ^9.1.0
   ffmpeg_kit_flutter_new: ^2.0.0
+  get_storage: ^2.1.1
 #  image: ^4.5.4
 
 

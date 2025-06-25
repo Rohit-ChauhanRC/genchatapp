@@ -1295,13 +1295,13 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         subFolderName: getFolderName(type),
         messageType: type.value,
       );
-      isDownloaded[fileName] = true;
       if (type == MessageType.video) {
-        final assetName = await getThumbnail(File(filePath.toString()));
-        final thumbnailPath = "${rootPath}Thumbnail/$assetName";
+        await getThumbnail(File(filePath.toString()));
 
-        MessageTable().updateMessageForAsset(
-            assetPath: thumbnailPath.toString(), fileName: fileName);
+        // MessageTable().updateMessageForAsset(
+        //     assetPath: assetName.toString(), fileName: fileName);
+        Future.delayed(Duration(seconds: 1));
+        isDownloaded[fileName] = true;
       }
     } catch (e) {
       showAlertMessage("Download failed: $e");

@@ -549,8 +549,8 @@ Future<String?> getThumbnail(File videoFile) async {
     quality: 60,
   );
 
-  print((thumb.toString().split("/")[thumb.toString().split("/").length - 1])
-      .split(".")[0]);
+  // print((thumb.toString().split("/")[thumb.toString().split("/").length - 1])
+  //     .split(".")[0]);
 
   final fileName =
       (thumb.toString().split("/")[thumb.toString().split("/").length - 1]);

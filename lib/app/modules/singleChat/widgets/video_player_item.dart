@@ -64,7 +64,9 @@ class VideoPlayerItem extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.file(
-                      File(localFilePath),
+                      File(!localFilePath.contains(".")
+                          ? "$localFilePath.jpg"
+                          : localFilePath),
                       width: 280,
                       height: 200,
                       fit: BoxFit.cover,

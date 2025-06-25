@@ -241,7 +241,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         print('💬 SingleChatController resumed.');
-        if (connectivityService.isConnected.value){
+        if (connectivityService.isConnected.value) {
           socketService.runWhenConnected(() {
             checkUserOnline(receiverUserData);
           });
@@ -523,7 +523,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         }
       }
     });
-
   }
 
   void scrollToTop({bool animated = false}) {
@@ -974,10 +973,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   // }
 
   Future<String> saveFileLocally(
-      File file, String fileType, String fileExtension) async {
+      File file, String fileType, String fileExtension, String fileName) async {
     final subFolderName = fileType.toTitleCase;
-    final fileName =
-        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+
     final filePath = await folderCreation.saveFileFromFile(
       sourceFile: file,
       fileName: fileName,
@@ -1079,10 +1077,15 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         fileExtension,
       );
 
-      final localFilePath =
-          await saveFileLocally(f.values.first!, fileType, f.keys.first);
-      final String? assetThumnail =
-          f.keys.first == "mp4" ? await getThumbnail(f.values.first!) : "";
+      final fileName =
+          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+
+      final localFilePath = await saveFileLocally(
+          f.values.first!, fileType, f.keys.first, fileName);
+      final String? assetThumnail = fileName;
+      if (f.keys.first == "mp4") {
+        await getThumbnail(f.values.first!);
+      }
 
       // Upload file to the server
       final fileData = await uploadFileToServer(f.values.first!);
@@ -1227,22 +1230,20 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void onMessageSwipe({
-    required String message,
-    required bool isMe,
-    required MessageType messageType,
-    required bool isReplied,
-    required int messageId,
-    required String assetsThumbnail
-  }) {
+  void onMessageSwipe(
+      {required String message,
+      required bool isMe,
+      required MessageType messageType,
+      required bool isReplied,
+      required int messageId,
+      required String assetsThumbnail}) {
     messageReply = MessageReply(
         messageId: messageId,
         message: message,
         isMe: isMe,
         messageType: messageType,
         isReplied: isReplied,
-        assetsThumbnail:assetsThumbnail
-    );
+        assetsThumbnail: assetsThumbnail);
   }
 
   void showKeyboard() => focusNode.requestFocus();
@@ -1304,7 +1305,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       );
       isDownloaded[fileName] = true;
       if (type == MessageType.video) {
-        final assetPath = await getThumbnail(File(filePath.toString()));
+        final assetPath = fileName;
+        await getThumbnail(File(filePath.toString()));
         MessageTable().updateMessageForAsset(
             assetPath: assetPath.toString(), fileName: fileName);
       }

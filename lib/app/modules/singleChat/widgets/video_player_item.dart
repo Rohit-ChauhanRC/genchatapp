@@ -56,7 +56,7 @@ class VideoPlayerItem extends StatelessWidget {
       child: SizedBox(
         width: isReply ? 80 : 280,
         height: isReply ? 80 : 200,
-        child: localFilePath.isEmpty && localFilePath != "null"
+        child: localFilePath.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : Stack(
                 alignment: Alignment.center,
@@ -72,9 +72,8 @@ class VideoPlayerItem extends StatelessWidget {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black38,
-                      borderRadius: BorderRadius.circular(30)
-                    ),
+                        color: Colors.black38,
+                        borderRadius: BorderRadius.circular(30)),
                     child: Icon(Icons.play_circle_filled,
                         color: Colors.white, size: isReply ? 32 : 64),
                   ),

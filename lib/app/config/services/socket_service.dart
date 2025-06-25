@@ -35,7 +35,6 @@ class SocketService extends GetxService {
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
   final Rxn<UserData> updateContactUser = Rxn<UserData>();
 
-
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
       if (_socket!.connected) {
@@ -61,7 +60,10 @@ class SocketService extends GetxService {
     print('🔌 Socket initialized');
   }
 
-  void _registerSocketListeners(Function()? onConnected, String userId, ) {
+  void _registerSocketListeners(
+    Function()? onConnected,
+    String userId,
+  ) {
     _socket?.onConnect((_) async {
       print('✅ Socket connected');
       // _isConnected.value = true;
@@ -89,7 +91,7 @@ class SocketService extends GetxService {
     _socket?.onReconnect((_) {
       print('Socket reconnection.');
       _clearSocketListeners();
-      _registerSocketListeners(onConnected,userId);
+      _registerSocketListeners(onConnected, userId);
     });
 
     // Add your custom events here
@@ -120,7 +122,9 @@ class SocketService extends GetxService {
                 ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
                 : null,
             isAsset: data["isAsset"] ?? false,
-            assetThumbnail: data["assetThumbnail"] ?? '',
+            assetThumbnail:
+                data["assetServerName"].toString().split(".")[0].toString() ??
+                    '',
             assetOriginalName: data["assetOriginalName"] ?? '',
             assetServerName: data["assetServerName"] ?? '',
             assetUrl: data["assetUrl"] ?? '',
@@ -280,14 +284,14 @@ class SocketService extends GetxService {
       }
     });
 
-    _socket?.on('user-update', (data) async{
+    _socket?.on('user-update', (data) async {
       print('✅ User Details Update: $data');
       UserData userDetails = UserData.fromJson(data["userData"]);
       updateContactUser.value = userDetails;
       // print("userData after json to model: $userDetails");
       await chatConectTable.updateContact(
         uid: userDetails.userId.toString(),
-        profilePic:userDetails.displayPictureUrl,
+        profilePic: userDetails.displayPictureUrl,
       );
       await contactsTable.updateUserFields(
         userId: userDetails.userId ?? 0,
@@ -376,9 +380,13 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: user.userId.toString(),
-          lastMessage: data.messageType == MessageType.image ?MessageType.image.value
-              :data.messageType == MessageType.video ?MessageType.video.value
-              :data.messageType == MessageType.document ?MessageType.document.value:data.message,
+          lastMessage: data.messageType == MessageType.image
+              ? MessageType.image.value
+              : data.messageType == MessageType.video
+                  ? MessageType.video.value
+                  : data.messageType == MessageType.document
+                      ? MessageType.document.value
+                      : data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: user.displayPictureUrl,
@@ -387,11 +395,15 @@ class SocketService extends GetxService {
       } else {
         await chatConectTable.insert(
           contact: ChatConntactModel(
-            lastMessageId:data.messageId,
+            lastMessageId: data.messageId,
             contactId: user.userId.toString(),
-            lastMessage: data.messageType == MessageType.image ?MessageType.image.value
-                :data.messageType == MessageType.video ?MessageType.video.value
-                :data.messageType == MessageType.document ?MessageType.document.value:data.message,
+            lastMessage: data.messageType == MessageType.image
+                ? MessageType.image.value
+                : data.messageType == MessageType.video
+                    ? MessageType.video.value
+                    : data.messageType == MessageType.document
+                        ? MessageType.document.value
+                        : data.message,
             name: user.localName,
             profilePic: user.displayPictureUrl,
             timeSent: data.messageSentFromDeviceTime,
@@ -411,9 +423,13 @@ class SocketService extends GetxService {
       if (chatUser != null) {
         await chatConectTable.updateContact(
           uid: fallbackUid.toString(),
-          lastMessage: data.messageType == MessageType.image ?MessageType.image.value
-              :data.messageType == MessageType.video ?MessageType.video.value
-              :data.messageType == MessageType.document ?MessageType.document.value:data.message,
+          lastMessage: data.messageType == MessageType.image
+              ? MessageType.image.value
+              : data.messageType == MessageType.video
+                  ? MessageType.video.value
+                  : data.messageType == MessageType.document
+                      ? MessageType.document.value
+                      : data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: '', // or a default avatar
@@ -424,9 +440,13 @@ class SocketService extends GetxService {
           contact: ChatConntactModel(
             contactId: fallbackUid.toString(),
             lastMessageId: data.messageId,
-            lastMessage: data.messageType == MessageType.image ?MessageType.image.value
-                :data.messageType == MessageType.video ?MessageType.video.value
-                :data.messageType == MessageType.document ?MessageType.document.value:data.message,
+            lastMessage: data.messageType == MessageType.image
+                ? MessageType.image.value
+                : data.messageType == MessageType.video
+                    ? MessageType.video.value
+                    : data.messageType == MessageType.document
+                        ? MessageType.document.value
+                        : data.message,
             name: fallbackName,
             profilePic: '',
             timeSent: data.messageSentFromDeviceTime,
@@ -461,10 +481,11 @@ class SocketService extends GetxService {
     }
   }
 
-  Future<void> syncPendingMessages({required int loginUserId}) async{
-    final dbMessages = await messageTable.fetchAllPendingMessages(loginUserId: loginUserId);
-    for(final msg in dbMessages){
-      if(msg.isAsset == false) {
+  Future<void> syncPendingMessages({required int loginUserId}) async {
+    final dbMessages =
+        await messageTable.fetchAllPendingMessages(loginUserId: loginUserId);
+    for (final msg in dbMessages) {
+      if (msg.isAsset == false) {
         sendMessageSync(msg);
       }
     }

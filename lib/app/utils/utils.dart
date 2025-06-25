@@ -521,7 +521,7 @@ Future<MediaInfo?> compressVideo(File file) async {
   }
 }
 
-Future<String?> getThumbnail(File videoFile) async {
+Future<void> getThumbnail(File videoFile) async {
   final Directory thumDir;
   if (Platform.isAndroid) {
     thumDir = Directory("/storage/emulated/0");
@@ -541,14 +541,13 @@ Future<String?> getThumbnail(File videoFile) async {
   }
   final thumbnailPath = dirThum.path;
 
-  final thumb = await VideoThumbnail.thumbnailFile(
+  await VideoThumbnail.thumbnailFile(
     video: videoFile.path,
     thumbnailPath: thumbnailPath,
     imageFormat: ImageFormat.JPEG,
     maxHeight: 200,
-    quality: 60,
+    quality: 100,
   );
-  return thumb;
 }
 
 Future<File?> compressVideoFfmpeg(

@@ -122,7 +122,7 @@ class SocketService extends GetxService {
                 ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
                 : null,
             isAsset: data["isAsset"] ?? false,
-            assetThumbnail: data["assetServerName"] ?? "",
+            assetThumbnail: data["assetThumbnail"] ?? "",
             assetOriginalName: data["assetOriginalName"] ?? '',
             assetServerName: data["assetServerName"] ?? '',
             assetUrl: data["assetUrl"] ?? '',

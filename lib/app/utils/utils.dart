@@ -521,7 +521,7 @@ Future<MediaInfo?> compressVideo(File file) async {
   }
 }
 
-Future<void> getThumbnail(File videoFile) async {
+Future<String?> getThumbnail(File videoFile) async {
   final Directory thumDir;
   if (Platform.isAndroid) {
     thumDir = Directory("/storage/emulated/0");
@@ -541,13 +541,21 @@ Future<void> getThumbnail(File videoFile) async {
   }
   final thumbnailPath = dirThum.path;
 
-  await VideoThumbnail.thumbnailFile(
+  final thumb = await VideoThumbnail.thumbnailFile(
     video: videoFile.path,
     thumbnailPath: thumbnailPath,
     imageFormat: ImageFormat.JPEG,
     maxHeight: 200,
-    quality: 100,
+    quality: 60,
   );
+
+  print((thumb.toString().split("/")[thumb.toString().split("/").length - 1])
+      .split(".")[0]);
+
+  final fileName =
+      (thumb.toString().split("/")[thumb.toString().split("/").length - 1]);
+
+  return fileName;
 }
 
 Future<File?> compressVideoFfmpeg(
@@ -566,6 +574,8 @@ Future<File?> compressVideoFfmpeg(
     }
 
     getReadableFileSize(file);
+
+    // "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
     final outputPath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
 

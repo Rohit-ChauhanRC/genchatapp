@@ -973,9 +973,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   // }
 
   Future<String> saveFileLocally(
-      File file, String fileType, String fileExtension, String fileName) async {
+      File file, String fileType, String fileExtension) async {
     final subFolderName = fileType.toTitleCase;
-
+    final fileName =
+        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
     final filePath = await folderCreation.saveFileFromFile(
       sourceFile: file,
       fileName: fileName,
@@ -1077,17 +1078,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         fileExtension,
       );
 
-      final fileName =
-          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+      final localFilePath =
+          await saveFileLocally(f.values.first!, fileType, f.keys.first);
+      final String? assetThumnail =
+          f.keys.first == "mp4" ? await getThumbnail(f.values.first!) : "";
 
-      final localFilePath = await saveFileLocally(
-          f.values.first!, fileType, f.keys.first, fileName);
-      final String? assetThumnail = fileName;
-      if (f.keys.first == "mp4") {
-        await getThumbnail(f.values.first!);
-      }
-
-      // Upload file to the server
       final fileData = await uploadFileToServer(f.values.first!);
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
@@ -1121,7 +1116,6 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
                 : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
-      // Save message locally
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
@@ -1129,9 +1123,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         if (socketService.isConnected) {
           socketService.sendMessage(newMessage);
         }
-      }
-      // Sync message with Firebase if online
-      else {
+      } else {
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
@@ -1305,10 +1297,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       );
       isDownloaded[fileName] = true;
       if (type == MessageType.video) {
-        final assetPath = fileName;
-        await getThumbnail(File(filePath.toString()));
+        final assetName = await getThumbnail(File(filePath.toString()));
+        final thumbnailPath = "${rootPath}Thumbnail/$assetName";
+
         MessageTable().updateMessageForAsset(
-            assetPath: assetPath.toString(), fileName: fileName);
+            assetPath: thumbnailPath.toString(), fileName: fileName);
       }
     } catch (e) {
       showAlertMessage("Download failed: $e");

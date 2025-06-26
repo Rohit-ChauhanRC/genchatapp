@@ -24,6 +24,8 @@ class NewMessageModel extends Equatable {
   final int? messageRepliedOnId;
   final String? messageRepliedOn;
   final MessageType? messageRepliedOnType;
+  final String? messageRepliedOnAssetServerName;
+  final String? messageRepliedOnAssetThumbnail;
   final bool? isAsset;
   final bool? isGroupMessage;
   final String? assetThumbnail;
@@ -55,6 +57,8 @@ class NewMessageModel extends Equatable {
     this.messageRepliedOnId,
     this.messageRepliedOn,
     this.messageRepliedOnType,
+    this.messageRepliedOnAssetServerName,
+    this.messageRepliedOnAssetThumbnail,
     this.isAsset,
     this.assetThumbnail,
     this.assetOriginalName,
@@ -100,6 +104,8 @@ class NewMessageModel extends Equatable {
       messageRepliedOnType: map['messageRepliedOnType'] != null
           ? MessageTypeExtension.fromValue(map['messageRepliedOnType'])
           : null,
+      messageRepliedOnAssetServerName: map['messageRepliedOnAssetServerName'],
+      messageRepliedOnAssetThumbnail: map['messageRepliedOnAssetThumbnail'],
       isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
       assetThumbnail: map['assetThumbnail'] ?? '',
       assetOriginalName: map['assetOriginalName'] ?? '',
@@ -130,6 +136,8 @@ class NewMessageModel extends Equatable {
       'messageRepliedOnId': messageRepliedOnId ?? 0,
       'messageRepliedOn': messageRepliedOn ?? '',
       'messageRepliedOnType': messageRepliedOnType?.value ?? '',
+      'messageRepliedOnAssetThumbnail': messageRepliedOnAssetThumbnail ?? '',
+      'messageRepliedOnAssetServerName': messageRepliedOnAssetServerName ?? '',
       'isAsset': isAsset == true ? 1 : 0,
       'assetThumbnail': assetThumbnail,
       'assetOriginalName': assetOriginalName,
@@ -159,6 +167,8 @@ class NewMessageModel extends Equatable {
     int? messageRepliedOnId,
     String? messageRepliedOn,
     MessageType? messageRepliedOnType,
+    String? messageRepliedOnAssetServerName,
+    String? messageRepliedOnAssetThumbnail,
     bool? isAsset,
     String? assetThumbnail,
     String? assetOriginalName,
@@ -189,6 +199,8 @@ class NewMessageModel extends Equatable {
       messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
       messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
       messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
+      messageRepliedOnAssetServerName: messageRepliedOnAssetServerName ?? this.messageRepliedOnAssetServerName,
+      messageRepliedOnAssetThumbnail: messageRepliedOnAssetThumbnail ?? this.messageRepliedOnAssetThumbnail,
       isAsset: isAsset ?? this.isAsset,
       assetThumbnail: assetThumbnail ?? this.assetThumbnail,
       assetOriginalName: assetOriginalName ?? this.assetOriginalName,

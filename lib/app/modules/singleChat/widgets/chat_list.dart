@@ -134,10 +134,8 @@ class ChatList extends StatelessWidget {
                               color: bgColor,
                               child: isMine
                                   ? MyMessageCard(
-                                      message: messages.messageType ==
-                                                  MessageType.text ||
-                                              messages.messageType ==
-                                                  MessageType.deleted
+                                      message: messages.messageType == MessageType.text ||
+                                              messages.messageType == MessageType.deleted
                                           ? (messages.message!.isNotEmpty
                                               ? messages.message.toString()
                                               : '') // NULL-SAFE
@@ -151,16 +149,11 @@ class ChatList extends StatelessWidget {
                                                   .messageSentFromDeviceTime ??
                                               '')),
                                       // date: "",
-                                      type: messages.messageType ??
-                                          MessageType.text,
-                                      status:
-                                          messages.state ?? MessageState.unsent,
-                                      syncStatus: messages.syncStatus ??
-                                          SyncStatus.pending,
-                                      onLeftSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
+                                      type: messages.messageType ?? MessageType.text,
+                                      status: messages.state ?? MessageState.unsent,
+                                      syncStatus: messages.syncStatus ?? SyncStatus.pending,
+                                      onLeftSwipe: messages.messageType == MessageType.deleted
+                                          ? null : (v) {
                                               singleChatController
                                                   .onMessageSwipe(
                                                 isMe: true,
@@ -174,8 +167,7 @@ class ChatList extends StatelessWidget {
                                                     messages.messageType ??
                                                         MessageType.text,
                                                 isReplied: true,
-                                                messageId:
-                                                    messages.messageId ?? 0,
+                                                messageId: messages.messageId ?? 0,
                                                 assetsThumbnail: messages.assetThumbnail ?? "",
                                               );
                                             },
@@ -202,9 +194,10 @@ class ChatList extends StatelessWidget {
                                                       .receiverUserData!
                                                       .localName
                                               : "username",
+                                      repliedAssetServerName: messages.messageRepliedOnAssetServerName,
+                                      repliedThumbnail: messages.messageRepliedOnAssetThumbnail,
                                       onReplyTap: () => singleChatController
-                                          .scrollToOriginalMessage(
-                                              messages.messageRepliedOnId!),
+                                          .scrollToOriginalMessage(messages.messageRepliedOnId!),
                                       isHighlighted: isHighlighted,
                                       isForwarded: messages.isForwarded!,
                                       showForwarded: messages.showForwarded!,
@@ -280,6 +273,8 @@ class ChatList extends StatelessWidget {
                                               : singleChatController
                                                   .receiverUserData!.localName
                                           : "username",
+                                      repliedAssetServerName: messages.messageRepliedOnAssetServerName,
+                                      repliedThumbnail: messages.messageRepliedOnAssetThumbnail,
                                       onReplyTap: () => singleChatController
                                           .scrollToOriginalMessage(
                                               messages.messageRepliedOnId!),

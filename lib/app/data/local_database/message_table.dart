@@ -31,6 +31,8 @@ class MessageTable {
         messageRepliedOnId INTEGER,
         messageRepliedOn TEXT,
         messageRepliedOnType TEXT,
+        messageRepliedOnAssetServerName TEXT,
+        messageRepliedOnAssetThumbnail TEXT,
         isAsset INTEGER,
         assetThumbnail TEXT,
         assetOriginalName TEXT,

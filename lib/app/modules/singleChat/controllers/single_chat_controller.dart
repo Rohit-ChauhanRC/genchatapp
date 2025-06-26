@@ -644,6 +644,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       messageRepliedOn: messageReply == null ? '' : messageReply.message,
       messageRepliedOnType:
           messageReply == null ? MessageType.text : messageReply.messageType,
+      messageRepliedOnAssetServerName: messageReply == null ? '': messageReply.message,
+      messageRepliedOnAssetThumbnail: messageReply == null ? '': messageReply.assetsThumbnail,
       isAsset: false,
       assetThumbnail: "",
       assetOriginalName: "",
@@ -1033,6 +1035,8 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
         messageRepliedOnType:
             messageReply == null ? MessageType.text : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null ? '': messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null ? '': messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,

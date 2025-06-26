@@ -19,6 +19,8 @@ class MyMessageCard extends StatelessWidget {
   final int? repliedUserId;
   final MessageType repliedMessageType;
   final String? repliedUserName;
+  final String? repliedThumbnail;
+  final String? repliedAssetServerName;
   final VoidCallback? onReplyTap;
   final bool? isHighlighted;
   final bool isForwarded;
@@ -41,6 +43,8 @@ class MyMessageCard extends StatelessWidget {
     required this.repliedMessageType,
     this.repliedUserId,
     this.repliedUserName,
+    this.repliedAssetServerName,
+    this.repliedThumbnail,
     this.onReplyTap,
     this.isHighlighted = false,
     this.isForwarded = false,
@@ -147,11 +151,11 @@ class MyMessageCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: DisplayTextImageGIF(
-                                  message: replyText,
+                                  message: repliedMessageType != MessageType.text ?repliedAssetServerName.toString():replyText,
                                   type: repliedMessageType,
                                   isReply: true,
                                   url: url,
-                                  assetThumbnail: assetThumbnail,
+                                  assetThumbnail: repliedThumbnail,
                                 ),
                               ),
                               const SizedBox(height: 8),

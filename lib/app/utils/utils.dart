@@ -10,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:tenor_flutter/tenor_flutter.dart';
-import 'package:video_compress/video_compress.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../config/services/filePickerService.dart';
@@ -504,21 +503,6 @@ Future<String> getReadableFileSize(File file) async {
     return '${(bytes / 1024).toStringAsFixed(2)} KB';
   else
     return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-}
-
-Future<MediaInfo?> compressVideo(File file) async {
-  try {
-    await VideoCompress.setLogLevel(0); // reduce logs
-    return await VideoCompress.compressVideo(
-      file.path,
-      quality: VideoQuality.Res960x540Quality,
-      deleteOrigin: false,
-      includeAudio: true,
-    );
-  } catch (e) {
-    print("Video compression error: $e");
-    return null;
-  }
 }
 
 Future<String?> getThumbnail(File videoFile) async {

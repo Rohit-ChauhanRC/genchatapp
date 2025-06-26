@@ -18,8 +18,7 @@ dependencies:
   shared_preferences: ^2.3.3
   firebase_core: ^3.8.0
   firebase_messaging: ^15.1.5
-  firebase_storage: ^12.3.6
-  cloud_firestore: ^5.5.0
+
   cached_network_image: ^3.4.1
   intl: ^0.20.1
   url_launcher: ^6.3.1
@@ -47,8 +46,6 @@ dependencies:
   open_file: ^3.5.10
   video_player: ^2.10.0
   flutter_image_compress: ^2.4.0
-  video_compress: ^3.1.4
-  image: ^4.5.4
   image_cropper: ^9.1.0
   ffmpeg_kit_flutter_new: ^2.0.0
   get_storage: ^2.1.1

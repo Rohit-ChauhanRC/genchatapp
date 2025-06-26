@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -156,7 +155,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
                 lastMessage: "",
                 name: i.group?.name ?? '',
                 profilePic: i.group?.displayPictureUrl ?? '',
-                timeSent: i.group?.updatedAt ?? "",//DateTime.now().toString(), //?? data.group?.createdAt,
+                timeSent: i.group?.updatedAt ??
+                    "", //DateTime.now().toString(), //?? data.group?.createdAt,
                 uid: groupId.toString(),
                 isGroup: 1,
               ),

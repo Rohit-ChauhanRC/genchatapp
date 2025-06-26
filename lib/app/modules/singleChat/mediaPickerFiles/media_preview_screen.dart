@@ -9,8 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-import 'package:image/image.dart' as img;
-
 class MediaPreviewScreen extends StatefulWidget {
   final List<File> files;
   final String fileType;
@@ -57,47 +55,6 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
       }
     }
     super.dispose();
-  }
-
-  Future<File> rotateImage(File file) async {
-    // Load the image from the file
-    final bytes = await file.readAsBytes();
-    img.Image? image = img.decodeImage(Uint8List.fromList(bytes));
-
-    // Check if the image is valid
-    if (image == null) {
-      throw Exception("Failed to load image");
-    }
-
-    // Rotate the image by 90 degrees (you can change the angle if needed)
-    img.Image rotatedImage = img.copyRotate(image, angle: 90);
-
-    // Save the rotated image to a temporary file
-
-    Directory appDir = await getApplicationDocumentsDirectory();
-
-    final dir = Platform.isAndroid
-        ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
-        : Directory('${appDir.path}/picked_images');
-
-    if (!await dir.exists()) {
-      await dir.create(
-          recursive: true); // Create the directory if it doesn't exist
-    }
-
-    final rotatedFilePath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
-    final rotatedFile = File(rotatedFilePath);
-
-    // // Encode the rotated image back to bytes and write it to the file
-    await rotatedFile.writeAsBytes(img.encodeJpg(rotatedImage));
-
-    // final rotatedBytes = img.encodeJpg(rotatedImage);
-
-    // Create a File object from the bytes without writing to disk
-    // final rotatedFile = File.fromRawPath(Uint8List.fromList(rotatedBytes));
-
-    // Return the rotated image file (in memory, not saved on disk)
-    return rotatedFile;
   }
 
   @override

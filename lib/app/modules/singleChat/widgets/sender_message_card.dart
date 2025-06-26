@@ -50,10 +50,13 @@ class SenderMessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final replyText1 = repliedText.value.trim();
-    final hasReply1 = replyText1.isNotEmpty &&
-        replyText1.toLowerCase() != "null" &&
-        type != MessageType.deleted;
+    // Check if message has reply
+    final hasReply = type != MessageType.deleted &&
+        ((repliedMessageType != MessageType.text &&
+            (repliedAssetServerName?.isNotEmpty ?? false)) ||
+            (repliedMessageType == MessageType.text &&
+                repliedText.value.trim().isNotEmpty &&
+                repliedText.value.trim().toLowerCase() != "null"));
     return SwipeTo(
       onRightSwipe: onRightSwipe,
       child: Align(
@@ -63,7 +66,7 @@ class SenderMessageCard extends StatelessWidget {
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
           child: InkWell(
-            onTap: hasReply1 ? onReplyTap : null,
+            onTap: hasReply ? onReplyTap : null,
             child: Card(
               elevation: 1,
               shape: RoundedRectangleBorder(
@@ -95,64 +98,54 @@ class SenderMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        type != MessageType.deleted && isForwarded
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: showForwarded
-                                    ? [
-                                        Icon(
-                                          Symbols.forward_sharp,
-                                          color: AppColors.greyMsgColor,
-                                          size: 18,
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        showForwarded
-                                            ? Text("Forwarded",
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontStyle: FontStyle.italic,
-                                                    fontWeight: FontWeight.w400,
-                                                    color:
-                                                        AppColors.greyMsgColor))
-                                            : const SizedBox(),
-                                      ]
-                                    : [],
-                              )
-                            : SizedBox.shrink(),
-                        type != MessageType.deleted &&
-                                repliedText.value.isNotEmpty &&
-                                repliedText.value != "null"
-                            ? Obx(() => Column(children: [
-                                  Text(
-                                    repliedUserName ?? "username",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: blackColor),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: replyColor.withOpacity(0.67),
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(
-                                          5,
-                                        ),
-                                      ),
-                                    ),
-                                    child: DisplayTextImageGIF(
-                                      message: repliedMessageType != MessageType.text ?repliedAssetServerName.toString():repliedText.value,
-                                      type: repliedMessageType,
-                                      isReply: true,
-                                      url: url,
-                                      assetThumbnail: repliedThumbnail,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                ]))
-                            : const SizedBox(),
+                        // Forwarded
+                        if (type != MessageType.deleted && isForwarded && showForwarded)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Symbols.forward_sharp,
+                                  color: AppColors.greyMsgColor, size: 18),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Forwarded",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.greyMsgColor,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        // Reply UI
+                        if (hasReply) ...[
+                          Text(
+                            repliedUserName ?? "username",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: blackColor,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: replyColor.withOpacity(0.67),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: DisplayTextImageGIF(
+                              message: repliedMessageType != MessageType.text
+                                  ? repliedAssetServerName ?? ""
+                                  : repliedText.value,
+                              type: repliedMessageType,
+                              isReply: true,
+                              url: url,
+                              assetThumbnail: repliedThumbnail,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         DisplayTextImageGIF(
                             message: message,
                             type: type,

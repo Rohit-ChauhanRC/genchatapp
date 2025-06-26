@@ -9,30 +9,8 @@ import 'package:swipe_to/swipe_to.dart';
 import '../../../config/theme/app_colors.dart';
 
 class MyMessageCard extends StatelessWidget {
-  final String message;
-  final String date;
-  final MessageType type;
-  final MessageState status;
-  final SyncStatus syncStatus;
-  final void Function(DragUpdateDetails)? onLeftSwipe;
-  final RxString repliedText;
-  final int? repliedUserId;
-  final MessageType repliedMessageType;
-  final String? repliedUserName;
-  final String? repliedThumbnail;
-  final String? repliedAssetServerName;
-  final VoidCallback? onReplyTap;
-  final bool? isHighlighted;
-  final bool isForwarded;
-  final bool showForwarded;
-  final VoidCallback? onRetryTap;
-  final bool isAsset;
-  final RxBool isRetryUploadFile;
-  final String? url;
-  final String? assetThumbnail;
-
   const MyMessageCard({
-    Key? key, // 👈 Ensure this is passed properly in ChatList
+    Key? key,
     required this.message,
     required this.date,
     required this.type,
@@ -54,14 +32,38 @@ class MyMessageCard extends StatelessWidget {
     required this.isRetryUploadFile,
     this.url,
     this.assetThumbnail,
-  }) : super(key: key); // 👈 Needed for scroll-to-original to work
+  }) : super(key: key);
+
+  final String message;
+  final String date;
+  final MessageType type;
+  final MessageState status;
+  final SyncStatus syncStatus;
+  final void Function(DragUpdateDetails)? onLeftSwipe;
+  final RxString repliedText;
+  final MessageType repliedMessageType;
+  final int? repliedUserId;
+  final String? repliedUserName;
+  final String? repliedThumbnail;
+  final String? repliedAssetServerName;
+  final VoidCallback? onReplyTap;
+  final bool? isHighlighted;
+  final bool isForwarded;
+  final bool showForwarded;
+  final VoidCallback? onRetryTap;
+  final bool isAsset;
+  final RxBool isRetryUploadFile;
+  final String? url;
+  final String? assetThumbnail;
 
   @override
   Widget build(BuildContext context) {
-    final replyText1 = repliedText.value.trim();
-    final hasReply1 = replyText1.isNotEmpty &&
-        replyText1.toLowerCase() != "null" &&
-        type != MessageType.deleted;
+    final hasReply = type != MessageType.deleted &&
+        ((repliedMessageType != MessageType.text &&
+            (repliedAssetServerName?.isNotEmpty ?? false)) ||
+            (repliedMessageType == MessageType.text &&
+                repliedText.value.trim().isNotEmpty &&
+                repliedText.value.trim().toLowerCase() != "null"));
 
     return SwipeTo(
       onLeftSwipe: onLeftSwipe,
@@ -73,7 +75,7 @@ class MyMessageCard extends StatelessWidget {
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
           child: InkWell(
-            onTap: hasReply1 ? onReplyTap : null,
+            onTap: hasReply ? onReplyTap : null,
             child: Card(
               elevation: 1,
               shape: const RoundedRectangleBorder(
@@ -84,56 +86,40 @@ class MyMessageCard extends StatelessWidget {
                   bottomRight: Radius.circular(8),
                 ),
               ),
-              color: // isHighlighted! ? AppColors.mySideBgColor.withOpacity(0.3) :
-                  mySideBgColor,
+              color: mySideBgColor,
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
                   Padding(
                     padding: type == MessageType.text
                         ? const EdgeInsets.only(
-                            left: 10,
-                            right: 20,
-                            top: 5,
-                            bottom: 20,
-                          )
+                        left: 10, right: 20, top: 5, bottom: 20)
                         : const EdgeInsets.only(
-                            left: 5, top: 5, right: 5, bottom: 25),
+                        left: 5, top: 5, right: 5, bottom: 25),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        type != MessageType.deleted && isForwarded
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: showForwarded
-                                    ? [
-                                        Icon(
-                                          Symbols.forward_sharp,
-                                          color: AppColors.greyMsgColor,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text("Forwarded",
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic,
-                                                fontWeight: FontWeight.w400,
-                                                color: AppColors.greyMsgColor)),
-                                      ]
-                                    : [],
-                              )
-                            : const SizedBox.shrink(),
-                        Obx(() {
-                          final replyText = repliedText.value.trim();
-                          final hasReply = replyText.isNotEmpty &&
-                              replyText.toLowerCase() != "null" &&
-                              type != MessageType.deleted;
+                        if (type != MessageType.deleted &&
+                            isForwarded &&
+                            showForwarded)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Symbols.forward_sharp,
+                                  color: AppColors.greyMsgColor, size: 18),
+                              const SizedBox(width: 10),
+                              Text("Forwarded",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.greyMsgColor)),
+                            ],
+                          ),
 
-                          if (!hasReply) return const SizedBox();
-
-                          return Column(
+                        // ✅ Fixed reply condition
+                        if (hasReply)
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -151,7 +137,9 @@ class MyMessageCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: DisplayTextImageGIF(
-                                  message: repliedMessageType != MessageType.text ?repliedAssetServerName.toString():replyText,
+                                  message: repliedMessageType != MessageType.text
+                                      ? repliedAssetServerName ?? ""
+                                      : repliedText.value,
                                   type: repliedMessageType,
                                   isReply: true,
                                   url: url,
@@ -160,8 +148,9 @@ class MyMessageCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                             ],
-                          );
-                        }),
+                          ),
+
+                        // Main message
                         Stack(alignment: Alignment.center, children: [
                           DisplayTextImageGIF(
                             message: message,
@@ -192,14 +181,11 @@ class MyMessageCard extends StatelessWidget {
                                 );
                               } else if (syncStatus == SyncStatus.pending) {
                                 return InkWell(
-                                  onTap: isRetryUploadFile.value
-                                      ? null
-                                      : () {
-                                          if (!isRetryUploadFile.value) {
-                                            onRetryTap
-                                                ?.call(); // Only call if allowed
-                                          }
-                                        },
+                                  onTap: () {
+                                    if (!isRetryUploadFile.value) {
+                                      onRetryTap?.call();
+                                    }
+                                  },
                                   child: Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
@@ -217,11 +203,13 @@ class MyMessageCard extends StatelessWidget {
                                 return const SizedBox.shrink();
                               }
                             }),
-                          ]
+                          ],
                         ]),
                       ],
                     ),
                   ),
+
+                  // Bottom timestamp + ticks
                   Positioned(
                     bottom: 4,
                     right: 10,
@@ -240,8 +228,8 @@ class MyMessageCard extends StatelessWidget {
                             status == MessageState.unsent
                                 ? Icons.watch_later
                                 : status == MessageState.sent
-                                    ? Icons.done
-                                    : Icons.done_all,
+                                ? Icons.done
+                                : Icons.done_all,
                             size: 20,
                             color: status == MessageState.read
                                 ? Colors.blue
@@ -259,3 +247,4 @@ class MyMessageCard extends StatelessWidget {
     );
   }
 }
+

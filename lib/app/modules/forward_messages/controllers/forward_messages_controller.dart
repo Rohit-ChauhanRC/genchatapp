@@ -146,6 +146,8 @@ class ForwardMessagesController extends GetxController {
           messageRepliedOnId: 0,  
           messageRepliedOn: '',
           messageRepliedOnType: null,
+          messageRepliedOnAssetServerName: "",
+          messageRepliedOnAssetThumbnail: "",
           isAsset: msg.isAsset,
           assetThumbnail: msg.assetThumbnail,
           assetOriginalName: msg.assetOriginalName,

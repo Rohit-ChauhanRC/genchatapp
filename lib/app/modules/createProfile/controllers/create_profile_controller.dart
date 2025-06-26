@@ -35,7 +35,6 @@ class CreateProfileController extends GetxController {
   final folder = Get.find<FolderCreation>();
   DataBaseService get dbService => Get.find<DataBaseService>();
 
-
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
 
   final Rx<File?> _image = Rx<File?>(null);
@@ -70,7 +69,6 @@ class CreateProfileController extends GetxController {
   final RxString restoreSize = ''.obs;
   final RxString restoreCopiedSize = ''.obs;
 
-
   @override
   void onInit() {
     super.onInit();
@@ -91,7 +89,8 @@ class CreateProfileController extends GetxController {
   }
 
   Future<void> _initializeFlow() async {
-    bool permissionGranted = await _checkAndRequestStoragePermissionOnce(); // Ask & wait
+    bool permissionGranted =
+        await _checkAndRequestStoragePermissionOnce(); // Ask & wait
     if (!permissionGranted) return;
     if (!Get.isRegistered<DataBaseService>()) {
       Get.lazyPut(() => DataBaseService());
@@ -100,7 +99,9 @@ class CreateProfileController extends GetxController {
   }
 
   Future<bool> _checkAndRequestStoragePermissionOnce() async {
-    bool alreadyAsked = sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ?? false;
+    bool alreadyAsked =
+        sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ??
+            false;
 
     if (!alreadyAsked) {
       await Future.delayed(Duration(milliseconds: 300));
@@ -109,7 +110,8 @@ class CreateProfileController extends GetxController {
         WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
-            title: Text("Contacts and Media", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            title: Text("Contacts and Media",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             content: const Text(
                 "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo and other media.",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
@@ -117,11 +119,13 @@ class CreateProfileController extends GetxController {
               TextButton(
                 onPressed: () async {
                   final status = await Permission.storage.request();
-                  final statusAndroid = await Permission.manageExternalStorage.request();
+                  final statusAndroid =
+                      await Permission.manageExternalStorage.request();
 
                   if (status.isGranted || statusAndroid.isGranted) {
                     await folder.createAppFolderStructure();
-                    sharedPreferenceService.setBool(UserDefaultsKeys.permissionAsked, true);
+                    sharedPreferenceService.setBool(
+                        UserDefaultsKeys.permissionAsked, true);
                     Get.back(result: true); // ✅ return true to dialog
                   } else {
                     Get.back(result: false); // ❌ not granted
@@ -165,9 +169,7 @@ class CreateProfileController extends GetxController {
 
     profileNameController.text = profileName;
     if (email.isNotEmpty) {
-      emailController.text = email;
-    } else {
-      emailController.text = "@gmail.com"; // Default prefix for new users
+      emailController.text = email.replaceAll("@gmail.com", "");
     }
 
     photoUrl = userData?.displayPictureUrl ?? '';
@@ -175,7 +177,8 @@ class CreateProfileController extends GetxController {
     // print("📢 Profile Name: $profileName, Email: $email, Photo URL: $photoUrl");
     // ✅ Set up the database with the user-specific ID
     if (userData?.userId != null) {
-       sharedPreferenceService.setString(UserDefaultsKeys.backupUserId, userData!.userId.toString());
+      sharedPreferenceService.setString(
+          UserDefaultsKeys.backupUserId, userData!.userId.toString());
       dbService
           .setUserId(userData.userId.toString()); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized
@@ -222,7 +225,8 @@ class CreateProfileController extends GetxController {
       final storedUserData = sharedPreferenceService.getUserData();
       final nameChanged =
           profileNameController.text.trim() != storedUserData?.name;
-      final emailChanged = emailController.text.trim() != storedUserData?.email;
+      final emailChanged =
+          "${emailController.text.trim()}@gmail.com" != storedUserData?.email;
 
       if (!nameChanged && !emailChanged) {
         // navigateBack();
@@ -233,7 +237,7 @@ class CreateProfileController extends GetxController {
       /// ✅ Step 3: Update User Details
       final updateResponse = await profileRepository.updateUserDetails(
         name: profileNameController.text.trim(),
-        email: emailController.text.trim(),
+        email: "${emailController.text.trim()}@gmail.com",
       );
 
       if (updateResponse?.statusCode == 200) {
@@ -301,24 +305,26 @@ class CreateProfileController extends GetxController {
               restoreTotalFiles.value = 0;
 
               await dbService.restoreAllData(
-                onProgress: (done,total, copiedBytes, totalBytes) {
+                onProgress: (done, total, copiedBytes, totalBytes) {
                   restoreCopiedFiles.value = done;
                   restoreTotalFiles.value = total;
                   restoreProgress.value = done / total;
-                  restoreCopiedSize.value = (copiedBytes / (1024 * 1024)).toStringAsFixed(2);
-                  restoreSize.value = (totalBytes / (1024 * 1024)).toStringAsFixed(2);
+                  restoreCopiedSize.value =
+                      (copiedBytes / (1024 * 1024)).toStringAsFixed(2);
+                  restoreSize.value =
+                      (totalBytes / (1024 * 1024)).toStringAsFixed(2);
                 },
               );
 
               showAlertMessage("Backup restored successfully.");
             } catch (e) {
               showAlertMessage("Failed to restore backup.");
-            }finally {
-              navigateBack();  // ✅ Move ahead after restore (success or fail)
+            } finally {
+              navigateBack(); // ✅ Move ahead after restore (success or fail)
             }
           },
           context: navigatorKey.currentContext!);
-    }else{
+    } else {
       navigateBack();
     }
   }

@@ -29,6 +29,7 @@ class SplashController extends GetxController {
     await Future.delayed(const Duration(seconds: 3));
     bool? isVerified = getIsNumVerified();
     bool? isCreatedUserProfile = getIsCreateUserProfile();
+    print("SharedPrefs - isNumVerified: $isVerified, isCreatedUserProfile: $isCreatedUserProfile");
     if (isVerified == true) {
       Get.offNamed(Routes.CREATE_PROFILE, arguments: false);
     } else if (isCreatedUserProfile == true) {

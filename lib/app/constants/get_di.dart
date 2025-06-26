@@ -30,7 +30,7 @@ init() async {
   Get.lazyPut(() => ConnectivityService());
   Get.lazyPut(() => FolderCreation());
   // Get.lazyPut(() => FirebaseController());
-  Get.lazyPut(() => DataBaseService());
+
   Get.lazyPut<SocketService>(() => SocketService());
 
   // Initialize SharedPreferenceService

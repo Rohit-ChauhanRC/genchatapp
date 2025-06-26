@@ -33,7 +33,8 @@ class CreateProfileController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   final folder = Get.find<FolderCreation>();
-  final dbService = Get.find<DataBaseService>();
+  DataBaseService get dbService => Get.find<DataBaseService>();
+
 
   GlobalKey<FormState>? createProfileKey = GlobalKey<FormState>();
 
@@ -73,9 +74,7 @@ class CreateProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // folder.createAppFolderStructure();
-    _checkAndRequestStoragePermissionOnce();
-    getUserData();
+    _initializeFlow();
     isFromInsideApp = Get.arguments;
   }
 
@@ -91,57 +90,60 @@ class CreateProfileController extends GetxController {
     _email.close();
   }
 
-  Future<void> _checkAndRequestStoragePermissionOnce() async {
-    bool alreadyAsked =
-        sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ??
-            false;
+  Future<void> _initializeFlow() async {
+    bool permissionGranted = await _checkAndRequestStoragePermissionOnce(); // Ask & wait
+    if (!permissionGranted) return;
+    if (!Get.isRegistered<DataBaseService>()) {
+      Get.lazyPut(() => DataBaseService());
+    }
+    await getUserData();
+  }
+
+  Future<bool> _checkAndRequestStoragePermissionOnce() async {
+    bool alreadyAsked = sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ?? false;
 
     if (!alreadyAsked) {
-      // Delay to let UI build before showing dialog
       await Future.delayed(Duration(milliseconds: 300));
 
-      Get.dialog(
+      final permissionGranted = await Get.dialog<bool>(
         WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
-            title: Text(
-              "Contacts and Media",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            title: Text("Contacts and Media", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             content: const Text(
-                "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo"
-                " and other media.",
+                "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo and other media.",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
             actions: [
               TextButton(
                 onPressed: () async {
-                  Get.back(); // Close dialog
                   final status = await Permission.storage.request();
-                  final statusAndroid =
-                      await Permission.manageExternalStorage.request();
+                  final statusAndroid = await Permission.manageExternalStorage.request();
 
                   if (status.isGranted || statusAndroid.isGranted) {
-                    await folder
-                        .createAppFolderStructure(); // 👈 your existing method
+                    await folder.createAppFolderStructure();
+                    sharedPreferenceService.setBool(UserDefaultsKeys.permissionAsked, true);
+                    Get.back(result: true); // ✅ return true to dialog
+                  } else {
+                    Get.back(result: false); // ❌ not granted
                   }
-
-                  sharedPreferenceService.setBool(
-                      UserDefaultsKeys.permissionAsked, true);
                 },
                 child: const Text("Continue"),
               ),
             ],
           ),
         ),
-        barrierDismissible: false, // 👈 prevent closing with tap outside
+        barrierDismissible: false,
       );
+
+      return permissionGranted ?? false;
     } else {
-      // If already asked and permission granted, auto create folders
       final status = await Permission.storage.status;
       final statusAndroid = await Permission.manageExternalStorage.status;
       if (status.isGranted || statusAndroid.isGranted) {
         await folder.createAppFolderStructure();
+        return true;
       }
+      return false;
     }
   }
 
@@ -153,7 +155,7 @@ class CreateProfileController extends GetxController {
     });
   }
 
-  void getUserData() async {
+  Future<void> getUserData() async {
     UserData? userData = sharedPreferenceService.getUserData();
 
     // print("📢 Fetched User Data: $userData"); // Debugging Log
@@ -162,7 +164,11 @@ class CreateProfileController extends GetxController {
     email = userData?.email ?? '';
 
     profileNameController.text = profileName;
-    emailController.text = email;
+    if (email.isNotEmpty) {
+      emailController.text = email;
+    } else {
+      emailController.text = "@gmail.com"; // Default prefix for new users
+    }
 
     photoUrl = userData?.displayPictureUrl ?? '';
 

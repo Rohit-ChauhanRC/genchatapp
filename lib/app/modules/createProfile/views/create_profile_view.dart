@@ -126,6 +126,17 @@ class CreateProfileView extends GetView<CreateProfileController> {
                                 },
                                 keyboardType: TextInputType.emailAddress,
                               ),
+                              // const SizedBox(
+                              //   height: 10,
+                              // ),
+                              const Text(
+                                "* Please input gmail id only e.g. genchat before @gmail.com",
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
                               const SizedBox(
                                 height: 50,
                               ),

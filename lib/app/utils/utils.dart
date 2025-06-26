@@ -437,7 +437,7 @@ Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
     confirmText: "Send",
     cancelText: "Cancel",
     onCancel: () {
-      Get.back(); // close dialog
+      // Get.back(); // close dialog
       completer.complete(false); // complete with false
     },
     onConfirm: () {

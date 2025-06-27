@@ -263,18 +263,18 @@ class ChatsView extends GetView<ChatsController> {
                                                       CircleAvatar(
                                                     backgroundImage:
                                                         imageProvider,
-                                                    radius: 30,
+                                                    radius: 25,
                                                   ),
                                                   placeholder: (context, url) =>
                                                       const CircleAvatar(
-                                                    radius: 30,
+                                                    radius: 25,
                                                     child:
                                                         CircularProgressIndicator(),
                                                   ),
                                                   errorWidget:
                                                       (context, url, error) =>
                                                           const CircleAvatar(
-                                                    radius: 30,
+                                                    radius: 25,
                                                     child: Icon(Icons.error),
                                                   ),
                                                 ),
@@ -299,13 +299,32 @@ class ChatsView extends GetView<ChatsController> {
                                                 isTyping
                                                     ? "Typing..."
                                                     : (chatConntactModel
-                                                            .lastMessage!
-                                                            .isNotEmpty && chatConntactModel.lastMessage != MessageType.image.value
-                                                    && chatConntactModel.lastMessage != MessageType.video.value
-                                                    && chatConntactModel.lastMessage != MessageType.document.value
-                                                        ? controller.encryptionService
-                                                            .decryptText(chatConntactModel.lastMessage.toString())
-                                                        : chatConntactModel.lastMessage.toString()),
+                                                                .lastMessage!
+                                                                .isNotEmpty &&
+                                                            chatConntactModel
+                                                                    .lastMessage !=
+                                                                MessageType
+                                                                    .image
+                                                                    .value &&
+                                                            chatConntactModel
+                                                                    .lastMessage !=
+                                                                MessageType
+                                                                    .video
+                                                                    .value &&
+                                                            chatConntactModel
+                                                                    .lastMessage !=
+                                                                MessageType
+                                                                    .document
+                                                                    .value
+                                                        ? controller
+                                                            .encryptionService
+                                                            .decryptText(
+                                                                chatConntactModel
+                                                                    .lastMessage
+                                                                    .toString())
+                                                        : chatConntactModel
+                                                            .lastMessage
+                                                            .toString()),
                                                 softWrap: true,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,

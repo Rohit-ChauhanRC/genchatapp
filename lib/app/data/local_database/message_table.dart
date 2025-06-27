@@ -352,6 +352,17 @@ class MessageTable {
     }
   }
 
+  Future<void> deleteMessageAll({
+    required int? receiverId,
+    required int? senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName,
+        where:
+            '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+        whereArgs: [senderId, receiverId, receiverId, senderId]);
+  }
+
   // Add to deletion queue
   Future<void> markForDeletion({
     required int messageId,

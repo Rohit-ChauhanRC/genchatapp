@@ -19,6 +19,7 @@ import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:gif/gif.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
@@ -32,7 +33,8 @@ import '../../../data/models/new_models/response_model/message_ack_model.dart';
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 
-class SingleChatController extends GetxController with WidgetsBindingObserver {
+class SingleChatController extends GetxController
+    with WidgetsBindingObserver, GetSingleTickerProviderStateMixin {
   //
 
   final connectivityService = Get.find<ConnectivityService>();
@@ -175,6 +177,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
   bool get hasMoreMessages => _hasMoreMessages.value;
   set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
 
+  // late AnimationController animationController;
+  late GifController gifController;
+
   @override
   void onInit() async {
     super.onInit();
@@ -183,6 +188,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
 
     WidgetsBinding.instance.addObserver(this);
+
+    gifController = GifController(vsync: this);
+
     senderuserData = sharedPreferenceService.getUserData();
 
     UserList? user = Get.arguments;
@@ -191,6 +199,11 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       receiverUserData = user;
       bindReceiverUserStream(user.userId ?? 0);
     }
+
+    // animationController = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(seconds: 1),
+    // );
     socketService.monitorReceiverTyping(
       receiverUserData!.userId.toString(),
       (isTyping) {
@@ -233,6 +246,9 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     _sendingMessageIds.clear();
     replyId.dispose();
     isInCurrentChat = false;
+
+    gifController.dispose();
+    // animationController.dispose();
   }
 
   @override
@@ -644,8 +660,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       messageRepliedOn: messageReply == null ? '' : messageReply.message,
       messageRepliedOnType:
           messageReply == null ? MessageType.text : messageReply.messageType,
-      messageRepliedOnAssetServerName: messageReply == null ? '': messageReply.message,
-      messageRepliedOnAssetThumbnail: messageReply == null ? '': messageReply.assetsThumbnail,
+      messageRepliedOnAssetServerName:
+          messageReply == null ? '' : messageReply.message,
+      messageRepliedOnAssetThumbnail:
+          messageReply == null ? '' : messageReply.assetsThumbnail,
       isAsset: false,
       assetThumbnail: "",
       assetOriginalName: "",
@@ -1035,8 +1053,10 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
         messageRepliedOnType:
             messageReply == null ? MessageType.text : messageReply.messageType,
-        messageRepliedOnAssetServerName: messageReply == null ? '': messageReply.message,
-        messageRepliedOnAssetThumbnail: messageReply == null ? '': messageReply.assetsThumbnail,
+        messageRepliedOnAssetServerName:
+            messageReply == null ? '' : messageReply.message,
+        messageRepliedOnAssetThumbnail:
+            messageReply == null ? '' : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
@@ -1138,10 +1158,76 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
     if (gif != null) {
       print(
           "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url}");
-      // sendGIFMessage(
-      //   context: Get.context!,
-      //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
-      // );
+      final fileName =
+          "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
+      downloadFile(MessageType.gif, fileName,
+          gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url);
+      sendGIFMessage(
+        gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
+        messageEnum: MessageType.gif,
+        fileName: fileName,
+      );
+    }
+  }
+
+  Future<void> sendGIFMessage({
+    required String gifUrl,
+    required MessageType messageEnum,
+    required String fileName,
+  }) async {
+    final clientSystemMessageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    try {
+      // Save file locally
+
+      final newMessage = NewMessageModel(
+        senderId: senderuserData?.userId,
+        recipientId: receiverUserData?.userId,
+        message: '',
+        messageSentFromDeviceTime: timeSent.toString(),
+        clientSystemMessageId: clientSystemMessageId,
+        state: MessageState.unsent,
+        syncStatus: SyncStatus.pending,
+        createdAt: timeSent.toString(),
+        senderPhoneNumber: senderuserData?.phoneNumber,
+        messageType: messageEnum,
+        isForwarded: false,
+        isGroupMessage: false,
+        forwardedMessageId: 0,
+        showForwarded: false,
+        isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+        messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+        messageRepliedOn: messageReply == null ? '' : messageReply.message,
+        messageRepliedOnType:
+            messageReply == null ? MessageType.text : messageReply.messageType,
+        messageRepliedOnAssetServerName:
+            messageReply == null ? '' : messageReply.message,
+        messageRepliedOnAssetThumbnail:
+            messageReply == null ? '' : messageReply.assetsThumbnail,
+        isAsset: true,
+        assetThumbnail: fileName,
+        assetOriginalName: fileName,
+        assetServerName: fileName,
+        assetUrl: gifUrl,
+        messageRepliedUserId: messageReply.message == null
+            ? 0
+            : messageReply.isMe == true
+                ? senderuserData?.userId
+                : receiverUserData?.userId,
+      );
+      print("Message All details Request: ${newMessage.toMap()}");
+      await MessageTable().insertMessage(newMessage);
+      messageList.add(newMessage);
+
+      if (socketService.isConnected) {
+        socketService.sendMessage(newMessage);
+      } else {
+        socketService.saveChatContacts(newMessage);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
     }
   }
 
@@ -1195,6 +1281,23 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
       receiverId: receiverUserData!.userId,
       senderId: senderuserData?.userId,
     );
+    MessageTable().deleteMessageText(
+      messageType: "image",
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+    MessageTable().deleteMessageText(
+      messageType: "video",
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+
+    MessageTable().deleteMessageAll(
+      receiverId: receiverUserData!.userId,
+      senderId: senderuserData?.userId,
+    );
+
+    messageList.clear();
 
     await chatConectTable.updateContact(
         uid: receiverUserData!.userId.toString(),
@@ -1233,7 +1336,7 @@ class SingleChatController extends GetxController with WidgetsBindingObserver {
 
         // MessageTable().updateMessageForAsset(
         //     assetPath: assetName.toString(), fileName: fileName);
-        Future.delayed(Duration(seconds: 1));
+        Future.delayed(const Duration(seconds: 1));
       }
       isDownloaded[fileName] = true;
     } catch (e) {

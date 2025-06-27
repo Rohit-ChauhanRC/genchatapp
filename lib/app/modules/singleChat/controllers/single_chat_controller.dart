@@ -946,7 +946,7 @@ class SingleChatController extends GetxController
         cancelReply();
       }
     } else if (fileType == MessageType.audio.value) {
-      // selectedFile = await pickAudio();
+      //  final selectedFile = await pickAudio();
     } else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
@@ -1157,13 +1157,19 @@ class SingleChatController extends GetxController
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
       print(
-          "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url}");
+          "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}");
       final fileName =
           "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
-      downloadFile(MessageType.gif, fileName,
-          gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url);
+      downloadFile(
+          MessageType.gif,
+          fileName,
+          gif.media.tinyGif?.url ??
+              gif.media.tinyGifTransparent?.url ??
+              gif.url);
       sendGIFMessage(
-        gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
+        gifUrl: gif.media.tinyGif?.url ??
+            gif.media.tinyGifTransparent?.url ??
+            gif.url,
         messageEnum: MessageType.gif,
         fileName: fileName,
       );

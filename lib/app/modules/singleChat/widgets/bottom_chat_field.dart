@@ -44,22 +44,24 @@ class BottomChatField extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30)),
                 child: Row(
                   children: [
-                    // if (singleChatController.isPause)
-                    //   IconButton(
-                    //     icon: const Icon(
-                    //       Icons.play_arrow,
-                    //       color: textBarColor,
-                    //     ),
-                    //     onPressed: singleChatController.playRecording,
-                    //   ),
-                    // if (!singleChatController.isPause)
                     Obx(() => singleChatController.isPause
                         ? IconButton(
-                            icon: const Icon(
-                              Icons.play_arrow,
-                              color: textBarColor,
-                            ),
-                            onPressed: singleChatController.playRecording,
+                            icon: singleChatController.playAudio.value
+                                ? const Icon(
+                                    Icons.pause,
+                                    color: textBarColor,
+                                  )
+                                : const Icon(
+                                    Icons.play_arrow,
+                                    color: textBarColor,
+                                  ),
+                            onPressed: () {
+                              if (!singleChatController.playAudio.value) {
+                                singleChatController.playRecording();
+                              } else {
+                                singleChatController.stopPlayback();
+                              }
+                            },
                           )
                         : StreamBuilder<Duration>(
                             stream: singleChatController
@@ -267,16 +269,17 @@ class BottomChatField extends StatelessWidget {
               ),
               InkWell(
                 onTap: () async {
-                  if (singleChatController.isRecording.value) {
-                    // await singleChatController
-                    //     .stopRecording(); // Stop recording
-                  } else if (singleChatController.isShowSendButton) {
-                    // singleChatController.sendRecordedAudio(); // Send audio
-                  } else {
-                    await singleChatController
-                        .startRecording(); // Start recording
+                  if (singleChatController.isShowSendButton &&
+                      !singleChatController.isPreviewing.value) {
+                    await singleChatController.sendTextMessage();
+                  } else if (!singleChatController.isPreviewing.value &&
+                      !singleChatController.isShowSendButton) {
+                    await singleChatController.startRecording();
+                  } else if (!singleChatController.isShowSendButton &&
+                      singleChatController.isPreviewing.value) {
+                    print("send audio");
+                    singleChatController.sendAudioMessage();
                   }
-                  await singleChatController.sendTextMessage();
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
@@ -287,7 +290,7 @@ class BottomChatField extends StatelessWidget {
                           singleChatController.isShowSendButton
                               ? Icons.send
                               : singleChatController.isRecording.value
-                                  ? Icons.close
+                                  ? Icons.send
                                   : Icons.mic,
                         )),
                   ),

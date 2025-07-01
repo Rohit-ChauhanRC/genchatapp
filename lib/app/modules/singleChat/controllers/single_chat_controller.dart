@@ -188,11 +188,14 @@ class SingleChatController extends GetxController
 
   final RecorderController recorderController = RecorderController();
 
+  final PlayerController playerController = PlayerController();
+
   RxDouble audioDuration = 0.0.obs; // Store the audio duration in seconds
 
   RxBool isRecording = false.obs;
   RxBool isPreviewing = false.obs;
   RxString recordedPath = ''.obs;
+  RxBool playAudio = false.obs;
 
   RxInt durationInSeconds = 0.obs;
   Timer? timer;
@@ -721,6 +724,7 @@ class SingleChatController extends GetxController
 
     messageController.clear();
     isShowSendButton = false;
+    isPreviewing.value = false;
     var receiverUserId = receiverUserData?.userId.toString() ?? '';
     socketService.emitTypingStatus(
       recipientId: receiverUserId,
@@ -735,6 +739,7 @@ class SingleChatController extends GetxController
 
     if (text.isNotEmpty) {
       isShowSendButton = true;
+      isPreviewing.value = false;
 
       // Emit isTyping: true
       socketService.emitTypingStatus(
@@ -752,6 +757,7 @@ class SingleChatController extends GetxController
       });
     } else {
       isShowSendButton = false;
+      isPreviewing.value = false;
 
       // Immediately emit false if field is cleared
       socketService.emitTypingStatus(
@@ -1447,7 +1453,7 @@ class SingleChatController extends GetxController
       );
       recordedPath.value = '$thumbnailPath/$fileName.aac';
 
-      isPreviewing.value = false;
+      isPreviewing.value = true;
     } catch (e) {
       print("Error starting recorder: $e");
     }
@@ -1459,7 +1465,7 @@ class SingleChatController extends GetxController
       await recorderController.stop();
 
       isRecording.value = false;
-      isPreviewing.value = true;
+      // isPreviewing.value = true;
     } catch (e) {
       print("Error stopping recorder: $e");
     }
@@ -1476,6 +1482,8 @@ class SingleChatController extends GetxController
         isPause = true;
       }
 
+      isPreviewing.value = true;
+
       // isShowSendButton = true; // Show send button once recording is done
     } catch (e) {
       print("Error stopping recorder: $e");
@@ -1484,13 +1492,13 @@ class SingleChatController extends GetxController
 
   Future<void> cancelRecording() async {
     try {
-      recorderController.stop();
-      File(recordedPath.value).delete();
       isRecording.value = false;
       isPreviewing.value = false;
       recordedPath.value = '';
       isPause = false;
       isRecording.value = false;
+      recorderController.stop();
+      File(recordedPath.value).delete();
 
       stopPlayback();
     } catch (e) {
@@ -1500,17 +1508,22 @@ class SingleChatController extends GetxController
 
   Future<void> playRecording() async {
     if (recordedPath.value.isNotEmpty) {
+      playAudio.value = true;
+
       await soundPlayer.value.startPlayer(
         fromURI: recordedPath.value,
         codec: Codec.aacMP4,
         whenFinished: () {
           isPreviewing.value = true;
+          playAudio.value = false;
         },
       );
     }
   }
 
   Future<void> stopPlayback() async {
+    playAudio.value = false;
+
     await soundPlayer.value.stopPlayer();
   }
 
@@ -1518,6 +1531,81 @@ class SingleChatController extends GetxController
     if (audioPath != null) {
       print("Playing audio from: $audioPath");
       // Add your audio playback logic here, for example using any other package like `just_audio` or `audioplayers`
+    }
+  }
+
+  Future<void> sendAudioMessage() async {
+    final clientSystemMessageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    final fileType = MessageType.audio.value.split('.').last;
+    try {
+      stopRecording();
+      stopPlayback();
+
+      isPreviewing.value = false;
+      isRecording.value = false;
+      playAudio.value = false;
+      final serverName = recordedPath.value
+          .toString()
+          .split("/")[recordedPath.value.toString().split("/").length - 1];
+
+      print(serverName);
+
+      // final fileData =
+      //     await uploadFileToServer(File(recordedPath.value.toString()));
+      // final newMessage = NewMessageModel(
+      //   senderId: senderuserData?.userId,
+      //   recipientId: receiverUserData?.userId,
+      //   message: '',
+      //   messageSentFromDeviceTime: timeSent.toString(),
+      //   clientSystemMessageId: clientSystemMessageId,
+      //   state: MessageState.unsent,
+      //   syncStatus: SyncStatus.pending,
+      //   createdAt: timeSent.toString(),
+      //   senderPhoneNumber: senderuserData?.phoneNumber,
+      //   messageType: MessageType.audio,
+      //   isForwarded: false,
+      //   isGroupMessage: false,
+      //   forwardedMessageId: 0,
+      //   showForwarded: false,
+      //   isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+      //   messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+      //   messageRepliedOn: messageReply == null ? '' : messageReply.message,
+      //   messageRepliedOnType:
+      //       messageReply == null ? MessageType.text : messageReply.messageType,
+      //   messageRepliedOnAssetServerName:
+      //       messageReply == null ? '' : messageReply.message,
+      //   messageRepliedOnAssetThumbnail:
+      //       messageReply == null ? '' : messageReply.assetsThumbnail,
+      //   isAsset: true,
+      //   assetThumbnail: "",
+      //   assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+      //   assetServerName: serverName,
+      //   assetUrl: fileData == null ? "" : fileData.data?.url,
+      //   messageRepliedUserId: messageReply.message == null
+      //       ? 0
+      //       : messageReply.isMe == true
+      //           ? senderuserData?.userId
+      //           : receiverUserData?.userId,
+      // );
+      // print("Message All details Request: ${newMessage.toMap()}");
+      // await MessageTable().insertMessage(newMessage);
+      // messageList.add(newMessage);
+      // recordedPath.value = "";
+
+      // if (fileData?.statusCode == 200 && fileData?.status == true) {
+      //   if (socketService.isConnected) {
+      //     socketService.sendMessage(newMessage);
+      //     isPreviewing.value = false;
+      //   }
+      // } else {
+      //   socketService.saveChatContacts(newMessage);
+      //   isPreviewing.value = false;
+      // }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
     }
   }
 }

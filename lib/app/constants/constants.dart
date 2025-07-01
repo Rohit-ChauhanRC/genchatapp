@@ -15,7 +15,7 @@ const createYurProfile = "Create your profile";
 const next = "NEXT";
 const newGroup = "New Group";
 const settings = "Settings";
-const clearText = "Clear chat text";
+const clearText = "Clear chat";
 const logout = "Logout";
 
 //Shared preferences Keys Names
@@ -33,5 +33,3 @@ const chatConnectTable = "chatConnectTable";
 const groupTable = "group_table";
 const usersTable = "group_users_table";
 const userGroupsTable = "user_groups_info";
-
-

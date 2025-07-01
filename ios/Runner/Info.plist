@@ -64,7 +64,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MyApp does not need this permission</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow the app to record using your phone's microphone in order to record description for the new parts</string>
+	<string>Allow the app to recording audio message to send</string>
 	<key>NSMotionUsageDescription</key>
 	<string>MyApp does not need this permission</string>
 	<key>NSPhotoLibraryUsageDescription</key>

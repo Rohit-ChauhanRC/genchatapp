@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
@@ -35,6 +36,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     final controller = Get.find<SingleChatController>();
     final path = controller.getFilePath(type, message);
     final thumbnailPath = "${controller.rootPath}Thumbnail/$assetThumbnail";
+    final gifPath = "${controller.rootPath}GIFs/$assetThumbnail";
 
     if (type == MessageType.text || type == MessageType.deleted) {
       return SelectableText(
@@ -160,6 +162,8 @@ class DisplayTextImageGIF extends StatelessWidget {
                   rootFolderPath: path, url: url ?? '', isReply: isReply);
             case MessageType.audio:
             // return AudioMessageWidget(localPath: path); // if using
+            case MessageType.gif:
+              return DisplayGifImage(filePath: gifPath); // if using
             default:
               return const SizedBox();
           }
@@ -170,7 +174,7 @@ class DisplayTextImageGIF extends StatelessWidget {
 
   // 📦 File label (type label)
   String _getLabel(MessageType type, String fileName) {
-    if (fileName.toLowerCase().endsWith('.gif')) return 'GIF';
+    // if (fileName.toLowerCase().endsWith('.gif')) return 'GIF';
     if (fileName.toLowerCase().endsWith('.pdf')) return 'PDF';
     switch (type) {
       case MessageType.image:
@@ -181,6 +185,8 @@ class DisplayTextImageGIF extends StatelessWidget {
         return 'Document';
       case MessageType.audio:
         return 'Audio';
+      case MessageType.gif:
+        return 'GIF';
       default:
         return 'Media';
     }
@@ -188,7 +194,7 @@ class DisplayTextImageGIF extends StatelessWidget {
 
   // 🎨 Icon based on type
   IconData _getIcon(MessageType type, String fileName) {
-    if (fileName.toLowerCase().endsWith('.gif')) return Icons.gif_box;
+    // if (fileName.toLowerCase().endsWith('.gif')) return Icons.gif_box;
     if (fileName.toLowerCase().endsWith('.pdf')) return Icons.picture_as_pdf;
     switch (type) {
       case MessageType.image:
@@ -199,6 +205,8 @@ class DisplayTextImageGIF extends StatelessWidget {
         return Icons.insert_drive_file;
       case MessageType.audio:
         return Icons.audiotrack;
+      case MessageType.gif:
+        return Icons.gif_box_outlined;
       default:
         return Icons.download;
     }

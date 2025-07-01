@@ -386,7 +386,10 @@ class SocketService extends GetxService {
                   ? MessageType.video.value
                   : data.messageType == MessageType.document
                       ? MessageType.document.value
-                      : data.message,
+                      : data.messageType == MessageType.gif
+              ? MessageType.gif.value
+              : data.messageType == MessageType.audio
+              ? MessageType.audio.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: user.displayPictureUrl,
@@ -403,7 +406,10 @@ class SocketService extends GetxService {
                     ? MessageType.video.value
                     : data.messageType == MessageType.document
                         ? MessageType.document.value
-                        : data.message,
+                        : data.messageType == MessageType.gif
+                ? MessageType.gif.value
+                : data.messageType == MessageType.audio
+                ? MessageType.audio.value:data.message,
             name: user.localName,
             profilePic: user.displayPictureUrl,
             timeSent: data.messageSentFromDeviceTime,
@@ -429,7 +435,10 @@ class SocketService extends GetxService {
                   ? MessageType.video.value
                   : data.messageType == MessageType.document
                       ? MessageType.document.value
-                      : data.message,
+                      : data.messageType == MessageType.gif
+              ? MessageType.gif.value
+              : data.messageType == MessageType.audio
+              ? MessageType.audio.value:data.message,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
           profilePic: '', // or a default avatar
@@ -446,7 +455,10 @@ class SocketService extends GetxService {
                     ? MessageType.video.value
                     : data.messageType == MessageType.document
                         ? MessageType.document.value
-                        : data.message,
+                        : data.messageType == MessageType.gif
+                ? MessageType.gif.value
+                : data.messageType == MessageType.audio
+                ? MessageType.audio.value:data.message,
             name: fallbackName,
             profilePic: '',
             timeSent: data.messageSentFromDeviceTime,

@@ -163,7 +163,7 @@ class DisplayTextImageGIF extends StatelessWidget {
             case MessageType.audio:
             // return AudioMessageWidget(localPath: path); // if using
             case MessageType.gif:
-              return DisplayGifImage(filePath: gifPath); // if using
+              return DisplayGifImage(filePath: gifPath,  isReply: isReply ?? false); // if using
             default:
               return const SizedBox();
           }

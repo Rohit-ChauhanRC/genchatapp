@@ -315,8 +315,18 @@ class ChatsView extends GetView<ChatsController> {
                                                                     .lastMessage !=
                                                                 MessageType
                                                                     .document
-                                                                    .value
-                                                        ? controller
+                                                                    .value &&
+                                                            chatConntactModel
+                                                                    .lastMessage !=
+                                                                MessageType
+                                                                    .gif
+                                                                    .value &&
+                                                            chatConntactModel
+                                                                    .lastMessage !=
+                                                                MessageType
+                                                                .audio
+                                                                .value
+                                                                ? controller
                                                             .encryptionService
                                                             .decryptText(
                                                                 chatConntactModel

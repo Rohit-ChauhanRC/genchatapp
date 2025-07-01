@@ -6,12 +6,19 @@ import 'package:get/get.dart';
 import 'package:gif/gif.dart';
 
 class DisplayGifImage extends StatelessWidget {
-  DisplayGifImage({super.key, required this.filePath});
+  DisplayGifImage({
+    super.key,
+    required this.filePath,
+    required this.isReply,
+  });
 
   final String filePath;
+  final bool isReply;
 
   final SingleChatController singleChatController =
       Get.find<SingleChatController>();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +26,9 @@ class DisplayGifImage extends StatelessWidget {
       // controller: singleChatController.gifController,
       image: Image.file(File(filePath)).image,
       autostart: Autostart.loop,
-      width: 250,
+      width: isReply?80:250,
       fit: BoxFit.fill,
-      height: 250,
+      height: isReply?80:250,
     );
   }
 }

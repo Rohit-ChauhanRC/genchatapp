@@ -94,8 +94,8 @@ class ApiInterceptor extends Interceptor {
     try {
       final dio = Dio(BaseOptions(
         baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 50),
+        receiveTimeout: const Duration(seconds: 50),
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
       ));
 

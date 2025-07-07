@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/audio_message_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
@@ -37,6 +38,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     final path = controller.getFilePath(type, message);
     final thumbnailPath = "${controller.rootPath}Thumbnail/$assetThumbnail";
     final gifPath = "${controller.rootPath}GIFs/$assetThumbnail";
+    final audioPath = "${controller.rootPath}Audio/$assetThumbnail";
 
     if (type == MessageType.text || type == MessageType.deleted) {
       return SelectableText(
@@ -161,9 +163,10 @@ class DisplayTextImageGIF extends StatelessWidget {
               return ImageWidget(
                   rootFolderPath: path, url: url ?? '', isReply: isReply);
             case MessageType.audio:
-            // return AudioMessageWidget(localPath: path); // if using
+              return AudioMessageWidget(localPath: path); // if using
             case MessageType.gif:
-              return DisplayGifImage(filePath: gifPath,  isReply: isReply ?? false); // if using
+              return DisplayGifImage(
+                  filePath: gifPath, isReply: isReply ?? false); // if using
             default:
               return const SizedBox();
           }

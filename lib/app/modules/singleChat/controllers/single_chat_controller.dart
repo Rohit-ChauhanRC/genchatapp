@@ -1419,7 +1419,7 @@ class SingleChatController extends GetxController
   // Initialize the recorder
   Future<void> initRecorder() async {
     await soundRecorder.value.openRecorder();
-    recorderController.checkPermission();
+    // recorderController.checkPermission();
     await soundPlayer.value.openPlayer();
   }
 
@@ -1457,7 +1457,7 @@ class SingleChatController extends GetxController
       // await recorderController.record(
       //   path: '$thumbnailPath/$fileName.aac',
       //   androidEncoder: AndroidEncoder.aac,
-      //   androidOutputFormat: AndroidOutputFormat.mpeg4,
+      //   androidOutputFormat: AndroidOutputFormat.aac_adts,
       //   iosEncoder: IosEncoder.kAudioFormatMPEG4AAC,
       // );
 
@@ -1466,24 +1466,19 @@ class SingleChatController extends GetxController
         await Permission.microphone.request();
         return;
       }
-      await soundRecorder.value.startRecorder(
-        toFile: '$thumbnailPath/$fileName.aac',
-        codec: Codec.aacMP4,
-        audioSource: AudioSource.microphone,
-      );
-      // await record.start(
-      //   const RecordConfig(
-      //       encoder: AudioEncoder.pcm16bits,
-      //       androidConfig: AndroidRecordConfig(
-      //         speakerphone: true,
-      //         audioManagerMode: AudioManagerMode.modeNormal,
-      //         // useLegacy: true,
-      //       )),
-      //   path: '$thumbnailPath/$fileName.pcm',
+      // await soundRecorder.value.startRecorder(
+      //   toFile: '$thumbnailPath/$fileName.aac',
+      //   codec: Codec.pcm16,
 
       // );
+      await record.start(
+        const RecordConfig(
+          encoder: AudioEncoder.wav,
+        ),
+        path: '$thumbnailPath/$fileName.wav',
+      );
 
-      recordedPath.value = '$thumbnailPath/$fileName.aac';
+      recordedPath.value = '$thumbnailPath/$fileName.wav';
 
       isPreviewing.value = true;
     } catch (e) {
@@ -1495,8 +1490,8 @@ class SingleChatController extends GetxController
   Future<void> stopRecording() async {
     try {
       // await recorderController.stop();
-      // await record.stop();
-      await soundRecorder.value.stopRecorder();
+      await record.stop();
+      // await soundRecorder.value.stopRecorder();
 
       isRecording.value = false;
       // isPreviewing.value = true;
@@ -1509,15 +1504,21 @@ class SingleChatController extends GetxController
     try {
       if (isPause) {
         // await recorderController.record();
-        // await record.resume();
+        await record.resume();
         // await soundRecorder.value.resumeRecorder();
-        await player.play();
+        // await player.play();
 
         isPause = false;
       } else {
         // await recorderController.pause();
         // await soundRecorder.value.pauseRecorder();
-        await player.pause();
+        // await player.pause();
+        await record.start(
+          const RecordConfig(
+            encoder: AudioEncoder.wav,
+          ),
+          path: recordedPath.value,
+        );
         isPause = true;
       }
 
@@ -1536,9 +1537,9 @@ class SingleChatController extends GetxController
       isPause = false;
       isRecording.value = false;
       // recorderController.stop();
-      // await record.cancel();
+      await record.cancel();
       // await soundRecorder.value.stopRecorder();
-      await player.stop();
+      // await player.stop();
       File(recordedPath.value).delete();
       recordedPath.value = '';
 
@@ -1565,12 +1566,13 @@ class SingleChatController extends GetxController
         final bufferAudio = await File(recordedPath.value).readAsBytes();
 
         // await soundPlayer.value.startPlayer(
-        //   // fromURI: recordedPath.value,
+        //   fromURI: recordedPath.value,
         //   codec: Codec.pcm16,
-        //   fromDataBuffer: bufferAudio,
+        //   // codec: Codec.pcm16WAV,
+        //   // fromDataBuffer: bufferAudio,
         //   whenFinished: () {
-        //     isPreviewing.value = true;
-        //     playAudio.value = false;
+        //     // isPreviewing.value = true;
+        //     // playAudio.value = false;
         //   },
         // );
         await player.setPitch(1.0);
@@ -1578,7 +1580,7 @@ class SingleChatController extends GetxController
         await player.setFilePath(recordedPath.value);
 
         await player.play();
-        // await player.stop();
+        await player.stop();
         playAudio.value = false;
         // });
       }
@@ -1601,8 +1603,8 @@ class SingleChatController extends GetxController
   Future<void> pausePlayback() async {
     playAudio.value = false;
 
-    // await soundPlayer.value.pausePlayer();
-    await player.pause();
+    await soundPlayer.value.pausePlayer();
+    // await player.pause();
   }
 
   Future<void> previewAudio(String audioPath) async {

@@ -24,21 +24,6 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>sms</string>
@@ -61,8 +46,12 @@
 	<string>App requires camera</string>
 	<key>NSContactsUsageDescription</key>
 	<string>App needs access to the contact list</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Apps needs to access  documents folder is required to store files.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MyApp does not need this permission</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>This app needs access to play audio files.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Allow the app to recording audio message to send</string>
 	<key>NSMotionUsageDescription</key>
@@ -75,13 +64,22 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>audio</string>
 		<string>fetch</string>
 		<string>processing</string>
+		<string>audio</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
-	<key>NSDocumentsFolderUsageDescription</key>
-	<string>Apps needs to access  documents folder is required to store files.</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
 </dict>
 </plist>

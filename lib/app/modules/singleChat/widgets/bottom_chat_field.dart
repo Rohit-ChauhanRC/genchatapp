@@ -2,15 +2,18 @@ import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/message_audio_widget.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
+import 'audio_sound_player_widget.dart';
 import 'message_reply_preview.dart';
 
 class BottomChatField extends StatelessWidget {
@@ -35,78 +38,84 @@ class BottomChatField extends StatelessWidget {
             ? MessageReplyPreview()
             : const SizedBox.shrink()),
         Obx(() => singleChatController.isRecording.value
-            ? Container(
-                // padding: const EdgeInsets.all(8.0),
-                // height: 70,
-                margin: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.circular(30)),
-                child: Row(
-                  children: [
-                    Obx(() => singleChatController.isPause
-                        ? IconButton(
-                            icon: singleChatController.playAudio.value
-                                ? const Icon(
-                                    Icons.pause,
-                                    color: textBarColor,
-                                  )
-                                : const Icon(
-                                    Icons.play_arrow,
-                                    color: textBarColor,
-                                  ),
-                            onPressed: () {
-                              if (!singleChatController.playAudio.value) {
-                                singleChatController.playRecording();
-                              } else {
-                                singleChatController.stopPlayback();
-                              }
-                            },
-                          )
-                        : StreamBuilder<Duration>(
-                            stream: singleChatController
-                                .recorderController.onCurrentDuration,
-                            builder: (context, snapshot) {
-                              final duration = snapshot.data ?? Duration.zero;
-                              final minutes = duration.inMinutes
-                                  .remainder(60)
-                                  .toString()
-                                  .padLeft(2, '0');
-                              final seconds = duration.inSeconds
-                                  .remainder(60)
-                                  .toString()
-                                  .padLeft(2, '0');
+            // ? Container(
+            //     // padding: const EdgeInsets.all(8.0),
+            //     // height: 70,
+            //     margin: const EdgeInsets.all(10),
+            //     decoration: BoxDecoration(
+            //         border: Border.all(),
+            //         borderRadius: BorderRadius.circular(30)),
+            //     child: Row(
+            //       children: [
+            //         Obx(() => singleChatController.isPause
+            //             ? IconButton(
+            //                 icon: singleChatController.playAudio.value
+            //                     ? const Icon(
+            //                         Icons.pause,
+            //                         color: textBarColor,
+            //                       )
+            //                     : const Icon(
+            //                         Icons.play_arrow,
+            //                         color: textBarColor,
+            //                       ),
+            //                 onPressed: () {
+            //                   if (!singleChatController.playAudio.value) {
+            //                     singleChatController.playRecording(
+            //                         singleChatController.recordedPath.value);
+            //                   } else {
+            //                     singleChatController.pausePlayback();
+            //                   }
+            //                 },
+            //               )
+            //             : StreamBuilder<RecordingDisposition>(
+            //                 stream: singleChatController
+            //                     .soundRecorder.value.onProgress,
+            //                 builder: (context, snapshot) {
+            //                   final duration =
+            //                       snapshot.data?.duration ?? Duration.zero;
+            //                   final minutes = duration.inMinutes
+            //                       .remainder(60)
+            //                       .toString()
+            //                       .padLeft(2, '0');
+            //                   final seconds = duration.inSeconds
+            //                       .remainder(60)
+            //                       .toString()
+            //                       .padLeft(2, '0');
 
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Text(
-                                  "$minutes:$seconds",
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              );
-                            },
-                          )),
-                    AudioWaveforms(
-                      size: Size(MediaQuery.of(context).size.width * 0.7, 50),
-                      // enableGesture: true,
-                      recorderController:
-                          singleChatController.recorderController,
-                      waveStyle: const WaveStyle(
-                        showMiddleLine: false,
-                        waveColor: Colors.black,
-                        extendWaveform: true,
-                      ),
-                    ),
-                    if (singleChatController.isPause)
-                      Text(
-                        "${singleChatController.recorderController.elapsedDuration.inMinutes.remainder(60).toString().padLeft(2, '0')}:${singleChatController.recorderController.elapsedDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}",
-                        style: const TextStyle(color: Colors.black),
-                      )
-                  ],
-                ),
-              )
+            //                   return Padding(
+            //                     padding: const EdgeInsets.only(right: 8),
+            //                     child: Text(
+            //                       "$minutes:$seconds",
+            //                       style: const TextStyle(
+            //                         color: Colors.black,
+            //                       ),
+            //                     ),
+            //                   );
+            //                 },
+            //               )),
+            //         // AudioWaveforms(
+            //         //   size: Size(MediaQuery.of(context).size.width * 0.7, 50),
+            //         //   // enableGesture: true,
+            //         //   recorderController:
+            //         //       singleChatController.recorderController,
+            //         //   waveStyle: const WaveStyle(
+            //         //     showMiddleLine: false,
+            //         //     waveColor: Colors.black,
+            //         //     extendWaveform: true,
+            //         //   ),
+            //         // ),
+            //         // if (singleChatController.isPause)
+            //         //   Text(
+            //         //     "${singleChatController.soundPlayer.value.}",
+            //         //     style: const TextStyle(color: Colors.black),
+            //         //   )
+            //       ],
+            //     ),
+            //   )
+            // ? MessageAudioWidget(
+            //     audioUrl: singleChatController.recordedPath.value,
+            //   )
+            ? AudioSoundPlayerWidget()
             : const SizedBox.shrink()),
 
         Padding(

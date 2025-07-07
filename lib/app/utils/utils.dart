@@ -298,6 +298,10 @@ String getFileMimeType(File file) {
     case 'rtf':
       return 'application/rtf';
 
+    // Audio
+    case 'aac':
+      return 'audio/aac';
+
     default:
       return 'application/octet-stream'; // fallback for unknown types
   }

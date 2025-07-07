@@ -33,3 +33,4 @@ const chatConnectTable = "chatConnectTable";
 const groupTable = "group_table";
 const usersTable = "group_users_table";
 const userGroupsTable = "user_groups_info";
+const subscribedTopics = "subscribedTopics";

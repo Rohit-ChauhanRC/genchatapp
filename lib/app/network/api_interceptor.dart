@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+import 'package:genchatapp/app/config/services/notification_service.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -160,6 +161,7 @@ class ApiInterceptor extends Interceptor {
   }
 
   Future<void> logout(Function()? onSuccess) async{
+    await NotificationService.unsubscribeFromTopics();
     await db.closeDb();
     await socketService.disposeSocket();
     await sharedPreference.clear();

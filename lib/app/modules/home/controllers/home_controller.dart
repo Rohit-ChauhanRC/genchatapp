@@ -52,8 +52,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       print(
           'Initial socket connection established in HomeController: UserId for socket connection: $userId');
     });
-    NotificationService().subscribeToUserTopic(userId);
-    print("Message subscribed:-----> genchat-message-$userId");
+    var subscriptionTopic = ["genchat-message-$userId"];
+    await NotificationService.subscribeToTopics(subscriptionTopic);
     await getGroups();
     // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);

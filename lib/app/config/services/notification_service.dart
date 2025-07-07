@@ -9,6 +9,7 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../constants/constants.dart';
 import '../../constants/message_enum.dart';
 import '../../data/local_database/contacts_table.dart';
 import '../../data/models/new_models/response_model/new_message_model.dart';
@@ -153,14 +154,45 @@ class NotificationService {
     }
   }
 
-  Future<void> subscribeToUserTopic(String userId) async {
-    final topic = "genchat-message-$userId";
-    await FirebaseMessaging.instance.subscribeToTopic(topic);
+  // Future<void> subscribeToUserTopic(String userId) async {
+  //   final topic = "genchat-message-$userId";
+  //   await FirebaseMessaging.instance.subscribeToTopic(topic);
+  // }
+  //
+  // Future<void> unSubscribeToUserTopic(String userId) async {
+  //   final topic = "genchat-message-$userId";
+  //   await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+  // }
+
+  static Future<void> subscribeToTopics(List<String> topics) async {
+    List<String> cleanedTopics =
+    topics.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+
+    for (String topic in cleanedTopics) {
+      await FirebaseMessaging.instance.subscribeToTopic(topic);
+      print("✅ Subscribed to topic: $topic");
+    }
+
+    // Save subscribed topics in SharedPreferenceService, avoiding duplicates
+    List<String>? existingTopics = prefs.getList(subscribedTopics) ?? [];
+    Set<String> updatedTopics = {
+      ...existingTopics,
+      ...cleanedTopics
+    }; // Merge sets to avoid duplicates
+    await prefs.setList(subscribedTopics, updatedTopics.toList());
   }
 
-  Future<void> unSubscribeToUserTopic(String userId) async {
-    final topic = "genchat-message-$userId";
-    await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+  /// Unsubscribe from stored topics and clear from SharedPreferences
+  static Future<void> unsubscribeFromTopics() async {
+    List<String>? topics = prefs.getList(subscribedTopics);
+
+    if (topics != null) {
+      for (String topic in topics) {
+        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+        print("❌ Unsubscribed from topic: $topic");
+      }
+      await prefs.remove(subscribedTopics); // Clear stored topics
+    }
   }
 }
 

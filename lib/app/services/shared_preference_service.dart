@@ -142,7 +142,13 @@ class SharedPreferenceService {
 
   double? getDouble(String key) => _storage.read<double>(key);
 
-  List<String>? getList(String key) => _storage.read<List<String>>(key);
+  List<String>? getList(String key) {
+    final raw = _storage.read(key);
+    if (raw is List) {
+      return raw.whereType<String>().toList(); // ✅ safely cast items to String
+    }
+    return null;
+  }
 
   // Remove specific key
   Future<void> remove(String key) async {

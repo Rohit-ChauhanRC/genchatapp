@@ -1,8 +1,6 @@
-import 'dart:ffi';
 
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
-import 'package:genchatapp/app/data/models/user_model.dart';
 import 'package:genchatapp/app/modules/home/controllers/home_controller.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';

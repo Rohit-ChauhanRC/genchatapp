@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
@@ -8,7 +7,9 @@ import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 import '../../../config/services/connectivity_service.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
@@ -123,6 +124,10 @@ class SelectContactsController extends GetxController {
             profilePic: user.displayPictureUrl,
             name: user.localName,
           );
+          // Download and save profile image using the same name
+          if (user.displayPictureUrl != null && user.displayPicture != null) {
+            await _downloadAndCacheProfileImage(user.displayPictureUrl!, user.displayPicture!);
+          }
         }
         contacts = enrichedUsers;
       }
@@ -156,5 +161,57 @@ class SelectContactsController extends GetxController {
     });
   }
 
-  // search new contact
+
+
+  Future<void> _downloadAndCacheProfileImage(String imageUrl, String fileName) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) throw Exception("Failed to download image");
+
+      final imageBytes = response.bodyBytes;
+      final originalImage = img.decodeImage(imageBytes);
+      if (originalImage == null) throw Exception("Image decode failed");
+
+      // Crop to square
+      final int size = originalImage.width < originalImage.height
+          ? originalImage.width
+          : originalImage.height;
+      final square = img.copyCrop(
+        originalImage,
+        x: (originalImage.width - size) ~/ 2,
+        y: (originalImage.height - size) ~/ 2,
+        width: size,
+        height: size,
+      );
+
+      // Create transparent circular image
+      final circular = img.Image(width: size, height: size);
+      circular.clear(img.ColorInt8.rgba(0, 0, 0, 0)); // fully transparent
+
+      for (int y = 0; y < size; y++) {
+        for (int x = 0; x < size; x++) {
+          final dx = x - size ~/ 2;
+          final dy = y - size ~/ 2;
+          if (dx * dx + dy * dy <= (size ~/ 2) * (size ~/ 2)) {
+            circular.setPixel(x, y, square.getPixel(x, y));
+          }
+        }
+      }
+
+      final directory = await getApplicationDocumentsDirectory();
+      final pngFileName = fileName.replaceAll(RegExp(r'\.jpg$'), '.png'); // ensure .png
+      final filePath = '${directory.path}/$pngFileName';
+
+      final file = File(filePath);
+      await file.writeAsBytes(img.encodePng(circular));
+
+      print("✅ Circular PNG with transparency saved: $filePath");
+    } catch (e) {
+      print("❌ Silent crop failed: $e");
+    }
+  }
+
+
+
+
 }

@@ -1203,6 +1203,7 @@ class SingleChatController extends GetxController
         messageEnum: MessageType.gif,
         fileName: fileName,
       );
+      cancelReply();
     }
   }
 
@@ -1494,11 +1495,11 @@ class SingleChatController extends GetxController
     try {
       isRecording.value = false;
       isPreviewing.value = false;
-      recordedPath.value = '';
       isPause = false;
       isRecording.value = false;
       recorderController.stop();
       File(recordedPath.value).delete();
+      recordedPath.value = '';
 
       stopPlayback();
     } catch (e) {

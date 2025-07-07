@@ -112,10 +112,10 @@ class BottomChatField extends StatelessWidget {
             //       ],
             //     ),
             //   )
-            // ? MessageAudioWidget(
-            //     audioUrl: singleChatController.recordedPath.value,
-            //   )
-            ? AudioSoundPlayerWidget()
+            ? MessageAudioWidget(
+                audioUrl: singleChatController.recordedPath.value,
+              )
+            // ? AudioSoundPlayerWidget()
             : const SizedBox.shrink()),
 
         Padding(

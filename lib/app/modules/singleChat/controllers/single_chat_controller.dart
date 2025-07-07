@@ -1468,8 +1468,6 @@ class SingleChatController extends GetxController
       }
       await soundRecorder.value.startRecorder(
         toFile: '$thumbnailPath/$fileName.aac',
-        codec: Codec.aacMP4,
-        audioSource: AudioSource.microphone,
       );
       // await record.start(
       //   const RecordConfig(

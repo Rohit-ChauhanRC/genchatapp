@@ -149,7 +149,9 @@ class FolderCreation {
       {required String fileName,
       required String subFolderName,
       required String messageType,
-      required String fileUrl}) async {
+      required String fileUrl,
+      void Function(int received, int total)? onReceiveProgress
+      }) async {
     try {
       // final directory = await getApplicationDocumentsDirectory();
       final Directory directory;
@@ -164,7 +166,7 @@ class FolderCreation {
       if (await File(filePath).exists()) {
         return filePath;
       } else {
-        final downloadedFilePath = await _downloadFile(fileUrl, filePath);
+        final downloadedFilePath = await _downloadFile(fileUrl, filePath,onReceiveProgress);
         return downloadedFilePath;
       }
     } catch (e) {
@@ -173,15 +175,42 @@ class FolderCreation {
     }
   }
 
-  Future<String?> _downloadFile(String url, String savePath) async {
+  Future<String?> _downloadFile(String url, String savePath,
+      void Function(int received, int total)? onReceiveProgress) async {
     try {
       // Perform the file download
-      final response = await http.get(Uri.parse(url));
+      // final response = await http.get(Uri.parse(url));
+      final uri = Uri.parse(url);
+      final request = http.Request('GET', uri);
+      final response = await http.Client().send(request);
       if (response.statusCode == 200) {
         final file = File(savePath);
-        await file.writeAsBytes(response.bodyBytes); // Save the file
-        // print("File downloaded to $savePath");
+        final sink = file.openWrite();
+        final contentLength = response.contentLength ?? 0;
+        int received = 0;
+
+        await response.stream.listen(
+              (chunk) {
+            received += chunk.length;
+            sink.add(chunk);
+            if (onReceiveProgress != null) {
+              onReceiveProgress(received, contentLength);
+            }
+          },
+          onDone: () async {
+            await sink.flush();
+            await sink.close();
+          },
+          onError: (e) {
+            sink.close();
+          },
+          cancelOnError: true,
+        ).asFuture();
+
         return savePath;
+        // await file.writeAsBytes(response.bodyBytes); // Save the file
+        // print("File downloaded to $savePath");
+        // return savePath;
       } else {
         // print("Failed to download file: ${response.statusCode}");
         return null;

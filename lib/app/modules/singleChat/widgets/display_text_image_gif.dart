@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
@@ -124,7 +125,29 @@ class DisplayTextImageGIF extends StatelessWidget {
                       ],
                     ),
                     if (isDownloading)
-                      const CircularProgressIndicator()
+                       Container(
+                         color: AppColors.transparentColor,
+                         child: Column(
+                           mainAxisAlignment: MainAxisAlignment.center,
+                           children: [
+                             CircularProgressIndicator(
+                               value: controller.totalBytes[message]! > 0
+                                   ? controller.downloadedBytes[message]! / controller.totalBytes[message]!
+                                   : null,
+                             ),
+                             const SizedBox(height: 8),
+                             if (controller.totalBytes[message]! > 0)
+                               Text(
+                                 "${(controller.downloadedBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB"
+                                     " / ${(controller.totalBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                 style: TextStyle(
+                                   fontSize: 11,
+                                   color: Colors.grey[600],
+                                 ),
+                               ),
+                           ],
+                         ),
+                       )
                     else
                       Positioned(
                         bottom: 10,

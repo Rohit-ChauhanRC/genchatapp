@@ -1357,6 +1357,8 @@ class SingleChatController extends GetxController
 
   RxMap<String, bool> isDownloading = <String, bool>{}.obs;
   RxMap<String, bool> isDownloaded = <String, bool>{}.obs;
+  RxMap<String, int> downloadedBytes = <String, int>{}.obs;
+  RxMap<String, int> totalBytes = <String, int>{}.obs;
 
   Future<void> checkIfFileExists(MessageType type, String fileName) async {
     final path = getFilePath(type, fileName);
@@ -1370,12 +1372,18 @@ class SingleChatController extends GetxController
       return;
 
     isDownloading[fileName] = true;
+    downloadedBytes[fileName] = 0;
+    totalBytes[fileName] = 0;
     try {
       final filePath = await FolderCreation().checkAndHandleFile(
         fileUrl: url,
         fileName: fileName,
         subFolderName: getFolderName(type),
         messageType: type.value,
+        onReceiveProgress: (received, total) {
+          downloadedBytes[fileName] = received;
+          totalBytes[fileName] = total;
+        },
       );
       if (type == MessageType.video) {
         await getThumbnail(File(filePath.toString()));

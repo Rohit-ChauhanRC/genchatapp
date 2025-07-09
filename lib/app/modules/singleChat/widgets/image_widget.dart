@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_preview.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:get/get.dart';
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 
 class ImageWidget extends StatelessWidget {
   const ImageWidget(
@@ -17,7 +20,17 @@ class ImageWidget extends StatelessWidget {
     final file = File(rootFolderPath);
     if (file.existsSync()) {
       Get.to(() => ImagePreviewScreen(imagePath: rootFolderPath));
+      // final imageProvider = FileImage(File(rootFolderPath));
 
+      // showImageViewer(
+      //   context,
+      //   imageProvider,
+      //   swipeDismissible: true,
+      //   doubleTapZoomable: true,
+      //   backgroundColor: AppColors.blackColor,
+      //   closeButtonColor: Colors.red,
+      //   useSafeArea: true,
+      // );
       return;
     }
 
@@ -46,7 +59,7 @@ class ImageWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        isReply == true ?null:_downloadAndOpenFile(context);
+        isReply == true ? null : _downloadAndOpenFile(context);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),

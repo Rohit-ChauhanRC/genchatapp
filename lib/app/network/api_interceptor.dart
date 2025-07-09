@@ -18,9 +18,11 @@ class ApiInterceptor extends Interceptor {
   final DataBaseService db;
   final SocketService socketService;
 
-  ApiInterceptor(this.sharedPreference, this.apiClient, this.db, this.socketService);
+  ApiInterceptor(
+      this.sharedPreference, this.apiClient, this.db, this.socketService);
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     String? token = sharedPreference.getString(UserDefaultsKeys.accessToken);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -38,7 +40,8 @@ class ApiInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     // Debugging response logs
-    print("✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}");
+    print(
+        "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}");
     print("📥 Response Data: ${response.data}");
 
     return handler.next(response);
@@ -46,7 +49,8 @@ class ApiInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    print("❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}");
+    print(
+        "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}");
     print("🔴 Error Message: ${err.message}");
     if (err.response != null) {
       print("🔴 Response Data: ${err.response?.data}");
@@ -60,8 +64,10 @@ class ApiInterceptor extends Interceptor {
 
       if (tokenRefreshed) {
         if (isFormData) {
-          print("⚠️ Interceptor won't retry FormData request. Repo will handle retry.");
-          return handler.next(err); // Let the repository retry manually with new FormData
+          print(
+              "⚠️ Interceptor won't retry FormData request. Repo will handle retry.");
+          return handler
+              .next(err); // Let the repository retry manually with new FormData
         } else {
           // Retry JSON request
           try {
@@ -71,20 +77,24 @@ class ApiInterceptor extends Interceptor {
             return handler.next(err);
           }
         }
+      } else {
+        await logout(() {
+          Get.offAllNamed(Routes.LANDING);
+        });
       }
     }
 
     return handler.next(err); // Other errors
   }
 
-
   /// Refresh Token Logic
   Future<bool> refreshToken() async {
-    String? refreshToken = sharedPreference.getString(UserDefaultsKeys.refreshToken);
+    String? refreshToken =
+        sharedPreference.getString(UserDefaultsKeys.refreshToken);
     int? userId = sharedPreference.getUserData()?.userId;
 
-    print("🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId");
-
+    print(
+        "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId");
 
     if (refreshToken == null || userId == null) {
       print("🔴 No refresh token or user ID found!");
@@ -96,7 +106,10 @@ class ApiInterceptor extends Interceptor {
         baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
         connectTimeout: const Duration(seconds: 50),
         receiveTimeout: const Duration(seconds: 50),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
       ));
 
       Response response = await dio.post(
@@ -105,14 +118,19 @@ class ApiInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
-        String newAccessToken = response.data['data']['accessToken']; // ✅ Corrected key
-        String newRefreshToken = response.data['data']['refreshToken']; // ✅ Corrected key
+        String newAccessToken =
+            response.data['data']['accessToken']; // ✅ Corrected key
+        String newRefreshToken =
+            response.data['data']['refreshToken']; // ✅ Corrected key
 
-        print("New Access Token: $newAccessToken\n New refresh token: $newRefreshToken");
+        print(
+            "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken");
         await sharedPreference.remove(UserDefaultsKeys.accessToken);
         await sharedPreference.remove(UserDefaultsKeys.refreshToken);
-        await sharedPreference.setString(UserDefaultsKeys.accessToken, newAccessToken);
-        await sharedPreference.setString(UserDefaultsKeys.refreshToken, newRefreshToken);
+        await sharedPreference.setString(
+            UserDefaultsKeys.accessToken, newAccessToken);
+        await sharedPreference.setString(
+            UserDefaultsKeys.refreshToken, newRefreshToken);
 
         print("✅ Token refreshed successfully!");
         return true;
@@ -124,9 +142,6 @@ class ApiInterceptor extends Interceptor {
     }
     print("🔴 Refresh token invalid, logging out...");
 
-    await logout((){
-      Get.offAllNamed(Routes.LANDING);
-    });
     // await sharedPreference.clear().then((onValue) {
     //   Get.offAllNamed(Routes.LANDING);
     // });
@@ -140,14 +155,17 @@ class ApiInterceptor extends Interceptor {
       requestOptions.headers['Authorization'] = 'Bearer $token';
     }
 
-    print("🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}");
+    print(
+        "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}");
 
     // 💥 If original request was multipart/form-data, you CANNOT reuse the body
     if (requestOptions.data is FormData) {
-      print("⚠️ Skipping retry for FormData. Let the repository handle retry manually.");
+      print(
+          "⚠️ Skipping retry for FormData. Let the repository handle retry manually.");
       throw DioException(
         requestOptions: requestOptions,
-        error: "FormData cannot be reused after the original request failed. Retry manually.",
+        error:
+            "FormData cannot be reused after the original request failed. Retry manually.",
         type: DioExceptionType.unknown,
         response: Response(
           requestOptions: requestOptions,
@@ -159,7 +177,7 @@ class ApiInterceptor extends Interceptor {
     return apiClient.dio.fetch(requestOptions);
   }
 
-  Future<void> logout(Function()? onSuccess) async{
+  Future<void> logout(Function()? onSuccess) async {
     await db.closeDb();
     await socketService.disposeSocket();
     await sharedPreference.clear();

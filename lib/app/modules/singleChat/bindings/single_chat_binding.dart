@@ -7,8 +7,9 @@ import '../controllers/single_chat_controller.dart';
 class SingleChatBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<ApiClient>(()=> ApiClient());
-    Get.lazyPut<ProfileRepository>(()=> ProfileRepository(apiClient: Get.find<ApiClient>()));
-    Get.lazyPut<SingleChatController>(() => SingleChatController());
+    Get.lazyPut<ApiClient>(() => ApiClient());
+    Get.lazyPut<ProfileRepository>(
+        () => ProfileRepository(apiClient: Get.find<ApiClient>()));
+    Get.put<SingleChatController>(SingleChatController());
   }
 }

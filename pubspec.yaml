@@ -53,8 +53,8 @@ dependencies:
   record: ^6.0.0
   just_audio: ^0.10.4
   just_waveform: ^0.0.7
+  easy_image_viewer: ^1.5.1
   image: ^4.5.4
-#  flutter_local_notifications: ^19.3.0
   awesome_notifications: ^0.10.1
 
 

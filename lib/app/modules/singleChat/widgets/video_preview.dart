@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
@@ -66,7 +67,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
               fontWeight: FontWeight.bold,
             ),
           )),
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.blackColor,
       body: _controller.value.isInitialized
           ? Container(
               height: Get.height * 0.8,
@@ -75,10 +76,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
                 alignment: Alignment.bottomCenter,
                 children: [
                   Center(
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    ),
+                    child: VideoPlayer(_controller),
                   ),
                   VideoProgressIndicator(_controller, allowScrubbing: true),
                   // Positioned(
@@ -99,7 +97,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
                     child: IconButton(
                       icon: Icon(
                         _isMuted ? Icons.volume_off : Icons.volume_up,
-                        color: textBarColor,
+                        color: redColor,
                         size: 28,
                       ),
                       onPressed: _toggleMute,
@@ -113,7 +111,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
                         _controller.value.isPlaying
                             ? Icons.pause
                             : Icons.play_arrow,
-                        color: textBarColor,
+                        color: redColor,
                         size: 32,
                       ),
                       onPressed: _togglePlayPause,

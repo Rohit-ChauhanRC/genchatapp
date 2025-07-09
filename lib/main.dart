@@ -76,8 +76,21 @@ void main() async {
     onActionReceivedMethod: NotificationService.onActionReceived,
   );
 
-  FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
+  bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+  if (!isAllowed) {
+    isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
+    print("🔔 AwesomeNotification permission granted: $isAllowed");
+  }
 
+  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('✅ Notification permission granted');
+  } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
+    print('❌ Notification permission denied');
+  } else {
+    print('⚠️ Notification permission not determined');
+  }
   FirebaseMessaging.onMessage.listen((msg) async {
     print("🔔 Foreground FCM Received: ${msg.data}");
 

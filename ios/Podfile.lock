@@ -3,6 +3,9 @@ PODS:
     - Flutter
   - audio_waveforms (0.0.1):
     - Flutter
+  - awesome_notifications (0.10.0):
+    - Flutter
+    - IosAwnCore (~> 0.10.0)
   - connectivity_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.9):
@@ -122,6 +125,7 @@ PODS:
     - TOCropViewController (~> 2.7.4)
   - image_picker_ios (0.0.1):
     - Flutter
+  - IosAwnCore (0.10.0)
   - just_audio (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -184,6 +188,7 @@ PODS:
 DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
+  - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
   - ffmpeg_kit_flutter_new (from `.symlinks/plugins/ffmpeg_kit_flutter_new/ios`)
@@ -220,6 +225,7 @@ SPEC REPOS:
     - flutter_sound_core
     - GoogleDataTransport
     - GoogleUtilities
+    - IosAwnCore
     - libwebp
     - Mantle
     - nanopb
@@ -234,6 +240,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/audio_session/ios"
   audio_waveforms:
     :path: ".symlinks/plugins/audio_waveforms/ios"
+  awesome_notifications:
+    :path: ".symlinks/plugins/awesome_notifications/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   emoji_picker_flutter:
@@ -284,6 +292,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
+  awesome_notifications: 0f432b28098d193920b11a44cfa9d2d9313a3888
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
@@ -306,6 +315,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   image_cropper: c4326ea50132b1e1564499e5d32a84f01fb03537
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  IosAwnCore: 653786a911089012092ce831f2945cd339855a89
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   just_waveform: be2cb6dec86096cb972bf8b73c893fe16bf1cff4
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -326,6 +336,6 @@ SPEC CHECKSUMS:
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
   video_thumbnail: b637e0ad5f588ca9945f6e2c927f73a69a661140
 
-PODFILE CHECKSUM: 171e9c70b03e9d2be6a4d1d13617dd5bcfcf0f84
+PODFILE CHECKSUM: 1345044719fffbb94e6af8647c974d3f093e9501
 
 COCOAPODS: 1.16.2

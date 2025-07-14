@@ -1504,15 +1504,22 @@ class SingleChatController extends GetxController
 
   Future<void> pauseRecordingAudioWaveform() async {
     try {
-      if (isPause) {
-        await recorderController.record(path: recordedPath.value);
+      recorderController.refresh();
+      await recorderController.record(path: recordedPath.value);
 
-        isPause = false;
-      } else {
-        await recorderController.pause();
+      isPause = false;
 
-        isPause = true;
-      }
+      isPreviewing.value = true;
+    } catch (e) {
+      print("Error stopping recorder: $e");
+    }
+  }
+
+  Future<void> restartRecordingAudioWaveform() async {
+    try {
+      await recorderController.stop(false);
+
+      isPause = true;
 
       isPreviewing.value = true;
     } catch (e) {

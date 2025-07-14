@@ -75,45 +75,34 @@ class BottomChatField extends StatelessWidget {
                       ),
 
                       // AudioRecordView(),
-                      // Obx(
-                      //   () =>
-                      // singleChatController.isPause
-                      //     ? AudioPlayerScreen(
-                      //         audioPath:
-                      //             singleChatController.recordedPath.value,
-                      //       )
-                      //     :
-                      AudioWaveforms(
-                        size: Size(MediaQuery.of(context).size.width * 0.7, 50),
-                        enableGesture: true,
-                        recorderController:
-                            singleChatController.recorderController,
-                        waveStyle: const WaveStyle(
-                          showMiddleLine: false,
-                          waveColor: Colors.white,
-                          extendWaveform: true,
-                          durationLinesColor: Colors.white,
-                          waveCap: StrokeCap.butt,
-                        ),
+                      Obx(
+                        () => singleChatController.isPause
+                            ? AudioPlayerScreen(
+                                audioPath:
+                                    singleChatController.recordedPath.value,
+                              )
+                            : AudioWaveforms(
+                                size: Size(
+                                  MediaQuery.of(context).size.width * 0.7,
+                                  50,
+                                ),
+                                enableGesture: true,
+                                recorderController:
+                                    singleChatController.recorderController,
+                                waveStyle: const WaveStyle(
+                                  durationLinesHeight: 2,
+                                  showHourInDuration: true,
+                                  showMiddleLine: false,
+                                  waveColor: Colors.white,
+                                  extendWaveform: true,
+                                  durationLinesColor: Colors.white,
+                                  waveCap: StrokeCap.butt,
+                                ),
+                              ),
                       ),
-                      // ),
-                      // if (singleChatController.isPause)
-                      //   Text(
-                      //     "${singleChatController.soundPlayer.value.}",
-                      //     style: const TextStyle(color: Colors.black),
-                      //   )
                     ],
                   ),
                 )
-              // ? MessageAudioWidget(
-              //     audioUrl: singleChatController.recordedPath.value,
-              //   )
-              // ? GestureDetector(
-              //     onTap: () {
-              //       Get.to(Home());
-              //     },
-              //     child: Text("Tets"),
-              //   )
               : const SizedBox.shrink(),
         ),
 
@@ -264,17 +253,24 @@ class BottomChatField extends StatelessWidget {
                               IconButton(
                                 icon: singleChatController.isPause
                                     ? const Icon(
-                                        Icons.mic,
+                                        Icons.refresh,
                                         color: textBarColor,
                                         size: 30,
                                       )
                                     : const Icon(
-                                        Icons.pause,
+                                        Icons.stop,
                                         color: textBarColor,
                                         size: 30,
                                       ),
-                                onPressed: singleChatController
-                                    .pauseRecordingAudioWaveform,
+                                onPressed: () {
+                                  if (singleChatController.isPause) {
+                                    singleChatController
+                                        .pauseRecordingAudioWaveform();
+                                  } else {
+                                    singleChatController
+                                        .restartRecordingAudioWaveform();
+                                  }
+                                },
                               ),
                             ],
                           ),

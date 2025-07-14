@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -34,9 +33,6 @@ import '../../../data/models/new_models/response_model/message_ack_model.dart';
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
-
-import 'package:record/record.dart';
-import 'package:just_audio/just_audio.dart' as just;
 
 class SingleChatController extends GetxController
     with WidgetsBindingObserver, GetSingleTickerProviderStateMixin {
@@ -105,9 +101,6 @@ class SingleChatController extends GetxController
   set isLoading(bool b) => _isLoading.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
-
-  final Rx<FlutterSoundRecorder> soundRecorder = FlutterSoundRecorder().obs;
-  final Rx<FlutterSoundPlayer> soundPlayer = FlutterSoundPlayer().obs;
 
   FocusNode focusNode = FocusNode();
 
@@ -192,7 +185,7 @@ class SingleChatController extends GetxController
 
   final RecorderController recorderController = RecorderController();
 
-  // final PlayerController playerController = PlayerController();
+  final PlayerController playerController = PlayerController();
 
   RxDouble audioDuration = 0.0.obs; // Store the audio duration in seconds
 
@@ -204,9 +197,9 @@ class SingleChatController extends GetxController
   RxInt durationInSeconds = 0.obs;
   Timer? timer;
 
-  final record = AudioRecorder();
-
-  final player = just.AudioPlayer(); // Create a player
+  Rx<Duration> currentDuration = Duration.zero.obs;
+  Rx<Duration> totalDuration = Duration.zero.obs;
+  Rx<String> audioTime = "".obs;
 
   @override
   void onInit() async {
@@ -232,12 +225,11 @@ class SingleChatController extends GetxController
     //   vsync: this,
     //   duration: const Duration(seconds: 1),
     // );
-    socketService.monitorReceiverTyping(
-      receiverUserData!.userId.toString(),
-      (isTyping) {
-        _isReceiverTyping.value = isTyping;
-      },
-    );
+    socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
+      isTyping,
+    ) {
+      _isReceiverTyping.value = isTyping;
+    });
 
     // print(
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
@@ -279,10 +271,8 @@ class SingleChatController extends GetxController
 
     gifController.dispose();
 
-    soundRecorder.value.closeRecorder();
-
-    recorderController.checkPermission();
-    record.dispose();
+    // recorderController.checkPermission();
+    recorderController.dispose();
 
     // animationController.dispose();
   }
@@ -334,45 +324,45 @@ class SingleChatController extends GetxController
     }
   }
 
-//  Future<void> checkMessageInList(int repliedId) async {
-//     bool messageFound = false;
-//     int localOffset = currentOffset;
+  //  Future<void> checkMessageInList(int repliedId) async {
+  //     bool messageFound = false;
+  //     int localOffset = currentOffset;
 
-//     while (!messageFound) {
-//       final messages = await MessageTable().fetchMessagesPaginated(
-//         receiverId: receiverUserData?.userId ?? 0,
-//         senderId: senderuserData?.userId ?? 0,
-//         offset: localOffset,
-//         limit: pageSize,
-//       );
+  //     while (!messageFound) {
+  //       final messages = await MessageTable().fetchMessagesPaginated(
+  //         receiverId: receiverUserData?.userId ?? 0,
+  //         senderId: senderuserData?.userId ?? 0,
+  //         offset: localOffset,
+  //         limit: pageSize,
+  //       );
 
-//       if (messages.isEmpty) {
-//         print("Reached end of messages. Message not found.");
-//         break;
-//       }
+  //       if (messages.isEmpty) {
+  //         print("Reached end of messages. Message not found.");
+  //         break;
+  //       }
 
-//       final index = messages.indexWhere((e) => e.messageId == repliedId);
-//       if (index != -1) {
-//         final foundMessage = messages[index];
-//         print("Found message: ${foundMessage.messageText}");
+  //       final index = messages.indexWhere((e) => e.messageId == repliedId);
+  //       if (index != -1) {
+  //         final foundMessage = messages[index];
+  //         print("Found message: ${foundMessage.messageText}");
 
-//         // Optionally add this to message list
-//         messageList.insertAll(0, messages); // or a smarter merge logic
+  //         // Optionally add this to message list
+  //         messageList.insertAll(0, messages); // or a smarter merge logic
 
-//         // Update index map and scroll
-//         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
+  //         // Update index map and scroll
+  //         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
 
-//         scrollToOriginalMessage(repliedId);
-//         messageFound = true;
-//       } else {
-//         localOffset += messages.length;
-//         messageList.insertAll(
-//             0, messages); // Prepend as new messages load upward
-//       }
-//     }
+  //         scrollToOriginalMessage(repliedId);
+  //         messageFound = true;
+  //       } else {
+  //         localOffset += messages.length;
+  //         messageList.insertAll(
+  //             0, messages); // Prepend as new messages load upward
+  //       }
+  //     }
 
-//     currentOffset = localOffset; // Maintain progress
-//   }
+  //     currentOffset = localOffset; // Maintain progress
+  //   }
 
   void checkUserOnline(UserList? user) async {
     if (user == null) return;
@@ -455,8 +445,9 @@ class SingleChatController extends GetxController
       final positions = itemPositionsListener.itemPositions.value;
 
       if (positions.isNotEmpty) {
-        final maxIndex =
-            positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        final maxIndex = positions
+            .map((e) => e.index)
+            .reduce((a, b) => a > b ? a : b);
         final totalCount = messageList.length + (isReceiverTyping ? 1 : 0);
 
         // If the last visible index is less than the last item, show the button
@@ -543,9 +534,11 @@ class SingleChatController extends GetxController
       if (!isInCurrentChat) return;
       if (ack == null) return;
 
-      int index = messageList.indexWhere((msg) =>
-          msg.clientSystemMessageId == ack.clientSystemMessageId ||
-          msg.messageId == ack.messageId);
+      int index = messageList.indexWhere(
+        (msg) =>
+            msg.clientSystemMessageId == ack.clientSystemMessageId ||
+            msg.messageId == ack.messageId,
+      );
 
       if (index != -1) {
         if (ack.state == 1) {
@@ -694,12 +687,15 @@ class SingleChatController extends GetxController
       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
       messageRepliedOn: messageReply == null ? '' : messageReply.message,
-      messageRepliedOnType:
-          messageReply == null ? MessageType.text : messageReply.messageType,
-      messageRepliedOnAssetServerName:
-          messageReply == null ? '' : messageReply.message,
-      messageRepliedOnAssetThumbnail:
-          messageReply == null ? '' : messageReply.assetsThumbnail,
+      messageRepliedOnType: messageReply == null
+          ? MessageType.text
+          : messageReply.messageType,
+      messageRepliedOnAssetServerName: messageReply == null
+          ? ''
+          : messageReply.message,
+      messageRepliedOnAssetThumbnail: messageReply == null
+          ? ''
+          : messageReply.assetsThumbnail,
       isAsset: false,
       assetThumbnail: "",
       assetOriginalName: "",
@@ -708,8 +704,8 @@ class SingleChatController extends GetxController
       messageRepliedUserId: messageReply.message == null
           ? 0
           : messageReply.isMe == true
-              ? senderuserData?.userId
-              : receiverUserData?.userId,
+          ? senderuserData?.userId
+          : receiverUserData?.userId,
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
@@ -751,10 +747,7 @@ class SingleChatController extends GetxController
       isPreviewing.value = false;
 
       // Emit isTyping: true
-      socketService.emitTypingStatus(
-        recipientId: receiverId,
-        isTyping: true,
-      );
+      socketService.emitTypingStatus(recipientId: receiverId, isTyping: true);
 
       // Debounce logic for isTyping: false
       typingTimer?.cancel();
@@ -769,10 +762,7 @@ class SingleChatController extends GetxController
       isPreviewing.value = false;
 
       // Immediately emit false if field is cleared
-      socketService.emitTypingStatus(
-        recipientId: receiverId,
-        isTyping: false,
-      );
+      socketService.emitTypingStatus(recipientId: receiverId, isTyping: false);
       typingTimer?.cancel();
     }
 
@@ -811,12 +801,14 @@ class SingleChatController extends GetxController
           ? await MessageTable().isLastMessage(
               messageId: message.messageId!,
               senderId: message.senderId!,
-              receiverId: message.recipientId!)
+              receiverId: message.recipientId!,
+            )
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
         await MessageTable().deleteMessageByClientSystemMessageId(
-            message.clientSystemMessageId.toString());
+          message.clientSystemMessageId.toString(),
+        );
         // 🟢 Remove from message list (offline messages)
         messageList.removeWhere(
           (m) => m.clientSystemMessageId == message.clientSystemMessageId,
@@ -834,7 +826,9 @@ class SingleChatController extends GetxController
             );
           } else {
             await MessageTable().markForDeletion(
-                messageId: message.messageId!, isDeleteFromEveryone: true);
+              messageId: message.messageId!,
+              isDeleteFromEveryone: true,
+            );
           }
 
           // 🔵 Update local DB
@@ -845,8 +839,9 @@ class SingleChatController extends GetxController
           );
 
           // 🟢 Update messageList manually
-          final index =
-              messageList.indexWhere((m) => m.messageId == message.messageId);
+          final index = messageList.indexWhere(
+            (m) => m.messageId == message.messageId,
+          );
           if (index != -1) {
             messageList[index] = messageList[index].copyWith(
               message: "This message was deleted",
@@ -877,12 +872,16 @@ class SingleChatController extends GetxController
           } else {
             if (message.senderId != receiverUserData?.userId) {
               await MessageTable().markForDeletion(
-                  messageId: message.messageId!, isDeleteFromEveryone: false);
+                messageId: message.messageId!,
+                isDeleteFromEveryone: false,
+              );
             }
           }
           if (isLast) {
             final newLast = await MessageTable().getLatestMessageForUser(
-                message.recipientId!, message.senderId!);
+              message.recipientId!,
+              message.senderId!,
+            );
             if (newLast != null) {
               final isFromMe = newLast.senderId == senderuserData?.userId;
               final contactUid = isFromMe
@@ -917,11 +916,7 @@ class SingleChatController extends GetxController
   }
 
   Future<void> cancelReply() async {
-    messageReply = MessageReply(
-      isMe: false,
-      message: null,
-      isReplied: false,
-    );
+    messageReply = MessageReply(isMe: false, message: null, isReplied: false);
   }
 
   final RxBool _canForward = false.obs;
@@ -953,12 +948,14 @@ class SingleChatController extends GetxController
     }
 
     // Optional: limit media messages
-    final mediaMessages = selected.where((msg) =>
-        msg.messageType == MessageType.image ||
-        msg.messageType == MessageType.video ||
-        msg.messageType == MessageType.audio ||
-        msg.messageType == MessageType.document ||
-        msg.messageType == MessageType.gif);
+    final mediaMessages = selected.where(
+      (msg) =>
+          msg.messageType == MessageType.image ||
+          msg.messageType == MessageType.video ||
+          msg.messageType == MessageType.audio ||
+          msg.messageType == MessageType.document ||
+          msg.messageType == MessageType.gif,
+    );
 
     if (mediaMessages.length > 5) {
       canForward = false;
@@ -999,9 +996,11 @@ class SingleChatController extends GetxController
 
   Future<List<File>> pickImageAndVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
-    await showMediaPickerBottomSheet(onSendFiles: (img, fileType) {
-      completer.complete(img);
-    });
+    await showMediaPickerBottomSheet(
+      onSendFiles: (img, fileType) {
+        completer.complete(img);
+      },
+    );
 
     return completer.future;
   }
@@ -1032,7 +1031,11 @@ class SingleChatController extends GetxController
   // }
 
   Future<String> saveFileLocally(
-      File file, String fileType, String fileExtension, String fileName) async {
+    File file,
+    String fileType,
+    String fileExtension,
+    String fileName,
+  ) async {
     final subFolderName = fileType.toTitleCase;
     final name = "$fileName.$fileExtension";
     //     "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
@@ -1059,15 +1062,17 @@ class SingleChatController extends GetxController
       final fileName =
           "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
-      Map<String, File?> f = await compressFiles(
-        file,
-        fileExtension,
-      );
+      Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
-          f.values.first!, fileType, f.keys.first, fileName);
-      final String? assetThumnail =
-          f.keys.first == "mp4" ? await getThumbnail(File(localFilePath)) : "";
+        f.values.first!,
+        fileType,
+        f.keys.first,
+        fileName,
+      );
+      final String? assetThumnail = f.keys.first == "mp4"
+          ? await getThumbnail(File(localFilePath))
+          : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
 
@@ -1090,12 +1095,15 @@ class SingleChatController extends GetxController
         isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
-        messageRepliedOnType:
-            messageReply == null ? MessageType.text : messageReply.messageType,
-        messageRepliedOnAssetServerName:
-            messageReply == null ? '' : messageReply.message,
-        messageRepliedOnAssetThumbnail:
-            messageReply == null ? '' : messageReply.assetsThumbnail,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
@@ -1104,8 +1112,8 @@ class SingleChatController extends GetxController
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-                ? senderuserData?.userId
-                : receiverUserData?.userId,
+            ? senderuserData?.userId
+            : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
@@ -1177,9 +1185,10 @@ class SingleChatController extends GetxController
       final result = await uploadFileToServer(file);
       if (result != null) {
         final updatedMessage = messages.copyWith(
-            assetOriginalName: result.data?.originalName,
-            assetServerName: fileName,
-            assetUrl: result.data?.url);
+          assetOriginalName: result.data?.originalName,
+          assetServerName: fileName,
+          assetUrl: result.data?.url,
+        );
         if (socketService.isConnected) {
           print("updatedMessage:----> ${updatedMessage.toMap()}");
           await MessageTable().updateMessageByClientId(updatedMessage);
@@ -1196,17 +1205,18 @@ class SingleChatController extends GetxController
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
       print(
-          "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}");
+        "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}",
+      );
       final fileName =
           "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
       downloadFile(
-          MessageType.gif,
-          fileName,
-          gif.media.tinyGif?.url ??
-              gif.media.tinyGifTransparent?.url ??
-              gif.url);
+        MessageType.gif,
+        fileName,
+        gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url,
+      );
       sendGIFMessage(
-        gifUrl: gif.media.tinyGif?.url ??
+        gifUrl:
+            gif.media.tinyGif?.url ??
             gif.media.tinyGifTransparent?.url ??
             gif.url,
         messageEnum: MessageType.gif,
@@ -1244,12 +1254,15 @@ class SingleChatController extends GetxController
         isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
-        messageRepliedOnType:
-            messageReply == null ? MessageType.text : messageReply.messageType,
-        messageRepliedOnAssetServerName:
-            messageReply == null ? '' : messageReply.message,
-        messageRepliedOnAssetThumbnail:
-            messageReply == null ? '' : messageReply.assetsThumbnail,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: fileName,
         assetOriginalName: fileName,
@@ -1258,8 +1271,8 @@ class SingleChatController extends GetxController
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-                ? senderuserData?.userId
-                : receiverUserData?.userId,
+            ? senderuserData?.userId
+            : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
@@ -1287,20 +1300,22 @@ class SingleChatController extends GetxController
     }
   }
 
-  void onMessageSwipe(
-      {required String message,
-      required bool isMe,
-      required MessageType messageType,
-      required bool isReplied,
-      required int messageId,
-      required String assetsThumbnail}) {
+  void onMessageSwipe({
+    required String message,
+    required bool isMe,
+    required MessageType messageType,
+    required bool isReplied,
+    required int messageId,
+    required String assetsThumbnail,
+  }) {
     messageReply = MessageReply(
-        messageId: messageId,
-        message: message,
-        isMe: isMe,
-        messageType: messageType,
-        isReplied: isReplied,
-        assetsThumbnail: assetsThumbnail);
+      messageId: messageId,
+      message: message,
+      isMe: isMe,
+      messageType: messageType,
+      isReplied: isReplied,
+      assetsThumbnail: assetsThumbnail,
+    );
   }
 
   void showKeyboard() => focusNode.requestFocus();
@@ -1346,9 +1361,10 @@ class SingleChatController extends GetxController
     messageList.clear();
 
     await chatConectTable.updateContact(
-        uid: receiverUserData!.userId.toString(),
-        lastMessage: "",
-        timeSent: "");
+      uid: receiverUserData!.userId.toString(),
+      lastMessage: "",
+      timeSent: "",
+    );
   }
 
   Future<void> deleteMedia() async {
@@ -1367,7 +1383,10 @@ class SingleChatController extends GetxController
   }
 
   Future<void> downloadFile(
-      MessageType type, String fileName, String url) async {
+    MessageType type,
+    String fileName,
+    String url,
+  ) async {
     if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
       return;
 
@@ -1427,13 +1446,14 @@ class SingleChatController extends GetxController
 
   // Initialize the recorder
   Future<void> initRecorder() async {
-    await soundRecorder.value.openRecorder();
-    // recorderController.checkPermission();
-    await soundPlayer.value.openPlayer();
+    recorderController
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100;
   }
 
-  // Start recording
-  Future<void> startRecording() async {
+  Future<void> startRecordingAudioWaveform() async {
     try {
       isRecording.value = true;
       final fileName =
@@ -1458,36 +1478,13 @@ class SingleChatController extends GetxController
       }
       final thumbnailPath = dirThum.path;
 
-      // durationInSeconds.value = 0;
-      // timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      //   durationInSeconds.value++;
-      // });
-
-      // await recorderController.record(
-      //   path: '$thumbnailPath/$fileName.aac',
-      //   androidEncoder: AndroidEncoder.aac,
-      //   androidOutputFormat: AndroidOutputFormat.aac_adts,
-      //   iosEncoder: IosEncoder.kAudioFormatMPEG4AAC,
-      // );
-
-      final hasPermission = await record.hasPermission();
-      if (!hasPermission) {
+      final hasPermission = await Permission.microphone.request();
+      if (!hasPermission.isGranted) {
         await Permission.microphone.request();
         return;
       }
-      // await soundRecorder.value.startRecorder(
-      //   toFile: '$thumbnailPath/$fileName.aac',
-      //   codec: Codec.pcm16,
-
-      // );
-      await record.start(
-        const RecordConfig(
-          encoder: AudioEncoder.wav,
-        ),
-        path: '$thumbnailPath/$fileName.wav',
-      );
-
-      recordedPath.value = '$thumbnailPath/$fileName.wav';
+      recordedPath.value = '$thumbnailPath/$fileName.m4a';
+      await recorderController.record(path: recordedPath.value);
 
       isPreviewing.value = true;
     } catch (e) {
@@ -1495,60 +1492,43 @@ class SingleChatController extends GetxController
     }
   }
 
-  // Stop recording
-  Future<void> stopRecording() async {
+  Future<void> stopRecordingAudioWaveform() async {
     try {
-      // await recorderController.stop();
-      await record.stop();
-      // await soundRecorder.value.stopRecorder();
-
+      // recorderController.reset();
+      await recorderController.stop();
       isRecording.value = false;
-      // isPreviewing.value = true;
     } catch (e) {
       print("Error stopping recorder: $e");
     }
   }
 
-  Future<void> pauseRecording() async {
+  Future<void> pauseRecordingAudioWaveform() async {
     try {
       if (isPause) {
-        // await recorderController.record();
-        await record.resume();
-        // await soundRecorder.value.resumeRecorder();
-        // await player.play();
+        await recorderController.record(path: recordedPath.value);
 
         isPause = false;
       } else {
-        // await recorderController.pause();
-        // await soundRecorder.value.pauseRecorder();
-        // await player.pause();
-        await record.start(
-          const RecordConfig(
-            encoder: AudioEncoder.wav,
-          ),
-          path: recordedPath.value,
-        );
+        await recorderController.pause();
+
         isPause = true;
       }
 
       isPreviewing.value = true;
-
-      // isShowSendButton = true; // Show send button once recording is done
     } catch (e) {
       print("Error stopping recorder: $e");
     }
   }
 
-  Future<void> cancelRecording() async {
+  Future<void> cancelRecordingAudioWaveform() async {
     try {
       isRecording.value = false;
       isPreviewing.value = false;
       isPause = false;
       isRecording.value = false;
-      // recorderController.stop();
-      await record.cancel();
-      // await soundRecorder.value.stopRecorder();
-      // await player.stop();
+      recorderController.reset();
+      recorderController.stop();
+
       File(recordedPath.value).delete();
       recordedPath.value = '';
 
@@ -1558,91 +1538,85 @@ class SingleChatController extends GetxController
     }
   }
 
-  Future<void> playRecording() async {
+  Future<void> playRecordingAudioWaveform() async {
     if (recordedPath.value.isNotEmpty) {
       playAudio.value = true;
       await Permission.audio.request();
       final req = await Permission.microphone.request();
 
-      // soundPlayer.value.setVolume(1);
       if (req.isGranted) {
         final file = File(recordedPath.value);
         if (!file.existsSync() || file.lengthSync() < 1000) {
           print("Audio file too short or corrupted");
           return;
         }
+        await Future.delayed(const Duration(milliseconds: 500));
 
-        final bufferAudio = await File(recordedPath.value).readAsBytes();
+        try {
+          await playerController.preparePlayer(path: recordedPath.value);
+          await playerController.startPlayer();
 
-        // await soundPlayer.value.startPlayer(
-        //   fromURI: recordedPath.value,
-        //   codec: Codec.pcm16,
-        //   // codec: Codec.pcm16WAV,
-        //   // fromDataBuffer: bufferAudio,
-        //   whenFinished: () {
-        //     // isPreviewing.value = true;
-        //     // playAudio.value = false;
-        //   },
-        // );
-        await player.setPitch(1.0);
-        // await player.setAudioSource(just.AudioSource.file(recordedPath.value));
-        await player.setFilePath(recordedPath.value);
+          playerController.onCompletion.listen((_) {
+            playAudio.value = false;
+            print("Playback completed");
+          });
+        } catch (e) {
+          print("Playback error: $e");
+        }
 
-        await player.play();
-        await player.stop();
-        playAudio.value = false;
         // });
       }
 
-      // await playerController.preparePlayer(
-      //   path: recordedPath
-      //       .value, // Example: '/storage/emulated/0/GenChat/Audio/audio_123.aac'
-      // );
       // await playerController.startPlayer();
     }
   }
 
   Future<void> stopPlayback() async {
+    await playerController.stopPlayer();
     playAudio.value = true;
-
-    // await soundPlayer.value.stopPlayer();
-    await player.stop();
   }
 
+  // pause playing audio
   Future<void> pausePlayback() async {
+    await playerController.pausePlayer();
+
     playAudio.value = false;
 
-    await soundPlayer.value.pausePlayer();
+    // await soundPlayer.value.pausePlayer();
     // await player.pause();
   }
 
-  Future<void> previewAudio(String audioPath) async {
-    if (audioPath != null) {
-      print("Playing audio from: $audioPath");
-      // Add your audio playback logic here, for example using any other package like `just_audio` or `audioplayers`
-    }
+  Future<void> formatDuration() async {
+    final durationMillis = await playerController.getDuration();
+    Duration duration = Duration(milliseconds: durationMillis);
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    audioTime.value = "$minutes:$seconds";
   }
 
+  // send audio
   Future<void> sendAudioMessage() async {
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
     final fileType = MessageType.audio.value.split('.').last;
     try {
-      await stopRecording();
+      await stopRecordingAudioWaveform();
       // stopPlayback();
 
       isPreviewing.value = false;
       isRecording.value = false;
       playAudio.value = false;
       isPause = false;
-      final serverName = recordedPath.value
-          .toString()
-          .split("/")[recordedPath.value.toString().split("/").length - 1];
+      final serverName = recordedPath.value.toString().split(
+        "/",
+      )[recordedPath.value.toString().split("/").length - 1];
 
       print(serverName);
 
-      final fileData =
-          await uploadFileToServer(File(recordedPath.value.toString()));
+      final fileData = await uploadFileToServer(
+        File(recordedPath.value.toString()),
+      );
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1661,12 +1635,15 @@ class SingleChatController extends GetxController
         isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
         messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
         messageRepliedOn: messageReply == null ? '' : messageReply.message,
-        messageRepliedOnType:
-            messageReply == null ? MessageType.text : messageReply.messageType,
-        messageRepliedOnAssetServerName:
-            messageReply == null ? '' : messageReply.message,
-        messageRepliedOnAssetThumbnail:
-            messageReply == null ? '' : messageReply.assetsThumbnail,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: serverName,
         assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
@@ -1675,8 +1652,8 @@ class SingleChatController extends GetxController
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
-                ? senderuserData?.userId
-                : receiverUserData?.userId,
+            ? senderuserData?.userId
+            : receiverUserData?.userId,
       );
       print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);

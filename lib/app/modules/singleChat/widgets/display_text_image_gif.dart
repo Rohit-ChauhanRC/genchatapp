@@ -7,7 +7,6 @@ import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/audio_message_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
@@ -132,54 +131,61 @@ class DisplayTextImageGIF extends StatelessWidget {
                     ),
                     if (isDownloading)
                       Positioned.fill(
-                         child: Container(
-                           decoration: BoxDecoration(
-                             color: Colors.black.withOpacity(0.5),
-                             borderRadius: BorderRadius.circular(12),
-                           ),
-                           child: Column(
-                             mainAxisAlignment: MainAxisAlignment.center,
-                             children: [
-                               CircularProgressIndicator(
-                                 value: controller.totalBytes[message]! > 0
-                                     ? controller.downloadedBytes[message]! / controller.totalBytes[message]!
-                                     : null,
-                                 strokeWidth: 3,
-                                 valueColor:  AlwaysStoppedAnimation<Color>(AppColors.whiteColor),
-                               ),
-                               const SizedBox(height: 8),
-                               if (controller.totalBytes[message]! > 0)
-                                 Text(
-                                   "${(controller.downloadedBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB"
-                                       " / ${(controller.totalBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB",
-                                   style: TextStyle(
-                                     fontSize: 11,
-                                     fontWeight: FontWeight.bold,
-                                     color: AppColors.whiteColor,
-                                   ),
-                                 ),
-                               const SizedBox(height: 12),
-                               InkWell(
-                                   onTap: (){
-                                     controller.cancelDownload(message);
-                                   },
-                                   child: Icon(Icons.cancel_outlined,size: 40, color: AppColors.whiteColor,)
-                               ),
-                               // ElevatedButton.icon(
-                               //   style: ElevatedButton.styleFrom(
-                               //     backgroundColor: Colors.redAccent,
-                               //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                               //   ),
-                               //   onPressed: () {
-                               //     controller.cancelDownload(message); // Cancel logic (see below)
-                               //   },
-                               //   icon: const Icon(Icons.cancel, size: 16),
-                               //   label: const Text("Cancel", style: TextStyle(fontSize: 12)),
-                               // ),
-                             ],
-                           ),
-                         ),
-                       )
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                value: controller.totalBytes[message]! > 0
+                                    ? controller.downloadedBytes[message]! /
+                                          controller.totalBytes[message]!
+                                    : null,
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.whiteColor,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (controller.totalBytes[message]! > 0)
+                                Text(
+                                  "${(controller.downloadedBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB"
+                                  " / ${(controller.totalBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.whiteColor,
+                                  ),
+                                ),
+                              const SizedBox(height: 12),
+                              InkWell(
+                                onTap: () {
+                                  controller.cancelDownload(message);
+                                },
+                                child: Icon(
+                                  Icons.cancel_outlined,
+                                  size: 40,
+                                  color: AppColors.whiteColor,
+                                ),
+                              ),
+                              // ElevatedButton.icon(
+                              //   style: ElevatedButton.styleFrom(
+                              //     backgroundColor: Colors.redAccent,
+                              //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              //   ),
+                              //   onPressed: () {
+                              //     controller.cancelDownload(message); // Cancel logic (see below)
+                              //   },
+                              //   icon: const Icon(Icons.cancel, size: 16),
+                              //   label: const Text("Cancel", style: TextStyle(fontSize: 12)),
+                              // ),
+                            ],
+                          ),
+                        ),
+                      )
                     else
                       Positioned(
                         bottom: 10,
@@ -225,7 +231,10 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply,
               );
             case MessageType.audio:
-              return AudioPlayerScreen(audioPath: path); // if using
+              return AudioPlayerScreen(
+                audioPath: path,
+                audioUrl: url,
+              ); // if using
             case MessageType.gif:
               return DisplayGifImage(
                 filePath: gifPath,

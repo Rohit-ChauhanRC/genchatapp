@@ -8,44 +8,28 @@ import 'package:get/get.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class AudioPlayerScreen extends StatefulWidget {
+class AudioPlayerScreen extends StatelessWidget {
   final String audioPath;
   final String? audioUrl;
   final bool? isReply;
 
-  const AudioPlayerScreen({
+  AudioPlayerScreen({
     super.key,
     required this.audioPath,
     this.audioUrl,
     this.isReply,
-  });
-
-  @override
-  State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
-}
-
-class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
-  @override
-  void initState() {
+  }) {
     preparePlayer();
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    playerController.dispose();
-    super.dispose();
   }
 
   Future<void> downloadAndOpenFile(BuildContext context) async {
-    final file = File(widget.audioPath);
+    final file = File(audioPath);
     if (file.existsSync()) {
       return;
     }
     try {
       final dio = Dio();
-      await dio.download(widget.audioUrl.toString(), widget.audioPath);
+      await dio.download(audioUrl.toString(), audioPath);
 
       return;
     } catch (e) {
@@ -54,11 +38,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 
   void preparePlayer() async {
-    var a = widget.audioPath.split("/")[widget.audioPath.split("/").length - 1];
+    var a = audioPath.split("/")[audioPath.split("/").length - 1];
     print(a);
-    // await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    await playerController.preparePlayer(path: widget.audioPath);
+    await playerController.preparePlayer(path: audioPath);
     // playerController.;
   }
 
@@ -74,13 +58,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   final PlayerController playerController = PlayerController();
 
   Future<void> playRecordingAudioWaveform() async {
-    if (widget.audioPath.isNotEmpty) {
+    if (audioPath.isNotEmpty) {
       playAudio.value = true;
       await Permission.audio.request();
       final req = await Permission.microphone.request();
 
       if (req.isGranted) {
-        final file = File(widget.audioPath);
+        final file = File(audioPath);
         if (!file.existsSync() || file.lengthSync() < 1000) {
           print("Audio file too short or corrupted");
           return;
@@ -97,7 +81,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             playerController.setRefresh(true);
             // 🔁 Prepare player again so it's ready to replay
             // Future.delayed(Durations.medium4);
-            await playerController.preparePlayer(path: widget.audioPath);
+            await playerController.preparePlayer(path: audioPath);
 
             // Optional: move to beginning
             await playerController.seekTo(0);
@@ -125,7 +109,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        widget.isReply == true ? null : downloadAndOpenFile(context);
+        isReply == true ? null : downloadAndOpenFile(context);
       },
       child: Container(
         width: MediaQuery.of(context).size.width * 0.6,
@@ -137,6 +121,42 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         ),
         child: Row(
           children: [
+            StreamBuilder<int>(
+              stream: playerController.onCurrentDurationChanged,
+              builder: (context, snapshot) {
+                final currentMs = snapshot.data ?? 0;
+                final totalMs = playerController.maxDuration;
+
+                // Prevent crash when totalMs is invalid (0 or less)
+                if (totalMs <= 0) {
+                  return const SizedBox.shrink();
+                }
+
+                // Clamp and convert to int safely
+                final remainingMs = (totalMs - currentMs)
+                    .clamp(0, totalMs)
+                    .toInt();
+                final remaining = Duration(milliseconds: remainingMs);
+
+                final minutes = remaining.inMinutes
+                    .remainder(60)
+                    .toString()
+                    .padLeft(2, '0');
+                final seconds = remaining.inSeconds
+                    .remainder(60)
+                    .toString()
+                    .padLeft(2, '0');
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    "$minutes:$seconds",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              },
+            ),
+
             Obx(
               () => IconButton(
                 icon: !playAudio.value
@@ -155,13 +175,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               child: AudioFileWaveforms(
                 size: const Size(double.infinity, 40),
                 playerController: playerController,
-                enableSeekGesture: true,
+                animationCurve: Curves.elasticInOut,
+                // enableSeekGesture: true,
                 waveformType: WaveformType.fitWidth,
                 playerWaveStyle: const PlayerWaveStyle(
-                  fixedWaveColor: Colors.white60,
-                  liveWaveColor: Colors.white,
-                  spacing: 5,
-                  waveThickness: 2,
+                  fixedWaveColor: Colors.white,
+                  liveWaveColor: Colors.black,
+                  spacing: 2,
+                  waveThickness: 1,
                 ),
               ),
             ),

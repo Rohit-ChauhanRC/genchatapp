@@ -2,18 +2,14 @@ import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/message_audio_widget.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../utils/alert_popup_utils.dart';
-import '../../../utils/utils.dart';
-import 'audio_sound_player_widget.dart';
 import 'message_reply_preview.dart';
 
 class BottomChatField extends StatelessWidget {
@@ -28,95 +24,87 @@ class BottomChatField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final isShowMessageReply =
-    //     singleChatController.messageReply.message != null;
     return Column(
       children: [
-        Obx(() => singleChatController.messageReply.message != null &&
-                singleChatController.messageReply.message != "null" &&
-                singleChatController.messageReply.message.toString().isNotEmpty
-            ? MessageReplyPreview()
-            : const SizedBox.shrink()),
-        Obx(() => singleChatController.isRecording.value
-            // ? Container(
-            //     // padding: const EdgeInsets.all(8.0),
-            //     // height: 70,
-            //     margin: const EdgeInsets.all(10),
-            //     decoration: BoxDecoration(
-            //         border: Border.all(),
-            //         borderRadius: BorderRadius.circular(30)),
-            //     child: Row(
-            //       children: [
-            //         Obx(() => singleChatController.isPause
-            //             ? IconButton(
-            //                 icon: singleChatController.playAudio.value
-            //                     ? const Icon(
-            //                         Icons.pause,
-            //                         color: textBarColor,
-            //                       )
-            //                     : const Icon(
-            //                         Icons.play_arrow,
-            //                         color: textBarColor,
-            //                       ),
-            //                 onPressed: () {
-            //                   if (!singleChatController.playAudio.value) {
-            //                     singleChatController.playRecording(
-            //                         singleChatController.recordedPath.value);
-            //                   } else {
-            //                     singleChatController.pausePlayback();
-            //                   }
-            //                 },
-            //               )
-            //             : StreamBuilder<RecordingDisposition>(
-            //                 stream: singleChatController
-            //                     .soundRecorder.value.onProgress,
-            //                 builder: (context, snapshot) {
-            //                   final duration =
-            //                       snapshot.data?.duration ?? Duration.zero;
-            //                   final minutes = duration.inMinutes
-            //                       .remainder(60)
-            //                       .toString()
-            //                       .padLeft(2, '0');
-            //                   final seconds = duration.inSeconds
-            //                       .remainder(60)
-            //                       .toString()
-            //                       .padLeft(2, '0');
+        Obx(
+          () =>
+              singleChatController.messageReply.message != null &&
+                  singleChatController.messageReply.message != "null" &&
+                  singleChatController.messageReply.message
+                      .toString()
+                      .isNotEmpty
+              ? MessageReplyPreview()
+              : const SizedBox.shrink(),
+        ),
+        Obx(
+          () => singleChatController.isRecording.value
+              ? Container(
+                  // padding: const EdgeInsets.all(8.0),
+                  // height: 70,
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: textBarColor,
+                    border: Border.all(),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      StreamBuilder<Duration>(
+                        stream: singleChatController
+                            .recorderController
+                            .onCurrentDuration,
+                        builder: (context, snapshot) {
+                          final duration = snapshot.data ?? Duration.zero;
+                          final minutes = duration.inMinutes
+                              .remainder(60)
+                              .toString()
+                              .padLeft(2, '0');
+                          final seconds = duration.inSeconds
+                              .remainder(60)
+                              .toString()
+                              .padLeft(2, '0');
 
-            //                   return Padding(
-            //                     padding: const EdgeInsets.only(right: 8),
-            //                     child: Text(
-            //                       "$minutes:$seconds",
-            //                       style: const TextStyle(
-            //                         color: Colors.black,
-            //                       ),
-            //                     ),
-            //                   );
-            //                 },
-            //               )),
-            //         // AudioWaveforms(
-            //         //   size: Size(MediaQuery.of(context).size.width * 0.7, 50),
-            //         //   // enableGesture: true,
-            //         //   recorderController:
-            //         //       singleChatController.recorderController,
-            //         //   waveStyle: const WaveStyle(
-            //         //     showMiddleLine: false,
-            //         //     waveColor: Colors.black,
-            //         //     extendWaveform: true,
-            //         //   ),
-            //         // ),
-            //         // if (singleChatController.isPause)
-            //         //   Text(
-            //         //     "${singleChatController.soundPlayer.value.}",
-            //         //     style: const TextStyle(color: Colors.black),
-            //         //   )
-            //       ],
-            //     ),
-            //   )
-            ? MessageAudioWidget(
-                audioUrl: singleChatController.recordedPath.value,
-              )
-            // ? AudioSoundPlayerWidget()
-            : const SizedBox.shrink()),
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text(
+                              "$minutes:$seconds",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // AudioRecordView(),
+                      Obx(
+                        () => singleChatController.isPause
+                            ? AudioPlayerScreen(
+                                audioPath:
+                                    singleChatController.recordedPath.value,
+                              )
+                            : AudioWaveforms(
+                                size: Size(
+                                  MediaQuery.of(context).size.width * 0.7,
+                                  50,
+                                ),
+                                enableGesture: true,
+                                recorderController:
+                                    singleChatController.recorderController,
+                                waveStyle: const WaveStyle(
+                                  durationLinesHeight: 2,
+                                  showHourInDuration: true,
+                                  showMiddleLine: false,
+                                  waveColor: Colors.white,
+                                  extendWaveform: true,
+                                  durationLinesColor: Colors.white,
+                                  waveCap: StrokeCap.butt,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
 
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -131,8 +119,8 @@ class BottomChatField extends StatelessWidget {
                             scrollController:
                                 singleChatController.textScrollController,
                             maxLines: null,
-                            // autofocus: true,
 
+                            // autofocus: true,
                             keyboardType: TextInputType.multiline,
                             focusNode: singleChatController.focusNode,
                             onChanged: (v) {
@@ -147,7 +135,8 @@ class BottomChatField extends StatelessWidget {
                               if (v.length >= 800) {
                                 // You could show a SnackBar, error, or shake animation here
                                 showAlertMessage(
-                                    "This message is too long, Please shorter the message.");
+                                  "This message is too long, Please shorter the message.",
+                                );
                                 print("Max character limit reached");
                               }
                             },
@@ -194,48 +183,51 @@ class BottomChatField extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              suffixIcon: Obx(() => SizedBox(
-                                    width:
-                                        !singleChatController.isShowSendButton
-                                            ? 100
-                                            : 50,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        !singleChatController.isShowSendButton
-                                            ? IconButton(
-                                                onPressed: () {
-                                                  singleChatController
-                                                      .selectFile(MessageType
-                                                          .image.value);
-                                                },
-                                                icon: const Icon(
-                                                  Symbols.camera_alt_rounded,
-                                                  size: 20,
-                                                  color: greyMsgColor,
-                                                ),
-                                              )
-                                            : const SizedBox.shrink(),
-                                        IconButton(
-                                          onPressed: () {
-                                            // singleChatController.selectVideo();
-                                            singleChatController.cancelReply();
-                                            // Get.to(() => AttachmentPopupDemo());
-                                            singleChatController.selectFile(
-                                                MessageType.document.value);
-                                          },
-                                          icon: const Icon(
-                                            Icons.attach_file,
-                                            color: greyMsgColor,
-                                          ),
+                              suffixIcon: Obx(
+                                () => SizedBox(
+                                  width: !singleChatController.isShowSendButton
+                                      ? 100
+                                      : 50,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      !singleChatController.isShowSendButton
+                                          ? IconButton(
+                                              onPressed: () {
+                                                singleChatController.selectFile(
+                                                  MessageType.image.value,
+                                                );
+                                              },
+                                              icon: const Icon(
+                                                Symbols.camera_alt_rounded,
+                                                size: 20,
+                                                color: greyMsgColor,
+                                              ),
+                                            )
+                                          : const SizedBox.shrink(),
+                                      IconButton(
+                                        onPressed: () {
+                                          // singleChatController.selectVideo();
+                                          singleChatController.cancelReply();
+                                          // Get.to(() => AttachmentPopupDemo());
+                                          singleChatController.selectFile(
+                                            MessageType.document.value,
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.attach_file,
+                                          color: greyMsgColor,
                                         ),
-                                      ],
-                                    ),
-                                  )),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                               hintText: 'Type a message!',
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  borderSide: BorderSide.none),
+                                borderRadius: BorderRadius.circular(20.0),
+                                borderSide: BorderSide.none,
+                              ),
                               contentPadding: const EdgeInsets.all(10),
                             ),
                           ),
@@ -255,21 +247,30 @@ class BottomChatField extends StatelessWidget {
                                   color: Colors.red,
                                   size: 30,
                                 ),
-                                onPressed: singleChatController.cancelRecording,
+                                onPressed: singleChatController
+                                    .cancelRecordingAudioWaveform,
                               ),
                               IconButton(
                                 icon: singleChatController.isPause
                                     ? const Icon(
-                                        Icons.mic,
+                                        Icons.refresh,
                                         color: textBarColor,
                                         size: 30,
                                       )
                                     : const Icon(
-                                        Icons.pause,
+                                        Icons.stop,
                                         color: textBarColor,
                                         size: 30,
                                       ),
-                                onPressed: singleChatController.pauseRecording,
+                                onPressed: () {
+                                  if (singleChatController.isPause) {
+                                    singleChatController
+                                        .pauseRecordingAudioWaveform();
+                                  } else {
+                                    singleChatController
+                                        .restartRecordingAudioWaveform();
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -283,25 +284,28 @@ class BottomChatField extends StatelessWidget {
                     await singleChatController.sendTextMessage();
                   } else if (!singleChatController.isPreviewing.value &&
                       !singleChatController.isShowSendButton) {
-                    await singleChatController.startRecording();
+                    await singleChatController.startRecordingAudioWaveform();
                   } else if (!singleChatController.isShowSendButton &&
                       singleChatController.isPreviewing.value) {
                     print("send audio");
                     singleChatController.sendAudioMessage();
                   }
+                  // Get.to(AudioRecordView());
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
                   child: CircleAvatar(
                     backgroundColor: textBarColor,
                     radius: 25,
-                    child: Obx(() => Icon(
-                          singleChatController.isShowSendButton
-                              ? Icons.send
-                              : singleChatController.isRecording.value
-                                  ? Icons.send
-                                  : Icons.mic,
-                        )),
+                    child: Obx(
+                      () => Icon(
+                        singleChatController.isShowSendButton
+                            ? Icons.send
+                            : singleChatController.isRecording.value
+                            ? Icons.send
+                            : Icons.mic,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -312,22 +316,24 @@ class BottomChatField extends StatelessWidget {
         // const SizedBox(
         //   height: 10,
         // ),
-        Obx(() => singleChatController.isShowEmojiContainer
-            ? SizedBox(
-                height: 300,
-                child: EmojiPicker(
-                  onEmojiSelected: (category, emoji) {
-                    singleChatController.messageController.text =
-                        singleChatController.messageController.text +
-                            emoji.emoji;
+        Obx(
+          () => singleChatController.isShowEmojiContainer
+              ? SizedBox(
+                  height: 300,
+                  child: EmojiPicker(
+                    onEmojiSelected: (category, emoji) {
+                      singleChatController.messageController.text =
+                          singleChatController.messageController.text +
+                          emoji.emoji;
 
-                    if (!singleChatController.isShowSendButton) {
-                      singleChatController.isShowSendButton = true;
-                    }
-                  },
-                ),
-              )
-            : const SizedBox.shrink()),
+                      if (!singleChatController.isShowSendButton) {
+                        singleChatController.isShowSendButton = true;
+                      }
+                    },
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

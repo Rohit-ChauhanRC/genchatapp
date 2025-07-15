@@ -8,6 +8,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_message_widget.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
@@ -49,8 +50,9 @@ class DisplayTextImageGIF extends StatelessWidget {
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
           fontSize: 16,
-          fontStyle:
-              type == MessageType.deleted ? FontStyle.italic : FontStyle.normal,
+          fontStyle: type == MessageType.deleted
+              ? FontStyle.italic
+              : FontStyle.normal,
           color: type == MessageType.deleted ? greyMsgColor : blackColor,
         ),
       );
@@ -81,7 +83,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
-                    )
+                    ),
                   ],
                 ),
                 child: Stack(
@@ -90,9 +92,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(_getIcon(type, message),
-                            size: isReply == true ? 25 : 50,
-                            color: Colors.grey[700]),
+                        Icon(
+                          _getIcon(type, message),
+                          size: isReply == true ? 25 : 50,
+                          color: Colors.grey[700],
+                        ),
                         const SizedBox(height: 10),
                         Text(
                           _getLabel(type, message),
@@ -106,8 +110,9 @@ class DisplayTextImageGIF extends StatelessWidget {
                         Text(
                           _truncate(message),
                           style: TextStyle(
-                              fontSize: isReply == true ? 4 : 12,
-                              color: Colors.grey[600]),
+                            fontSize: isReply == true ? 4 : 12,
+                            color: Colors.grey[600],
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 5),
@@ -117,8 +122,9 @@ class DisplayTextImageGIF extends StatelessWidget {
                             return Text(
                               snapshot.hasData ? snapshot.data! : '',
                               style: TextStyle(
-                                  fontSize: isReply == true ? 3 : 11,
-                                  color: Colors.grey[500]),
+                                fontSize: isReply == true ? 3 : 11,
+                                color: Colors.grey[500],
+                              ),
                             );
                           },
                         ),
@@ -184,9 +190,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(6),
-                          child: Icon(Icons.download,
-                              size: isReply == true ? 10 : 20,
-                              color: Colors.white),
+                          child: Icon(
+                            Icons.download,
+                            size: isReply == true ? 10 : 20,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                   ],
@@ -199,23 +207,30 @@ class DisplayTextImageGIF extends StatelessWidget {
           switch (type) {
             case MessageType.document:
               return DocumentMessageWidget(
-                  localFilePath: path,
-                  url: url ?? '',
-                  isReply: isReply ?? false);
+                localFilePath: path,
+                url: url ?? '',
+                isReply: isReply ?? false,
+              );
             case MessageType.video:
               return VideoPlayerItem(
-                  videoUrl: path,
-                  localFilePath: thumbnailPath ?? "",
-                  url: url ?? '',
-                  isReply: isReply ?? false);
+                videoUrl: path,
+                localFilePath: thumbnailPath ?? "",
+                url: url ?? '',
+                isReply: isReply ?? false,
+              );
             case MessageType.image:
               return ImageWidget(
-                  rootFolderPath: path, url: url ?? '', isReply: isReply);
+                rootFolderPath: path,
+                url: url ?? '',
+                isReply: isReply,
+              );
             case MessageType.audio:
-              return AudioMessageWidget(localPath: path); // if using
+              return AudioPlayerScreen(audioPath: path); // if using
             case MessageType.gif:
               return DisplayGifImage(
-                  filePath: gifPath, isReply: isReply ?? false); // if using
+                filePath: gifPath,
+                isReply: isReply ?? false,
+              ); // if using
             default:
               return const SizedBox();
           }
@@ -273,8 +288,9 @@ class DisplayTextImageGIF extends StatelessWidget {
   Future<String> _getRemoteFileSize(String url) async {
     try {
       final uri = Uri.parse(url);
-      final response =
-          await HttpClient().headUrl(uri).then((req) => req.close());
+      final response = await HttpClient()
+          .headUrl(uri)
+          .then((req) => req.close());
       final contentLength = response.contentLength;
       if (contentLength < 0) return '';
       return _formatBytes(contentLength, 2);

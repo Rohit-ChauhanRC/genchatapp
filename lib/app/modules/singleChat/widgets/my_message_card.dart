@@ -58,9 +58,10 @@ class MyMessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasReply = type != MessageType.deleted &&
+    final hasReply =
+        type != MessageType.deleted &&
         ((repliedMessageType != MessageType.text &&
-            (repliedAssetServerName?.isNotEmpty ?? false)) ||
+                (repliedAssetServerName?.isNotEmpty ?? false)) ||
             (repliedMessageType == MessageType.text &&
                 repliedText.value.trim().isNotEmpty &&
                 repliedText.value.trim().toLowerCase() != "null"));
@@ -93,9 +94,17 @@ class MyMessageCard extends StatelessWidget {
                   Padding(
                     padding: type == MessageType.text
                         ? const EdgeInsets.only(
-                        left: 10, right: 20, top: 5, bottom: 20)
+                            left: 10,
+                            right: 20,
+                            top: 5,
+                            bottom: 20,
+                          )
                         : const EdgeInsets.only(
-                        left: 5, top: 5, right: 5, bottom: 25),
+                            left: 5,
+                            top: 5,
+                            right: 5,
+                            bottom: 25,
+                          ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -105,15 +114,21 @@ class MyMessageCard extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Symbols.forward_sharp,
-                                  color: AppColors.greyMsgColor, size: 18),
+                              Icon(
+                                Symbols.forward_sharp,
+                                color: AppColors.greyMsgColor,
+                                size: 18,
+                              ),
                               const SizedBox(width: 10),
-                              Text("Forwarded",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontStyle: FontStyle.italic,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.greyMsgColor)),
+                              Text(
+                                "Forwarded",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.greyMsgColor,
+                                ),
+                              ),
                             ],
                           ),
 
@@ -137,7 +152,8 @@ class MyMessageCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: DisplayTextImageGIF(
-                                  message: repliedMessageType != MessageType.text
+                                  message:
+                                      repliedMessageType != MessageType.text
                                       ? repliedAssetServerName ?? ""
                                       : repliedText.value,
                                   type: repliedMessageType,
@@ -151,60 +167,64 @@ class MyMessageCard extends StatelessWidget {
                           ),
 
                         // Main message
-                        Stack(alignment: Alignment.center, children: [
-                          DisplayTextImageGIF(
-                            message: message,
-                            type: type,
-                            url: url,
-                            assetThumbnail: assetThumbnail,
-                          ),
-                          if (isAsset &&
-                              (type == MessageType.image ||
-                                  type == MessageType.video ||
-                                  type == MessageType.document)) ...[
-                            Obx(() {
-                              if (isRetryUploadFile.value) {
-                                return Container(
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black45,
-                                  ),
-                                  padding: const EdgeInsets.all(12),
-                                  child: const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                );
-                              } else if (syncStatus == SyncStatus.pending) {
-                                return InkWell(
-                                  onTap: () {
-                                    if (!isRetryUploadFile.value) {
-                                      onRetryTap?.call();
-                                    }
-                                  },
-                                  child: Container(
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            DisplayTextImageGIF(
+                              message: message,
+                              type: type,
+                              url: url,
+                              assetThumbnail: assetThumbnail,
+                            ),
+                            if (isAsset &&
+                                (type == MessageType.image ||
+                                    type == MessageType.video ||
+                                    type == MessageType.document ||
+                                    type == MessageType.audio)) ...[
+                              Obx(() {
+                                if (isRetryUploadFile.value) {
+                                  return Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.black45,
                                     ),
-                                    padding: const EdgeInsets.all(8),
-                                    child: const Icon(
-                                      Icons.refresh,
-                                      color: Colors.white,
-                                      size: 28,
+                                    padding: const EdgeInsets.all(12),
+                                    child: const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              } else {
-                                return const SizedBox.shrink();
-                              }
-                            }),
+                                  );
+                                } else if (syncStatus == SyncStatus.pending) {
+                                  return InkWell(
+                                    onTap: () {
+                                      if (!isRetryUploadFile.value) {
+                                        onRetryTap?.call();
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black45,
+                                      ),
+                                      padding: const EdgeInsets.all(8),
+                                      child: const Icon(
+                                        Icons.refresh,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              }),
+                            ],
                           ],
-                        ]),
+                        ),
                       ],
                     ),
                   ),
@@ -247,4 +267,3 @@ class MyMessageCard extends StatelessWidget {
     );
   }
 }
-

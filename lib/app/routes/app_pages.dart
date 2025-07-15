@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../modules/audio_record/bindings/audio_record_binding.dart';
+import '../modules/audio_record/views/audio_record_view.dart';
 import '../modules/call/bindings/call_binding.dart';
 import '../modules/call/views/call_view.dart';
 import '../modules/chat_backup/bindings/chat_backup_binding.dart';
@@ -140,6 +142,11 @@ class AppPages {
       name: _Paths.SEARCH_NEW_CONTACT,
       page: () => const SearchNewContactView(),
       binding: SearchNewContactBinding(),
+    ),
+    GetPage(
+      name: _Paths.AUDIO_RECORD,
+      page: () => AudioRecordView(),
+      binding: AudioRecordBinding(),
     ),
   ];
 }

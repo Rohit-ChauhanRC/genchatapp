@@ -5,7 +5,6 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
@@ -89,8 +88,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   set isLoading(bool b) => _isLoading.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
-
-  final Rx<FlutterSoundRecorder> soundRecorder = FlutterSoundRecorder().obs;
 
   FocusNode focusNode = FocusNode();
 
@@ -191,12 +188,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       groupId = user.userId ?? 0;
       bindReceiverUserStream(user.userId ?? 0);
     }
-    socketService.monitorReceiverTyping(
-      receiverUserData!.userId.toString(),
-      (isTyping) {
-        _isReceiverTyping.value = isTyping;
-      },
-    );
+    socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
+      isTyping,
+    ) {
+      _isReceiverTyping.value = isTyping;
+    });
 
     // print(
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
@@ -280,45 +276,45 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-//  Future<void> checkMessageInList(int repliedId) async {
-//     bool messageFound = false;
-//     int localOffset = currentOffset;
+  //  Future<void> checkMessageInList(int repliedId) async {
+  //     bool messageFound = false;
+  //     int localOffset = currentOffset;
 
-//     while (!messageFound) {
-//       final messages = await MessageTable().fetchMessagesPaginated(
-//         receiverId: receiverUserData?.userId ?? 0,
-//         senderId: senderuserData?.userId ?? 0,
-//         offset: localOffset,
-//         limit: pageSize,
-//       );
+  //     while (!messageFound) {
+  //       final messages = await MessageTable().fetchMessagesPaginated(
+  //         receiverId: receiverUserData?.userId ?? 0,
+  //         senderId: senderuserData?.userId ?? 0,
+  //         offset: localOffset,
+  //         limit: pageSize,
+  //       );
 
-//       if (messages.isEmpty) {
-//         print("Reached end of messages. Message not found.");
-//         break;
-//       }
+  //       if (messages.isEmpty) {
+  //         print("Reached end of messages. Message not found.");
+  //         break;
+  //       }
 
-//       final index = messages.indexWhere((e) => e.messageId == repliedId);
-//       if (index != -1) {
-//         final foundMessage = messages[index];
-//         print("Found message: ${foundMessage.messageText}");
+  //       final index = messages.indexWhere((e) => e.messageId == repliedId);
+  //       if (index != -1) {
+  //         final foundMessage = messages[index];
+  //         print("Found message: ${foundMessage.messageText}");
 
-//         // Optionally add this to message list
-//         messageList.insertAll(0, messages); // or a smarter merge logic
+  //         // Optionally add this to message list
+  //         messageList.insertAll(0, messages); // or a smarter merge logic
 
-//         // Update index map and scroll
-//         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
+  //         // Update index map and scroll
+  //         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
 
-//         scrollToOriginalMessage(repliedId);
-//         messageFound = true;
-//       } else {
-//         localOffset += messages.length;
-//         messageList.insertAll(
-//             0, messages); // Prepend as new messages load upward
-//       }
-//     }
+  //         scrollToOriginalMessage(repliedId);
+  //         messageFound = true;
+  //       } else {
+  //         localOffset += messages.length;
+  //         messageList.insertAll(
+  //             0, messages); // Prepend as new messages load upward
+  //       }
+  //     }
 
-//     currentOffset = localOffset; // Maintain progress
-//   }
+  //     currentOffset = localOffset; // Maintain progress
+  //   }
 
   void checkUserOnline(UserList? user) async {
     if (user == null) return;
@@ -401,8 +397,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final positions = itemPositionsListener.itemPositions.value;
 
       if (positions.isNotEmpty) {
-        final maxIndex =
-            positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        final maxIndex = positions
+            .map((e) => e.index)
+            .reduce((a, b) => a > b ? a : b);
         final totalCount = messageList.length + (isReceiverTyping ? 1 : 0);
 
         // If the last visible index is less than the last item, show the button
@@ -489,9 +486,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (!isInCurrentChat) return;
       if (ack == null) return;
 
-      int index = messageList.indexWhere((msg) =>
-          msg.clientSystemMessageId == ack.clientSystemMessageId ||
-          msg.messageId == ack.messageId);
+      int index = messageList.indexWhere(
+        (msg) =>
+            msg.clientSystemMessageId == ack.clientSystemMessageId ||
+            msg.messageId == ack.messageId,
+      );
 
       if (index != -1) {
         if (ack.state == 1) {
@@ -646,8 +645,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
       messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
       messageRepliedOn: messageReply == null ? '' : messageReply.message,
-      messageRepliedOnType:
-          messageReply == null ? MessageType.text : messageReply.messageType,
+      messageRepliedOnType: messageReply == null
+          ? MessageType.text
+          : messageReply.messageType,
       isAsset: false,
       assetOriginalName: "",
       assetServerName: "",
@@ -655,8 +655,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       messageRepliedUserId: messageReply.message == null
           ? 0
           : messageReply.isMe == true
-              ? senderuserData?.userId
-              : receiverUserData?.userId,
+          ? senderuserData?.userId
+          : receiverUserData?.userId,
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
@@ -695,10 +695,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isShowSendButton = true;
 
       // Emit isTyping: true
-      socketService.emitTypingStatus(
-        recipientId: receiverId,
-        isTyping: true,
-      );
+      socketService.emitTypingStatus(recipientId: receiverId, isTyping: true);
 
       // Debounce logic for isTyping: false
       typingTimer?.cancel();
@@ -712,10 +709,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isShowSendButton = false;
 
       // Immediately emit false if field is cleared
-      socketService.emitTypingStatus(
-        recipientId: receiverId,
-        isTyping: false,
-      );
+      socketService.emitTypingStatus(recipientId: receiverId, isTyping: false);
       typingTimer?.cancel();
     }
 
@@ -754,12 +748,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           ? await MessageTable().isLastMessage(
               messageId: message.messageId!,
               senderId: message.senderId!,
-              receiverId: message.recipientId!)
+              receiverId: message.recipientId!,
+            )
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
         await MessageTable().deleteMessageByClientSystemMessageId(
-            message.clientSystemMessageId.toString());
+          message.clientSystemMessageId.toString(),
+        );
         // 🟢 Remove from message list (offline messages)
         messageList.removeWhere(
           (m) => m.clientSystemMessageId == message.clientSystemMessageId,
@@ -777,7 +773,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             );
           } else {
             await MessageTable().markForDeletion(
-                messageId: message.messageId!, isDeleteFromEveryone: true);
+              messageId: message.messageId!,
+              isDeleteFromEveryone: true,
+            );
           }
 
           // 🔵 Update local DB
@@ -788,8 +786,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           );
 
           // 🟢 Update messageList manually
-          final index =
-              messageList.indexWhere((m) => m.messageId == message.messageId);
+          final index = messageList.indexWhere(
+            (m) => m.messageId == message.messageId,
+          );
           if (index != -1) {
             messageList[index] = messageList[index].copyWith(
               message: "This message was deleted",
@@ -820,12 +819,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           } else {
             if (message.senderId != receiverUserData?.userId) {
               await MessageTable().markForDeletion(
-                  messageId: message.messageId!, isDeleteFromEveryone: false);
+                messageId: message.messageId!,
+                isDeleteFromEveryone: false,
+              );
             }
           }
           if (isLast) {
             final newLast = await MessageTable().getLatestMessageForUser(
-                message.recipientId!, message.senderId!);
+              message.recipientId!,
+              message.senderId!,
+            );
             if (newLast != null) {
               final isFromMe = newLast.senderId == senderuserData?.userId;
               final contactUid = isFromMe
@@ -860,11 +863,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> cancelReply() async {
-    messageReply = MessageReply(
-      isMe: false,
-      message: null,
-      isReplied: false,
-    );
+    messageReply = MessageReply(isMe: false, message: null, isReplied: false);
   }
 
   final RxBool _canForward = false.obs;
@@ -896,12 +895,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
 
     // Optional: limit media messages
-    final mediaMessages = selected.where((msg) =>
-        msg.messageType == MessageType.image ||
-        msg.messageType == MessageType.video ||
-        msg.messageType == MessageType.audio ||
-        msg.messageType == MessageType.document ||
-        msg.messageType == MessageType.gif);
+    final mediaMessages = selected.where(
+      (msg) =>
+          msg.messageType == MessageType.image ||
+          msg.messageType == MessageType.video ||
+          msg.messageType == MessageType.audio ||
+          msg.messageType == MessageType.document ||
+          msg.messageType == MessageType.gif,
+    );
 
     if (mediaMessages.length > 5) {
       canForward = false;
@@ -937,7 +938,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<String> saveFileLocally(
-      File file, String fileType, String fileExtension) async {
+    File file,
+    String fileType,
+    String fileExtension,
+  ) async {
     final subFolderName = fileType.toTitleCase;
     final fileName =
         "GENCHAT_$fileType-${senderuserData!.userId.toString()}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
@@ -953,17 +957,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<File?> pickImage() async {
     Completer<File?> completer = Completer<File?>();
-    showImagePicker(onGetImage: (img) {
-      if (img != null) {
-        // sendFileMessage(
-        //   file: img,
-        //   messageEnum: MessageEnum.image,
-        // );
-        completer.complete(img);
-      } else {
-        completer.complete(null);
-      }
-    });
+    showImagePicker(
+      onGetImage: (img) {
+        if (img != null) {
+          // sendFileMessage(
+          //   file: img,
+          //   messageEnum: MessageEnum.image,
+          // );
+          completer.complete(img);
+        } else {
+          completer.complete(null);
+        }
+      },
+    );
     return completer.future;
   }
 
@@ -995,11 +1001,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     required int messageId,
   }) {
     messageReply = MessageReply(
-        messageId: messageId,
-        message: message,
-        isMe: isMe,
-        messageType: messageType,
-        isReplied: isReplied);
+      messageId: messageId,
+      message: message,
+      isMe: isMe,
+      messageType: messageType,
+      isReplied: isReplied,
+    );
   }
 
   void showKeyboard() => focusNode.requestFocus();
@@ -1028,9 +1035,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     );
 
     await chatConectTable.updateContact(
-        uid: receiverUserData!.userId.toString(),
-        lastMessage: "",
-        timeSent: "");
+      uid: receiverUserData!.userId.toString(),
+      lastMessage: "",
+      timeSent: "",
+    );
   }
 
   Future<void> deleteMedia() async {

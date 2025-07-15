@@ -1,3 +1,4 @@
+import Firebase
 import Flutter
 import UIKit
 import awesome_notifications
@@ -8,6 +9,7 @@ import awesome_notifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    FirebaseApp.configure()
     GeneratedPluginRegistrant.register(with: self)
     SwiftAwesomeNotificationsPlugin.setPluginRegistrantCallback { registry in
       SwiftAwesomeNotificationsPlugin.register(

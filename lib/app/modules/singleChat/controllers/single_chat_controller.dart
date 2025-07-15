@@ -1360,6 +1360,7 @@ class SingleChatController extends GetxController
   RxMap<String, int> downloadedBytes = <String, int>{}.obs;
   RxMap<String, int> totalBytes = <String, int>{}.obs;
 
+
   Future<void> checkIfFileExists(MessageType type, String fileName) async {
     final path = getFilePath(type, fileName);
     final exists = await File(path).exists();
@@ -1384,20 +1385,38 @@ class SingleChatController extends GetxController
           downloadedBytes[fileName] = received;
           totalBytes[fileName] = total;
         },
-      );
-      if (type == MessageType.video) {
-        await getThumbnail(File(filePath.toString()));
+        onCancel: () {
+          isDownloading[fileName] = false;
+          downloadedBytes[fileName] = 0;
+          totalBytes[fileName] = 0;
+        },
 
-        // MessageTable().updateMessageForAsset(
-        //     assetPath: assetName.toString(), fileName: fileName);
-        Future.delayed(const Duration(seconds: 1));
+      );
+      if (filePath != null) {
+        if (type == MessageType.video) {
+          await getThumbnail(File(filePath.toString()));
+
+          // MessageTable().updateMessageForAsset(
+          //     assetPath: assetName.toString(), fileName: fileName);
+          Future.delayed(const Duration(seconds: 1));
+        }
+        isDownloaded[fileName] = true;
       }
-      isDownloaded[fileName] = true;
     } catch (e) {
       showAlertMessage("Download failed: $e");
     } finally {
       isDownloading[fileName] = false;
+      activeDownloads.remove(fileName);
     }
+  }
+
+  Map<String, StreamSubscription<List<int>>> activeDownloads = {};
+  void cancelDownload(String fileName) {
+    activeDownloads[fileName]?.cancel(); // force cancel
+    isDownloading[fileName] = false;
+    downloadedBytes[fileName] = 0;
+    totalBytes[fileName] = 0;
+    activeDownloads.remove(fileName);
   }
 
   String getFolderName(MessageType type) {

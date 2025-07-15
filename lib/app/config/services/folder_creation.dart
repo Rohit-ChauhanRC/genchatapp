@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/constants/constants.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
+
+import '../../modules/singleChat/controllers/single_chat_controller.dart';
 
 class FolderCreation {
   Future<void> createAppFolderStructure() async {
@@ -150,7 +152,8 @@ class FolderCreation {
       required String subFolderName,
       required String messageType,
       required String fileUrl,
-      void Function(int received, int total)? onReceiveProgress
+      void Function(int received, int total)? onReceiveProgress,
+      void Function()? onCancel,
       }) async {
     try {
       // final directory = await getApplicationDocumentsDirectory();
@@ -166,7 +169,7 @@ class FolderCreation {
       if (await File(filePath).exists()) {
         return filePath;
       } else {
-        final downloadedFilePath = await _downloadFile(fileUrl, filePath,onReceiveProgress);
+        final downloadedFilePath = await _downloadFile(fileUrl, filePath,fileName,onReceiveProgress, onCancel);
         return downloadedFilePath;
       }
     } catch (e) {
@@ -175,21 +178,22 @@ class FolderCreation {
     }
   }
 
-  Future<String?> _downloadFile(String url, String savePath,
-      void Function(int received, int total)? onReceiveProgress) async {
+  Future<String?> _downloadFile(String url, String savePath,String fileName,
+      void Function(int received, int total)? onReceiveProgress,
+      Function()? onCancel) async {
     try {
       // Perform the file download
       // final response = await http.get(Uri.parse(url));
       final uri = Uri.parse(url);
       final request = http.Request('GET', uri);
-      final response = await http.Client().send(request);
+      final response = await request.send();
       if (response.statusCode == 200) {
         final file = File(savePath);
         final sink = file.openWrite();
         final contentLength = response.contentLength ?? 0;
         int received = 0;
 
-        await response.stream.listen(
+        final sub = response.stream.listen(
               (chunk) {
             received += chunk.length;
             sink.add(chunk);
@@ -201,11 +205,13 @@ class FolderCreation {
             await sink.flush();
             await sink.close();
           },
-          onError: (e) {
-            sink.close();
+          onError: (e) async{
+            await sink.close();
+            onCancel?.call();
           },
           cancelOnError: true,
-        ).asFuture();
+        );
+        Get.find<SingleChatController>().activeDownloads[fileName] = sub;
 
         return savePath;
         // await file.writeAsBytes(response.bodyBytes); // Save the file

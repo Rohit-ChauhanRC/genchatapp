@@ -36,7 +36,7 @@ class NotificationService {
       ..clear()
       ..addAll(ids.map(int.parse));
     _loaded = true;
-    print('🧠 [loadShownIdsOnce] shownIds loaded: $shownIds');
+    print('📥 [loadShownIdsOnce] loaded IDs: $shownIds');
   }
 
   static Future<void> saveShownId(int id) async {
@@ -44,6 +44,9 @@ class NotificationService {
     if (!ids.contains(id.toString())) {
       ids.add(id.toString());
       await prefs.setList('shown_message_ids', ids);
+      print('💾 Saved messageId: $id to persistent storage.');
+    } else {
+      print('ℹ️ messageId: $id already exists in storage.');
     }
   }
 
@@ -53,7 +56,7 @@ class NotificationService {
 
   static Future<void> showAwesomeNotification(RemoteMessage msg) async {
     print("🔔 [showAwesomeNotification] Message: ${msg.data}");
-    await loadShownIdsOnce();
+    // await loadShownIdsOnce();
 
     final rawData = msg.data['data'];
     if (rawData == null) return;
@@ -146,13 +149,10 @@ class NotificationService {
   static Future<void> onActionReceived(ReceivedAction action) async {
     final chatId = action.payload?['chatId'];
     if (chatId != null) {
-      _cache.remove(chatId);
-      // shownIds.clear();
-      // _loaded = false;
-      // await prefs.remove('shown_message_ids');
-      await AwesomeNotifications().cancelNotificationsByGroupKey(groupKey);
+      await clearChatNotification(chatId);
     }
   }
+
 
   // Future<void> subscribeToUserTopic(String userId) async {
   //   final topic = "genchat-message-$userId";
@@ -194,6 +194,32 @@ class NotificationService {
       await prefs.remove(subscribedTopics); // Clear stored topics
     }
   }
+
+  static Future<void> clearChatNotification(String chatId) async {
+    _cache.remove(chatId); // remove message cache
+    await AwesomeNotifications().cancelNotificationsByGroupKey(groupKey);
+    // int id = int.parse(chatId);
+    // var chatIds = [id];
+    // await removeShownIds(chatIds);
+    // Also remove message IDs for this chat (optional)
+    // Keep this clean-up lightweight to avoid breaking shared cache logic
+  }
+
+  /// Remove selected messageIds from shownIds and runtimeHandledIds
+  /// ❗ NEW METHOD: Call this to clear shown IDs for displayed messages
+  static Future<void> removeShownIds(int id) async {
+    final ids = prefs.getList('shown_message_ids') ?? [];
+    if (ids.contains(id.toString())) {
+      final updatedIds = ids.where((element) => element != id.toString()).toList();
+      await prefs.setList('shown_message_ids', updatedIds);
+      print('🗑️ Removed messageId: $id from storage.');
+      shownIds.remove(id);
+    } else {
+      print('⚠️ Tried to remove messageId: $id, but it was not found.');
+    }
+  }
+
+
 }
 
 // @pragma('vm:entry-point')

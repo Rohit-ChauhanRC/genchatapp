@@ -36,7 +36,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
   await di.init();
-  await NotificationService.showAwesomeNotification(message);
+  // await NotificationService.loadShownIdsOnce(force: true);
+  // await NotificationService.showAwesomeNotification(message);
 }
 
 
@@ -49,38 +50,38 @@ void main() async {
   await di.init();
 
 
-  AwesomeNotifications().initialize(
-    null,
-    [
-      NotificationChannel(
-        channelKey: NotificationService.chatChannelKey,
-        channelName: 'Chats',
-        channelDescription: 'Chat messages',
-        importance: NotificationImportance.High,
-        channelShowBadge: true,
-        groupKey: NotificationService.groupKey,
-      ),
-      NotificationChannel(
-        channelKey: NotificationService.summaryChannelKey,
-        channelName: 'Summary',
-        channelDescription: 'Message summaries',
-        importance: NotificationImportance.High,
-        channelShowBadge: false,
-        locked: true,
-      ),
-    ],
-    debug: true,
-  );
+  // AwesomeNotifications().initialize(
+  //   null,
+  //   [
+  //     NotificationChannel(
+  //       channelKey: NotificationService.chatChannelKey,
+  //       channelName: 'Chats',
+  //       channelDescription: 'Chat messages',
+  //       importance: NotificationImportance.High,
+  //       channelShowBadge: true,
+  //       groupKey: NotificationService.groupKey,
+  //     ),
+  //     NotificationChannel(
+  //       channelKey: NotificationService.summaryChannelKey,
+  //       channelName: 'Summary',
+  //       channelDescription: 'Message summaries',
+  //       importance: NotificationImportance.High,
+  //       channelShowBadge: false,
+  //       locked: true,
+  //     ),
+  //   ],
+  //   debug: true,
+  // );
 
-  AwesomeNotifications().setListeners(
-    onActionReceivedMethod: NotificationService.onActionReceived,
-  );
-
-  bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-  if (!isAllowed) {
-    isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
-    print("🔔 AwesomeNotification permission granted: $isAllowed");
-  }
+  // AwesomeNotifications().setListeners(
+  //   onActionReceivedMethod: NotificationService.onActionReceived,
+  // );
+  //
+  // bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+  // if (!isAllowed) {
+  //   isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
+  //   print("🔔 AwesomeNotification permission granted: $isAllowed");
+  // }
 
   NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
 
@@ -91,24 +92,28 @@ void main() async {
   } else {
     print('⚠️ Notification permission not determined');
   }
+  // await NotificationService.loadShownIdsOnce();
   FirebaseMessaging.onMessage.listen((msg) async {
-    print("🔔 Foreground FCM Received: ${msg.data}");
+    print("🔔 Foreground FCM Received Title: ${msg.notification?.title}");
+    print("🔔 Foreground FCM Received Body: ${msg.notification?.body}");
+    print("🔔 Foreground FCM Received Data: ${msg.data}");
 
-    final data = msg.data['data'];
-    if (data == null) return;
-
-    final decoded = jsonDecode(data);
-    final id = decoded['messageId'];
-    if (id == null) return;
-
-    await NotificationService.loadShownIdsOnce();
-    if (NotificationService.isDuplicate(id)) {
-      print("⚠️ Foreground: Skipping duplicate $id");
-      return;
-    }
-
-    print("✅ Showing notification $id in foreground");
-    await NotificationService.showAwesomeNotification(msg);
+    // await NotificationService.loadShownIdsOnce(force: true);
+    // final rawData = msg.data['data'];
+    // if (rawData == null) return;
+    //
+    // final data = rawData is String ? jsonDecode(rawData) : rawData;
+    // final id = data['messageId'];
+    // if (id == null) return;
+    //
+    // // await NotificationService.loadShownIdsOnce();
+    // if (NotificationService.isDuplicate(id)) {
+    //   print("⚠️ Foreground: Skipping duplicate $id");
+    //   return;
+    // }
+    //
+    // print("✅ Showing notification $id in foreground");
+    // await NotificationService.showAwesomeNotification(msg);
   });
 
   AppConfig.setEnvironment(AppEnvironment.prod);

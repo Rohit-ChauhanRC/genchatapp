@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 
-
 class EncryptionService extends GetxService {
   // 32-byte key for AES-256
   static final _keyString = dotenv.dotenv.get("KEYSTRING"); // 32 chars
@@ -16,8 +15,9 @@ class EncryptionService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    _encrypter =
-        encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
+    _encrypter = encrypt.Encrypter(
+      encrypt.AES(_key, mode: encrypt.AESMode.cbc),
+    );
   }
 
   String encryptText(String plainText) {
@@ -27,7 +27,20 @@ class EncryptionService extends GetxService {
 
   String decryptText(String base64CipherText) {
     // if(base64CipherText != "This message was deleted"){}
-    final decrypted = base64CipherText != "This message was deleted" ?_encrypter.decrypt64(base64CipherText, iv: _iv): base64CipherText;
+    final decrypted = base64CipherText != "This message was deleted"
+        ? _encrypter.decrypt64(base64CipherText, iv: _iv)
+        : base64CipherText;
     return decrypted;
+  }
+
+  bool isEncryptedMessage(String message) {
+    if (message == "This message was deleted") return false;
+    if (message.startsWith("genchat_audio")) return false;
+
+    final base64Regex = RegExp(
+      r'^[A-Za-z0-9+/=]{24,}$',
+    ); // length threshold avoids false positives
+
+    return base64Regex.hasMatch(message);
   }
 }

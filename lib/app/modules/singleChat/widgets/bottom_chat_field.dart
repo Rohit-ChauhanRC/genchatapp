@@ -75,30 +75,20 @@ class BottomChatField extends StatelessWidget {
                       ),
 
                       // AudioRecordView(),
-                      Obx(
-                        () => singleChatController.isPause
-                            ? AudioPlayerScreen(
-                                audioPath:
-                                    singleChatController.recordedPath.value,
-                              )
-                            : AudioWaveforms(
-                                size: Size(
-                                  MediaQuery.of(context).size.width * 0.7,
-                                  50,
-                                ),
-                                enableGesture: true,
-                                recorderController:
-                                    singleChatController.recorderController,
-                                waveStyle: const WaveStyle(
-                                  durationLinesHeight: 2,
-                                  showHourInDuration: true,
-                                  showMiddleLine: false,
-                                  waveColor: Colors.white,
-                                  extendWaveform: true,
-                                  durationLinesColor: Colors.white,
-                                  waveCap: StrokeCap.butt,
-                                ),
-                              ),
+                      AudioWaveforms(
+                        size: Size(MediaQuery.of(context).size.width * 0.7, 50),
+                        // enableGesture: true,
+                        recorderController:
+                            singleChatController.recorderController,
+                        waveStyle: const WaveStyle(
+                          durationLinesHeight: 2,
+                          showHourInDuration: true,
+                          showMiddleLine: false,
+                          waveColor: Colors.white,
+                          extendWaveform: true,
+                          durationLinesColor: Colors.white,
+                          waveCap: StrokeCap.butt,
+                        ),
                       ),
                     ],
                   ),

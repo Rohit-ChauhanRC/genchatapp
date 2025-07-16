@@ -32,6 +32,7 @@ class MyMessageCard extends StatelessWidget {
     required this.isRetryUploadFile,
     this.url,
     this.assetThumbnail,
+    this.audioMessage,
   }) : super(key: key);
 
   final String message;
@@ -55,6 +56,7 @@ class MyMessageCard extends StatelessWidget {
   final RxBool isRetryUploadFile;
   final String? url;
   final String? assetThumbnail;
+  final String? audioMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +154,7 @@ class MyMessageCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: DisplayTextImageGIF(
+                                  audioMessage: audioMessage,
                                   message:
                                       repliedMessageType != MessageType.text
                                       ? repliedAssetServerName ?? ""
@@ -171,6 +174,7 @@ class MyMessageCard extends StatelessWidget {
                           alignment: Alignment.center,
                           children: [
                             DisplayTextImageGIF(
+                              audioMessage: audioMessage,
                               message: message,
                               type: type,
                               url: url,

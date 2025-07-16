@@ -7,6 +7,7 @@ import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
@@ -23,6 +24,7 @@ class DisplayTextImageGIF extends StatelessWidget {
   final String? url;
 
   final String? assetThumbnail;
+  final String? audioMessage;
 
   const DisplayTextImageGIF({
     Key? key,
@@ -31,6 +33,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     this.url,
     this.isReply = false,
     this.assetThumbnail,
+    this.audioMessage,
   }) : super(key: key);
 
   @override
@@ -231,9 +234,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply,
               );
             case MessageType.audio:
-              return AudioPlayerScreen(
+              return AudioPreview(
                 audioPath: path,
                 audioUrl: url,
+                isReply: isReply,
+                message: audioMessage,
               ); // if using
             case MessageType.gif:
               return DisplayGifImage(

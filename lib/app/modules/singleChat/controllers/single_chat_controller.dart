@@ -1376,7 +1376,6 @@ class SingleChatController extends GetxController
   RxMap<String, int> downloadedBytes = <String, int>{}.obs;
   RxMap<String, int> totalBytes = <String, int>{}.obs;
 
-
   Future<void> checkIfFileExists(MessageType type, String fileName) async {
     final path = getFilePath(type, fileName);
     final exists = await File(path).exists();
@@ -1409,7 +1408,6 @@ class SingleChatController extends GetxController
           downloadedBytes[fileName] = 0;
           totalBytes[fileName] = 0;
         },
-
       );
       if (filePath != null) {
         if (type == MessageType.video) {
@@ -1646,7 +1644,7 @@ class SingleChatController extends GetxController
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
-        message: '',
+        message: recorderController.recordedDuration.toHHMMSS(),
         messageSentFromDeviceTime: timeSent.toString(),
         clientSystemMessageId: clientSystemMessageId,
         state: MessageState.unsent,

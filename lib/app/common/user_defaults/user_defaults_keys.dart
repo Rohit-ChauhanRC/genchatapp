@@ -9,4 +9,6 @@ static const String userDetail = "userDetail";
 static const String permissionAsked = "storage_permission_asked";
 static const String backupUserId = "backupUserId";
 
+
+static const String shownMessageIdsKeys = 'shown_message_ids';
 }

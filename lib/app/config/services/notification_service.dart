@@ -1,124 +1,145 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:genchatapp/app/config/assets/app_images.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../common/user_defaults/user_defaults_keys.dart';
 import '../../constants/constants.dart';
 import '../../constants/message_enum.dart';
-import '../../data/local_database/contacts_table.dart';
-import '../../data/models/new_models/response_model/new_message_model.dart';
+import '../../utils/message_id_storage.dart';
 import 'encryption_service.dart';
 
-class NotificationService {
+@pragma('vm:entry-point')
+Future<void> onNotificationBackgroundResponse(NotificationResponse response) async {
+  debugPrint("📲 [BG Callback] Payload: ${response.payload}");
+
+  if (response.payload != null && response.payload!.isNotEmpty) {
+    await NotificationService.removeShownMessageId(response.payload!);
+  }
+}
+
+class NotificationService{
   static final encryptionService = Get.find<EncryptionService>();
   static final prefs = Get.find<SharedPreferenceService>();
-  static bool _loaded = false;
 
-  static const chatChannelKey = 'chat_channel';
-  static const summaryChannelKey = 'summary_channel';
-  static const groupKey = 'genchat_group';
+  static String shownMessageIdsKey = UserDefaultsKeys.shownMessageIdsKeys;
 
-  static final Map<String, List<NotificationContent>> _cache = {};
-  static final Set<int> shownIds = {};
-  static final Set<int> _runtimeHandledIds = {};
-
-
-  static Future<void> loadShownIdsOnce({bool force = false}) async {
-    if (_loaded && !force) return;
-    final ids = prefs.getList('shown_message_ids') ?? [];
-    shownIds
-      ..clear()
-      ..addAll(ids.map(int.parse));
-    _loaded = true;
-    print('📥 [loadShownIdsOnce] loaded IDs: $shownIds');
+  static Future<List<String>> getShownMessageIds() async {
+    final ids = await MessageIdStorage.load();
+    debugPrint("📦 [Prefs] Cleaned shownMessageIds: $ids");
+    return ids;
   }
 
-  static Future<void> saveShownId(int id) async {
-    final ids = prefs.getList('shown_message_ids') ?? [];
-    if (!ids.contains(id.toString())) {
-      ids.add(id.toString());
-      await prefs.setList('shown_message_ids', ids);
-      print('💾 Saved messageId: $id to persistent storage.');
-    } else {
-      print('ℹ️ messageId: $id already exists in storage.');
-    }
+  static Future<void> addShownMessageId(String id) async {
+    await MessageIdStorage.add(id);
+    debugPrint("✅ [Prefs] Added messageId to shown list: $id");
   }
 
-  static bool isDuplicate(int id) {
-    return shownIds.contains(id) || _runtimeHandledIds.contains(id);
+  static Future<void> removeShownMessageId(String id) async {
+    await MessageIdStorage.remove(id);
+    debugPrint("🧹 Removed messageId: $id from shownIds");
   }
 
-  static Future<void> showAwesomeNotification(RemoteMessage msg) async {
-    print("🔔 [showAwesomeNotification] Message: ${msg.data}");
-    // await loadShownIdsOnce();
+  static Future<void> clearAllShownMessageIds() async {
+    await MessageIdStorage.clear();
+  }
 
-    final rawData = msg.data['data'];
-    if (rawData == null) return;
+  static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
 
-    final data = jsonDecode(rawData);
-    final newMsg = NewMessageModel.fromMap(data);
-    final id = newMsg.messageId;
-    if (id == null) return;
+  static Future<void> init() async {
+    print("🔧 NotificationService.init() called");
+    const AndroidInitializationSettings androidSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    if (isDuplicate(id)) {
-      print("⚠️ Duplicate messageId: $id");
-      return;
-    }
+    const InitializationSettings initSettings =
+    InitializationSettings(android: androidSettings);
 
-    shownIds.add(id);
-    _runtimeHandledIds.add(id);
-
-    await saveShownId(id);
-
-    final isGroup = newMsg.isGroupMessage == true;
-    final chatId = isGroup ? 'group_${newMsg.recipientId}' : 'user_${newMsg.senderId}';
-
-    final user = await ContactsTable().getUserById(newMsg.senderId ?? 0);
-    final displayName = user?.localName ?? user?.phoneNumber ?? 'Unknown';
-    final iconPath = await _resolveIconPath(user?.displayPicture);
-
-    final body = newMsg.messageType != MessageType.text
-        ? _mapTypeToEmoji(newMsg.messageType!)
-        : encryptionService.decryptText(newMsg.message ?? '');
-
-    final content = NotificationContent(
-      id: id,
-      channelKey: chatChannelKey,
-      title: displayName,
-      body: body,
-      payload: {'chatId': chatId},
-      groupKey: groupKey,
-      notificationLayout: NotificationLayout.Messaging,
-      largeIcon: 'file://$iconPath',
-      roundedLargeIcon: true,
+    await _localNotificationsPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        debugPrint("📲 [Foreground Tap] Payload: ${response.payload}");
+        _onNotificationTapOrDismiss(response);
+      },
+        onDidReceiveBackgroundNotificationResponse: onNotificationBackgroundResponse
     );
 
-    _cache.putIfAbsent(chatId, () => []).add(content);
-    if (_cache[chatId]!.length > 7) _cache[chatId]!.removeAt(0);
+    // iOS is ignored because you only want Android foreground support
+    FirebaseMessaging.onMessage.listen((msg) {
+      debugPrint("📨 [onMessage.listen] Message received");
+      _handleForegroundMessage(msg);
+    });
+  }
 
-    await AwesomeNotifications().createNotification(content: content);
+  static Future<void> _handleForegroundMessage(RemoteMessage msg) async {
+    print("🟢 [Foreground] Handling FCM");
+    print("🟢 Title: ${msg.notification?.title}");
+    print("🟢 Body: ${msg.notification?.body}");
+    print("🟢 Raw Data: ${msg.data}");
 
-    if (_cache.length > 1) {
-      final total = _cache.values.expand((l) => l).length;
-      await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-          id: 0,
-          channelKey: summaryChannelKey,
-          title: '${_cache.length} chats',
-          body: '$total new messages',
-          groupKey: groupKey,
-          notificationLayout: NotificationLayout.Inbox,
-          locked: true,
-        ),
-      );
+    final String? rawData = msg.data['data'];
+    print("🔍 [FG] rawData: $rawData");
+
+    Map<String, dynamic>? decoded;
+    String messageId = msg.messageId ?? '';
+
+    if (rawData != null) {
+      try {
+        decoded = Map<String, dynamic>.from(jsonDecode(rawData));
+        messageId = decoded['messageId']?.toString() ?? messageId;
+        print("🆔 [FG] Extracted messageId: $messageId");
+      } catch (e) {
+        print("❌ [FG] Error decoding rawData: $e");
+      }
+    }
+
+    final shownIds = await getShownMessageIds();
+    print("📦 [Dedup Check] Stored IDs: $shownIds");
+    print("📦 [Dedup Check] Incoming ID: $messageId");
+    if (shownIds.contains(messageId)) {
+      debugPrint('⚠️ Duplicate notification ignored: $messageId');
+      return;
+    }
+    print("🔔 [FG] Showing notification for messageId: $messageId");
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'foreground_channel_id',
+      'Foreground Notifications',
+      channelDescription: 'Used for showing foreground notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _localNotificationsPlugin.show(
+      msg.hashCode,
+      msg.notification?.title ?? '',
+      msg.notification?.body ?? '',
+      notificationDetails,
+      payload: messageId,
+    );
+    await addShownMessageId(messageId);
+  }
+
+  static Future<void> _onNotificationTapOrDismiss(NotificationResponse response) async {
+    final payload = response.payload;
+    debugPrint('📲 [Tap/Dismiss] Type: ${response.notificationResponseType}');
+    debugPrint('📲 [Tap/Dismiss] Payload: $payload');
+
+    if (payload != null && payload.isNotEmpty) {
+      await removeShownMessageId(payload);
     }
   }
+
 
   static Future<String> _resolveIconPath(String? dispPic) async {
     final dir = await getApplicationDocumentsDirectory();
@@ -144,25 +165,6 @@ class NotificationService {
       MessageType.gif: '🎁 GIF',
     }[type] ?? '';
   }
-
-  @pragma('vm:entry-point')
-  static Future<void> onActionReceived(ReceivedAction action) async {
-    final chatId = action.payload?['chatId'];
-    if (chatId != null) {
-      await clearChatNotification(chatId);
-    }
-  }
-
-
-  // Future<void> subscribeToUserTopic(String userId) async {
-  //   final topic = "genchat-message-$userId";
-  //   await FirebaseMessaging.instance.subscribeToTopic(topic);
-  // }
-  //
-  // Future<void> unSubscribeToUserTopic(String userId) async {
-  //   final topic = "genchat-message-$userId";
-  //   await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-  // }
 
   static Future<void> subscribeToTopics(List<String> topics) async {
     List<String> cleanedTopics =
@@ -194,34 +196,216 @@ class NotificationService {
       await prefs.remove(subscribedTopics); // Clear stored topics
     }
   }
-
-  static Future<void> clearChatNotification(String chatId) async {
-    _cache.remove(chatId); // remove message cache
-    await AwesomeNotifications().cancelNotificationsByGroupKey(groupKey);
-    // int id = int.parse(chatId);
-    // var chatIds = [id];
-    // await removeShownIds(chatIds);
-    // Also remove message IDs for this chat (optional)
-    // Keep this clean-up lightweight to avoid breaking shared cache logic
-  }
-
-  /// Remove selected messageIds from shownIds and runtimeHandledIds
-  /// ❗ NEW METHOD: Call this to clear shown IDs for displayed messages
-  static Future<void> removeShownIds(int id) async {
-    final ids = prefs.getList('shown_message_ids') ?? [];
-    if (ids.contains(id.toString())) {
-      final updatedIds = ids.where((element) => element != id.toString()).toList();
-      await prefs.setList('shown_message_ids', updatedIds);
-      print('🗑️ Removed messageId: $id from storage.');
-      shownIds.remove(id);
-    } else {
-      print('⚠️ Tried to remove messageId: $id, but it was not found.');
-    }
-  }
-
-
 }
 
+///Flutter AwesomeNotifications code
+// class NotificationService {
+//   static final encryptionService = Get.find<EncryptionService>();
+//   static final prefs = Get.find<SharedPreferenceService>();
+//   static bool _loaded = false;
+//
+//   static const chatChannelKey = 'chat_channel';
+//   static const summaryChannelKey = 'summary_channel';
+//   static const groupKey = 'genchat_group';
+//
+//   static final Map<String, List<NotificationContent>> _cache = {};
+//   static final Set<int> shownIds = {};
+//   static final Set<int> _runtimeHandledIds = {};
+//
+//
+//   static Future<void> loadShownIdsOnce({bool force = false}) async {
+//     if (_loaded && !force) return;
+//     final ids = prefs.getList('shown_message_ids') ?? [];
+//     shownIds
+//       ..clear()
+//       ..addAll(ids.map(int.parse));
+//     _loaded = true;
+//     print('📥 [loadShownIdsOnce] loaded IDs: $shownIds');
+//   }
+//
+//   static Future<void> saveShownId(int id) async {
+//     final ids = prefs.getList('shown_message_ids') ?? [];
+//     if (!ids.contains(id.toString())) {
+//       ids.add(id.toString());
+//       await prefs.setList('shown_message_ids', ids);
+//       print('💾 Saved messageId: $id to persistent storage.');
+//     } else {
+//       print('ℹ️ messageId: $id already exists in storage.');
+//     }
+//   }
+//
+//   static bool isDuplicate(int id) {
+//     return shownIds.contains(id) || _runtimeHandledIds.contains(id);
+//   }
+//
+//   static Future<void> showAwesomeNotification(RemoteMessage msg) async {
+//     print("🔔 [showAwesomeNotification] Message: ${msg.data}");
+//     // await loadShownIdsOnce();
+//
+//     final rawData = msg.data['data'];
+//     if (rawData == null) return;
+//
+//     final data = jsonDecode(rawData);
+//     final newMsg = NewMessageModel.fromMap(data);
+//     final id = newMsg.messageId;
+//     if (id == null) return;
+//
+//     if (isDuplicate(id)) {
+//       print("⚠️ Duplicate messageId: $id");
+//       return;
+//     }
+//
+//     shownIds.add(id);
+//     _runtimeHandledIds.add(id);
+//
+//     await saveShownId(id);
+//
+//     final isGroup = newMsg.isGroupMessage == true;
+//     final chatId = isGroup ? 'group_${newMsg.recipientId}' : 'user_${newMsg.senderId}';
+//
+//     final user = await ContactsTable().getUserById(newMsg.senderId ?? 0);
+//     final displayName = user?.localName ?? user?.phoneNumber ?? 'Unknown';
+//     final iconPath = await _resolveIconPath(user?.displayPicture);
+//
+//     final body = newMsg.messageType != MessageType.text
+//         ? _mapTypeToEmoji(newMsg.messageType!)
+//         : encryptionService.decryptText(newMsg.message ?? '');
+//
+//     final content = NotificationContent(
+//       id: id,
+//       channelKey: chatChannelKey,
+//       title: displayName,
+//       body: body,
+//       payload: {'chatId': chatId},
+//       groupKey: groupKey,
+//       notificationLayout: NotificationLayout.Messaging,
+//       largeIcon: 'file://$iconPath',
+//       roundedLargeIcon: true,
+//     );
+//
+//     _cache.putIfAbsent(chatId, () => []).add(content);
+//     if (_cache[chatId]!.length > 7) _cache[chatId]!.removeAt(0);
+//
+//     await AwesomeNotifications().createNotification(content: content);
+//
+//     if (_cache.length > 1) {
+//       final total = _cache.values.expand((l) => l).length;
+//       await AwesomeNotifications().createNotification(
+//         content: NotificationContent(
+//           id: 0,
+//           channelKey: summaryChannelKey,
+//           title: '${_cache.length} chats',
+//           body: '$total new messages',
+//           groupKey: groupKey,
+//           notificationLayout: NotificationLayout.Inbox,
+//           locked: true,
+//         ),
+//       );
+//     }
+//   }
+//
+//   static Future<String> _resolveIconPath(String? dispPic) async {
+//     final dir = await getApplicationDocumentsDirectory();
+//     if (dispPic != null) {
+//       final file = File('${dir.path}/${dispPic.replaceAll(".jpg", ".png")}');
+//       if (await file.exists()) return file.path;
+//     }
+//
+//     final def = File('${dir.path}/default_dp.png');
+//     if (!await def.exists()) {
+//       final data = await rootBundle.load(AppImages.dummyPersonImage);
+//       await def.writeAsBytes(data.buffer.asUint8List());
+//     }
+//     return def.path;
+//   }
+//
+//   static String _mapTypeToEmoji(MessageType type) {
+//     return {
+//       MessageType.image: '📷 Photo',
+//       MessageType.video: '🎥 Video',
+//       MessageType.document: '📄 Document',
+//       MessageType.audio: '🔉 Audio',
+//       MessageType.gif: '🎁 GIF',
+//     }[type] ?? '';
+//   }
+//
+//   @pragma('vm:entry-point')
+//   static Future<void> onActionReceived(ReceivedAction action) async {
+//     final chatId = action.payload?['chatId'];
+//     if (chatId != null) {
+//       await clearChatNotification(chatId);
+//     }
+//   }
+//
+//
+//   // Future<void> subscribeToUserTopic(String userId) async {
+//   //   final topic = "genchat-message-$userId";
+//   //   await FirebaseMessaging.instance.subscribeToTopic(topic);
+//   // }
+//   //
+//   // Future<void> unSubscribeToUserTopic(String userId) async {
+//   //   final topic = "genchat-message-$userId";
+//   //   await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+//   // }
+//
+//   static Future<void> subscribeToTopics(List<String> topics) async {
+//     List<String> cleanedTopics =
+//     topics.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+//
+//     for (String topic in cleanedTopics) {
+//       await FirebaseMessaging.instance.subscribeToTopic(topic);
+//       print("✅ Subscribed to topic: $topic");
+//     }
+//
+//     // Save subscribed topics in SharedPreferenceService, avoiding duplicates
+//     List<String>? existingTopics = prefs.getList(subscribedTopics) ?? [];
+//     Set<String> updatedTopics = {
+//       ...existingTopics,
+//       ...cleanedTopics
+//     }; // Merge sets to avoid duplicates
+//     await prefs.setList(subscribedTopics, updatedTopics.toList());
+//   }
+//
+//   /// Unsubscribe from stored topics and clear from SharedPreferences
+//   static Future<void> unsubscribeFromTopics() async {
+//     List<String>? topics = prefs.getList(subscribedTopics);
+//
+//     if (topics != null) {
+//       for (String topic in topics) {
+//         await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+//         print("❌ Unsubscribed from topic: $topic");
+//       }
+//       await prefs.remove(subscribedTopics); // Clear stored topics
+//     }
+//   }
+//
+//   static Future<void> clearChatNotification(String chatId) async {
+//     _cache.remove(chatId); // remove message cache
+//     await AwesomeNotifications().cancelNotificationsByGroupKey(groupKey);
+//     // int id = int.parse(chatId);
+//     // var chatIds = [id];
+//     // await removeShownIds(chatIds);
+//     // Also remove message IDs for this chat (optional)
+//     // Keep this clean-up lightweight to avoid breaking shared cache logic
+//   }
+//
+//   /// Remove selected messageIds from shownIds and runtimeHandledIds
+//   /// ❗ NEW METHOD: Call this to clear shown IDs for displayed messages
+//   static Future<void> removeShownIds(int id) async {
+//     final ids = prefs.getList('shown_message_ids') ?? [];
+//     if (ids.contains(id.toString())) {
+//       final updatedIds = ids.where((element) => element != id.toString()).toList();
+//       await prefs.setList('shown_message_ids', updatedIds);
+//       print('🗑️ Removed messageId: $id from storage.');
+//       shownIds.remove(id);
+//     } else {
+//       print('⚠️ Tried to remove messageId: $id, but it was not found.');
+//     }
+//   }
+//
+//
+// }
+///Flutter Local Notifications code
 // @pragma('vm:entry-point')
 // Future<void> onBackgroundNotificationTap(NotificationResponse response) async {
 //   if (response.payload != null) {

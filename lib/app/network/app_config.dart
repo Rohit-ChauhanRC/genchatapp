@@ -14,10 +14,10 @@ class AppConfig {
       case AppEnvironment.dev:
         return "http://app.maklife.in:10000/api/";
       case AppEnvironment.staging:
-        return "http://app.maklife.in:10000/api/";
+        return "http://app.maklife.in:6040/api/";
       case AppEnvironment.prod:
       default:
-        return "https://payment-payu.maklifedairy.in:6040/api/";
+        return "https://app.maklife.in:6040/api/";
     }
   }
 
@@ -26,10 +26,10 @@ class AppConfig {
       case AppEnvironment.dev:
         return "http://app.maklife.in:10000";
       case AppEnvironment.staging:
-        return "http://app.maklife.in:10000";
+        return "http://app.maklife.in:6040";
       case AppEnvironment.prod:
       default:
-        return "https://payment-payu.maklifedairy.in:6040";
+        return "https://app.maklife.in:6040";
     }
   }
 }

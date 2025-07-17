@@ -40,7 +40,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // await NotificationService.showAwesomeNotification(message);
 }
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -48,7 +47,6 @@ void main() async {
   await Firebase.initializeApp();
 
   await di.init();
-
 
   // AwesomeNotifications().initialize(
   //   null,
@@ -83,7 +81,8 @@ void main() async {
   //   print("🔔 AwesomeNotification permission granted: $isAllowed");
   // }
 
-  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
+  NotificationSettings settings = await FirebaseMessaging.instance
+      .requestPermission(alert: true, badge: true, sound: true);
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     print('✅ Notification permission granted');
@@ -117,7 +116,6 @@ void main() async {
   });
 
   AppConfig.setEnvironment(AppEnvironment.prod);
-
 
   runApp(const App());
 }

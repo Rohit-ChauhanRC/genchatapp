@@ -49,6 +49,7 @@ class DisplayTextImageGIF extends StatelessWidget {
         type == MessageType.text
             ? controller.encryptionService.decryptText(message)
             : message,
+        autofocus: true,
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
           fontSize: 16,

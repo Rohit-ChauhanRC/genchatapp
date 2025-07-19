@@ -10,8 +10,12 @@ import 'package:get/get.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 
 class ImageWidget extends StatelessWidget {
-  const ImageWidget(
-      {super.key, required this.rootFolderPath, this.isReply, this.url});
+  const ImageWidget({
+    super.key,
+    required this.rootFolderPath,
+    this.isReply,
+    this.url,
+  });
   final String rootFolderPath;
   final bool? isReply;
   final String? url;
@@ -66,7 +70,7 @@ class ImageWidget extends StatelessWidget {
         child: Image.file(
           File(rootFolderPath),
           fit: BoxFit.cover,
-          filterQuality: FilterQuality.medium,
+          // filterQuality: FilterQuality.medium,
           height: isReply == true ? 80 : 200,
           width: isReply == true ? 80 : 300,
         ),

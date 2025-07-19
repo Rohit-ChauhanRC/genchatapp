@@ -24,7 +24,7 @@ class SelectContactsController extends GetxController {
 
   final socketService = Get.find<SocketService>();
 
-  final RxBool _isContactRefreshed = false.obs;
+  final RxBool _isContactRefreshed = true.obs;
   bool get isContactRefreshed => _isContactRefreshed.value;
   set isContactRefreshed(bool v) => _isContactRefreshed.value = v;
 
@@ -62,17 +62,24 @@ class SelectContactsController extends GetxController {
   }
 
   Future<void> loadInitialContacts() async {
-    final localContacts = await contactsTable.fetchAll();
-    if (localContacts.isNotEmpty) {
-      contacts = localContacts;
-      _isContactRefreshed.value = true;
-    } else {
-      await refreshSync(); // First-time fetch from API
+    _isContactRefreshed.value = false;
+    try {
+      final localContacts = await contactsTable.fetchAll();
+      print("local contacts number----> ${localContacts.isEmpty}");
+      if (localContacts.isNotEmpty) {
+        contacts = localContacts;
+      } else {
+        await refreshSync(); // First-time fetch from API
+      }
+    } catch (e) {
+      print("❌ loadInitialContacts error: $e");
+    } finally {
+      _isContactRefreshed.value = true; // ✅ always end loading
     }
   }
 
   Future<void> refreshSync() async {
-    if (!connectivityService.isConnected.value) {
+    if (connectivityService.isConnected.value == false) {
       showAlertMessage(
           "No Internet Connection!\nPlease check your connection and try again.");
       return;

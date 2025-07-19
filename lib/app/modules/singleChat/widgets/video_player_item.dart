@@ -51,6 +51,9 @@ class VideoPlayerItem extends StatelessWidget {
   Widget build(BuildContext context) {
     // _generateThumbnail();
     print(localFilePath);
+    final thumbnailFile = File(!localFilePath.contains(".")
+        ? "$localFilePath.jpg"
+        : localFilePath);
     return GestureDetector(
       onTap: () => isReply ? null : _downloadAndOpenFile(context),
       child: SizedBox(
@@ -61,16 +64,20 @@ class VideoPlayerItem extends StatelessWidget {
             : Stack(
                 alignment: Alignment.center,
                 children: [
-                  ClipRRect(
+                  thumbnailFile.existsSync()
+                      ?ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.file(
-                      File(!localFilePath.contains(".")
-                          ? "$localFilePath.jpg"
-                          : localFilePath),
+                      thumbnailFile,
                       width: 280,
                       height: 200,
                       fit: BoxFit.cover,
                     ),
+                  ): Container(
+                      width: 280,
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 50),
                   ),
                   Container(
                     decoration: BoxDecoration(

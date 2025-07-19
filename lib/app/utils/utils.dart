@@ -510,12 +510,9 @@ Future<String> getReadableFileSize(File file) async {
 }
 
 Future<String?> getThumbnail(File videoFile) async {
-  final Directory thumDir;
-  if (Platform.isAndroid) {
-    thumDir = Directory("/storage/emulated/0");
-  } else {
-    thumDir = await getApplicationDocumentsDirectory();
-  }
+  final Directory thumDir = Platform.isAndroid
+      ? Directory("/storage/emulated/0")
+      : await getApplicationDocumentsDirectory();
 
   final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
 

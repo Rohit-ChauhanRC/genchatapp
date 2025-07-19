@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/constants/constants.dart';
@@ -178,9 +179,14 @@ class FolderCreation {
     }
   }
 
-  Future<String?> _downloadFile(String url, String savePath,String fileName,
+  Future<String?> _downloadFile(
+      String url,
+      String savePath,
+      String fileName,
       void Function(int received, int total)? onReceiveProgress,
-      Function()? onCancel) async {
+      Function()? onCancel
+      ) async {
+    final completer = Completer<String?>();
     try {
       // Perform the file download
       // final response = await http.get(Uri.parse(url));
@@ -202,29 +208,49 @@ class FolderCreation {
             }
           },
           onDone: () async {
-            await sink.flush();
-            await sink.close();
+            try {
+              await sink.flush();
+              await sink.close();
+
+              if (received < contentLength) {
+                if (await file.exists()) await file.delete();
+                completer.complete(null);
+              } else {
+                completer.complete(savePath);
+              }
+            } catch (e) {
+              completer.complete(null);
+            }
+
+            Get.find<SingleChatController>().activeDownloads.remove(fileName);
           },
           onError: (e) async{
             await sink.close();
+            try {
+              if (await file.exists()) await file.delete();
+            } catch (_) {}
             onCancel?.call();
+            completer.complete(null);
+
+            Get.find<SingleChatController>().activeDownloads.remove(fileName);
           },
           cancelOnError: true,
         );
         Get.find<SingleChatController>().activeDownloads[fileName] = sub;
 
-        return savePath;
+        // return savePath;
         // await file.writeAsBytes(response.bodyBytes); // Save the file
         // print("File downloaded to $savePath");
         // return savePath;
       } else {
         // print("Failed to download file: ${response.statusCode}");
-        return null;
+        completer.complete(null);
       }
     } catch (e) {
       // print("Error downloading file: $e");
-      return null;
+      completer.complete(null);
     }
+    return completer.future;
   }
 
   Future<void> clearMediaFiles() async {

@@ -1378,8 +1378,16 @@ class SingleChatController extends GetxController
 
   Future<void> checkIfFileExists(MessageType type, String fileName) async {
     final path = getFilePath(type, fileName);
-    final exists = await File(path).exists();
-    isDownloaded[fileName] = exists;
+    final file = File(path);
+    final exists = await file.exists();
+    final size = exists ? await file.length() : 0;
+
+    if (exists && size > 0) {
+      isDownloaded[fileName] = true;
+    } else {
+      if (exists) await file.delete(); // delete corrupt
+      isDownloaded[fileName] = false;
+    }
   }
 
   Future<void> downloadFile(
@@ -1387,8 +1395,7 @@ class SingleChatController extends GetxController
     String fileName,
     String url,
   ) async {
-    if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
-      return;
+    if (isDownloading[fileName] == true || isDownloaded[fileName] == true) return;
 
     isDownloading[fileName] = true;
     downloadedBytes[fileName] = 0;
@@ -1409,7 +1416,7 @@ class SingleChatController extends GetxController
           totalBytes[fileName] = 0;
         },
       );
-      if (filePath != null) {
+      if (filePath != null && File(filePath).existsSync()) {
         if (type == MessageType.video) {
           await getThumbnail(File(filePath.toString()));
 
@@ -1428,11 +1435,17 @@ class SingleChatController extends GetxController
   }
 
   Map<String, StreamSubscription<List<int>>> activeDownloads = {};
-  void cancelDownload(String fileName) {
+  void cancelDownload(MessageType type, String fileName) {
     activeDownloads[fileName]?.cancel(); // force cancel
     isDownloading[fileName] = false;
     downloadedBytes[fileName] = 0;
     totalBytes[fileName] = 0;
+    // Also ensure partial file (if any) is deleted
+    final path = getFilePath(type, fileName);
+    final file = File(path);
+    if (file.existsSync()) {
+      file.deleteSync(); // delete partial/corrupt file
+    }
     activeDownloads.remove(fileName);
   }
 

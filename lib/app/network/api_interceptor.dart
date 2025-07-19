@@ -10,6 +10,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import '../config/services/socket_service.dart';
 import '../data/local_database/local_database.dart';
 import '../routes/app_pages.dart';
+import '../utils/alert_popup_utils.dart';
 import 'api_client.dart';
 import 'api_endpoints.dart';
 
@@ -67,8 +68,7 @@ class ApiInterceptor extends Interceptor {
         if (isFormData) {
           print(
               "⚠️ Interceptor won't retry FormData request. Repo will handle retry.");
-          return handler
-              .next(err); // Let the repository retry manually with new FormData
+          return handler.next(err); // Let the repository retry manually with new FormData
         } else {
           // Retry JSON request
           try {
@@ -79,9 +79,11 @@ class ApiInterceptor extends Interceptor {
           }
         }
       } else {
+        showAlertMessage("Your session has expired. Please log in again.");
         await logout(() {
           Get.offAllNamed(Routes.LANDING);
         });
+        return;
       }
     }
 
@@ -119,6 +121,7 @@ class ApiInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
+        print("🔁 Refresh token response: ${response.statusCode} ${response.data}");
         String newAccessToken =
             response.data['data']['accessToken']; // ✅ Corrected key
         String newRefreshToken =

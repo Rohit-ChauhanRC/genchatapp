@@ -52,19 +52,21 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       print(
           'Initial socket connection established in HomeController: UserId for socket connection: $userId');
     });
-    var subscriptionTopic = ["genchat-message-$userId"];
+    String? userPhoneNumber = sharedPreferenceService.getUserData()?.phoneNumber;
+    var subscriptionTopic = ["genchat-message-$userPhoneNumber"];
     await NotificationService.subscribeToTopics(subscriptionTopic);
     await getGroups();
+    await selectedContactController.syncContactsWithServer();
     // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
     // print(connectivityService.isConnected.value);
-    SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
-      if (connectivityService.isConnected.value) {
-        // await setUserOnline();
-      } else {
-        // await setUserOffline();
-      }
-    });
+    // SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
+    //   if (connectivityService.isConnected.value) {
+    //     // await setUserOnline();
+    //   } else {
+    //     // await setUserOffline();
+    //   }
+    // });
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -88,7 +90,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
           await connectSocket();
-          await selectedContactController.syncContactsWithServer();
+          // await selectedContactController.syncContactsWithServer();
         }
 
         break;
@@ -96,7 +98,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
         print('📴 App Backgrounded: Disposing socket...');
-        disConnectSocket();
+        await disConnectSocket();
 
         break;
       default:
@@ -110,7 +112,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void disConnectSocket() async {
+  Future<void> disConnectSocket() async {
     socketService.disposeSocket();
   }
 

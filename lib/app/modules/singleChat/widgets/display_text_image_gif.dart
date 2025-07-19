@@ -166,7 +166,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                               const SizedBox(height: 12),
                               InkWell(
                                 onTap: () {
-                                  controller.cancelDownload(message);
+                                  controller.cancelDownload(type,message);
                                 },
                                 child: Icon(
                                   Icons.cancel_outlined,
@@ -223,7 +223,7 @@ class DisplayTextImageGIF extends StatelessWidget {
             case MessageType.video:
               return VideoPlayerItem(
                 videoUrl: path,
-                localFilePath: thumbnailPath ?? "",
+                localFilePath: thumbnailPath,
                 url: url ?? '',
                 isReply: isReply ?? false,
               );

@@ -17,8 +17,7 @@ class HomeBinding extends Bindings {
     Get.lazyPut<GroupRepository>(()=> GroupRepository(apiClient: Get.find<ApiClient>(), sharedPreferences: Get.find<SharedPreferenceService>()));
     Get.lazyPut<ConnectivityService>(()=> ConnectivityService());
     Get.lazyPut<IContactRepository>(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
-    Get.lazyPut(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
-    Get.lazyPut<SelectContactsController>(() => SelectContactsController());
+    Get.put<SelectContactsController>(SelectContactsController());
     Get.lazyPut<HomeController>(
       () => HomeController(),
     );

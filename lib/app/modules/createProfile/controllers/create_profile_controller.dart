@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
@@ -271,15 +272,16 @@ class CreateProfileController extends GetxController {
   }
 
   /// ✅ Navigate Back Based on Where the User Came From
-  void navigateBack() {
+  Future<void> navigateBack() async {
     if (isFromInsideApp) {
       SettingsController settingsController = Get.find<SettingsController>();
       settingsController.isRefreshed();
       Get.until((route) => route.settings.name == Routes.SETTINGS);
     } else {
-      sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
-      sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
-      Get.offAllNamed(Routes.HOME);
+      await sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
+      await sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
+      await FlutterContacts.requestPermission();
+      await Get.offAllNamed(Routes.HOME);
     }
   }
 

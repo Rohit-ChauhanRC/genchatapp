@@ -1,7 +1,8 @@
 import Firebase
 import Flutter
 import UIKit
-import awesome_notifications
+
+// import flutter_local_notifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -11,12 +12,10 @@ import awesome_notifications
   ) -> Bool {
     FirebaseApp.configure()
     GeneratedPluginRegistrant.register(with: self)
-    SwiftAwesomeNotificationsPlugin.setPluginRegistrantCallback { registry in
-      SwiftAwesomeNotificationsPlugin.register(
-        with: registry.registrar(
-          forPlugin: "io.flutter.plugins.awesomenotifications.AwesomeNotificationsPlugin")!)
+    // FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { (registry) in
+    //   GeneratedPluginRegistrant.register(with: registry)
+    // }
 
-    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

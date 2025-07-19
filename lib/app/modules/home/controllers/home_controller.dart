@@ -44,15 +44,22 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     // FocusManager.instance.primaryFocus?.unfocus();
     SystemChannels.textInput.invokeMethod('TextInput.hide');
 
-
     controllerInit();
 
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    await socketService.initSocket(userId!, onConnected: () {
-      print(
-          'Initial socket connection established in HomeController: UserId for socket connection: $userId');
-    });
-    var subscriptionTopic = ["genchat-message-$userId"];
+    String? phoneNumber = sharedPreferenceService
+        .getUserData()
+        ?.phoneNumber
+        .toString();
+    await socketService.initSocket(
+      userId!,
+      onConnected: () {
+        print(
+          'Initial socket connection established in HomeController: UserId for socket connection: $userId',
+        );
+      },
+    );
+    var subscriptionTopic = ["genchat-message-$phoneNumber"];
     await NotificationService.subscribeToTopics(subscriptionTopic);
     await getGroups();
     // connectSocket();
@@ -115,15 +122,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   void controllerInit() {
-    Get.lazyPut<ChatsController>(
-      () => ChatsController(),
-    );
-    Get.lazyPut<UpdatesController>(
-      () => UpdatesController(),
-    );
-    Get.lazyPut<CallController>(
-      () => CallController(),
-    );
+    Get.lazyPut<ChatsController>(() => ChatsController());
+    Get.lazyPut<UpdatesController>(() => UpdatesController());
+    Get.lazyPut<CallController>(() => CallController());
   }
 
   Future<void> getGroups() async {
@@ -160,7 +161,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
                 lastMessage: "",
                 name: i.group?.name ?? '',
                 profilePic: i.group?.displayPictureUrl ?? '',
-                timeSent: i.group?.updatedAt ??
+                timeSent:
+                    i.group?.updatedAt ??
                     "", //DateTime.now().toString(), //?? data.group?.createdAt,
                 uid: groupId.toString(),
                 isGroup: 1,

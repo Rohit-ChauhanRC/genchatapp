@@ -147,14 +147,14 @@ class FolderCreation {
     return filePath;
   }
 
-  Future<String?> checkAndHandleFile(
-      {required String fileName,
-      required String subFolderName,
-      required String messageType,
-      required String fileUrl,
-      void Function(int received, int total)? onReceiveProgress,
-      void Function()? onCancel,
-      }) async {
+  Future<String?> checkAndHandleFile({
+    required String fileName,
+    required String subFolderName,
+    required String messageType,
+    required String fileUrl,
+    void Function(int received, int total)? onReceiveProgress,
+    void Function()? onCancel,
+  }) async {
     try {
       // final directory = await getApplicationDocumentsDirectory();
       final Directory directory;
@@ -169,7 +169,13 @@ class FolderCreation {
       if (await File(filePath).exists()) {
         return filePath;
       } else {
-        final downloadedFilePath = await _downloadFile(fileUrl, filePath,fileName,onReceiveProgress, onCancel);
+        final downloadedFilePath = await _downloadFile(
+          fileUrl,
+          filePath,
+          fileName,
+          onReceiveProgress,
+          onCancel,
+        );
         return downloadedFilePath;
       }
     } catch (e) {
@@ -178,9 +184,13 @@ class FolderCreation {
     }
   }
 
-  Future<String?> _downloadFile(String url, String savePath,String fileName,
-      void Function(int received, int total)? onReceiveProgress,
-      Function()? onCancel) async {
+  Future<String?> _downloadFile(
+    String url,
+    String savePath,
+    String fileName,
+    void Function(int received, int total)? onReceiveProgress,
+    Function()? onCancel,
+  ) async {
     try {
       // Perform the file download
       // final response = await http.get(Uri.parse(url));
@@ -194,7 +204,7 @@ class FolderCreation {
         int received = 0;
 
         final sub = response.stream.listen(
-              (chunk) {
+          (chunk) {
             received += chunk.length;
             sink.add(chunk);
             if (onReceiveProgress != null) {
@@ -202,10 +212,10 @@ class FolderCreation {
             }
           },
           onDone: () async {
-            await sink.flush();
+            // await sink.flush();
             await sink.close();
           },
-          onError: (e) async{
+          onError: (e) async {
             await sink.close();
             onCancel?.call();
           },

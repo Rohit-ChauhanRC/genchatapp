@@ -16,7 +16,9 @@ import '../../utils/message_id_storage.dart';
 import 'encryption_service.dart';
 
 @pragma('vm:entry-point')
-Future<void> onNotificationBackgroundResponse(NotificationResponse response) async {
+Future<void> onNotificationBackgroundResponse(
+  NotificationResponse response,
+) async {
   debugPrint("📲 [BG Callback] Payload: ${response.payload}");
 
   if (response.payload != null && response.payload!.isNotEmpty) {
@@ -24,7 +26,7 @@ Future<void> onNotificationBackgroundResponse(NotificationResponse response) asy
   }
 }
 
-class NotificationService{
+class NotificationService {
   static final encryptionService = Get.find<EncryptionService>();
   static final prefs = Get.find<SharedPreferenceService>();
 
@@ -51,15 +53,17 @@ class NotificationService{
   }
 
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
     print("🔧 NotificationService.init() called");
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initSettings =
-    InitializationSettings(android: androidSettings);
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: DarwinInitializationSettings(),
+    );
 
     await _localNotificationsPlugin.initialize(
       initSettings,
@@ -67,13 +71,16 @@ class NotificationService{
         debugPrint("📲 [Foreground Tap] Payload: ${response.payload}");
         _onNotificationTapOrDismiss(response);
       },
-        onDidReceiveBackgroundNotificationResponse: onNotificationBackgroundResponse
+      onDidReceiveBackgroundNotificationResponse:
+          onNotificationBackgroundResponse,
     );
 
     // iOS is ignored because you only want Android foreground support
     FirebaseMessaging.onMessage.listen((msg) {
       debugPrint("📨 [onMessage.listen] Message received");
-      _handleForegroundMessage(msg);
+      if (Platform.isAndroid) {
+        _handleForegroundMessage(msg);
+      }
     });
   }
 
@@ -107,14 +114,15 @@ class NotificationService{
       return;
     }
     print("🔔 [FG] Showing notification for messageId: $messageId");
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'foreground_channel_id',
-      'Foreground Notifications',
-      channelDescription: 'Used for showing foreground notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-    );
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'foreground_channel_id',
+          'Foreground Notifications',
+          channelDescription: 'Used for showing foreground notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+        );
 
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
@@ -130,7 +138,9 @@ class NotificationService{
     await addShownMessageId(messageId);
   }
 
-  static Future<void> _onNotificationTapOrDismiss(NotificationResponse response) async {
+  static Future<void> _onNotificationTapOrDismiss(
+    NotificationResponse response,
+  ) async {
     final payload = response.payload;
     debugPrint('📲 [Tap/Dismiss] Type: ${response.notificationResponseType}');
     debugPrint('📲 [Tap/Dismiss] Payload: $payload');
@@ -139,7 +149,6 @@ class NotificationService{
       await removeShownMessageId(payload);
     }
   }
-
 
   static Future<String> _resolveIconPath(String? dispPic) async {
     final dir = await getApplicationDocumentsDirectory();
@@ -158,17 +167,20 @@ class NotificationService{
 
   static String _mapTypeToEmoji(MessageType type) {
     return {
-      MessageType.image: '📷 Photo',
-      MessageType.video: '🎥 Video',
-      MessageType.document: '📄 Document',
-      MessageType.audio: '🔉 Audio',
-      MessageType.gif: '🎁 GIF',
-    }[type] ?? '';
+          MessageType.image: '📷 Photo',
+          MessageType.video: '🎥 Video',
+          MessageType.document: '📄 Document',
+          MessageType.audio: '🔉 Audio',
+          MessageType.gif: '🎁 GIF',
+        }[type] ??
+        '';
   }
 
   static Future<void> subscribeToTopics(List<String> topics) async {
-    List<String> cleanedTopics =
-    topics.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    List<String> cleanedTopics = topics
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
     for (String topic in cleanedTopics) {
       await FirebaseMessaging.instance.subscribeToTopic(topic);
@@ -179,7 +191,7 @@ class NotificationService{
     List<String>? existingTopics = prefs.getList(subscribedTopics) ?? [];
     Set<String> updatedTopics = {
       ...existingTopics,
-      ...cleanedTopics
+      ...cleanedTopics,
     }; // Merge sets to avoid duplicates
     await prefs.setList(subscribedTopics, updatedTopics.toList());
   }

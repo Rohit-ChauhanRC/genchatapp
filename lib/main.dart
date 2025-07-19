@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -74,15 +73,16 @@ void main() async {
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
-  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    announcement: true,
-    badge: true,
-    carPlay: true,
-    criticalAlert: true,
-    provisional: true,
-    sound: true,
-  );
+  NotificationSettings settings = await FirebaseMessaging.instance
+      .requestPermission(
+        alert: true,
+        announcement: true,
+        badge: true,
+        carPlay: true,
+        criticalAlert: true,
+        provisional: true,
+        sound: true,
+      );
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true, // Required to display a heads up notification
     badge: true,
@@ -97,10 +97,7 @@ void main() async {
     print('⚠️ Notification permission not determined');
   }
 
-
-
   AppConfig.setEnvironment(AppEnvironment.prod);
-
 
   runApp(const App());
 }
@@ -122,7 +119,6 @@ class App extends StatelessWidget {
     );
   }
 }
-
 
 ///AwesomeNotification
 // AwesomeNotifications().initialize(

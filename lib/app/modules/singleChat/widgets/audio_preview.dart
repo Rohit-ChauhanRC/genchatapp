@@ -45,7 +45,7 @@ class AudioPreview extends StatelessWidget {
             // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
-                width: 100,
+                width: 70,
                 child: Text(
                   "${encryptionService.isEncryptedMessage(message.toString()) ? encryptionService.decryptText(message.toString()) : message}",
                   overflow: TextOverflow.visible,

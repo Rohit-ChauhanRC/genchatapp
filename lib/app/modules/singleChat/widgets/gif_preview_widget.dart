@@ -7,10 +7,7 @@ import 'package:gif/gif.dart';
 import 'dart:io';
 
 class GifPreviewWidget extends StatelessWidget {
-  GifPreviewWidget({
-    super.key,
-    required this.filePath,
-  });
+  GifPreviewWidget({super.key, required this.filePath});
 
   final String filePath;
 
@@ -41,7 +38,7 @@ class GifPreviewWidget extends StatelessWidget {
           image: Image.file(File(filePath)).image,
           autostart: Autostart.loop,
           width: Get.width,
-          fit: BoxFit.fill,
+          fit: BoxFit.contain,
           height: Get.height,
         ),
       ),

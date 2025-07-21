@@ -1,4 +1,3 @@
-
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
@@ -81,7 +80,7 @@ class DataBaseService {
     ContactsTable().onUpgrade(database, oldVersion, newVersion);
   }
 
-  Future<void> closeDb() async{
+  Future<void> closeDb() async {
     // Optional: clear current in-memory references only
     _database?.close();
     _database = null;
@@ -97,10 +96,7 @@ class DataBaseService {
   }
 }
 
-
-
 extension BackupRestore on DataBaseService {
-
   /// Backup the database file to external storage
   // Future<void> backupDatabase() async {
   //   if (_userId == null) throw Exception("User ID not set.");
@@ -125,16 +121,32 @@ extension BackupRestore on DataBaseService {
   // }
 
   Future<void> backupAllData({
-    required void Function(int done, int total, int uploadedBytes, int totalBytes) onProgress,
+    required void Function(
+      int done,
+      int total,
+      int uploadedBytes,
+      int totalBytes,
+    )
+    onProgress,
   }) async {
     if (_userId == null) throw Exception("User ID not set.");
 
     final root = await folderCreation.getRootFolderPath();
     final dbPath = await fullPath;
-    final userBackupDir = Directory('/storage/emulated/0/GenChatBackup/$_userId');
+    final userBackupDir = Directory(
+      '/storage/emulated/0/GenChatBackup/$_userId',
+    );
     if (!userBackupDir.existsSync()) userBackupDir.createSync(recursive: true);
 
-    final mediaTypes = ['Image', 'Video', 'Document'];
+    final mediaTypes = [
+      'Image',
+      'Video',
+      'Document',
+      "Audio",
+      "GIFs",
+      "Backups",
+      "Thumbnail",
+    ];
     int totalFiles = 0;
     int copiedFiles = 0;
     int totalBytes = 0;
@@ -184,7 +196,6 @@ extension BackupRestore on DataBaseService {
     }
   }
 
-
   /// Restore the database file from backup
   // Future<void> restoreDatabase() async {
   //   if (_userId == null) throw Exception("User ID not set.");
@@ -202,7 +213,8 @@ extension BackupRestore on DataBaseService {
   // }
 
   Future<void> restoreAllData({
-    required void Function(int done, int total, int copiedBytes, int totalBytes) onProgress,
+    required void Function(int done, int total, int copiedBytes, int totalBytes)
+    onProgress,
   }) async {
     if (_userId == null) throw Exception("User ID not set.");
 
@@ -210,7 +222,8 @@ extension BackupRestore on DataBaseService {
     final dbFile = File('${backupDir.path}/genchat_$_userId.db');
     final destDbPath = await fullPath;
 
-    if (!await dbFile.exists()) throw Exception("No backup found for user $_userId.");
+    if (!await dbFile.exists())
+      throw Exception("No backup found for user $_userId.");
 
     final mediaFolders = ['Image', 'Video', 'Document'];
     int totalFiles = 1;
@@ -220,7 +233,10 @@ extension BackupRestore on DataBaseService {
 
     // Get total size of all files
     if (await backupDir.exists()) {
-      await for (final entity in backupDir.list(recursive: true, followLinks: false)) {
+      await for (final entity in backupDir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is File) {
           totalBytes += await entity.length();
         }
@@ -261,15 +277,11 @@ extension BackupRestore on DataBaseService {
     }
   }
 
-
-
   Future<bool> hasBackup() async {
     if (_userId == null) return false;
     // final backupPath = '/storage/emulated/0/GenChatBackup/genchat_$_userId.db';
     // return File(backupPath).exists();
     final basePath = '/storage/emulated/0/GenChatBackup/$_userId';
     return File('$basePath/genchat_$_userId.db').exists();
-
   }
-
 }

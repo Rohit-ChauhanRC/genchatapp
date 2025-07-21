@@ -21,13 +21,13 @@ class FolderCreation {
         // final Directory appDir = await getApplicationDocumentsDirectory();
         final Directory appDir;
         if (Platform.isAndroid) {
-          appDir = Directory("/storage/emulated/0");
+          appDir = Directory("/storage/emulated/0/Android/media");
         } else {
           appDir = await getApplicationDocumentsDirectory();
         }
 
         // Define the root folder
-        final String rootFolderPath = '${appDir.path}/$appName';
+        final String rootFolderPath = '${appDir.path}/$appPackageName/$appName';
 
         // Define subfolders
         final List<String> subFolders = [
@@ -71,11 +71,11 @@ class FolderCreation {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
       if (Platform.isAndroid) {
-        appDir = Directory("/storage/emulated/0");
+        appDir = Directory("/storage/emulated/0/Android/media");
       } else {
         appDir = await getApplicationDocumentsDirectory();
       }
-      final String subFolderPath = '${appDir.path}/$appName/$subFolder';
+      final String subFolderPath = '${appDir.path}/$appPackageName/$appName/$subFolder';
 
       final Directory dir = Directory(subFolderPath);
       if (!await dir.exists()) {
@@ -101,12 +101,12 @@ class FolderCreation {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
       if (Platform.isAndroid) {
-        appDir = Directory("/storage/emulated/0");
+        appDir = Directory("/storage/emulated/0/Android/media");
       } else {
         appDir = await getApplicationDocumentsDirectory();
       }
 
-      final String subFolderPath = '${appDir.path}/$appName/$subFolder';
+      final String subFolderPath = '${appDir.path}/$appPackageName/$appName/$subFolder';
 
       final Directory dir = Directory(subFolderPath);
       if (!await dir.exists()) {
@@ -139,11 +139,11 @@ class FolderCreation {
     // final directory = await getApplicationDocumentsDirectory();
     final Directory directory;
     if (Platform.isAndroid) {
-      directory = Directory("/storage/emulated/0");
+      directory = Directory("/storage/emulated/0/Android/media");
     } else {
       directory = await getApplicationDocumentsDirectory();
     }
-    final filePath = "${directory.path}/$appName/";
+    final filePath = "${directory.path}/$appPackageName/$appName/";
     // print('RootFolderPath:---------> $filePath');
     return filePath;
   }
@@ -160,12 +160,12 @@ class FolderCreation {
       // final directory = await getApplicationDocumentsDirectory();
       final Directory directory;
       if (Platform.isAndroid) {
-        directory = Directory("/storage/emulated/0");
+        directory = Directory("/storage/emulated/0/Android/media");
       } else {
         directory = await getApplicationDocumentsDirectory();
       }
 
-      final filePath = "${directory.path}/$appName/$subFolderName/$fileName";
+      final filePath = "${directory.path}/$appPackageName/$appName/$subFolderName/$fileName";
 
       if (await File(filePath).exists()) {
         return filePath;
@@ -263,11 +263,11 @@ class FolderCreation {
     // Directory appDir = await getApplicationDocumentsDirectory();
     final Directory appDir;
     if (Platform.isAndroid) {
-      appDir = Directory("/storage/emulated/0");
+      appDir = Directory("/storage/emulated/0/Android/media");
     } else {
       appDir = await getApplicationDocumentsDirectory();
     }
-    final String rootFolderPath = '${appDir.path}/$appName';
+    final String rootFolderPath = '${appDir.path}/$appPackageName/$appName';
 
     final List<String> subFolders = [
       '$rootFolderPath/Database',
@@ -320,11 +320,11 @@ class FolderCreation {
       // final Directory appDir = await getApplicationDocumentsDirectory();
       final Directory appDir;
       if (Platform.isAndroid) {
-        appDir = Directory("/storage/emulated/0/");
+        appDir = Directory("/storage/emulated/0/Android/media");
       } else {
         appDir = await getApplicationDocumentsDirectory();
       }
-      final String filePath = '${appDir.path}/$appName/$subFolder/$fileName';
+      final String filePath = '${appDir.path}/$appPackageName/$appName/$subFolder/$fileName';
 
       final File file = File(filePath);
       if (await file.exists()) {

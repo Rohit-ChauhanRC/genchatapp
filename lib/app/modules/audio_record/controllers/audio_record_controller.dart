@@ -6,6 +6,8 @@ import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../constants/constants.dart';
+
 class AudioRecordController extends GetxController {
   //
   final SingleChatController singleChatController = Get.find();
@@ -43,12 +45,12 @@ class AudioRecordController extends GetxController {
 
     final Directory thumDir;
     if (Platform.isAndroid) {
-      thumDir = Directory("/storage/emulated/0");
+      thumDir = Directory("/storage/emulated/0/Android/media");
     } else {
       thumDir = await getApplicationDocumentsDirectory();
     }
 
-    final String rootFolderPath = '${thumDir.path}/GenChat/Audio';
+    final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Audio';
 
     final Directory dirThum = Directory(rootFolderPath);
     if (!await dirThum.exists()) {

@@ -27,6 +27,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../config/services/folder_creation.dart';
 import '../../../config/services/socket_service.dart';
+import '../../../constants/constants.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
 import '../../../data/models/new_models/response_model/message_ack_model.dart';
@@ -1491,12 +1492,12 @@ class SingleChatController extends GetxController
 
       final Directory thumDir;
       if (Platform.isAndroid) {
-        thumDir = Directory("/storage/emulated/0");
+        thumDir = Directory("/storage/emulated/0/Android/media");
       } else {
         thumDir = await getApplicationDocumentsDirectory();
       }
 
-      final String rootFolderPath = '${thumDir.path}/GenChat/Audio';
+      final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Audio';
 
       final Directory dirThum = Directory(rootFolderPath);
       if (!await dirThum.exists()) {

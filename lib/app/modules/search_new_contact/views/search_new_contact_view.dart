@@ -6,6 +6,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 
 import 'package:get/get.dart';
 
+import '../../../config/theme/app_colors.dart';
 import '../controllers/search_new_contact_controller.dart';
 
 class SearchNewContactView extends GetView<SearchNewContactController> {
@@ -37,10 +38,11 @@ class SearchNewContactView extends GetView<SearchNewContactController> {
             children: [
               // Search Input
               TextFormField(
+                controller: controller.searchTextController,
                 onChanged: (value) async {
                   if (value.length == 10) {
                     controller.searchNewQuery = value;
-                    await controller.seachNewContactsWithServer();
+                    await controller.searchNewContactsWithServer();
                   }
                 },
                 inputFormatters: [
@@ -69,8 +71,22 @@ class SearchNewContactView extends GetView<SearchNewContactController> {
                   var filteredContacts = controller.searchNewContacts;
                   if (filteredContacts.isEmpty) {
                     return Center(
-                      child: Text(
-                          "No contacts found for ${controller.searchNewQuery}"),
+                      child: controller.searchTextController.text.isEmpty ?
+                      Text("Please enter number for search new contact.") :
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children:[
+                          Text("${controller.searchNewQuery} user is not associated with GenChat."),
+                          SizedBox(height: 5,),
+                          Text("Please click here to share a app link.",
+                            // style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
+                          ElevatedButton(
+                              onPressed: (){},
+                              child: Text("Send Link", style: TextStyle(color: AppColors.whiteColor),)
+                          )
+
+                      ]),
                     );
                   }
                   return ListView.builder(

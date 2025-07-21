@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository.dart';
@@ -16,6 +17,8 @@ class SearchNewContactController extends GetxController {
   final RxString _searchNewQuery = ''.obs;
   String get searchNewQuery => _searchNewQuery.value;
   set searchNewQuery(String value) => _searchNewQuery.value = value;
+
+  final TextEditingController searchTextController = TextEditingController();
 
   List<UserList> get searchNewContacts {
     if (searchNewQuery.isEmpty) return contactsNew;
@@ -53,7 +56,7 @@ class SearchNewContactController extends GetxController {
     Get.toNamed(Routes.SINGLE_CHAT, arguments: user);
   }
 
-  Future<void> seachNewContactsWithServer() async {
+  Future<void> searchNewContactsWithServer() async {
     try {
       if (await FlutterContacts.requestPermission()) {
         final serverUsers =

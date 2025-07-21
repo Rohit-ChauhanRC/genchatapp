@@ -14,6 +14,7 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../config/services/filePickerService.dart';
 import '../constants/colors.dart';
+import '../constants/constants.dart';
 import '../constants/message_enum.dart';
 import '../modules/singleChat/mediaPickerFiles/media_preview_screen.dart';
 import 'alert_popup_utils.dart';
@@ -511,10 +512,10 @@ Future<String> getReadableFileSize(File file) async {
 
 Future<String?> getThumbnail(File videoFile) async {
   final Directory thumDir = Platform.isAndroid
-      ? Directory("/storage/emulated/0")
+      ? Directory("/storage/emulated/0/Android/media")
       : await getApplicationDocumentsDirectory();
 
-  final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
+  final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Thumbnail';
 
   final Directory dirThum = Directory(rootFolderPath);
   if (!await dirThum.exists()) {

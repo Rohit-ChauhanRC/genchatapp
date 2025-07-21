@@ -84,13 +84,13 @@ class SelectContactsView extends GetView<SelectContactsController> {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: const ListTile(
                     title: Text(
-                      "New Contact",
+                      "Search New Contact",
                       style: TextStyle(
                         fontSize: 18,
                       ),
                     ),
                     leading: CircleAvatar(
-                      child: Icon(Icons.person),
+                      child: Icon(Icons.search_rounded),
                       radius: 30,
                     ),
                   ),

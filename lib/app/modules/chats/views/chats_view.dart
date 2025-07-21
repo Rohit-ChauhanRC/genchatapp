@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../constants/constants.dart';
+import '../../../utils/profile_image_dialog.dart';
 import '../controllers/chats_controller.dart';
 
 class ChatsView extends GetView<ChatsController> {
@@ -96,16 +97,16 @@ class ChatsView extends GetView<ChatsController> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: newGroup,
-                      child: Text(
-                        newGroup,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: blackColor),
-                      ),
-                    ),
+                    // const PopupMenuItem(
+                    //   value: newGroup,
+                    //   child: Text(
+                    //     newGroup,
+                    //     style: TextStyle(
+                    //         fontSize: 14,
+                    //         fontWeight: FontWeight.w400,
+                    //         color: blackColor),
+                    //   ),
+                    // ),
                     const PopupMenuItem(
                       value: settings,
                       child: Text(
@@ -191,49 +192,24 @@ class ChatsView extends GetView<ChatsController> {
                                       ? AppColors.mySideBgColor.withOpacity(0.3)
                                       : Colors.transparent,
                                 ),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.hideKeyboard();
-                                    if (controller
-                                        .selectedChatUids.isNotEmpty) {
-                                      controller.toggleChatSelection(
-                                          chatConntactModel.uid!);
-                                    } else {
-                                      if (chatConntactModel.isGroup != 1) {
-                                        Get.toNamed(Routes.SINGLE_CHAT,
-                                            arguments: UserList(
-                                              userId: int.parse(
-                                                  chatConntactModel.uid!),
-                                              name: chatConntactModel.name,
-                                              displayPictureUrl:
-                                                  chatConntactModel.profilePic,
-                                              localName: chatConntactModel.name,
-                                            ));
-                                      } else if (chatConntactModel.isGroup ==
-                                          1) {
-                                        Get.toNamed(Routes.GROUP_CHATS,
-                                            arguments: UserList(
-                                              userId: int.parse(
-                                                  chatConntactModel.uid!),
-                                              name: chatConntactModel.name,
-                                              displayPictureUrl:
-                                                  chatConntactModel.profilePic,
-                                              localName: chatConntactModel.name,
-                                            ));
-                                      }
-                                    }
-                                  },
-                                  onLongPress: () {
-                                    controller.toggleChatSelection(
-                                        chatConntactModel.uid!);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 18, vertical: 10),
-                                    child: Row(
-                                      children: [
-                                        // Profile Image
-                                        ClipRRect(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      // Profile Image
+                                      InkWell(
+                                        onTap:(){
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => ProfileImageDialog(
+                                              imageUrl: chatConntactModel.profilePic,
+                                              userName: chatConntactModel.name,
+                                              isGroup: chatConntactModel.isGroup == 1,
+                                            ),
+                                          );
+                                        },
+                                        child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(25),
                                           child: chatConntactModel.profilePic ==
@@ -279,10 +255,45 @@ class ChatsView extends GetView<ChatsController> {
                                                   ),
                                                 ),
                                         ),
-                                        const SizedBox(width: 10),
+                                      ),
+                                      const SizedBox(width: 10),
 
-                                        // Chat Info
-                                        Expanded(
+                                      // Chat Info
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () {
+                                            controller.hideKeyboard();
+                                            if (controller.selectedChatUids.isNotEmpty) {
+                                              controller.toggleChatSelection(chatConntactModel.uid!);
+                                            } else {
+                                              if (chatConntactModel.isGroup != 1) {
+                                                Get.toNamed(Routes.SINGLE_CHAT,
+                                                    arguments: UserList(
+                                                      userId: int.parse(
+                                                          chatConntactModel.uid!),
+                                                      name: chatConntactModel.name,
+                                                      displayPictureUrl:
+                                                          chatConntactModel.profilePic,
+                                                      localName: chatConntactModel.name,
+                                                    ));
+                                              } else if (chatConntactModel.isGroup ==
+                                                  1) {
+                                                Get.toNamed(Routes.GROUP_CHATS,
+                                                    arguments: UserList(
+                                                      userId: int.parse(
+                                                          chatConntactModel.uid!),
+                                                      name: chatConntactModel.name,
+                                                      displayPictureUrl:
+                                                          chatConntactModel.profilePic,
+                                                      localName: chatConntactModel.name,
+                                                    ));
+                                              }
+                                            }
+                                          },
+                                          onLongPress: () {
+                                            controller.toggleChatSelection(
+                                                chatConntactModel.uid!);
+                                          },
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -351,60 +362,60 @@ class ChatsView extends GetView<ChatsController> {
                                             ],
                                           ),
                                         ),
+                                      ),
 
-                                        // Timestamp
-                                        Column(
-                                          children: [
-                                            Text(
-                                              formatLastMessageTime(
-                                                  chatConntactModel.timeSent
-                                                      .toString()),
-                                              style: TextStyle(
-                                                fontWeight: chatConntactModel
-                                                            .unreadCount! >
-                                                        0
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w300,
-                                                color: chatConntactModel
-                                                            .unreadCount! >
-                                                        0
-                                                    ? textBarColor
-                                                    : blackColor,
-                                                fontSize: 10,
-                                              ),
+                                      // Timestamp
+                                      Column(
+                                        children: [
+                                          Text(
+                                            formatLastMessageTime(
+                                                chatConntactModel.timeSent
+                                                    .toString()),
+                                            style: TextStyle(
+                                              fontWeight: chatConntactModel
+                                                          .unreadCount! >
+                                                      0
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w300,
+                                              color: chatConntactModel
+                                                          .unreadCount! >
+                                                      0
+                                                  ? textBarColor
+                                                  : blackColor,
+                                              fontSize: 10,
                                             ),
-                                            chatConntactModel.unreadCount! > 0
-                                                ? Container(
-                                                    decoration: BoxDecoration(
-                                                      color: textBarColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              Get.height / 2),
+                                          ),
+                                          chatConntactModel.unreadCount! > 0
+                                              ? Container(
+                                                  decoration: BoxDecoration(
+                                                    color: textBarColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            Get.height / 2),
+                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 5),
+                                                  child: Text(
+                                                    chatConntactModel
+                                                        .unreadCount
+                                                        .toString(),
+                                                    softWrap: true,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w300,
+                                                      color: whiteColor,
                                                     ),
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 5),
-                                                    child: Text(
-                                                      chatConntactModel
-                                                          .unreadCount
-                                                          .toString(),
-                                                      softWrap: true,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w300,
-                                                        color: whiteColor,
-                                                      ),
-                                                    ),
-                                                  )
-                                                : const SizedBox.shrink(),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                  ),
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );

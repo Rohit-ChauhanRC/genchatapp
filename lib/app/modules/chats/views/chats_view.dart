@@ -59,14 +59,15 @@ class ChatsView extends GetView<ChatsController> {
                     onPressed: () {
                       // _showDeleteConfirmationDialog(context);
                       showAlertMessageWithAction(
-                          title: "Delete Chat?",
-                          message:
-                              "All messages and media will be deleted. Are you sure you want to continue?",
-                          confirmText: "Delete",
-                          cancelText: "Cancel",
-                          onConfirm: () =>
-                              controller.deleteSelectedChatsForMeOnly(),
-                          context: context);
+                        title: "Delete Chat?",
+                        message:
+                            "All messages and media will be deleted. Are you sure you want to continue?",
+                        confirmText: "Delete",
+                        cancelText: "Cancel",
+                        onConfirm: () =>
+                            controller.deleteSelectedChatsForMeOnly(),
+                        context: context,
+                      );
                     },
                   ),
 
@@ -82,10 +83,7 @@ class ChatsView extends GetView<ChatsController> {
 
                 // Always show the popup menu
                 PopupMenuButton(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: whiteColor,
-                  ),
+                  icon: const Icon(Icons.more_vert, color: whiteColor),
                   offset: const Offset(0, 40),
                   color: whiteColor,
                   onSelected: (value) {
@@ -112,9 +110,10 @@ class ChatsView extends GetView<ChatsController> {
                       child: Text(
                         settings,
                         style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: blackColor),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: blackColor,
+                        ),
                       ),
                     ),
                   ],
@@ -335,14 +334,15 @@ class ChatsView extends GetView<ChatsController> {
                                                             chatConntactModel
                                                                     .lastMessage !=
                                                                 MessageType
-                                                                .audio
-                                                                .value
-                                                                ? controller
-                                                            .encryptionService
-                                                            .decryptText(
+                                                                    .audio
+                                                                    .value
+                                                        ? controller
+                                                              .encryptionService
+                                                              .decryptText(
                                                                 chatConntactModel
                                                                     .lastMessage
-                                                                    .toString())
+                                                                    .toString(),
+                                                              )
                                                         : chatConntactModel
                                                             .lastMessage
                                                             .toString()),
@@ -439,11 +439,7 @@ class ChatsView extends GetView<ChatsController> {
           Get.toNamed(Routes.SELECT_CONTACTS);
         },
         backgroundColor: textBarColor,
-        child: const Icon(
-          Icons.add_comment,
-          color: whiteColor,
-          size: 30,
-        ),
+        child: const Icon(Icons.add_comment, color: whiteColor, size: 30),
       ),
     );
   }

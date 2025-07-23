@@ -9,17 +9,17 @@ class ChatConectTable {
   Future<void> createTable(Database database) async {
     await database.execute("""
   CREATE TABLE IF NOT EXISTS $tableName (
-    "id" INTEGER ,
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "name" TEXT,
     "profilePic" TEXT,
-    "contactId" TEXT UNIQUE,
+    "contactId" TEXT,
     "timeSent" TEXT,
     "lastMessage" TEXT,
     "lastMessageId" INTEGER,
-    "uid" TEXT UNIQUE,
+    "uid" TEXT,
     "unreadCount" INTEGER,
     "isGroup" INTEGER,
-    PRIMARY KEY("id" AUTOINCREMENT)
+    UNIQUE(uid, isGroup)
   );
 """);
   }
@@ -45,14 +45,14 @@ class ChatConectTable {
     return e.map((el) => ChatConntactModel.fromMap((el))).toList();
   }
 
-  Future<ChatConntactModel?> fetchById({required String uid}) async {
+  Future<ChatConntactModel?> fetchById({required String uid, required bool isGroup}) async {
     final database = await DataBaseService().database;
 
     // Query the database with the UID condition
     final result = await database.query(
       tableName,
-      where: 'uid = ?', // Add WHERE clause
-      whereArgs: [uid], // Provide arguments for WHERE
+      where: 'uid = ? AND isGroup = ?', // Add WHERE clause
+      whereArgs: [uid, isGroup ? 1 : 0], // Provide arguments for WHERE
       limit: 1, // Limit to 1 result for efficiency
     );
 
@@ -66,13 +66,13 @@ class ChatConectTable {
 
   Future<void> updateContact({
     required String uid,
+    required int isGroup,
     int? lastMessageId,
     String? profilePic,
     String? lastMessage,
     String? timeSent,
     String? name,
     int? unreadCount,
-    int? isGroup,
   }) async {
     final db = await DataBaseService().database;
 
@@ -92,13 +92,29 @@ class ChatConectTable {
       await db.update(
         tableName,
         updatedValues,
-        where: 'uid = ?',
-        whereArgs: [uid],
+        where: 'uid = ? AND isGroup = ?',
+        whereArgs: [uid,isGroup],
       );
     } else {
       print('⚠️ [updateContact] No values to update for uid=$uid');
     }
   }
+
+  Future<bool> isGroupContact(String uid) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'uid = ?',
+      whereArgs: [uid],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      final row = result.first;
+      return row['isGroup'] == 1;
+    }
+    return false;
+  }
+
 
   Future<void> deleteChatUser(String uid) async {
     final db = await DataBaseService().database;

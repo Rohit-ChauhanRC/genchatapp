@@ -854,6 +854,7 @@ class SingleChatController extends GetxController
             await ChatConectTable().updateContact(
               lastMessageId: 0,
               uid: message.recipientId.toString(),
+              isGroup: 0,
               lastMessage: "This message was deleted",
               timeSent: message.messageSentFromDeviceTime,
             );
@@ -891,6 +892,7 @@ class SingleChatController extends GetxController
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
                 uid: contactUid,
+                isGroup: 0,
                 lastMessage: newLast.message,
                 timeSent: newLast.messageSentFromDeviceTime,
               );
@@ -904,6 +906,7 @@ class SingleChatController extends GetxController
               await chatConectTable.updateContact(
                 lastMessageId: 0,
                 uid: contactUid,
+                isGroup: 0,
                 lastMessage: '',
                 timeSent: '',
               );
@@ -1363,6 +1366,7 @@ class SingleChatController extends GetxController
 
     await chatConectTable.updateContact(
       uid: receiverUserData!.userId.toString(),
+      isGroup: 0,
       lastMessage: "",
       timeSent: "",
     );

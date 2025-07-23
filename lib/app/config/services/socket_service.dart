@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
@@ -21,6 +22,7 @@ class SocketService extends GetxService {
   final ContactsTable contactsTable = ContactsTable();
 
   final ChatConectTable chatConectTable = ChatConectTable();
+  final GroupsTable groupsTable = GroupsTable();
 
   final MessageTable messageTable = MessageTable();
   final FolderCreation folderCreation = FolderCreation();
@@ -115,6 +117,7 @@ class SocketService extends GetxService {
             // default if null
             state: MessageState.sent,
             senderPhoneNumber: data["senderPhoneNumber"],
+            isGroupMessage:data["isGroupMessage"] ?? false,
             isRepliedMessage: data["isRepliedMessage"] ?? false,
             messageRepliedOnId: data["messageRepliedOnId"],
             messageRepliedOn: data["messageRepliedOn"] ?? '',
@@ -141,6 +144,7 @@ class SocketService extends GetxService {
           messageId: data["messageId"],
           recipientId: data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          isGroupMessage: data["isGroupMessage"],
           messageType: data['messageType'] != null
               ? MessageTypeExtension.fromValue(data['messageType'])
               : MessageType.text,
@@ -253,6 +257,7 @@ class SocketService extends GetxService {
           if (isDeleteFromEveryOne) {
             await chatConectTable.updateContact(
               uid: msg!.senderId.toString(),
+              isGroup: 0,
               lastMessageId: 0,
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
@@ -266,6 +271,7 @@ class SocketService extends GetxService {
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
                 uid: msg!.recipientId.toString(),
+                isGroup: 0,
                 lastMessage: newLast.message,
                 timeSent: newLast.clientSystemMessageId,
               );
@@ -273,6 +279,7 @@ class SocketService extends GetxService {
               await chatConectTable.updateContact(
                 lastMessageId: 0,
                 uid: msg!.recipientId.toString(),
+                isGroup: 0,
                 lastMessage: '',
                 timeSent: '',
               );
@@ -291,6 +298,7 @@ class SocketService extends GetxService {
       // print("userData after json to model: $userDetails");
       await chatConectTable.updateContact(
         uid: userDetails.userId.toString(),
+        isGroup: 0,
         profilePic: userDetails.displayPictureUrl,
       );
       await contactsTable.updateUserFields(
@@ -367,113 +375,97 @@ class SocketService extends GetxService {
     print('🔌 Socket disposed manually');
   }
 
-  void saveChatContacts(NewMessageModel data) async {
-    // Try to get user from local contacts
-    final user = await contactsTable.getUserById(data.recipientId!);
-    // print('🔍 [saveChatContacts] Found user from contactsTable: ${user?.toMap()}');
+  Future<void> saveChatContacts(NewMessageModel data) async {
+    try {
+      final messageText = _getMessageTypeText(data);
 
-    // If user is found, proceed as usual
-    if (user != null) {
-      final chatUser =
-          await chatConectTable.fetchById(uid: user.userId.toString());
+      // ✅ 1. Handle GROUP message
+      if (data.isGroupMessage == true) {
+        final groupId = data.recipientId.toString();
+        final group = await groupsTable.getGroupById(int.parse(groupId));
 
-      if (chatUser != null) {
+        if (group != null) {
+          final existing = await chatConectTable.fetchById(uid: groupId, isGroup: true);
+
+          if (existing != null) {
+            await chatConectTable.updateContact(
+              uid: groupId,
+              lastMessage: messageText,
+              lastMessageId: data.messageId,
+              timeSent: data.messageSentFromDeviceTime,
+              name: existing.name, // Don't override name/profilePic
+              profilePic: existing.profilePic,
+              isGroup: 1,
+            );
+          } else {
+            await chatConectTable.insert(
+              contact: ChatConntactModel(
+                uid: groupId,
+                contactId: groupId,
+                lastMessage: messageText,
+                lastMessageId: data.messageId,
+                timeSent: data.messageSentFromDeviceTime,
+                name: group.group?.name ?? '',
+                profilePic: group.group?.displayPictureUrl ?? '',
+                isGroup: 1,
+              ),
+            );
+          }
+        }
+        return; // ✅ Done with group
+      }
+
+      // ✅ 2. Handle PERSONAL message
+      final userId = data.recipientId.toString();
+      final existing = await chatConectTable.fetchById(uid: userId, isGroup: false);
+
+      final user = await contactsTable.getUserById(data.recipientId!);
+      final name = user?.localName ?? '';
+      final profilePic = user?.displayPictureUrl ?? '';
+
+      if (existing != null) {
         await chatConectTable.updateContact(
-          uid: user.userId.toString(),
-          lastMessage: data.messageType == MessageType.image
-              ? MessageType.image.value
-              : data.messageType == MessageType.video
-                  ? MessageType.video.value
-                  : data.messageType == MessageType.document
-                      ? MessageType.document.value
-                      : data.messageType == MessageType.gif
-              ? MessageType.gif.value
-              : data.messageType == MessageType.audio
-              ? MessageType.audio.value:data.message,
+          uid: userId,
+          lastMessage: messageText,
           lastMessageId: data.messageId,
           timeSent: data.messageSentFromDeviceTime,
-          profilePic: user.displayPictureUrl,
-          name: user.localName,
+          name: name,
+          profilePic: profilePic,
+          isGroup: 0,
         );
       } else {
         await chatConectTable.insert(
           contact: ChatConntactModel(
+            uid: userId,
+            contactId: userId,
+            lastMessage: messageText,
             lastMessageId: data.messageId,
-            contactId: user.userId.toString(),
-            lastMessage: data.messageType == MessageType.image
-                ? MessageType.image.value
-                : data.messageType == MessageType.video
-                    ? MessageType.video.value
-                    : data.messageType == MessageType.document
-                        ? MessageType.document.value
-                        : data.messageType == MessageType.gif
-                ? MessageType.gif.value
-                : data.messageType == MessageType.audio
-                ? MessageType.audio.value:data.message,
-            name: user.localName,
-            profilePic: user.displayPictureUrl,
             timeSent: data.messageSentFromDeviceTime,
-            uid: user.userId.toString(),
+            name: name,
+            profilePic: profilePic,
+            isGroup: 0,
           ),
         );
       }
-    } else {
-      // Handle unknown contact (not in your contacts table)
-      final fallbackName = data.senderPhoneNumber ??
-          "Unknown"; // You must pass senderPhoneNumber in NewMessageModel
-      final fallbackUid = data.recipientId ?? "0";
-
-      final chatUser =
-          await chatConectTable.fetchById(uid: fallbackUid.toString());
-
-      if (chatUser != null) {
-        await chatConectTable.updateContact(
-          uid: fallbackUid.toString(),
-          lastMessage: data.messageType == MessageType.image
-              ? MessageType.image.value
-              : data.messageType == MessageType.video
-                  ? MessageType.video.value
-                  : data.messageType == MessageType.document
-                      ? MessageType.document.value
-                      : data.messageType == MessageType.gif
-              ? MessageType.gif.value
-              : data.messageType == MessageType.audio
-              ? MessageType.audio.value:data.message,
-          lastMessageId: data.messageId,
-          timeSent: data.messageSentFromDeviceTime,
-          profilePic: '', // or a default avatar
-          name: fallbackName,
-        );
-      } else {
-        await chatConectTable.insert(
-          contact: ChatConntactModel(
-            contactId: fallbackUid.toString(),
-            lastMessageId: data.messageId,
-            lastMessage: data.messageType == MessageType.image
-                ? MessageType.image.value
-                : data.messageType == MessageType.video
-                    ? MessageType.video.value
-                    : data.messageType == MessageType.document
-                        ? MessageType.document.value
-                        : data.messageType == MessageType.gif
-                ? MessageType.gif.value
-                : data.messageType == MessageType.audio
-                ? MessageType.audio.value:data.message,
-            name: fallbackName,
-            profilePic: '',
-            timeSent: data.messageSentFromDeviceTime,
-            uid: fallbackUid.toString(),
-          ),
-        );
-
-        await contactsTable.insertPlaceholderUser(
-            userId: int.parse(fallbackUid.toString()),
-            isOnline: 1,
-            phoneNumber: fallbackName,
-            localName: fallbackName);
-      }
+    } catch (e) {
+      debugPrint("Error saving chat contact: $e");
     }
   }
+
+
+  String? _getMessageTypeText(NewMessageModel data) {
+    switch (data.messageType) {
+      case MessageType.image:
+      case MessageType.video:
+      case MessageType.document:
+      case MessageType.gif:
+      case MessageType.audio:
+        return data.messageType?.value;
+      default:
+        return data.message;
+    }
+  }
+
 
   Future<void> retryPendingDeletions() async {
     final pendingDeletions = await messageTable.getQueuedDeletions();

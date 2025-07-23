@@ -95,6 +95,7 @@ class ChatsController extends GetxController {
     while (true) {
       await Future.delayed(interval); // controls polling frequency
       final messages = await ChatConectTable().fetchAll();
+      // print("All Chats:----> $messages");
 
       yield messages;
     }
@@ -119,12 +120,22 @@ class ChatsController extends GetxController {
       (List<ChatConntactModel> contacts, List<NewMessageModel> messages) {
         // Update each contact with unread count
         final updatedContacts = contacts.map((contact) {
-          final unreadCount = messages
-              .where((msg) =>
-                  msg.senderId == int.parse(contact.uid!) &&
-                  msg.recipientId == userId &&
-                  msg.state != MessageState.read)
-              .length;
+          int unreadCount = 0;
+
+          if (contact.isGroup == 1) {
+            // 🔁 For GROUPS: unread if userId != senderId and not read
+            unreadCount = messages.where((msg) =>
+            msg.isGroupMessage == true &&
+                msg.senderId.toString() == contact.uid &&
+                msg.recipientId == userId &&
+                msg.state != MessageState.read).length;
+          } else {
+            // 🔁 For PERSONAL chats
+            unreadCount = messages.where((msg) =>
+            msg.senderId.toString() == contact.uid &&
+                msg.recipientId == userId &&
+                msg.state != MessageState.read).length;
+          }
 
           return ChatConntactModel(
             uid: contact.uid,

@@ -126,14 +126,18 @@ class SelectContactsController extends GetxController {
 
         await contactsTable.createBulk(enrichedUsers);
         for (var user in enrichedUsers) {
-          await chatConectTable.updateContact(
-            uid: user.userId.toString(),
-            profilePic: user.displayPictureUrl,
-            name: user.localName,
-          );
-          // Download and save profile image using the same name
-          if (user.displayPictureUrl != null && user.displayPicture != null) {
-            await _downloadAndCacheProfileImage(user.displayPictureUrl!, user.displayPicture!);
+          final isGroup = await chatConectTable.isGroupContact(user.userId.toString());
+          if (!isGroup) {
+            await chatConectTable.updateContact(
+              uid: user.userId.toString(),
+              isGroup: 0,
+              profilePic: user.displayPictureUrl,
+              name: user.localName,
+            );
+            // Download and save profile image using the same name
+            if (user.displayPictureUrl != null && user.displayPicture != null) {
+              await _downloadAndCacheProfileImage(user.displayPictureUrl!, user.displayPicture!);
+            }
           }
         }
         contacts = enrichedUsers;

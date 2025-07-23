@@ -800,6 +800,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             await ChatConectTable().updateContact(
               lastMessageId: 0,
               uid: message.recipientId.toString(),
+              isGroup: 1,
               lastMessage: "This message was deleted",
               timeSent: message.messageSentFromDeviceTime,
             );
@@ -837,6 +838,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
                 uid: contactUid,
+                isGroup: 1,
                 lastMessage: newLast.message,
                 timeSent: newLast.messageSentFromDeviceTime,
               );
@@ -850,6 +852,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
               await chatConectTable.updateContact(
                 lastMessageId: 0,
                 uid: contactUid,
+                isGroup: 1,
                 lastMessage: '',
                 timeSent: '',
               );
@@ -1036,6 +1039,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     await chatConectTable.updateContact(
       uid: receiverUserData!.userId.toString(),
+      isGroup: 1,
       lastMessage: "",
       timeSent: "",
     );

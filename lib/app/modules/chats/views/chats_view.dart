@@ -95,16 +95,16 @@ class ChatsView extends GetView<ChatsController> {
                     }
                   },
                   itemBuilder: (context) => [
-                    // const PopupMenuItem(
-                    //   value: newGroup,
-                    //   child: Text(
-                    //     newGroup,
-                    //     style: TextStyle(
-                    //         fontSize: 14,
-                    //         fontWeight: FontWeight.w400,
-                    //         color: blackColor),
-                    //   ),
-                    // ),
+                    const PopupMenuItem(
+                      value: newGroup,
+                      child: Text(
+                        newGroup,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: blackColor),
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: settings,
                       child: Text(
@@ -182,7 +182,7 @@ class ChatsView extends GetView<ChatsController> {
                                   contactsToDisplay[i];
                               final isTyping = controller.socketService
                                       .typingStatusMap[chatConntactModel.uid] ==
-                                  true;
+                                  true && chatConntactModel.isGroup == 0;
                               final isSelected = controller.selectedChatUids
                                   .contains(chatConntactModel.uid);
                               return Container(

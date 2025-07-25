@@ -55,9 +55,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
             onTap: ()=> Get.toNamed(Routes.GROUP_PROFILE,arguments: controller.groupId),
                 child: Row(
                     children: [
-                      (user?.displayPictureUrl?.isNotEmpty ?? false)
+                      (user?.group?.displayPictureUrl?.isNotEmpty ?? false)
                           ? CachedNetworkImage(
-                              imageUrl: user!.displayPictureUrl.toString(),
+                              imageUrl: user?.group?.displayPictureUrl ?? "",
                               imageBuilder: (context, image) {
                                 return CircleAvatar(
                                     backgroundColor: greyColor.withOpacity(0.4),
@@ -84,7 +84,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '${user?.localName}',
+                              '${user?.group?.name}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 18,
@@ -112,9 +112,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                               }
 
                               return Text(
-                                user?.isOnline == true
+                                user?.group?.isActive == true
                                     ? "Online"
-                                    : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
+                                    : "last seen ${lastSeenFormatted(user?.group?.updatedAt ?? "").toLowerCase()}",
                                 maxLines: 2,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w200,

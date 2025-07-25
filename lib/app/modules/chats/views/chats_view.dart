@@ -5,6 +5,7 @@ import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
@@ -290,16 +291,13 @@ class ChatsView extends GetView<ChatsController> {
                                                 1) {
                                               Get.toNamed(
                                                 Routes.GROUP_CHATS,
-                                                arguments: UserList(
-                                                  userId: int.parse(
-                                                    chatConntactModel.uid!,
-                                                  ),
-                                                  name: chatConntactModel.name,
-                                                  displayPictureUrl:
-                                                      chatConntactModel
-                                                          .profilePic,
-                                                  localName:
-                                                      chatConntactModel.name,
+                                                arguments: GroupData(
+                                                  group: Group(
+                                                    id: int.parse(chatConntactModel.uid.toString()),
+                                                    name: chatConntactModel.name,
+                                                    displayPictureUrl: chatConntactModel
+                                                        .profilePic,
+                                                  )
                                                 ),
                                               );
                                             }

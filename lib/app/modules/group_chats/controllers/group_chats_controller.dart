@@ -12,6 +12,7 @@ import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart'
     show MessageReply;
@@ -27,6 +28,8 @@ import 'package:get/get.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../../data/models/new_models/response_model/create_group_model.dart';
 
 class GroupChatsController extends GetxController with WidgetsBindingObserver {
   //
@@ -95,9 +98,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   UserData? get senderuserData => _senderuserData.value;
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
-  final Rx<UserList?> _receiverUserData = Rx<UserList?>(null);
-  UserList? get receiverUserData => _receiverUserData.value;
-  set receiverUserData(UserList? userData) {
+  final Rx<GroupData?> _receiverUserData = Rx<GroupData?>(null);
+  GroupData? get receiverUserData => _receiverUserData.value;
+  set receiverUserData(GroupData? userData) {
     // print("receiverUserData updated: ${userData?.isOnline}");
     _receiverUserData.value = (userData);
   }
@@ -131,7 +134,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   late Stream<List<NewMessageModel>> messageStream;
   late StreamSubscription<List<NewMessageModel>> messageSubscription;
 
-  late StreamSubscription<UserList?> receiverUserSubscription;
+  late StreamSubscription<GroupData?> receiverUserSubscription;
   Timer? typingTimer;
 
   ScrollController textScrollController = ScrollController();
@@ -181,14 +184,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
 
-    UserList? user = Get.arguments;
+    GroupData? user = Get.arguments;
     if (user != null) {
       checkUserOnline(user);
       receiverUserData = user;
-      groupId = user.userId ?? 0;
-      bindReceiverUserStream(user.userId ?? 0);
+      groupId = user.group?.id ?? 0;
+      bindReceiverUserStream(user.group?.id ?? 0);
     }
-    socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
+    socketService.monitorReceiverTyping(receiverUserData!.group!.id.toString(), (
       isTyping,
     ) {
       _isReceiverTyping.value = isTyping;
@@ -202,8 +205,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     closeKeyboard();
     // _startLoadingTimer();
     // bindMessageStream();
-    await loadInitialMessages();
-    bindSocketEvents();
+    // await loadInitialMessages();
+    // bindSocketEvents();
     monitorScrollPosition();
     isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
@@ -316,9 +319,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   //     currentOffset = localOffset; // Maintain progress
   //   }
 
-  void checkUserOnline(UserList? user) async {
+  void checkUserOnline(GroupData? user) async {
     if (user == null) return;
-    var params = {"recipientId": user.userId};
+    var params = {"recipientId": user.group?.id};
     if (socketService.isConnected) {
       socketService.checkUserOnline(params);
     }
@@ -350,7 +353,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     while (!messageFound) {
       final messages = await MessageTable().fetchMessagesPaginated(
-        receiverId: receiverUserData?.userId ?? 0,
+        receiverId: receiverUserData?.group?.id ?? 0,
         senderId: senderuserData?.userId ?? 0,
         offset: localOffset,
         limit: pageSize,
@@ -431,9 +434,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  Stream<UserList?> getReceiverStream(int userId) async* {
+  Stream<GroupData?> getReceiverStream(int userId) async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
-      return await contactsTable.getUserById(userId);
+      return await GroupsTable().getGroupById(userId);
     }).asyncMap((event) async => await event);
   }
 
@@ -441,16 +444,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     ever(socketService.incomingMessage, (NewMessageModel? message) {
       if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
-        return (msg.senderId == receiverUserData?.userId &&
+        return (msg.senderId == receiverUserData?.group?.id &&
                 msg.recipientId == senderuserData?.userId) ||
-            (msg.senderId == receiverUserData?.userId &&
+            (msg.senderId == receiverUserData?.group?.id &&
                 msg.recipientId == senderuserData?.userId);
       }
 
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
         // Acknowledge seen if message is incoming and not already seen
-        if (message.senderId == receiverUserData?.userId &&
+        if (message.senderId == receiverUserData?.group?.id &&
             socketService.isConnected &&
             (message.state == MessageState.sent ||
                 message.state == MessageState.unsent ||
@@ -553,7 +556,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     isPaginating = true;
     final messages = await MessageTable().fetchMessagesPaginated(
-      receiverId: receiverUserData?.userId ?? 0,
+      receiverId: receiverUserData?.group?.id ?? 0,
       senderId: senderuserData?.userId ?? 0,
       offset: currentOffset,
       limit: pageSize,
@@ -574,7 +577,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
                 i.state == MessageState.unsent ||
                 i.state == MessageState.delivered) &&
             i.messageId != null) {
-          if (receiverUserData!.userId == i.senderId &&
+          if (receiverUserData!.group?.id == i.senderId &&
               socketService.isConnected) {
             socketService.sendMessageSeen(i.messageId!);
           }
@@ -630,7 +633,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     final newMessage = NewMessageModel(
       senderId: senderuserData?.userId,
-      recipientId: receiverUserData?.userId,
+      recipientId: receiverUserData?.group?.id,
       message: encryptionService.encryptText(message),
       messageSentFromDeviceTime: timeSent.toString(),
       clientSystemMessageId: clientSystemMessageId,
@@ -656,7 +659,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           ? 0
           : messageReply.isMe == true
           ? senderuserData?.userId
-          : receiverUserData?.userId,
+          : receiverUserData?.group?.id,
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
@@ -679,7 +682,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     });
 
     messageController.clear();
-    var receiverUserId = receiverUserData?.userId.toString() ?? '';
+    var receiverUserId = receiverUserData?.group?.id.toString() ?? '';
     socketService.emitTypingStatus(
       recipientId: receiverUserId,
       isTyping: false,
@@ -689,7 +692,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   void onTextChanged(String text) {
-    final receiverId = receiverUserData?.userId.toString() ?? "";
+    final receiverId = receiverUserData?.group?.id.toString() ?? "";
 
     if (text.isNotEmpty) {
       isShowSendButton = true;
@@ -811,14 +814,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           // 🟣 Remove from messageList
           messageList.removeWhere((m) => m.messageId == message.messageId);
           if (isOnline) {
-            if (message.senderId != receiverUserData?.userId) {
+            if (message.senderId != receiverUserData?.group?.id) {
               socketService.emitMessageDelete(
                 messageId: message.messageId!,
                 isDeleteFromEveryOne: false,
               );
             }
           } else {
-            if (message.senderId != receiverUserData?.userId) {
+            if (message.senderId != receiverUserData?.group?.id) {
               await MessageTable().markForDeletion(
                 messageId: message.messageId!,
                 isDeleteFromEveryone: false,
@@ -1026,19 +1029,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   Future<void> deleteTextMessage() async {
     MessageTable().deleteMessageText(
       messageType: "text",
-      receiverId: receiverUserData!.userId,
+      receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
     );
 
     //  'deleted'
     MessageTable().deleteMessageText(
       messageType: 'deleted',
-      receiverId: receiverUserData!.userId,
+      receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
     );
 
     await chatConectTable.updateContact(
-      uid: receiverUserData!.userId.toString(),
+      uid: receiverUserData!.group!.id.toString(),
       isGroup: 1,
       lastMessage: "",
       timeSent: "",

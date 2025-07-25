@@ -183,8 +183,7 @@ class GroupChatList extends StatelessWidget {
                                                           .userId
                                                   ? "You"
                                                   : groupChatsController
-                                                      .receiverUserData!
-                                                      .localName
+                                                      .receiverUserData!.group?.name
                                               : "username",
                                       onReplyTap: () => groupChatsController
                                           .scrollToOriginalMessage(
@@ -249,7 +248,7 @@ class GroupChatList extends StatelessWidget {
                                                       .senderuserData!.userId
                                               ? "You"
                                               : groupChatsController
-                                                  .receiverUserData!.localName
+                                                  .receiverUserData!.group?.name
                                           : "username",
                                       onReplyTap: () => groupChatsController
                                           .scrollToOriginalMessage(

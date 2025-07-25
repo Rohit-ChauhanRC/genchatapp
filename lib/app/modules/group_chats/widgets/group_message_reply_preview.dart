@@ -44,7 +44,7 @@ class GroupMessageReplyPreview extends StatelessWidget {
                         ? Text(
                             groupChatsController.messageReply.isMe!
                                 ? 'you'
-                                : '${groupChatsController.receiverUserData?.localName}',
+                                : '${groupChatsController.receiverUserData?.group?.name}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),

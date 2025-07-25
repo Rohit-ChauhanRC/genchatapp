@@ -255,60 +255,77 @@ class ChatsView extends GetView<ChatsController> {
                                                 ),
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
+                                    const SizedBox(width: 10),
 
-                                      // Chat Info
-                                      Expanded(
-                                        child: InkWell(
-                                          onTap: () {
-                                            controller.hideKeyboard();
-                                            if (controller.selectedChatUids.isNotEmpty) {
-                                              controller.toggleChatSelection(chatConntactModel.uid!);
-                                            } else {
-                                              if (chatConntactModel.isGroup != 1) {
-                                                Get.toNamed(Routes.SINGLE_CHAT,
-                                                    arguments: UserList(
-                                                      userId: int.parse(
-                                                          chatConntactModel.uid!),
-                                                      name: chatConntactModel.name,
-                                                      displayPictureUrl:
-                                                          chatConntactModel.profilePic,
-                                                      localName: chatConntactModel.name,
-                                                    ));
-                                              } else if (chatConntactModel.isGroup ==
-                                                  1) {
-                                                Get.toNamed(Routes.GROUP_CHATS,
-                                                    arguments: UserList(
-                                                      userId: int.parse(
-                                                          chatConntactModel.uid!),
-                                                      name: chatConntactModel.name,
-                                                      displayPictureUrl:
-                                                          chatConntactModel.profilePic,
-                                                      localName: chatConntactModel.name,
-                                                    ));
-                                              }
-                                            }
-                                          },
-                                          onLongPress: () {
+                                    // Chat Info
+                                    Expanded(
+                                      child: InkWell(
+                                        onTap: () {
+                                          controller.hideKeyboard();
+                                          if (controller
+                                              .selectedChatUids
+                                              .isNotEmpty) {
                                             controller.toggleChatSelection(
-                                                chatConntactModel.uid!);
-                                          },
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                chatConntactModel.name ?? "",
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                  color: blackColor,
+                                              chatConntactModel.uid!,
+                                            );
+                                          } else {
+                                            if (chatConntactModel.isGroup !=
+                                                1) {
+                                              Get.toNamed(
+                                                Routes.SINGLE_CHAT,
+                                                arguments: UserList(
+                                                  userId: int.parse(
+                                                    chatConntactModel.uid!,
+                                                  ),
+                                                  name: chatConntactModel.name,
+                                                  displayPictureUrl:
+                                                      chatConntactModel
+                                                          .profilePic,
+                                                  localName:
+                                                      chatConntactModel.name,
                                                 ),
+                                              );
+                                            } else if (chatConntactModel
+                                                    .isGroup ==
+                                                1) {
+                                              Get.toNamed(
+                                                Routes.GROUP_CHATS,
+                                                arguments: UserList(
+                                                  userId: int.parse(
+                                                    chatConntactModel.uid!,
+                                                  ),
+                                                  name: chatConntactModel.name,
+                                                  displayPictureUrl:
+                                                      chatConntactModel
+                                                          .profilePic,
+                                                  localName:
+                                                      chatConntactModel.name,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        onLongPress: () {
+                                          controller.toggleChatSelection(
+                                            chatConntactModel.uid!,
+                                          );
+                                        },
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              chatConntactModel.name ?? "",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: blackColor,
                                               ),
-                                              Text(
-                                                isTyping
-                                                    ? "Typing..."
-                                                    : (chatConntactModel
+                                            ),
+                                            Text(
+                                              isTyping
+                                                  ? "Typing..."
+                                                  : (chatConntactModel
                                                                 .lastMessage!
                                                                 .isNotEmpty &&
                                                             chatConntactModel
@@ -344,93 +361,96 @@ class ChatsView extends GetView<ChatsController> {
                                                                     .toString(),
                                                               )
                                                         : chatConntactModel
-                                                            .lastMessage
-                                                            .toString()),
-                                                softWrap: true,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: isTyping
-                                                      ? FontWeight.bold
-                                                      : FontWeight.w300,
-                                                  color: isTyping
-                                                      ? AppColors.textBarColor
-                                                      : AppColors.blackColor,
-                                                ),
+                                                              .lastMessage
+                                                              .toString()),
+                                              softWrap: true,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: isTyping
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w300,
+                                                color: isTyping
+                                                    ? AppColors.textBarColor
+                                                    : AppColors.blackColor,
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                       ),
+                                    ),
 
-                                      // Timestamp
-                                      Column(
-                                        children: [
-                                          Text(
-                                            formatLastMessageTime(
-                                                chatConntactModel.timeSent
-                                                    .toString()),
-                                            style: TextStyle(
-                                              fontWeight: chatConntactModel
-                                                          .unreadCount! >
-                                                      0
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w300,
-                                              color: chatConntactModel
-                                                          .unreadCount! >
-                                                      0
-                                                  ? textBarColor
-                                                  : blackColor,
-                                              fontSize: 10,
-                                            ),
+                                    // Timestamp
+                                    Column(
+                                      children: [
+                                        Text(
+                                          formatLastMessageTime(
+                                            chatConntactModel.timeSent
+                                                .toString(),
                                           ),
-                                          chatConntactModel.unreadCount! > 0
-                                              ? Container(
-                                                  decoration: BoxDecoration(
-                                                    color: textBarColor,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            Get.height / 2),
-                                                  ),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
+                                          style: TextStyle(
+                                            fontWeight:
+                                                chatConntactModel.unreadCount! >
+                                                    0
+                                                ? FontWeight.bold
+                                                : FontWeight.w300,
+                                            color:
+                                                chatConntactModel.unreadCount! >
+                                                    0
+                                                ? textBarColor
+                                                : blackColor,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                        chatConntactModel.unreadCount! > 0
+                                            ? Container(
+                                                decoration: BoxDecoration(
+                                                  color: textBarColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        Get.height / 2,
+                                                      ),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
                                                       horizontal: 10,
-                                                      vertical: 5),
-                                                  child: Text(
-                                                    chatConntactModel
-                                                        .unreadCount
-                                                        .toString(),
-                                                    softWrap: true,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w300,
-                                                      color: whiteColor,
+                                                      vertical: 5,
                                                     ),
+                                                child: Text(
+                                                  chatConntactModel.unreadCount
+                                                      .toString(),
+                                                  softWrap: true,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w300,
+                                                    color: whiteColor,
                                                   ),
-                                                )
-                                              : const SizedBox.shrink(),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox.shrink(),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                          ),
-                        )
-                      : Padding(
-                          padding: EdgeInsets.only(top: Get.height / 3),
-                          child: Text(
-                            "No chats yet!\nStart chatting with your GenChat contacts.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ));
-                  ;
-                }),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.only(top: Get.height / 3),
+                        child: Text(
+                          "No chats yet!\nStart chatting with your GenChat contacts.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      );
+                ;
+              },
+            ),
           ],
         ),
       ),

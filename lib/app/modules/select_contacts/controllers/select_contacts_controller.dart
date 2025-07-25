@@ -139,7 +139,7 @@ class SelectContactsController extends GetxController {
             await chatConectTable.updateContact(
               uid: user.userId.toString(),
               profilePic: user.displayPictureUrl,
-              name: user.localName,
+              name: user.localName, isGroup: 0,
             );
             // Download and save profile image using the same name
             if (user.displayPictureUrl != null && user.displayPicture != null) {

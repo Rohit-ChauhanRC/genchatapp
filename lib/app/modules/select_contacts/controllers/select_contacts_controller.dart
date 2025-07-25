@@ -81,7 +81,8 @@ class SelectContactsController extends GetxController {
   Future<void> refreshSync() async {
     if (connectivityService.isConnected.value == false) {
       showAlertMessage(
-          "No Internet Connection!\nPlease check your connection and try again.");
+        "No Internet Connection!\nPlease check your connection and try again.",
+      );
       return;
     }
 
@@ -93,24 +94,30 @@ class SelectContactsController extends GetxController {
   Future<void> syncContactsWithServer() async {
     try {
       if (await FlutterContacts.requestPermission()) {
-        final phoneContacts =
-            await FlutterContacts.getContacts(withProperties: true);
+        final phoneContacts = await FlutterContacts.getContacts(
+          withProperties: true,
+        );
 
         final Map<String, String> localContactMap = {};
         for (var contact in phoneContacts) {
           if (contact.phones.isNotEmpty) {
-            final rawNumber = contact.phones.first.number;
-            final sanitized = rawNumber
-                .replaceAll(RegExp(r'[\s\-\(\)]'), '')
-                .replaceAll(RegExp(r'^\+91'), '')
-                .replaceAll(RegExp(r'^0'), '');
-            localContactMap[sanitized] = contact.displayName;
+            // var rawNumber = '';
+            for (var i in contact.phones) {
+              final rawNumber = i.number;
+              final sanitized = rawNumber
+                  .replaceAll(RegExp(r'[\s\-\(\)]'), '')
+                  .replaceAll(RegExp(r'^\+91'), '')
+                  .replaceAll(RegExp(r'^0'), '');
+              localContactMap[sanitized] = contact.displayName;
+            }
+            // final rawNumber = contact.phones.first.number;
           }
         }
 
         final phoneNumbers = localContactMap.keys.toList();
-        final serverUsers =
-            await contactRepository.fetchAppUsersFromContacts(phoneNumbers);
+        final serverUsers = await contactRepository.fetchAppUsersFromContacts(
+          phoneNumbers,
+        );
 
         final enrichedUsers = serverUsers.map((user) {
           final userNumber = user.phoneNumber
@@ -118,7 +125,8 @@ class SelectContactsController extends GetxController {
               .replaceAll(RegExp(r'^\+91'), '')
               .replaceAll(RegExp(r'^0'), '');
 
-          final localName = localContactMap[userNumber ?? ''] ??
+          final localName =
+              localContactMap[userNumber ?? ''] ??
               ''; // leave empty if not found
 
           return user.copyWith(localName: localName); // only assign localName
@@ -133,7 +141,10 @@ class SelectContactsController extends GetxController {
           );
           // Download and save profile image using the same name
           if (user.displayPictureUrl != null && user.displayPicture != null) {
-            await _downloadAndCacheProfileImage(user.displayPictureUrl!, user.displayPicture!);
+            await _downloadAndCacheProfileImage(
+              user.displayPictureUrl!,
+              user.displayPicture!,
+            );
           }
         }
         contacts = enrichedUsers;
@@ -168,12 +179,14 @@ class SelectContactsController extends GetxController {
     });
   }
 
-
-
-  Future<void> _downloadAndCacheProfileImage(String imageUrl, String fileName) async {
+  Future<void> _downloadAndCacheProfileImage(
+    String imageUrl,
+    String fileName,
+  ) async {
     try {
       final response = await http.get(Uri.parse(imageUrl));
-      if (response.statusCode != 200) throw Exception("Failed to download image");
+      if (response.statusCode != 200)
+        throw Exception("Failed to download image");
 
       final imageBytes = response.bodyBytes;
       final originalImage = img.decodeImage(imageBytes);
@@ -206,7 +219,10 @@ class SelectContactsController extends GetxController {
       }
 
       final directory = await getApplicationDocumentsDirectory();
-      final pngFileName = fileName.replaceAll(RegExp(r'\.jpg$'), '.png'); // ensure .png
+      final pngFileName = fileName.replaceAll(
+        RegExp(r'\.jpg$'),
+        '.png',
+      ); // ensure .png
       final filePath = '${directory.path}/$pngFileName';
 
       final file = File(filePath);
@@ -217,8 +233,4 @@ class SelectContactsController extends GetxController {
       print("❌ Silent crop failed: $e");
     }
   }
-
-
-
-
 }

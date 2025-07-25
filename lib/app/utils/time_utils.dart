@@ -13,8 +13,6 @@ String lastSeenFormatted(String lastSeen) {
   }
 }
 
-
-
 String formatLastSeen(DateTime dateTime) {
   DateTime now = DateTime.now();
   if (dateTime.year == now.year &&
@@ -35,7 +33,11 @@ String formatLastMessageTime(String dateString) {
 
     final DateTime today = DateTime(now.year, now.month, now.day);
     final DateTime yesterday = today.subtract(const Duration(days: 1));
-    final DateTime messageDate = DateTime(messageTime.year, messageTime.month, messageTime.day);
+    final DateTime messageDate = DateTime(
+      messageTime.year,
+      messageTime.month,
+      messageTime.day,
+    );
 
     if (messageDate == today) {
       return DateFormat.jm().format(messageTime); // e.g., 7:42 AM
@@ -57,5 +59,32 @@ String formatDateTime(String? utcString) {
     return formatter.format(dateTime);
   } catch (e) {
     return 'Invalid date';
+  }
+}
+
+String formatMessageTime(String dateString) {
+  if (dateString.isEmpty) return '';
+
+  try {
+    final DateTime messageTime = DateTime.parse(dateString);
+    final DateTime now = DateTime.now();
+
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime yesterday = today.subtract(const Duration(days: 1));
+    final DateTime messageDate = DateTime(
+      messageTime.year,
+      messageTime.month,
+      messageTime.day,
+    );
+
+    if (messageDate == today) {
+      return "Today"; // e.g., 7:42 AM
+    } else if (messageDate == yesterday) {
+      return 'Yesterday';
+    } else {
+      return DateFormat('d/M/yy').format(messageTime); // e.g., 15/3/25
+    }
+  } catch (e) {
+    return '';
   }
 }

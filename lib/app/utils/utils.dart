@@ -24,18 +24,15 @@ import 'package:path/path.dart' as p;
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 
 void showSnackBar({required BuildContext context, required String content}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(content),
-    ),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
 }
 
 Future<File?> pickImageFromGallery(BuildContext context) async {
   File? image;
   try {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
 
     if (pickedImage != null) {
       image = File(pickedImage.path);
@@ -49,8 +46,9 @@ Future<File?> pickImageFromGallery(BuildContext context) async {
 Future<File?> pickImageFromCamera(BuildContext context) async {
   File? image;
   try {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.camera);
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+    );
 
     if (pickedImage != null) {
       image = File(pickedImage.path);
@@ -64,8 +62,9 @@ Future<File?> pickImageFromCamera(BuildContext context) async {
 Future<File?> pickVideoFromGallery(BuildContext context) async {
   File? video;
   try {
-    final pickedVideo =
-        await ImagePicker().pickVideo(source: ImageSource.gallery);
+    final pickedVideo = await ImagePicker().pickVideo(
+      source: ImageSource.gallery,
+    );
 
     if (pickedVideo != null) {
       video = File(pickedVideo.path);
@@ -96,9 +95,7 @@ Future<TenorResult?> pickGIF(BuildContext context) async {
   return gif;
 }
 
-Future<void> showImagePicker({
-  required Function(File? image) onGetImage,
-}) {
+Future<void> showImagePicker({required Function(File? image) onGetImage}) {
   return showModalBottomSheet<void>(
     context: Get.context!,
     builder: (_) {
@@ -117,20 +114,13 @@ Future<void> showImagePicker({
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.image,
-                      size: 60,
-                      color: textBarColor,
-                    ),
+                    Icon(Icons.image, size: 60, color: textBarColor),
                     SizedBox(height: 10),
                     Text(
                       "Gallery",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: greyColor,
-                        fontSize: 16,
-                      ),
-                    )
+                      style: TextStyle(color: greyColor, fontSize: 16),
+                    ),
                   ],
                 ),
               ),
@@ -144,26 +134,17 @@ Future<void> showImagePicker({
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.camera,
-                      size: 60,
-                      color: textBarColor,
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
+                    Icon(Icons.camera, size: 60, color: textBarColor),
+                    SizedBox(height: 10),
                     Text(
                       "Camera",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: greyColor,
-                        fontSize: 16,
-                      ),
-                    )
+                      style: TextStyle(color: greyColor, fontSize: 16),
+                    ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       );
@@ -181,11 +162,7 @@ void closeKeyboard() {
 void loadingDialog() {
   closeDialog();
 
-  Get.dialog(
-    const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
+  Get.dialog(const Center(child: CircularProgressIndicator()));
 }
 
 void closeDialog() {
@@ -201,31 +178,38 @@ void closeSnackbar() {
 }
 
 bool isEmail(String value) {
-  return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-      .hasMatch(value);
+  return RegExp(
+    r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+  ).hasMatch(value);
 }
 
 Widget loadingWidget({required String text}) {
   return Center(
     child: Container(
-        padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
-        height: 150,
-        width: 150,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            color: mySideBgColor, borderRadius: BorderRadius.circular(20)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            CircularProgressIndicator(color: textBarColor),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w500, color: blackColor),
+      padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
+      height: 150,
+      width: 150,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: mySideBgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircularProgressIndicator(color: textBarColor),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: blackColor,
             ),
-          ],
-        )),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -311,10 +295,10 @@ String getFileMimeType(File file) {
 extension StringCasingExtension on String {
   String get toCapitalized =>
       length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-  String get toTitleCase => replaceAll(RegExp(' +'), ' ')
-      .split(' ')
-      .map((str) => str.toCapitalized)
-      .join(' ');
+  String get toTitleCase => replaceAll(
+    RegExp(' +'),
+    ' ',
+  ).split(' ').map((str) => str.toCapitalized).join(' ');
 }
 
 List<File> convertXFileListToFileList(List<XFile> xfileList) {
@@ -347,33 +331,30 @@ Future<void> showMediaPickerBottomSheet({
                       //     convertXFileListToFileList(pickedFiles);
                       final files = await FilePickerService().pickFromGallery();
                       if (files.isNotEmpty) {
-                        Get.to(() => MediaPreviewScreen(
-                              files: files,
-                              fileType: getMessageType(files.first).value,
-                              onSend: (selectedFiles) {
-                                onSendFiles(selectedFiles,
-                                    getMessageType(files.first).value);
-                              },
-                            ));
+                        Get.to(
+                          () => MediaPreviewScreen(
+                            files: files,
+                            fileType: getMessageType(files.first).value,
+                            onSend: (selectedFiles) {
+                              onSendFiles(
+                                selectedFiles,
+                                getMessageType(files.first).value,
+                              );
+                            },
+                          ),
+                        );
                       }
                     },
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.image,
-                          size: 60,
-                          color: textBarColor,
-                        ),
+                        Icon(Icons.image, size: 60, color: textBarColor),
                         SizedBox(height: 10),
                         Text(
                           "Gallery",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: greyColor,
-                            fontSize: 16,
-                          ),
-                        )
+                          style: TextStyle(color: greyColor, fontSize: 16),
+                        ),
                       ],
                     ),
                   ),
@@ -386,39 +367,34 @@ Future<void> showMediaPickerBottomSheet({
                       // .pickImage(source: ImageSource.camera);
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
-                        Get.to(() => MediaPreviewScreen(
-                              files: files,
-                              fileType: getMessageType(files.first).value,
-                              onSend: (selectedFiles) {
-                                onSendFiles(selectedFiles,
-                                    getMessageType(files.first).value);
-                              },
-                            ));
+                        Get.to(
+                          () => MediaPreviewScreen(
+                            files: files,
+                            fileType: getMessageType(files.first).value,
+                            onSend: (selectedFiles) {
+                              onSendFiles(
+                                selectedFiles,
+                                getMessageType(files.first).value,
+                              );
+                            },
+                          ),
+                        );
                       }
                     },
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.camera,
-                          size: 60,
-                          color: textBarColor,
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
+                        Icon(Icons.camera, size: 60, color: textBarColor),
+                        SizedBox(height: 10),
                         Text(
                           "Camera",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: greyColor,
-                            fontSize: 16,
-                          ),
-                        )
+                          style: TextStyle(color: greyColor, fontSize: 16),
+                        ),
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ],
@@ -490,7 +466,8 @@ Future<File?> compressImage(File file, String extension) async {
 
   try {
     final result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path, targetPath,
+      file.absolute.path,
+      targetPath,
       quality: 60, // You can adjust this from 0 to 100
     );
     return File(result!.path);
@@ -515,7 +492,8 @@ Future<String?> getThumbnail(File videoFile) async {
       ? Directory("/storage/emulated/0/Android/media")
       : await getApplicationDocumentsDirectory();
 
-  final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Thumbnail';
+  final String rootFolderPath =
+      '${thumDir.path}/$appPackageName/GenChat/Thumbnail';
 
   final Directory dirThum = Directory(rootFolderPath);
   if (!await dirThum.exists()) {
@@ -538,15 +516,14 @@ Future<String?> getThumbnail(File videoFile) async {
   // print((thumb.toString().split("/")[thumb.toString().split("/").length - 1])
   //     .split(".")[0]);
 
-  final fileName =
-      (thumb.toString().split("/")[thumb.toString().split("/").length - 1]);
+  final fileName = (thumb.toString().split(
+    "/",
+  )[thumb.toString().split("/").length - 1]);
 
   return fileName;
 }
 
-Future<File?> compressVideoFfmpeg(
-  File file,
-) async {
+Future<File?> compressVideoFfmpeg(File file) async {
   try {
     Directory appDir = await getApplicationDocumentsDirectory();
 
@@ -556,7 +533,8 @@ Future<File?> compressVideoFfmpeg(
 
     if (!await dir.exists()) {
       await dir.create(
-          recursive: true); // Create the directory if it doesn't exist
+        recursive: true,
+      ); // Create the directory if it doesn't exist
     }
 
     getReadableFileSize(file);
@@ -566,7 +544,7 @@ Future<File?> compressVideoFfmpeg(
     final outputPath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
 
     final command =
-        '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k $outputPath';
+        '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 128k $outputPath';
     // final command =
     //     '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
 
@@ -590,63 +568,11 @@ Future<File?> compressVideoFfmpeg(
   }
 }
 
-// Future<Map<String, File?>> compressVideoFfmpeg(File file) async {
-//   try {
-//     Directory appDir = await getApplicationDocumentsDirectory();
-
-//     final dir = Platform.isAndroid
-//         ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
-//         : Directory('${appDir.path}/picked_images');
-
-//     if (!await dir.exists()) {
-//       await dir.create(recursive: true);
-//     }
-
-//     // Define the directory for storing the thumbnail
-//     final thumDir = Platform.isAndroid
-//         ? Directory("/storage/emulated/0")
-//         : await getApplicationDocumentsDirectory();
-
-//     final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
-//     final Directory dirThum = Directory(rootFolderPath);
-
-//     if (!await dirThum.exists()) {
-//       await dirThum.create(recursive: true);
-//     }
-
-//     getReadableFileSize(file);
-
-//     final outputPath = '${dirThum.path}/rotated_${file.uri.pathSegments.last}';
-//     final thumbnailPath =
-//         '${dir.path}/thumbnail_${file.uri.pathSegments.last}.jpg';
-
-//     final command =
-//         '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
-
-//     final session = await FFmpegKit.execute(command);
-//     final returnCode = await session.getReturnCode();
-
-//     if (ReturnCode.isSuccess(returnCode)) {
-//       print("Video compressed successfully!");
-//       getReadableFileSize(File(outputPath));
-
-//       // Return both the compressed video and the thumbnail
-//       return {
-//         'video': File(outputPath),
-//         'thumbnail': File(thumbnailPath),
-//       };
-//     } else {
-//       print("Compression failed: $returnCode");
-//       return {};
-//     }
-//   } catch (e) {
-//     print("Video compression error: $e");
-//     return {};
-//   }
-// }
-
-Future<Map<String, File?>> compressFiles(File file, String extension,
-    {File? thumbnail}) async {
+Future<Map<String, File?>> compressFiles(
+  File file,
+  String extension, {
+  File? thumbnail,
+}) async {
   File processedFile = file;
   String newExtension = extension.toLowerCase();
 
@@ -659,15 +585,14 @@ Future<Map<String, File?>> compressFiles(File file, String extension,
       newExtension = 'jpeg';
     }
   } else if (videoExtensions.contains(extension.toLowerCase())) {
-    final compressed = await compressVideoFfmpeg(
-      file,
-    );
+    final compressed = await compressVideoFfmpeg(file);
 
     if (compressed != null) {
       processedFile = File(compressed.path);
       newExtension = 'mp4'; // force final format
       print(
-          "Compressed video size: ${await getReadableFileSize(processedFile)}");
+        "Compressed video size: ${await getReadableFileSize(processedFile)}",
+      );
     }
   }
 
@@ -676,35 +601,3 @@ Future<Map<String, File?>> compressFiles(File file, String extension,
 
   return {newExtension: processedFile};
 }
-
-// Future<Map<String, File?>> compressFiles(File file, String extension) async {
-//   try {
-//     File processedFile = file;
-//     String newExtension = extension.toLowerCase();
-
-//     final imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
-//     final videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
-
-//     if (imageExtensions.contains(extension.toLowerCase())) {
-//       // Handle image compression (not implemented here, assuming you have compressImage)
-//       final compressedFile = await compressImage(file, extension);
-//       if (compressedFile != null) {
-//         processedFile = compressedFile;
-//         newExtension = 'jpeg'; // Force JPEG for image
-//       }
-//     } else if (videoExtensions.contains(extension.toLowerCase())) {
-//       // Handle video compression and thumbnail generation
-//       final result = await compressVideoFfmpeg(file);
-//       if (result.isNotEmpty) {
-//         processedFile = result['video']!;
-//         // Here we could return both the compressed video and the thumbnail if needed
-//         return result;  // { 'video': processedFile, 'thumbnail': thumbnailFile }
-//       }
-//     }
-
-//     return {newExtension: processedFile};
-//   } catch (e) {
-//     print("Error during file compression: $e");
-//     return {};
-//   }
-// }

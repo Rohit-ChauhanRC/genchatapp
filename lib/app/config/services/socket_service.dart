@@ -142,7 +142,7 @@ class SocketService extends GetxService {
           message: data["message"],
           senderId: data["recipientId"],
           messageId: data["messageId"],
-          recipientId: data["senderId"],
+          recipientId: data["isGroupMessage"] == true?data["recipientId"]:data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
           isGroupMessage: data["isGroupMessage"],
           messageType: data['messageType'] != null
@@ -403,7 +403,7 @@ class SocketService extends GetxService {
 
       // ✅ 1. Handle GROUP message
       if (data.isGroupMessage == true) {
-        final groupId = data.senderId.toString();
+        final groupId = data.recipientId.toString();
         final group = await groupsTable.getGroupById(int.parse(groupId));
 
         if (group != null) {

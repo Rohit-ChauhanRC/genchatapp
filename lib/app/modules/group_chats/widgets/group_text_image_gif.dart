@@ -3,16 +3,18 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
-import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
+import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/document_message_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 class GroupDisplayTextImageGIF extends StatelessWidget {
   final String message;
@@ -146,7 +148,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                                           controller.totalBytes[message]!
                                     : null,
                                 strokeWidth: 3,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                valueColor: AlwaysStoppedAnimation<Color>(
                                   AppColors.whiteColor,
                                 ),
                               ),
@@ -155,7 +157,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                                 Text(
                                   "${(controller.downloadedBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB"
                                   " / ${(controller.totalBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB",
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.whiteColor,
@@ -166,7 +168,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                                 onTap: () {
                                   controller.cancelDownload(type, message);
                                 },
-                                child: const Icon(
+                                child: Icon(
                                   Icons.cancel_outlined,
                                   size: 40,
                                   color: AppColors.whiteColor,

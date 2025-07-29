@@ -14,19 +14,23 @@ class CreateGroupView extends GetView<CreateGroupController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(
-              controller.selectedUserIds.isEmpty
-                  ? 'New Group'
-                  : 'New Group: ${controller.selectedUserIds.length} of ${controller.contacts.length} selected',
-              style: const TextStyle(color: Colors.white, fontSize: 15),
-            )),
+        title: Obx(
+          () => Text(
+            controller.selectedUserIds.isEmpty
+                ? 'New Group'
+                : 'New Group: ${controller.selectedUserIds.length} of ${controller.contacts.length} selected',
+            style: const TextStyle(color: Colors.white, fontSize: 15),
+          ),
+        ),
         actions: [
-          Obx(() => controller.selectedUserIds.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.send, color: Colors.white),
-                  onPressed: controller.createGroup,
-                )
-              : const SizedBox.shrink()),
+          Obx(
+            () => controller.selectedUserIds.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: controller.createGroup,
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
         backgroundColor: AppColors.textBarColor,
         centerTitle: false,
@@ -53,25 +57,31 @@ class CreateGroupView extends GetView<CreateGroupController> {
               ),
 
               // Bottom "Sending to" section
-              Obx(() => controller.selectedUserIds.isNotEmpty
-                  ? Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: 100,
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        color: AppColors.textBarColor.withOpacity(0.15),
-                        child: Text(
-                          "Group member: ${controller.selectedUserNames.join(', ')}",
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w500),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+              Obx(
+                () => controller.selectedUserIds.isNotEmpty
+                    ? Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          height: 100,
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          color: AppColors.textBarColor.withOpacity(0.15),
+                          child: Text(
+                            "Group member: ${controller.selectedUserNames.join(', ')}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    )
-                  : const SizedBox.shrink()),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
         );
@@ -82,8 +92,10 @@ class CreateGroupView extends GetView<CreateGroupController> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      child: Text(title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -113,19 +125,20 @@ class CreateGroupView extends GetView<CreateGroupController> {
                         imageUrl: user.displayPictureUrl.toString(),
                         imageBuilder: (context, image) {
                           return CircleAvatar(
-                              backgroundColor:
-                                  AppColors.greyColor.withOpacity(0.4),
-                              radius: 25,
-                              backgroundImage: image);
+                            backgroundColor: AppColors.greyColor.withOpacity(
+                              0.4,
+                            ),
+                            radius: 25,
+                            backgroundImage: image,
+                          );
                         },
                         placeholder: (context, url) =>
                             const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) =>
-                            CircleAvatar(
-                                radius: 25,
-                                backgroundColor: Colors.grey,
-                                child: const Icon(Icons.error,color: Colors.white)
-                            ),
+                        errorWidget: (context, url, error) => CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Colors.grey,
+                          child: const Icon(Icons.error, color: Colors.white),
+                        ),
                       ),
                     )
                   : const Padding(
@@ -146,14 +159,19 @@ class CreateGroupView extends GetView<CreateGroupController> {
                       shape: BoxShape.circle,
                     ),
                     padding: const EdgeInsets.all(3),
-                    child:
-                        const Icon(Icons.check, color: Colors.white, size: 16),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
             ],
           ),
-          title: Text(user.localName ?? user.phoneNumber ?? '',
-              style: const TextStyle(fontSize: 16)),
+          title: Text(
+            user.localName ?? user.phoneNumber ?? '',
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
       ),
     );

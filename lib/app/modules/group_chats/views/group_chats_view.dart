@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/constants/colors.dart' as AppColors;
+import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_bottom_chat_field.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_chat_list.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -52,17 +54,21 @@ class GroupChatsView extends GetView<GroupChatsController> {
                   ),
                 )
               : InkWell(
-            onTap: ()=> Get.toNamed(Routes.GROUP_PROFILE,arguments: controller.groupId),
-                child: Row(
+                  onTap: () => Get.toNamed(
+                    Routes.GROUP_PROFILE,
+                    arguments: controller.groupId,
+                  ),
+                  child: Row(
                     children: [
                       (user?.group?.displayPictureUrl?.isNotEmpty ?? false)
                           ? CachedNetworkImage(
                               imageUrl: user?.group?.displayPictureUrl ?? "",
                               imageBuilder: (context, image) {
                                 return CircleAvatar(
-                                    backgroundColor: greyColor.withOpacity(0.4),
-                                    radius: 20,
-                                    backgroundImage: image);
+                                  backgroundColor: greyColor.withOpacity(0.4),
+                                  radius: 20,
+                                  backgroundImage: image,
+                                );
                               },
                               placeholder: (context, url) =>
                                   const CircularProgressIndicator(),
@@ -74,9 +80,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                               backgroundColor: Colors.grey,
                               child: Icon(Icons.group, color: Colors.white),
                             ),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      const SizedBox(width: 10),
                       SizedBox(
                         width: Get.width * 0.32,
                         child: Column(
@@ -96,7 +100,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                             // 👇 Wrap with Obx to reactively update UI
                             Obx(() {
                               if (!controller
-                                  .connectivityService.isConnected.value) {
+                                  .connectivityService
+                                  .isConnected
+                                  .value) {
                                 return const SizedBox.shrink();
                               }
 
@@ -128,98 +134,102 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       ),
                     ],
                   ),
-              );
+                );
         }),
-        // actions: [
-        //   Obx(() => controller.selectedMessages.isNotEmpty
-        //       ? Row(
-        //           children: [
-        //             IconButton(
-        //               icon: const Icon(Symbols.delete, color: whiteColor),
-        //               onPressed: () => _showDeletePopup(context, controller),
-        //             ),
-        //             if (controller.canForward)
-        //               IconButton(
-        //                 icon: Icon(
-        //                   Symbols.forward,
-        //                   color: AppColors.whiteColor,
-        //                 ),
-        //                 onPressed: () {
-        //                   controller.prepareToForward();
-        //                 },
-        //               ),
-        //           ],
-        //         )
-        //       : Row(
-        //           children: [
-        //             InkWell(
-        //               onTap: () {},
-        //               child: Icon(Symbols.videocam_rounded,
-        //                   color: AppColors.whiteColor),
-        //             ),
-        //             const SizedBox(
-        //               width: 10,
-        //             ),
-        //             InkWell(
-        //               onTap: () {},
-        //               child: Icon(Symbols.call_rounded,
-        //                   color: AppColors.whiteColor),
-        //             ),
-        //           ],
-        //         )),
-        //   PopupMenuButton(
-        //     icon: const Icon(Icons.more_vert, color: whiteColor),
-        //     offset: const Offset(0, 40),
-        //     color: whiteColor,
-        //     onSelected: (value) async {
-        //       // Handle menu item selection
-        //       switch (value) {
-        //         case clearText:
-        //           print(clearText);
-        //           await controller.deleteTextMessage();
-        //           break;
-        //         default:
-        //       }
-        //     },
-        //     itemBuilder: (context) => [
-        //       PopupMenuItem(
-        //         value: newGroup,
-        //         onTap: () {},
-        //         // ignore: prefer_const_constructors
-        //         child: Text(
-        //           newGroup,
-        //           style: const TextStyle(
-        //             fontSize: 14,
-        //             fontWeight: FontWeight.w400,
-        //             color: blackColor,
-        //           ),
-        //         ),
-        //       ),
-        //       const PopupMenuItem(
-        //         value: settings,
-        //         child: Text(
-        //           settings,
-        //           style: TextStyle(
-        //             fontSize: 14,
-        //             fontWeight: FontWeight.w400,
-        //             color: blackColor,
-        //           ),
-        //         ),
-        //       ),
-        //       const PopupMenuItem(
-        //         value: clearText,
-        //         child: Text(
-        //           clearText,
-        //           style: TextStyle(
-        //             fontSize: 14,
-        //             fontWeight: FontWeight.w400,
-        //             color: blackColor,
-        //           ),
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ],
+        actions: [
+          Obx(
+            () => controller.selectedMessages.isNotEmpty
+                ? Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Symbols.delete, color: whiteColor),
+                        onPressed: () => _showDeletePopup(context, controller),
+                      ),
+                      if (controller.canForward)
+                        IconButton(
+                          icon: Icon(
+                            Symbols.forward,
+                            color: AppColors.whiteColor,
+                          ),
+                          onPressed: () {
+                            controller.prepareToForward();
+                          },
+                        ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Symbols.videocam_rounded,
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Symbols.call_rounded,
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert, color: whiteColor),
+            offset: const Offset(0, 40),
+            color: whiteColor,
+            onSelected: (value) async {
+              // Handle menu item selection
+              switch (value) {
+                case clearText:
+                  print(clearText);
+                  await controller.deleteTextMessage();
+                  break;
+                default:
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: newGroup,
+                onTap: () {},
+                // ignore: prefer_const_constructors
+                child: Text(
+                  newGroup,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: blackColor,
+                  ),
+                ),
+              ),
+              const PopupMenuItem(
+                value: settings,
+                child: Text(
+                  settings,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: blackColor,
+                  ),
+                ),
+              ),
+              const PopupMenuItem(
+                value: clearText,
+                child: Text(
+                  clearText,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: blackColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [

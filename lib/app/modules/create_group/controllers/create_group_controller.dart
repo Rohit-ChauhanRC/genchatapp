@@ -11,7 +11,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class CreateGroupController extends GetxController {
-
   FocusNode focusNode = FocusNode();
   final ContactsTable contactsTable = ContactsTable();
   final ChatConectTable chatConectTable = ChatConectTable();
@@ -29,13 +28,19 @@ class CreateGroupController extends GetxController {
   final RxBool isLoading = true.obs;
 
   List<UserList> get filteredRecents => recentChats
-      .where((u) =>
-          (u.localName ?? '').toLowerCase().contains(searchQuery.toLowerCase()))
+      .where(
+        (u) => (u.localName ?? '').toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get filteredContacts => contacts
-      .where((u) =>
-          (u.localName ?? '').toLowerCase().contains(searchQuery.toLowerCase()))
+      .where(
+        (u) => (u.localName ?? '').toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get nonRecentFilteredContacts {
@@ -87,17 +92,19 @@ class CreateGroupController extends GetxController {
     isLoading.value = true;
 
     // Replace with your methods to get recent chats and contacts
-    final recentRaw = await chatConectTable.fetchAll();
+    final recentRaw = await chatConectTable.fetchAllWithoutGroup();
     final allContacts = await contactsTable.fetchAll();
 
     // Convert ChatConntactModel to UserList format
     final recent = recentRaw
-        .map((chat) => UserList(
-              userId: int.parse(chat.uid.toString()),
-              phoneNumber: chat.name,
-              displayPictureUrl: chat.profilePic,
-              localName: chat.name,
-            ))
+        .map(
+          (chat) => UserList(
+            userId: int.parse(chat.uid.toString()),
+            phoneNumber: chat.name,
+            displayPictureUrl: chat.profilePic,
+            localName: chat.name,
+          ),
+        )
         .toList();
     recentChats.assignAll(recent);
     contacts.assignAll(allContacts);

@@ -31,19 +31,17 @@ class GroupNameView extends GetView<GroupNameController> {
             children: [
               InkWell(
                 onTap: controller.selectImage,
-                child: Obx(() => controller.image == null
-                    ? const UserAvatar()
-                    : CircleAvatar(
-                        backgroundColor: AppColors.greyColor.withOpacity(0.4),
-                        backgroundImage: FileImage(
-                          controller.image!,
+                child: Obx(
+                  () => controller.image == null
+                      ? const UserAvatar()
+                      : CircleAvatar(
+                          backgroundColor: AppColors.greyColor.withOpacity(0.4),
+                          backgroundImage: FileImage(controller.image!),
+                          radius: 64,
                         ),
-                        radius: 64,
-                      )),
+                ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 onChanged: (v) => controller.groupName = v,
@@ -56,11 +54,11 @@ class GroupNameView extends GetView<GroupNameController> {
                     value!.isEmpty ? "Please enter group name!" : null,
                 keyboardType: TextInputType.name,
               ),
-              const SizedBox(
-                height: 50,
-              ),
+              const SizedBox(height: 50),
               Obx(
-                () => controller.groupName.isNotEmpty
+                () =>
+                    controller.groupName.isNotEmpty &&
+                        !controller.circularProgress
                     ? SizedBox(
                         width: Get.width * 0.8,
                         child: ElevatedButton(
@@ -71,8 +69,11 @@ class GroupNameView extends GetView<GroupNameController> {
                           ),
                         ),
                       )
+                    : controller.groupName.isNotEmpty &&
+                          controller.circularProgress
+                    ? const CircularProgressIndicator()
                     : const SizedBox(),
-              )
+              ),
             ],
           ),
         ),

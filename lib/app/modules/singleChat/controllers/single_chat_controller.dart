@@ -767,7 +767,7 @@ class SingleChatController extends GetxController
       typingTimer?.cancel();
     }
 
-    messageController.text = text;
+    // messageController.text = text;
   }
 
   void toggleMessageSelection(NewMessageModel message) {
@@ -1400,7 +1400,8 @@ class SingleChatController extends GetxController
     String fileName,
     String url,
   ) async {
-    if (isDownloading[fileName] == true || isDownloaded[fileName] == true) return;
+    if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
+      return;
 
     isDownloading[fileName] = true;
     downloadedBytes[fileName] = 0;
@@ -1501,7 +1502,8 @@ class SingleChatController extends GetxController
         thumDir = await getApplicationDocumentsDirectory();
       }
 
-      final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Audio';
+      final String rootFolderPath =
+          '${thumDir.path}/$appPackageName/GenChat/Audio';
 
       final Directory dirThum = Directory(rootFolderPath);
       if (!await dirThum.exists()) {

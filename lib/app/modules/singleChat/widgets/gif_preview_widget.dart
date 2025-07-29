@@ -11,8 +11,8 @@ class GifPreviewWidget extends StatelessWidget {
 
   final String filePath;
 
-  final SingleChatController singleChatController =
-      Get.find<SingleChatController>();
+  // final SingleChatController singleChatController =
+  //     Get.find<SingleChatController>();
 
   @override
   Widget build(BuildContext context) {

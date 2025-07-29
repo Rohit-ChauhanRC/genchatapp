@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/display_text_image_gif.dart';
+import 'package:genchatapp/app/modules/group_chats/widgets/group_display_text_image_gif.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:swipe_to/swipe_to.dart';
@@ -24,7 +24,7 @@ class GroupMyMessageCard extends StatelessWidget {
   final bool showForwarded;
 
   const GroupMyMessageCard({
-    Key? key, // 👈 Ensure this is passed properly in ChatList
+    super.key, // 👈 Ensure this is passed properly in ChatList
     required this.message,
     required this.date,
     required this.type,
@@ -38,12 +38,13 @@ class GroupMyMessageCard extends StatelessWidget {
     this.isHighlighted = false,
     this.isForwarded = false,
     this.showForwarded = false,
-  }) : super(key: key); // 👈 Needed for scroll-to-original to work
+  }); // 👈 Needed for scroll-to-original to work
 
   @override
   Widget build(BuildContext context) {
     final replyText1 = repliedText.value.trim();
-    final hasReply1 = replyText1.isNotEmpty &&
+    final hasReply1 =
+        replyText1.isNotEmpty &&
         replyText1.toLowerCase() != "null" &&
         type != MessageType.deleted;
 
@@ -83,7 +84,11 @@ class GroupMyMessageCard extends StatelessWidget {
                             bottom: 20,
                           )
                         : const EdgeInsets.only(
-                            left: 5, top: 5, right: 5, bottom: 25),
+                            left: 5,
+                            top: 5,
+                            right: 5,
+                            bottom: 25,
+                          ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -97,22 +102,24 @@ class GroupMyMessageCard extends StatelessWidget {
                                           color: AppColors.greyMsgColor,
                                           size: 18,
                                         ),
-                                        const SizedBox(
-                                          width: 10,
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          "Forwarded",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.greyMsgColor,
+                                          ),
                                         ),
-                                        Text("Forwarded",
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic,
-                                                fontWeight: FontWeight.w400,
-                                                color: AppColors.greyMsgColor)),
                                       ]
                                     : [],
                               )
                             : const SizedBox.shrink(),
                         Obx(() {
                           final replyText = repliedText.value.trim();
-                          final hasReply = replyText.isNotEmpty &&
+                          final hasReply =
+                              replyText.isNotEmpty &&
                               replyText.toLowerCase() != "null" &&
                               type != MessageType.deleted;
 
@@ -135,7 +142,7 @@ class GroupMyMessageCard extends StatelessWidget {
                                   color: replyColor.withOpacity(0.67),
                                   borderRadius: BorderRadius.circular(5),
                                 ),
-                                child: DisplayTextImageGIF(
+                                child: GroupDisplayTextImageGIF(
                                   message: replyText,
                                   type: repliedMessageType,
                                   isReply: true,
@@ -145,10 +152,7 @@ class GroupMyMessageCard extends StatelessWidget {
                             ],
                           );
                         }),
-                        DisplayTextImageGIF(
-                          message: message,
-                          type: type,
-                        ),
+                        GroupDisplayTextImageGIF(message: message, type: type),
                       ],
                     ),
                   ),
@@ -170,8 +174,8 @@ class GroupMyMessageCard extends StatelessWidget {
                             status == MessageState.unsent
                                 ? Icons.watch_later
                                 : status == MessageState.sent
-                                    ? Icons.done
-                                    : Icons.done_all,
+                                ? Icons.done
+                                : Icons.done_all,
                             size: 20,
                             color: status == MessageState.read
                                 ? Colors.blue

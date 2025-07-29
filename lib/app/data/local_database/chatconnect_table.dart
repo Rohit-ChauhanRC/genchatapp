@@ -24,9 +24,7 @@ class ChatConectTable {
 """);
   }
 
-  Future<int> insert({
-    required ChatConntactModel contact,
-  }) async {
+  Future<int> insert({required ChatConntactModel contact}) async {
     final database = await DataBaseService().database;
 
     return await database.insert(
@@ -45,7 +43,17 @@ class ChatConectTable {
     return e.map((el) => ChatConntactModel.fromMap((el))).toList();
   }
 
-  Future<ChatConntactModel?> fetchById({required String uid, required bool isGroup}) async {
+  Future<List<ChatConntactModel>> fetchAllWithoutGroup() async {
+    final database = await DataBaseService().database;
+    final e = await database.query(tableName, where: 'isGroup = 0');
+
+    return e.map((el) => ChatConntactModel.fromMap((el))).toList();
+  }
+
+  Future<ChatConntactModel?> fetchById({
+    required String uid,
+    required bool isGroup,
+  }) async {
     final database = await DataBaseService().database;
 
     // Query the database with the UID condition
@@ -53,6 +61,25 @@ class ChatConectTable {
       tableName,
       where: 'uid = ? AND isGroup = ?', // Add WHERE clause
       whereArgs: [uid, isGroup ? 1 : 0], // Provide arguments for WHERE
+      limit: 1, // Limit to 1 result for efficiency
+    );
+
+    // If a result is found, return the ContactModel, otherwise return null
+    if (result.isNotEmpty) {
+      return ChatConntactModel.fromMap(result.first);
+    }
+
+    return null;
+  }
+
+  Future<ChatConntactModel?> fetchUserById({required String uid}) async {
+    final database = await DataBaseService().database;
+
+    // Query the database with the UID condition
+    final result = await database.query(
+      tableName,
+      where: 'uid = ?', // Add WHERE clause
+      whereArgs: [uid], // Provide arguments for WHERE
       limit: 1, // Limit to 1 result for efficiency
     );
 
@@ -86,14 +113,15 @@ class ChatConectTable {
     if (isGroup != null) updatedValues["isGroup"] = isGroup;
 
     print(
-        '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues');
+      '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues',
+    );
 
     if (updatedValues.isNotEmpty) {
       await db.update(
         tableName,
         updatedValues,
         where: 'uid = ? AND isGroup = ?',
-        whereArgs: [uid,isGroup],
+        whereArgs: [uid, isGroup],
       );
     } else {
       print('⚠️ [updateContact] No values to update for uid=$uid');
@@ -114,7 +142,6 @@ class ChatConectTable {
     }
     return false;
   }
-
 
   Future<void> deleteChatUser(String uid) async {
     final db = await DataBaseService().database;

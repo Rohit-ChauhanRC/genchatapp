@@ -27,30 +27,42 @@ class ForwardMessagesController extends GetxController {
   final RxList<UserList> contacts = <UserList>[].obs;
   final RxList<int> selectedUserIds = <int>[].obs;
 
+  final RxList<int> selectedUserIsGroup = <int>[].obs;
+
   final RxString _searchQuery = ''.obs;
   String get searchQuery => _searchQuery.value;
   set searchQuery(String searchText) => _searchQuery.value = searchText;
 
-  List<NewMessageModel> get messagesToForward => Get.arguments as List<NewMessageModel>;
+  List<NewMessageModel> get messagesToForward =>
+      Get.arguments as List<NewMessageModel>;
 
   final RxBool isLoading = true.obs;
 
   List<UserList> get filteredRecents => recentChats
-      .where((u) => (u.localName ?? '').toLowerCase().contains(searchQuery.toLowerCase()))
+      .where(
+        (u) => (u.localName ?? '').toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get filteredContacts => contacts
-      .where((u) => (u.localName ?? '').toLowerCase().contains(searchQuery.toLowerCase()))
+      .where(
+        (u) => (u.localName ?? '').toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get nonRecentFilteredContacts {
     final recentIds = recentChats.map((e) => e.userId).toSet();
-    return filteredContacts.where((u) => !recentIds.contains(u.userId)).toList();
+    return filteredContacts
+        .where((u) => !recentIds.contains(u.userId))
+        .toList();
   }
 
   bool get showRecent => filteredRecents.isNotEmpty;
   bool get showAllContacts => nonRecentFilteredContacts.isNotEmpty;
-
 
   List<String> get selectedUserNames {
     final Map<int, UserList> userMap = {};
@@ -87,7 +99,6 @@ class ForwardMessagesController extends GetxController {
     selectedUserNames.clear();
   }
 
-
   Future<void> fetchData() async {
     isLoading.value = true;
 
@@ -96,30 +107,44 @@ class ForwardMessagesController extends GetxController {
     final allContacts = await contactsTable.fetchAll();
 
     // Convert ChatConntactModel to UserList format
-    final recent = recentRaw.map((chat) => UserList(
-      userId: int.parse(chat.uid.toString()),
-      phoneNumber: chat.name,
-      displayPictureUrl: chat.profilePic,
-      localName: chat.name,
-    )).toList();
+    final recent = recentRaw
+        .map(
+          (chat) => UserList(
+            userId: int.parse(chat.uid.toString()),
+            phoneNumber: chat.name,
+            displayPictureUrl: chat.profilePic,
+            localName: chat.name,
+          ),
+        )
+        .toList();
     recentChats.assignAll(recent);
     contacts.assignAll(allContacts);
     isLoading.value = false;
   }
 
-  void toggleSelection(int userId) {
-    if(selectedUserIds.contains(userId)){
+  void toggleSelection(int userId) async {
+    if (selectedUserIds.contains(userId)) {
       selectedUserIds.remove(userId);
-    } else{
+      if (selectedUserIsGroup.contains(userId)) {
+        selectedUserIsGroup.remove(userId);
+      }
+    } else {
       if (selectedUserIds.length >= 5) {
         showAlertMessage("You can only share with up to 5 chats.");
         return;
       }
+
       selectedUserIds.add(userId);
+      ChatConntactModel? chatUser = await chatConectTable.fetchUserById(
+        uid: userId.toString(),
+      );
+      if (chatUser != null && chatUser.isGroup != 0) {
+        selectedUserIsGroup.add(userId);
+      }
     }
   }
 
-  Future<void> forwardMessages() async{
+  Future<void> forwardMessages() async {
     if (selectedUserIds.isEmpty || messagesToForward.isEmpty) return;
 
     for (final userId in selectedUserIds) {
@@ -138,12 +163,16 @@ class ForwardMessagesController extends GetxController {
           createdAt: timeSent.toString(),
           senderPhoneNumber: senderuserData?.phoneNumber,
           messageType: msg.messageType,
-          isForwarded:  true, ///showForwarded
-          isGroupMessage:  false, ///showForwarded
+          isForwarded: true,
+
+          ///showForwarded
+          isGroupMessage: selectedUserIsGroup.contains(userId) ? true : false,
+
+          ///showForwarded
           forwardedMessageId: msg.messageId,
           showForwarded: msg.senderId == senderuserData?.userId ? false : true,
           isRepliedMessage: false,
-          messageRepliedOnId: 0,  
+          messageRepliedOnId: 0,
           messageRepliedOn: '',
           messageRepliedOnType: null,
           messageRepliedOnAssetServerName: "",

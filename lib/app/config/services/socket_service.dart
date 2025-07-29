@@ -62,10 +62,7 @@ class SocketService extends GetxService {
     print('🔌 Socket initialized');
   }
 
-  void _registerSocketListeners(
-    Function()? onConnected,
-    String userId,
-  ) {
+  void _registerSocketListeners(Function()? onConnected, String userId) {
     _socket?.onConnect((_) async {
       print('✅ Socket connected');
       // _isConnected.value = true;
@@ -106,35 +103,38 @@ class SocketService extends GetxService {
       if (!existsLocally) {
         print("message not found");
         final newMessage = NewMessageModel(
-            message: data["message"],
-            senderId: data["senderId"],
-            messageId: data["messageId"],
-            recipientId: data["recipientId"],
-            messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-            messageType: data['messageType'] != null
-                ? MessageTypeExtension.fromValue(data['messageType'])
-                : MessageType.text,
-            // default if null
-            state: MessageState.sent,
-            senderPhoneNumber: data["senderPhoneNumber"],
-            isGroupMessage:data["isGroupMessage"] ?? false,
-            isRepliedMessage: data["isRepliedMessage"] ?? false,
-            messageRepliedOnId: data["messageRepliedOnId"],
-            messageRepliedOn: data["messageRepliedOn"] ?? '',
-            messageRepliedOnType: data["messageRepliedOnType"] != null
-                ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
-                : null,
-            messageRepliedOnAssetThumbnail: data["messageRepliedOnAssetThumbnail"] ?? '',
-            messageRepliedOnAssetServerName: data["messageRepliedOnAssetServerName"] ?? '',
-            isAsset: data["isAsset"] ?? false,
-            assetThumbnail: data["assetThumbnail"] ?? "",
-            assetOriginalName: data["assetOriginalName"] ?? '',
-            assetServerName: data["assetServerName"] ?? '',
-            assetUrl: data["assetUrl"] ?? '',
-            isForwarded: data["isForwarded"] ?? false,
-            showForwarded: data["showForwarded"] ?? false,
-            forwardedMessageId: data['forwardedMessageId'] ?? 0,
-            messageRepliedUserId: data["messageRepliedUserId"] ?? 0);
+          message: data["message"],
+          senderId: data["senderId"],
+          messageId: data["messageId"],
+          recipientId: data["recipientId"],
+          messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+          messageType: data['messageType'] != null
+              ? MessageTypeExtension.fromValue(data['messageType'])
+              : MessageType.text,
+          // default if null
+          state: MessageState.sent,
+          senderPhoneNumber: data["senderPhoneNumber"],
+          isGroupMessage: data["isGroupMessage"] ?? false,
+          isRepliedMessage: data["isRepliedMessage"] ?? false,
+          messageRepliedOnId: data["messageRepliedOnId"],
+          messageRepliedOn: data["messageRepliedOn"] ?? '',
+          messageRepliedOnType: data["messageRepliedOnType"] != null
+              ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
+              : null,
+          messageRepliedOnAssetThumbnail:
+              data["messageRepliedOnAssetThumbnail"] ?? '',
+          messageRepliedOnAssetServerName:
+              data["messageRepliedOnAssetServerName"] ?? '',
+          isAsset: data["isAsset"] ?? false,
+          assetThumbnail: data["assetThumbnail"] ?? "",
+          assetOriginalName: data["assetOriginalName"] ?? '',
+          assetServerName: data["assetServerName"] ?? '',
+          assetUrl: data["assetUrl"] ?? '',
+          isForwarded: data["isForwarded"] ?? false,
+          showForwarded: data["showForwarded"] ?? false,
+          forwardedMessageId: data['forwardedMessageId'] ?? 0,
+          messageRepliedUserId: data["messageRepliedUserId"] ?? 0,
+        );
         messageTable.insertMessage(newMessage);
         incomingMessage.value = newMessage;
 
@@ -206,15 +206,27 @@ class SocketService extends GetxService {
         lastSeenTime ?? '', // Pass empty string if user is online
       );
 
-      print(success
-          ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
-          : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime");
+      print(
+        success
+            ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
+            : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime",
+      );
     });
 
     _socket?.on('typing', (data) {
       print('✅ user is typing: $data');
       print('📝 Typing event received: $data');
 
+      final String senderId = data["userId"].toString();
+      final bool isTyping = data["isTyping"] == true;
+
+      // 👇 Save typing state in map for the current chat
+      typingStatusMap[senderId] = isTyping;
+    });
+
+    _socket?.on('group-user-typing', (data) {
+      print('✅ Group user is typing: $data');
+      print('📝 Group user Typing event received: $data');
       final String senderId = data["userId"].toString();
       final bool isTyping = data["isTyping"] == true;
 
@@ -332,9 +344,7 @@ class SocketService extends GetxService {
       messageId: messageId.toString(),
       state: 3,
     );
-    _socket?.emit('message-seen', {
-      "messageId": messageId,
-    });
+    _socket?.emit('message-seen', {"messageId": messageId});
   }
 
   void checkUserOnline(Map<String, dynamic> data) {
@@ -342,14 +352,23 @@ class SocketService extends GetxService {
   }
 
   void emitTypingStatus({required String recipientId, required bool isTyping}) {
-    _socket?.emit('typing', {
-      "recipientId": recipientId,
+    _socket?.emit('typing', {"recipientId": recipientId, "isTyping": isTyping});
+  }
+
+  void emitGroupTypingStatus({
+    required String recipientId,
+    required bool isTyping,
+  }) {
+    _socket?.emit('group-user-typing', {
+      "groupId": recipientId,
       "isTyping": isTyping,
     });
   }
 
-  void monitorReceiverTyping(String receiverUserId,
-      void Function(bool isTyping) onTypingStatusChanged) {
+  void monitorReceiverTyping(
+    String receiverUserId,
+    void Function(bool isTyping) onTypingStatusChanged,
+  ) {
     ever(typingStatusMap, (_) {
       if (typingStatusMap.containsKey(receiverUserId)) {
         onTypingStatusChanged(typingStatusMap[receiverUserId] == true);
@@ -357,8 +376,10 @@ class SocketService extends GetxService {
     });
   }
 
-  void emitMessageDelete(
-      {required int messageId, required bool isDeleteFromEveryOne}) {
+  void emitMessageDelete({
+    required int messageId,
+    required bool isDeleteFromEveryOne,
+  }) {
     _socket?.emit('message-delete', {
       "messageId": messageId,
       "deleteState": isDeleteFromEveryOne,
@@ -385,7 +406,10 @@ class SocketService extends GetxService {
         final group = await groupsTable.getGroupById(int.parse(groupId));
 
         if (group != null) {
-          final existing = await chatConectTable.fetchById(uid: groupId, isGroup: true);
+          final existing = await chatConectTable.fetchById(
+            uid: groupId,
+            isGroup: true,
+          );
 
           if (existing != null) {
             await chatConectTable.updateContact(
@@ -417,7 +441,10 @@ class SocketService extends GetxService {
 
       // ✅ 2. Handle PERSONAL message
       final userId = data.recipientId.toString();
-      final existing = await chatConectTable.fetchById(uid: userId, isGroup: false);
+      final existing = await chatConectTable.fetchById(
+        uid: userId,
+        isGroup: false,
+      );
 
       final user = await contactsTable.getUserById(data.recipientId!);
       final name = user?.localName ?? '';
@@ -452,7 +479,6 @@ class SocketService extends GetxService {
     }
   }
 
-
   String? _getMessageTypeText(NewMessageModel data) {
     switch (data.messageType) {
       case MessageType.image:
@@ -465,7 +491,6 @@ class SocketService extends GetxService {
         return data.message;
     }
   }
-
 
   Future<void> retryPendingDeletions() async {
     final pendingDeletions = await messageTable.getQueuedDeletions();
@@ -486,8 +511,9 @@ class SocketService extends GetxService {
   }
 
   Future<void> syncPendingMessages({required int loginUserId}) async {
-    final dbMessages =
-        await messageTable.fetchAllPendingMessages(loginUserId: loginUserId);
+    final dbMessages = await messageTable.fetchAllPendingMessages(
+      loginUserId: loginUserId,
+    );
     for (final msg in dbMessages) {
       if (msg.isAsset == false) {
         sendMessageSync(msg);

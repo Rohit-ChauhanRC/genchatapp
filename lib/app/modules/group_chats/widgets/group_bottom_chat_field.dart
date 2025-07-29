@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/AttachmentPopupDemo.dart';
 import 'package:get/get.dart';
 
@@ -27,11 +26,16 @@ class GroupBottomChatField extends StatelessWidget {
     //     groupChatsController.messageReply.message != null;
     return Column(
       children: [
-        Obx(() => groupChatsController.messageReply.message != null &&
-                groupChatsController.messageReply.message != "null" &&
-                groupChatsController.messageReply.message.toString().isNotEmpty
-            ? GroupMessageReplyPreview()
-            : const SizedBox.shrink()),
+        Obx(
+          () =>
+              groupChatsController.messageReply.message != null &&
+                  groupChatsController.messageReply.message != "null" &&
+                  groupChatsController.messageReply.message
+                      .toString()
+                      .isNotEmpty
+              ? GroupMessageReplyPreview()
+              : const SizedBox.shrink(),
+        ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -42,8 +46,8 @@ class GroupBottomChatField extends StatelessWidget {
                   child: TextFormField(
                     scrollController: groupChatsController.textScrollController,
                     maxLines: null,
-                    // autofocus: true,
 
+                    // autofocus: true,
                     keyboardType: TextInputType.multiline,
                     focusNode: groupChatsController.focusNode,
                     onChanged: (v) {
@@ -58,13 +62,21 @@ class GroupBottomChatField extends StatelessWidget {
                       if (v.length >= 800) {
                         // You could show a SnackBar, error, or shake animation here
                         showAlertMessage(
-                            "This message is too long, Please shorter the message.");
+                          "This message is too long, Please shorter the message.",
+                        );
                         print("Max character limit reached");
                       }
                     },
                     controller: groupChatsController.messageController,
                     inputFormatters: [
                       LengthLimitingTextInputFormatter(800),
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        return newValue.copyWith(
+                          text: newValue.text,
+                          selection:
+                              newValue.selection, // keeps cursor in place
+                        );
+                      }),
                     ],
                     // maxLength: 800,
                     decoration: InputDecoration(
@@ -93,7 +105,7 @@ class GroupBottomChatField extends StatelessWidget {
                               // ),
                               InkWell(
                                 onTap: () {
-                                  groupChatsController.selectGif();
+                                  // groupChatsController.selectGif();
                                 },
                                 child: const Icon(
                                   Icons.gif,
@@ -105,43 +117,47 @@ class GroupBottomChatField extends StatelessWidget {
                           ),
                         ),
                       ),
-                      suffixIcon: Obx(() => SizedBox(
-                            width: !groupChatsController.isShowSendButton
-                                ? 100
-                                : 50,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                !groupChatsController.isShowSendButton
-                                    ? IconButton(
-                                        onPressed: () {
-                                          groupChatsController.selectFile(
-                                              MessageEnum.image.type);
-                                        },
-                                        icon: const Icon(
-                                          Icons.camera_alt,
-                                          color: greyMsgColor,
-                                        ),
-                                      )
-                                    : SizedBox.shrink(),
-                                IconButton(
-                                  onPressed: () {
-                                    // groupChatsController.selectVideo();
-                                    groupChatsController.cancelReply();
-                                    Get.to(() => AttachmentPopupDemo());
-                                  },
-                                  icon: const Icon(
-                                    Icons.attach_file,
-                                    color: greyMsgColor,
-                                  ),
+                      suffixIcon: Obx(
+                        () => SizedBox(
+                          width: !groupChatsController.isShowSendButton
+                              ? 100
+                              : 50,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              !groupChatsController.isShowSendButton
+                                  ? IconButton(
+                                      onPressed: () {
+                                        // groupChatsController.selectFile(
+                                        //   MessageEnum.image.type,
+                                        // );
+                                      },
+                                      icon: const Icon(
+                                        Icons.camera_alt,
+                                        color: greyMsgColor,
+                                      ),
+                                    )
+                                  : SizedBox.shrink(),
+                              IconButton(
+                                onPressed: () {
+                                  // groupChatsController.selectVideo();
+                                  // groupChatsController.cancelReply();
+                                  // Get.to(() => AttachmentPopupDemo());
+                                },
+                                icon: const Icon(
+                                  Icons.attach_file,
+                                  color: greyMsgColor,
                                 ),
-                              ],
-                            ),
-                          )),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       hintText: 'Type a message!',
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: BorderSide.none,
+                      ),
                       contentPadding: const EdgeInsets.all(10),
                     ),
                   ),
@@ -156,13 +172,15 @@ class GroupBottomChatField extends StatelessWidget {
                   child: CircleAvatar(
                     backgroundColor: textBarColor,
                     radius: 25,
-                    child: Obx(() => Icon(
-                          groupChatsController.isShowSendButton
-                              ? Icons.send
-                              : groupChatsController.isRecording
-                                  ? Icons.close
-                                  : Icons.mic,
-                        )),
+                    child: Obx(
+                      () => Icon(
+                        groupChatsController.isShowSendButton
+                            ? Icons.send
+                            : groupChatsController.isRecording
+                            ? Icons.close
+                            : Icons.mic,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -172,22 +190,24 @@ class GroupBottomChatField extends StatelessWidget {
         // const SizedBox(
         //   height: 10,
         // ),
-        Obx(() => groupChatsController.isShowEmojiContainer
-            ? SizedBox(
-                height: 300,
-                child: EmojiPicker(
-                  onEmojiSelected: (category, emoji) {
-                    groupChatsController.messageController.text =
-                        groupChatsController.messageController.text +
-                            emoji.emoji;
+        Obx(
+          () => groupChatsController.isShowEmojiContainer
+              ? SizedBox(
+                  height: 300,
+                  child: EmojiPicker(
+                    onEmojiSelected: (category, emoji) {
+                      groupChatsController.messageController.text =
+                          groupChatsController.messageController.text +
+                          emoji.emoji;
 
-                    if (!groupChatsController.isShowSendButton) {
-                      groupChatsController.isShowSendButton = true;
-                    }
-                  },
-                ),
-              )
-            : const SizedBox.shrink()),
+                      if (!groupChatsController.isShowSendButton) {
+                        groupChatsController.isShowSendButton = true;
+                      }
+                    },
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

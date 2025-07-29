@@ -184,18 +184,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
 
-    GroupData? user = Get.arguments;
-    if (user != null) {
-      checkUserOnline(user);
-      receiverUserData = user;
-      groupId = user.group?.id ?? 0;
-      bindReceiverUserStream(user.group?.id ?? 0);
+    GroupData? groupData = Get.arguments;
+    if (groupData != null) {
+      checkUserOnline(groupData);
+      receiverUserData = groupData;
+      groupId = groupData.group?.id ?? 0;
+      bindReceiverUserStream(groupData.group?.id ?? 0);
     }
-    socketService.monitorReceiverTyping(receiverUserData!.group!.id.toString(), (
-      isTyping,
-    ) {
-      _isReceiverTyping.value = isTyping;
-    });
+    socketService.monitorReceiverTyping(
+      receiverUserData!.group!.id.toString(),
+      (isTyping) {
+        _isReceiverTyping.value = isTyping;
+      },
+    );
 
     // print(
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
@@ -203,10 +204,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     getRootFolder();
 
     closeKeyboard();
-    // _startLoadingTimer();
-    // bindMessageStream();
-    // await loadInitialMessages();
-    // bindSocketEvents();
+    await loadInitialMessages();
+    bindSocketEvents();
+    monitorScrollPosition();
     monitorScrollPosition();
     isInCurrentChat = true;
     // scrollController.addListener(_scrollListener);
@@ -279,46 +279,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  //  Future<void> checkMessageInList(int repliedId) async {
-  //     bool messageFound = false;
-  //     int localOffset = currentOffset;
-
-  //     while (!messageFound) {
-  //       final messages = await MessageTable().fetchMessagesPaginated(
-  //         receiverId: receiverUserData?.userId ?? 0,
-  //         senderId: senderuserData?.userId ?? 0,
-  //         offset: localOffset,
-  //         limit: pageSize,
-  //       );
-
-  //       if (messages.isEmpty) {
-  //         print("Reached end of messages. Message not found.");
-  //         break;
-  //       }
-
-  //       final index = messages.indexWhere((e) => e.messageId == repliedId);
-  //       if (index != -1) {
-  //         final foundMessage = messages[index];
-  //         print("Found message: ${foundMessage.messageText}");
-
-  //         // Optionally add this to message list
-  //         messageList.insertAll(0, messages); // or a smarter merge logic
-
-  //         // Update index map and scroll
-  //         updateMessageIdToIndex(); // Make sure you have this method to rebuild map
-
-  //         scrollToOriginalMessage(repliedId);
-  //         messageFound = true;
-  //       } else {
-  //         localOffset += messages.length;
-  //         messageList.insertAll(
-  //             0, messages); // Prepend as new messages load upward
-  //       }
-  //     }
-
-  //     currentOffset = localOffset; // Maintain progress
-  //   }
-
   void checkUserOnline(GroupData? user) async {
     if (user == null) return;
     var params = {"recipientId": user.group?.id};
@@ -352,9 +312,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     bool messageFound = false;
 
     while (!messageFound) {
-      final messages = await MessageTable().fetchMessagesPaginated(
+      final messages = await MessageTable().fetchGroupMessagesPaginated(
         receiverId: receiverUserData?.group?.id ?? 0,
-        senderId: senderuserData?.userId ?? 0,
+
         offset: localOffset,
         limit: pageSize,
       );
@@ -444,10 +404,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     ever(socketService.incomingMessage, (NewMessageModel? message) {
       if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
-        return (msg.senderId == receiverUserData?.group?.id &&
-                msg.recipientId == senderuserData?.userId) ||
-            (msg.senderId == receiverUserData?.group?.id &&
-                msg.recipientId == senderuserData?.userId);
+        return (msg.recipientId == receiverUserData?.group?.id);
       }
 
       if (message != null && isFromCurrentChat(message)) {
@@ -555,9 +512,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     if (isPaginating || !hasMoreMessages) return;
 
     isPaginating = true;
-    final messages = await MessageTable().fetchMessagesPaginated(
+    final messages = await MessageTable().fetchGroupMessagesPaginated(
       receiverId: receiverUserData?.group?.id ?? 0,
-      senderId: senderuserData?.userId ?? 0,
+
       offset: currentOffset,
       limit: pageSize,
     );
@@ -632,6 +589,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     final timeSent = DateTime.now();
 
     final newMessage = NewMessageModel(
+      isGroupMessage: true,
       senderId: senderuserData?.userId,
       recipientId: receiverUserData?.group?.id,
       message: encryptionService.encryptText(message),
@@ -660,6 +618,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           : messageReply.isMe == true
           ? senderuserData?.userId
           : receiverUserData?.group?.id,
+      assetThumbnail: "",
     );
     print("Message All details Request: ${newMessage.toMap()}");
 
@@ -683,7 +642,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     messageController.clear();
     var receiverUserId = receiverUserData?.group?.id.toString() ?? '';
-    socketService.emitTypingStatus(
+    socketService.emitGroupTypingStatus(
       recipientId: receiverUserId,
       isTyping: false,
     );
@@ -698,12 +657,15 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isShowSendButton = true;
 
       // Emit isTyping: true
-      socketService.emitTypingStatus(recipientId: receiverId, isTyping: true);
+      socketService.emitGroupTypingStatus(
+        recipientId: receiverId,
+        isTyping: true,
+      );
 
       // Debounce logic for isTyping: false
       typingTimer?.cancel();
       typingTimer = Timer(const Duration(seconds: 2), () {
-        socketService.emitTypingStatus(
+        socketService.emitGroupTypingStatus(
           recipientId: receiverId,
           isTyping: false,
         );
@@ -712,11 +674,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isShowSendButton = false;
 
       // Immediately emit false if field is cleared
-      socketService.emitTypingStatus(recipientId: receiverId, isTyping: false);
+      socketService.emitGroupTypingStatus(
+        recipientId: receiverId,
+        isTyping: false,
+      );
       typingTimer?.cancel();
     }
 
-    messageController.text = text;
+    // messageController.text = text;
   }
 
   void toggleMessageSelection(NewMessageModel message) {
@@ -982,10 +947,89 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   void selectGif() async {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
-      // sendGIFMessage(
-      //   context: Get.context!,
-      //   gifUrl: gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent!.url,
-      // );
+      print(
+        "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}",
+      );
+      final fileName =
+          "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
+      downloadFile(
+        MessageType.gif,
+        fileName,
+        gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url,
+      );
+      sendGIFMessage(
+        gifUrl:
+            gif.media.tinyGif?.url ??
+            gif.media.tinyGifTransparent?.url ??
+            gif.url,
+        messageEnum: MessageType.gif,
+        fileName: fileName,
+      );
+      cancelReply();
+    }
+  }
+
+  Future<void> sendGIFMessage({
+    required String gifUrl,
+    required MessageType messageEnum,
+    required String fileName,
+  }) async {
+    final clientSystemMessageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    try {
+      // Save file locally
+
+      final newMessage = NewMessageModel(
+        senderId: senderuserData?.userId,
+        recipientId: receiverUserData?.group!.id,
+        message: '',
+        messageSentFromDeviceTime: timeSent.toString(),
+        clientSystemMessageId: clientSystemMessageId,
+        state: MessageState.unsent,
+        syncStatus: SyncStatus.pending,
+        createdAt: timeSent.toString(),
+        senderPhoneNumber: senderuserData?.phoneNumber,
+        messageType: messageEnum,
+        isForwarded: false,
+        isGroupMessage: true,
+        forwardedMessageId: 0,
+        showForwarded: false,
+        isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+        messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+        messageRepliedOn: messageReply == null ? '' : messageReply.message,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
+        isAsset: true,
+        assetThumbnail: fileName,
+        assetOriginalName: fileName,
+        assetServerName: fileName,
+        assetUrl: gifUrl,
+        messageRepliedUserId: messageReply.message == null
+            ? 0
+            : messageReply.isMe == true
+            ? senderuserData?.userId
+            : receiverUserData?.group!.id,
+      );
+      print("Message All details Request: ${newMessage.toMap()}");
+      await MessageTable().insertMessage(newMessage);
+      messageList.add(newMessage);
+
+      if (socketService.isConnected) {
+        socketService.sendMessage(newMessage);
+      } else {
+        socketService.saveChatContacts(newMessage);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
     }
   }
 
@@ -1050,5 +1094,105 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> deleteMedia() async {
     await folderCreation.clearMediaFiles();
+  }
+
+  String getFilePath(MessageType type, String fileName) {
+    return '$rootPath${getFolderName(type)}/$fileName';
+  }
+
+  String getFolderName(MessageType type) {
+    switch (type) {
+      case MessageType.image:
+        return "Image";
+      case MessageType.video:
+        return "Video";
+      case MessageType.document:
+        return "Document";
+      case MessageType.audio:
+        return "Audio";
+      case MessageType.gif:
+        return "GIFs";
+      default:
+        return "Unknown";
+    }
+  }
+
+  RxMap<String, bool> isDownloading = <String, bool>{}.obs;
+  RxMap<String, bool> isDownloaded = <String, bool>{}.obs;
+  RxMap<String, int> downloadedBytes = <String, int>{}.obs;
+  RxMap<String, int> totalBytes = <String, int>{}.obs;
+
+  Future<void> checkIfFileExists(MessageType type, String fileName) async {
+    final path = getFilePath(type, fileName);
+    final file = File(path);
+    final exists = await file.exists();
+    final size = exists ? await file.length() : 0;
+
+    if (exists && size > 0) {
+      isDownloaded[fileName] = true;
+    } else {
+      if (exists) await file.delete(); // delete corrupt
+      isDownloaded[fileName] = false;
+    }
+  }
+
+  Future<void> downloadFile(
+    MessageType type,
+    String fileName,
+    String url,
+  ) async {
+    if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
+      return;
+
+    isDownloading[fileName] = true;
+    downloadedBytes[fileName] = 0;
+    totalBytes[fileName] = 0;
+    try {
+      final filePath = await FolderCreation().checkAndHandleFileFromGroup(
+        fileUrl: url,
+        fileName: fileName,
+        subFolderName: getFolderName(type),
+        messageType: type.value,
+        onReceiveProgress: (received, total) {
+          downloadedBytes[fileName] = received;
+          totalBytes[fileName] = total;
+        },
+        onCancel: () {
+          isDownloading[fileName] = false;
+          downloadedBytes[fileName] = 0;
+          totalBytes[fileName] = 0;
+        },
+      );
+      if (filePath != null && File(filePath).existsSync()) {
+        if (type == MessageType.video) {
+          await getThumbnail(File(filePath.toString()));
+
+          // MessageTable().updateMessageForAsset(
+          //     assetPath: assetName.toString(), fileName: fileName);
+          Future.delayed(const Duration(seconds: 1));
+        }
+        isDownloaded[fileName] = true;
+      }
+    } catch (e) {
+      showAlertMessage("Download failed: $e");
+    } finally {
+      isDownloading[fileName] = false;
+      activeDownloads.remove(fileName);
+    }
+  }
+
+  Map<String, StreamSubscription<List<int>>> activeDownloads = {};
+  void cancelDownload(MessageType type, String fileName) {
+    activeDownloads[fileName]?.cancel(); // force cancel
+    isDownloading[fileName] = false;
+    downloadedBytes[fileName] = 0;
+    totalBytes[fileName] = 0;
+    // Also ensure partial file (if any) is deleted
+    final path = getFilePath(type, fileName);
+    final file = File(path);
+    if (file.existsSync()) {
+      file.deleteSync(); // delete partial/corrupt file
+    }
+    activeDownloads.remove(fileName);
   }
 }

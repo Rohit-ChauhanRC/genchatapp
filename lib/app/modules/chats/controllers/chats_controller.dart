@@ -127,7 +127,7 @@ class ChatsController extends GetxController {
             unreadCount = messages.where((msg) =>
             msg.isGroupMessage == true &&
                 msg.senderId.toString() == contact.uid &&
-                msg.recipientId == userId &&
+                msg.senderId != userId &&
                 msg.state != MessageState.read).length;
           } else {
             // 🔁 For PERSONAL chats

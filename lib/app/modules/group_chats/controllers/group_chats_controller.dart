@@ -688,12 +688,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
       if (kDebugMode) {
-        print("Message removed from list:------> $message");
+        print("Message removed from list:------> ${message.toMap()}");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        print("Message added to list:------> $message");
+        print("Message added to list:------> ${message.toMap()}");
       }
     }
     updateForwardAvailability();

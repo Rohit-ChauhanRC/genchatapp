@@ -183,7 +183,7 @@ class ChatsView extends GetView<ChatsController> {
                                   contactsToDisplay[i];
                               final isTyping = controller.socketService
                                       .typingStatusMap[chatConntactModel.uid] ==
-                                  true && chatConntactModel.isGroup == 0;
+                                  true;
                               final isSelected = controller.selectedChatUids
                                   .contains(chatConntactModel.uid);
                               return Container(

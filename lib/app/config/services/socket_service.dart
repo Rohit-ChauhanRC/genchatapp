@@ -228,10 +228,11 @@ class SocketService extends GetxService {
       print('✅ Group user is typing: $data');
       print('📝 Group user Typing event received: $data');
       final String senderId = data["userId"].toString();
+      final String groupId = data["groupId"].toString();
       final bool isTyping = data["isTyping"] == true;
 
       // 👇 Save typing state in map for the current chat
-      typingStatusMap[senderId] = isTyping;
+      typingStatusMap[groupId] = isTyping;
     });
 
     _socket?.on('message-delete', (data) async {
@@ -402,7 +403,7 @@ class SocketService extends GetxService {
 
       // ✅ 1. Handle GROUP message
       if (data.isGroupMessage == true) {
-        final groupId = data.recipientId.toString();
+        final groupId = data.senderId.toString();
         final group = await groupsTable.getGroupById(int.parse(groupId));
 
         if (group != null) {

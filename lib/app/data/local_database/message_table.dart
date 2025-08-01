@@ -495,9 +495,16 @@ class MessageTable {
     await createDeletionQueueTable(db);
   }
 
-  void onUpgrade(Database db, int oldVersion, int newVersion) {
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      db.execute("ALTER TABLE $tableName ADD COLUMN assetThumbnail TEXT;");
+      // Safely add the new column only if it doesn't exist
+      final result = await db.rawQuery('PRAGMA table_info($tableName);');
+      final columnExists = result.any((column) => column['name'] == 'receiverPhoneNumber');
+
+      if (!columnExists) {
+        db.execute(
+            "ALTER TABLE $tableName ADD COLUMN receiverPhoneNumber TEXT;");
+      }
     }
   }
 }

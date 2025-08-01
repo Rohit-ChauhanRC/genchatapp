@@ -17,6 +17,7 @@ class NewMessageModel extends Equatable {
   final String? createdAt;
   final SyncStatus? syncStatus;
   final String? senderPhoneNumber;
+  final String? receiverPhoneNumber;
   final MessageType? messageType;
   final bool? isForwarded;
   final int? forwardedMessageId;
@@ -49,6 +50,7 @@ class NewMessageModel extends Equatable {
     this.createdAt,
     this.syncStatus = SyncStatus.pending,
     this.senderPhoneNumber,
+    this.receiverPhoneNumber,
     this.messageType,
     this.isForwarded,
     this.isGroupMessage,
@@ -89,6 +91,7 @@ class NewMessageModel extends Equatable {
           ? SyncStatusExtension.fromValue(map['syncStatus'])
           : SyncStatus.synced,
       senderPhoneNumber: map['senderPhoneNumber'] ?? '',
+      receiverPhoneNumber: map['receiverPhoneNumber'] ?? '',
       messageType: map['messageType'] != null
           ? MessageTypeExtension.fromValue(map['messageType'])
           : MessageType.text,
@@ -128,6 +131,7 @@ class NewMessageModel extends Equatable {
       'createdAt': createdAt,
       'syncStatus': syncStatus?.value,
       'senderPhoneNumber': senderPhoneNumber,
+      'receiverPhoneNumber': receiverPhoneNumber,
       'messageType': messageType?.value,
       'isForwarded': isForwarded == true ? 1 : 0,
       'isGroupMessage': isGroupMessage == true ? 1 : 0,
@@ -159,6 +163,7 @@ class NewMessageModel extends Equatable {
     String? createdAt,
     SyncStatus? syncStatus,
     String? senderPhoneNumber,
+    String? receiverPhoneNumber,
     MessageType? messageType,
     bool? isForwarded,
     bool? isGroupMessage,
@@ -191,6 +196,7 @@ class NewMessageModel extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
       senderPhoneNumber: senderPhoneNumber ?? this.senderPhoneNumber,
+      receiverPhoneNumber: receiverPhoneNumber ?? this.receiverPhoneNumber,
       messageType: messageType ?? this.messageType,
       isForwarded: isForwarded ?? this.isForwarded,
       isGroupMessage: isGroupMessage ?? this.isGroupMessage,

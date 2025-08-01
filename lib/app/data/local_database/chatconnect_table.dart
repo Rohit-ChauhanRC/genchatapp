@@ -143,6 +143,40 @@ class ChatConectTable {
     return false;
   }
 
+  Future<void> insertOrUpdateGroupChat(ChatConntactModel contact) async {
+    final db = await DataBaseService().database;
+
+    // Check if record already exists
+    final existing = await db.query(
+      tableName,
+      where: 'uid = ? AND isGroup = ?',
+      whereArgs: [contact.uid, 1],
+    );
+
+    if (existing.isEmpty) {
+      // Insert if doesn't exist
+      await db.insert(
+        tableName,
+        contact.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } else {
+      // Exists – only update selective fields (not lastMessage, lastMessageId, or timeSent)
+      final updatedValues = {
+        "name": contact.name,
+        "profilePic": contact.profilePic,
+        "isGroup": 1,
+      };
+
+      await db.update(
+        tableName,
+        updatedValues,
+        where: 'uid = ? AND isGroup = ?',
+        whereArgs: [contact.uid, 1],
+      );
+    }
+  }
+
   Future<void> deleteChatUser(String uid) async {
     final db = await DataBaseService().database;
     await db.delete(tableName, where: 'uid = ?', whereArgs: [uid]);

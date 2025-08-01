@@ -32,6 +32,7 @@ class SocketService extends GetxService {
   final List<VoidCallback> _onSocketConnectedQueue = [];
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
+  final RxMap<String, Map<String, String>> typingGroupUsersMap = <String, Map<String, String>>{}.obs;
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
@@ -114,6 +115,7 @@ class SocketService extends GetxService {
           // default if null
           state: MessageState.sent,
           senderPhoneNumber: data["senderPhoneNumber"],
+          receiverPhoneNumber: data["receiverPhoneNumber"],
           isGroupMessage: data["isGroupMessage"] ?? false,
           isRepliedMessage: data["isRepliedMessage"] ?? false,
           messageRepliedOnId: data["messageRepliedOnId"],
@@ -221,10 +223,12 @@ class SocketService extends GetxService {
       final bool isTyping = data["isTyping"] == true;
 
       // 👇 Save typing state in map for the current chat
-      typingStatusMap[senderId] = isTyping;
+      if(senderId != userId) {
+        typingStatusMap[senderId] = isTyping;
+      }
     });
 
-    _socket?.on('group-user-typing', (data) {
+    _socket?.on('group-user-typing', (data) async{
       print('✅ Group user is typing: $data');
       print('📝 Group user Typing event received: $data');
       final String senderId = data["userId"].toString();
@@ -232,7 +236,13 @@ class SocketService extends GetxService {
       final bool isTyping = data["isTyping"] == true;
 
       // 👇 Save typing state in map for the current chat
-      typingStatusMap[groupId] = isTyping;
+      if(senderId != userId){
+        await updateGroupTypingFromEvent(
+        groupId: groupId,
+        userId: senderId,
+        isTyping: isTyping,
+        );
+      }
     });
 
     _socket?.on('message-delete', (data) async {
@@ -377,6 +387,38 @@ class SocketService extends GetxService {
     });
   }
 
+  Future<void> updateGroupTypingFromEvent({
+    required String groupId,
+    required String userId,
+    required bool isTyping,
+  }) async {
+    // 🔍 Fetch user name from local database
+    final user = await contactsTable.getUserById(int.parse(userId));
+    final userName = user?.localName ?? user?.name;
+
+    final groupMap = typingGroupUsersMap[groupId] ?? {};
+
+    if (isTyping) {
+      groupMap[userId] = userName!;
+    } else {
+      groupMap.remove(userId);
+    }
+
+    // 🧠 Reassign to trigger update in .obs
+    typingGroupUsersMap[groupId] = Map.from(groupMap);
+  }
+
+  void monitorGroupTyping(
+      String groupId,
+      void Function(List<String> typingUserNames) onTypingUsersChanged,
+      ) {
+    ever(typingGroupUsersMap, (_) {
+      final users = typingGroupUsersMap[groupId]?.values.toList() ?? [];
+      onTypingUsersChanged(users);
+    });
+  }
+
+
   void emitMessageDelete({
     required int messageId,
     required bool isDeleteFromEveryOne,
@@ -448,33 +490,72 @@ class SocketService extends GetxService {
       );
 
       final user = await contactsTable.getUserById(data.recipientId!);
-      final name = user?.localName ?? '';
+      final name = user?.localName == "" || user?.localName == null? data.receiverPhoneNumber: user?.localName;
       final profilePic = user?.displayPictureUrl ?? '';
 
-      if (existing != null) {
-        await chatConectTable.updateContact(
-          uid: userId,
-          lastMessage: messageText,
-          lastMessageId: data.messageId,
-          timeSent: data.messageSentFromDeviceTime,
-          name: name,
-          profilePic: profilePic,
-          isGroup: 0,
-        );
-      } else {
-        await chatConectTable.insert(
-          contact: ChatConntactModel(
+      // if(user != null){
+        if (existing != null) {
+          await chatConectTable.updateContact(
             uid: userId,
-            contactId: userId,
             lastMessage: messageText,
             lastMessageId: data.messageId,
             timeSent: data.messageSentFromDeviceTime,
             name: name,
             profilePic: profilePic,
             isGroup: 0,
-          ),
-        );
-      }
+          );
+        } else {
+          await chatConectTable.insert(
+            contact: ChatConntactModel(
+              uid: userId,
+              contactId: userId,
+              lastMessage: messageText,
+              lastMessageId: data.messageId,
+              timeSent: data.messageSentFromDeviceTime,
+              name: name,
+              profilePic: profilePic,
+              isGroup: 0,
+            ),
+          );
+        }
+      // }else{
+      //   final fallbackName = data.receiverPhoneNumber ??
+      //       "Unknown"; // You must pass senderPhoneNumber in NewMessageModel
+      //   final fallbackUid = data.recipientId ?? "0";
+      //
+      //   if (existing != null) {
+      //     await chatConectTable.updateContact(
+      //       uid: fallbackUid.toString(),
+      //       lastMessage: messageText,
+      //       lastMessageId: data.messageId,
+      //       timeSent: data.messageSentFromDeviceTime,
+      //       name: fallbackName,
+      //       profilePic: "",
+      //       isGroup: 0,
+      //     );
+      //   } else {
+      //     await chatConectTable.insert(
+      //       contact: ChatConntactModel(
+      //         uid: fallbackUid.toString(),
+      //         contactId: fallbackUid.toString(),
+      //         lastMessage: messageText,
+      //         lastMessageId: data.messageId,
+      //         timeSent: data.messageSentFromDeviceTime,
+      //         name: fallbackName,
+      //         profilePic: "",
+      //         isGroup: 0,
+      //       ),
+      //     );
+      //     await contactsTable.insertPlaceholderUser(
+      //         userId: int.parse(fallbackUid.toString()),
+      //         isOnline: 1,
+      //         phoneNumber: fallbackName,
+      //         localName: fallbackName
+      //     );
+      //   }
+      //
+
+      // }
     } catch (e) {
       debugPrint("Error saving chat contact: $e");
     }

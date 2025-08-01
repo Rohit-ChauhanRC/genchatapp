@@ -17,6 +17,7 @@ class GroupSenderMessageCard extends StatelessWidget {
     required this.type,
     this.onRightSwipe,
     required this.repliedText,
+    required this.senderName,
     // required this.username,
     required this.repliedMessageType,
     this.repliedUserId,
@@ -31,6 +32,7 @@ class GroupSenderMessageCard extends StatelessWidget {
   final MessageType type;
   final void Function(DragUpdateDetails)? onRightSwipe;
   final RxString repliedText;
+  final String senderName;
   // final String username;
   final MessageType repliedMessageType;
   final int? repliedUserId;
@@ -87,6 +89,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(senderName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textBarColor),),
                         type != MessageType.deleted && isForwarded
                             ? Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -116,14 +119,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                         type != MessageType.deleted &&
                                 repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"
-                            ? Obx(() => Column(children: [
-                                  Text(
-                                    repliedUserName ?? "username",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: blackColor),
-                                  ),
-                                  const SizedBox(height: 3),
+                            ? Obx(() =>
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
@@ -134,14 +130,26 @@ class GroupSenderMessageCard extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    child: GroupDisplayTextImageGIF(
-                                      message: repliedText.value,
-                                      type: repliedMessageType,
-                                      isReply: true,
+                                    child: Column(
+                                      // mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          repliedUserName ?? "username",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: blackColor),
+                                        ),
+                                        SizedBox(height: 3,),
+                                        GroupDisplayTextImageGIF(
+                                          message: repliedText.value,
+                                          type: repliedMessageType,
+                                          isReply: true,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ]))
+                        )
                             : const SizedBox(),
                         GroupDisplayTextImageGIF(
                           message: message,

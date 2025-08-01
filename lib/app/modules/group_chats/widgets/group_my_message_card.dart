@@ -125,33 +125,33 @@ class GroupMyMessageCard extends StatelessWidget {
 
                           if (!hasReply) return const SizedBox();
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                repliedUserName ?? "",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: blackColor,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Container(
+                          return Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: replyColor.withOpacity(0.67),
                                   borderRadius: BorderRadius.circular(5),
                                 ),
-                                child: GroupDisplayTextImageGIF(
-                                  message: replyText,
-                                  type: repliedMessageType,
-                                  isReply: true,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      repliedUserName ?? "",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: blackColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    GroupDisplayTextImageGIF(
+                                      message: replyText,
+                                      type: repliedMessageType,
+                                      isReply: true,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                          );
+                              );
                         }),
+                        SizedBox(height: 5,),
                         GroupDisplayTextImageGIF(message: message, type: type),
                       ],
                     ),

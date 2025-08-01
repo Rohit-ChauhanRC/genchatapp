@@ -84,7 +84,7 @@ class SingleChatView extends GetView<SingleChatController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${user?.localName}',
+                      '${user?.localName == "" ||  user?.localName == null? user?.phoneNumber: user?.localName}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,

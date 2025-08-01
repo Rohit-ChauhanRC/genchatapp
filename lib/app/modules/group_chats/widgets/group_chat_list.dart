@@ -36,7 +36,7 @@ class GroupChatList extends StatelessWidget {
             ));
           }
 
-          final isTyping = groupChatsController.isReceiverTyping;
+          final isTyping = groupChatsController.typingDisplayText.isNotEmpty;
           final messageCount = groupChatsController.messageList.length;
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -122,6 +122,8 @@ class GroupChatList extends StatelessWidget {
                                 : Colors.transparent;
                             final isMine = messages.senderId ==
                                 groupChatsController.senderuserData?.userId;
+                            final messageSenderName = groupChatsController.senderNamesCache[messages.senderId ?? 0] ?? "";
+                            final replyMessageSenderName = groupChatsController.senderNamesCache[messages.messageRepliedUserId ?? 0] ?? "";
                             return Container(
                               color: bgColor,
                               child: isMine
@@ -161,6 +163,8 @@ class GroupChatList extends StatelessWidget {
                                                 isReplied: true,
                                                 messageId:
                                                     messages.messageId ?? 0,
+                                                senderName: "",
+                                                recipientUserId: messages.senderId ?? 0
                                               );
                                             },
                                       repliedMessageType:
@@ -182,8 +186,7 @@ class GroupChatList extends StatelessWidget {
                                                           .senderuserData!
                                                           .userId
                                                   ? "You"
-                                                  : groupChatsController
-                                                      .receiverUserData!.group?.name
+                                                  : replyMessageSenderName
                                               : "username",
                                       onReplyTap: () => groupChatsController
                                           .scrollToOriginalMessage(
@@ -224,7 +227,10 @@ class GroupChatList extends StatelessWidget {
                                                       isReplied: true,
                                                       messageId:
                                                           messages.messageId ??
-                                                              0);
+                                                              0,
+                                                senderName: messageSenderName,
+                                                recipientUserId: messages.senderId ?? 0,
+                                                  );
                                             },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??
@@ -247,8 +253,7 @@ class GroupChatList extends StatelessWidget {
                                                   groupChatsController
                                                       .senderuserData!.userId
                                               ? "You"
-                                              : groupChatsController
-                                                  .receiverUserData!.group?.name
+                                              : replyMessageSenderName
                                           : "username",
                                       onReplyTap: () => groupChatsController
                                           .scrollToOriginalMessage(
@@ -256,6 +261,7 @@ class GroupChatList extends StatelessWidget {
                                       isHighlighted: isHighlighted,
                                       isForwarded: messages.isForwarded!,
                                       showForwarded: messages.showForwarded!,
+                                      senderName: messageSenderName,
                                     ),
                             );
                           }),

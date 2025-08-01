@@ -680,6 +680,7 @@ class SingleChatController extends GetxController
       syncStatus: SyncStatus.pending,
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
+      receiverPhoneNumber: receiverUserData?.phoneNumber,
       messageType: MessageType.text,
       isForwarded: false,
       isGroupMessage: false,
@@ -711,15 +712,41 @@ class SingleChatController extends GetxController
     print("Message All details Request: ${newMessage.toMap()}");
 
     messageList.add(newMessage);
-    await MessageTable().insertMessage(newMessage).then((onValue) {
+    await MessageTable().insertMessage(newMessage).then((onValue) async {
       Future.delayed(Durations.medium4);
-      if (socketService.isConnected) {
-        _sendingMessageIds.add(clientSystemMessageId);
-        // encryptionService.encryptText();
+      final user = await contactsTable.getUserById(newMessage.recipientId!);
+      if(user != null){
+        if (socketService.isConnected) {
+          _sendingMessageIds.add(clientSystemMessageId);
+          // encryptionService.encryptText();
 
-        socketService.sendMessage(newMessage);
-      } else {
-        socketService.saveChatContacts(newMessage);
+          socketService.sendMessage(newMessage);
+        } else {
+          socketService.saveChatContacts(newMessage);
+        }
+      }else{
+        await contactsTable.insertPlaceholderUser(
+            userId: receiverUserData?.userId ?? 0,
+            isOnline: receiverUserData?.isOnline == true ? 1:0,
+            phoneNumber: receiverUserData?.phoneNumber ?? "",
+            localName: "",
+            countryCode: receiverUserData?.countryCode ?? 0,
+            name: receiverUserData?.name ??'',
+            email: receiverUserData?.email??'',
+            userDescription: receiverUserData?.userDescription??'',
+            displayPicture: receiverUserData?.displayPicture??'',
+            displayPictureUrl: receiverUserData?.displayPictureUrl??'',
+            lastSeen: receiverUserData?.lastSeenTime??'',
+            isBlocked: receiverUserData?.isBlocked == true? 1:0,
+        );
+        if (socketService.isConnected) {
+          _sendingMessageIds.add(clientSystemMessageId);
+          // encryptionService.encryptText();
+
+          socketService.sendMessage(newMessage);
+        } else {
+          socketService.saveChatContacts(newMessage);
+        }
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(const Duration(milliseconds: 100), () {

@@ -36,16 +36,57 @@ class ContactsTable {
 
   Future<void> createBulk(List<UserList> users) async {
     final db = await DataBaseService().database;
+
+    // 1. Fetch all existing contacts with userId and localName
+    final existing = await db.query(tableName, columns: ['userId', 'localName']);
+    final existingMap = {
+      for (var row in existing)
+        row['userId'].toString(): (row['localName'] ?? '') as String
+    };
+
+    // 2. Get new userIds from the incoming contacts list
+    final newUserIds = users.map((u) => u.userId.toString()).toSet();
+
     final batch = db.batch();
 
+    // List to keep track of changes for logging
+    final clearedLocalNames = <String>[];
+    final insertedUsers = <String>[];
+
+    // 3. Identify userIds that were in DB earlier but not in new list → deleted from phone
+    for (final oldUserId in existingMap.keys) {
+      if (!newUserIds.contains(oldUserId)) {
+        // This contact was removed from phone — clear only localName
+        batch.update(
+          tableName,
+          {'localName': ''},
+          where: 'userId = ?',
+          whereArgs: [int.parse(oldUserId)],
+        );
+        clearedLocalNames.add(oldUserId);
+      }
+    }
+
+    // 4. Insert/update the current contacts from API+phone sync
     for (final user in users) {
       batch.insert(
         tableName,
         user.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+      insertedUsers.add(user.userId.toString());
     }
+
     await batch.commit(noResult: true);
+
+    // 5. Logging
+    if (clearedLocalNames.isNotEmpty) {
+      print('🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames');
+    } else {
+      print('✅ No contacts were removed from phone, nothing to clear.');
+    }
+
+    print('📥 Inserted/Updated ${insertedUsers.length} users: $insertedUsers');
   }
 
   Future<List<UserList>> fetchAll() async {
@@ -84,25 +125,34 @@ class ContactsTable {
 
   Future<void> insertPlaceholderUser({
     required int userId,
+    required int countryCode,
     required int isOnline,
-    required phoneNumber,
-    required localName
+    required String phoneNumber,
+    required String name,
+    required String localName,
+    required String email,
+    required String userDescription,
+    required String displayPicture,
+    required String displayPictureUrl,
+    required String lastSeen,
+    required int isBlocked,
+
   }) async {
     final db = await DataBaseService().database;
 
     final placeholderUser = {
       'userId': userId,
-      'countryCode': 0,
+      'countryCode': countryCode,
       'phoneNumber': phoneNumber,
-      'name': '',
+      'name': name,
       'localName': localName,
-      'email': '',
-      'userDescription': '',
+      'email': email,
+      'userDescription': userDescription,
       'isOnline': isOnline,
-      'displayPicture': '',
-      'displayPictureUrl': '',
-      'lastSeen': '',
-      'isBlocked': 0,
+      'displayPicture': displayPicture,
+      'displayPictureUrl': displayPictureUrl,
+      'lastSeen': lastSeen,
+      'isBlocked': isBlocked,
     };
 
     await db.insert(

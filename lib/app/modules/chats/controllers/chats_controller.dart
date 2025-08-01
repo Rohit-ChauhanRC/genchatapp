@@ -216,7 +216,31 @@ class ChatsController extends GetxController {
   void showKeyboard() => focusNode.requestFocus();
   void hideKeyboard() => focusNode.unfocus();
 
-  // Future<void> getGroups() async {
+  String? getTypingStatusText(String chatId, bool isGroup) {
+    if (isGroup) {
+      final typingUsersMap = socketService.typingGroupUsersMap[chatId];
+      if (typingUsersMap != null && typingUsersMap.isNotEmpty) {
+        final names = typingUsersMap.values.toList();
+
+        if (names.length == 1) {
+          return "${names.first} is typing...";
+        } else if (names.length == 2) {
+          return "${names[0]}, ${names[1]} are typing...";
+        } else {
+          final firstTwo = names.take(2).join(', ');
+          return "$firstTwo & ${names.length - 2} others are typing...";
+        }
+      }
+    } else {
+      final isTyping = socketService.typingStatusMap[chatId] == true;
+      if (isTyping) return "Typing...";
+    }
+
+    return "";
+  }
+
+
+// Future<void> getGroups() async {
   //   try {
   //     // Step 1: Create group
   //     final response = await groupRepository.fetchGroup();

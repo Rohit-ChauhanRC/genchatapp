@@ -106,10 +106,10 @@ class GroupChatsView extends GetView<GroupChatsController> {
                                 return const SizedBox.shrink();
                               }
 
-                              if (controller.isReceiverTyping) {
-                                return const Text(
-                                  "Typing...",
-                                  style: TextStyle(
+                              if (controller.typingDisplayText.isNotEmpty) {
+                                return Text(
+                                  controller.typingDisplayText,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.w200,
                                     color: whiteColor,
                                     fontSize: 12,

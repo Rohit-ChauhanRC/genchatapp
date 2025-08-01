@@ -181,9 +181,25 @@ class ChatsView extends GetView<ChatsController> {
                             itemBuilder: (context, i) {
                               ChatConntactModel chatConntactModel =
                                   contactsToDisplay[i];
-                              final isTyping = controller.socketService
-                                      .typingStatusMap[chatConntactModel.uid] ==
-                                  true;
+                              // final isTyping = controller.socketService
+                              //         .typingStatusMap[chatConntactModel.uid] ==
+                              //     true && chatConntactModel.isGroup == 0;
+
+                              final typingStatusText = controller.getTypingStatusText(
+                                chatConntactModel.uid.toString(),
+                                chatConntactModel.isGroup == 1,
+                              );
+                              final isTyping = typingStatusText?.isNotEmpty;
+                              final lastMessageText = chatConntactModel.lastMessage!.isNotEmpty &&
+                                  ![
+                                    MessageType.image.value,
+                                    MessageType.video.value,
+                                    MessageType.document.value,
+                                    MessageType.gif.value,
+                                    MessageType.audio.value
+                                  ].contains(chatConntactModel.lastMessage)
+                                  ? controller.encryptionService.decryptText(chatConntactModel.lastMessage!)
+                                  : chatConntactModel.lastMessage.toString();
                               final isSelected = controller.selectedChatUids
                                   .contains(chatConntactModel.uid);
                               return Container(
@@ -321,46 +337,9 @@ class ChatsView extends GetView<ChatsController> {
                                               ),
                                             ),
                                             Text(
-                                              isTyping
-                                                  ? "Typing..."
-                                                  : (chatConntactModel
-                                                                .lastMessage!
-                                                                .isNotEmpty &&
-                                                            chatConntactModel
-                                                                    .lastMessage !=
-                                                                MessageType
-                                                                    .image
-                                                                    .value &&
-                                                            chatConntactModel
-                                                                    .lastMessage !=
-                                                                MessageType
-                                                                    .video
-                                                                    .value &&
-                                                            chatConntactModel
-                                                                    .lastMessage !=
-                                                                MessageType
-                                                                    .document
-                                                                    .value &&
-                                                            chatConntactModel
-                                                                    .lastMessage !=
-                                                                MessageType
-                                                                    .gif
-                                                                    .value &&
-                                                            chatConntactModel
-                                                                    .lastMessage !=
-                                                                MessageType
-                                                                    .audio
-                                                                    .value
-                                                        ? controller
-                                                              .encryptionService
-                                                              .decryptText(
-                                                                chatConntactModel
-                                                                    .lastMessage
-                                                                    .toString(),
-                                                              )
-                                                        : chatConntactModel
-                                                              .lastMessage
-                                                              .toString()),
+                                              isTyping!
+                                                  ? typingStatusText.toString()
+                                                  : lastMessageText,
                                               softWrap: true,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,

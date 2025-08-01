@@ -22,6 +22,7 @@ class MessageTable {
         createdAt TEXT,
         syncStatus TEXT,
         senderPhoneNumber TEXT,
+        receiverPhoneNumber TEXT,
         messageType TEXT,
         isForwarded INTEGER,
         isGroupMessage INTEGER,

@@ -148,8 +148,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
             // Step 3: Only upload image if selected
 
-            await chatConectTable.insert(
-              contact: ChatConntactModel(
+            await chatConectTable.insertOrUpdateGroupChat(
+              ChatConntactModel(
                 lastMessageId: 0,
                 contactId: groupId.toString(),
                 lastMessage: "",

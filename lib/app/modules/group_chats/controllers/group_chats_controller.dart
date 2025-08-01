@@ -86,6 +86,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   bool get isReceiverTyping => _isReceiverTyping.value;
   set isReceiverTyping(bool b) => _isReceiverTyping.value = b;
 
+  final RxString _typingDisplayText = "".obs;
+  String get typingDisplayText => _typingDisplayText.value;
+  set typingDisplayText(String b) => _typingDisplayText.value = b;
+
   final RxBool _isLoading = true.obs;
   bool get isLoading => _isLoading.value;
   set isLoading(bool b) => _isLoading.value = b;
@@ -174,6 +178,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   int get groupId => _groupId.value;
   set groupId(int a) => _groupId.value = a;
 
+  final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
+
+
   @override
   void onInit() async {
     super.onInit();
@@ -191,10 +198,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       groupId = groupData.group?.id ?? 0;
       bindReceiverUserStream(groupData.group?.id ?? 0);
     }
-    socketService.monitorReceiverTyping(
-      receiverUserData!.group!.id.toString(),
-      (isTyping) {
-        _isReceiverTyping.value = isTyping;
+    socketService.monitorGroupTyping(
+      groupId.toString(),
+          (typingUsers) {
+        if (typingUsers.isNotEmpty) {
+          _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
+        } else {
+          _typingDisplayText.value = '';
+        }
       },
     );
 
@@ -401,7 +412,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   void bindSocketEvents() {
-    ever(socketService.incomingMessage, (NewMessageModel? message) {
+    ever(socketService.incomingMessage, (NewMessageModel? message) async {
       if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
         return (msg.recipientId == receiverUserData?.group?.id);
@@ -409,6 +420,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
+        final id = message.senderId ?? 0;
+        if (!senderNamesCache.containsKey(id)) {
+          await contactsTable.getUserById(id).then((user) {
+            final name = user?.localName ?? user?.name;
+            senderNamesCache[id] = name!;
+          });
+        }
         // Acknowledge seen if message is incoming and not already seen
         if (message.senderId == receiverUserData?.group?.id &&
             socketService.isConnected &&
@@ -528,7 +546,18 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       messageList.insertAll(0, messages);
 
       currentOffset += messages.length;
+      // ✅ Cache sender names for newly loaded messages
+      for (var msg in messages) {
+        final id = msg.senderId ?? 0;
+        if (!senderNamesCache.containsKey(id)) {
+          await contactsTable.getUserById(id).then((user) {
+            final name = user?.localName ?? user?.name;
+            senderNamesCache[id] = name!;
+          });
+        }
+      }
 
+      // ✅ Existing sync/seen logic...
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
                 i.state == MessageState.unsent ||
@@ -617,7 +646,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           ? 0
           : messageReply.isMe == true
           ? senderuserData?.userId
-          : receiverUserData?.group?.id,
+          : messageReply.recipientUserId,
       assetThumbnail: "",
     );
     print("Message All details Request: ${newMessage.toMap()}");
@@ -1049,6 +1078,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     required MessageType messageType,
     required bool isReplied,
     required int messageId,
+    required String senderName,
+    required int recipientUserId,
   }) {
     messageReply = MessageReply(
       messageId: messageId,
@@ -1056,6 +1087,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isMe: isMe,
       messageType: messageType,
       isReplied: isReplied,
+      senderName: senderName,
+      recipientUserId:recipientUserId,
     );
   }
 

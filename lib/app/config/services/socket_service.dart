@@ -362,10 +362,10 @@ class SocketService extends GetxService {
   }
 
   void sendMessageSeenGroup(int messageId, String recipientUserId) {
-    // messageTable.updateAckStateMessage(
-    //   messageId: messageId.toString(),
-    //   state: 3,
-    // );
+    messageTable.updateAckStateMessage(
+      messageId: messageId.toString(),
+      state: 2,
+    );
     _socket?.emit('group-message-seen', {
       "messageId": messageId,
       "groupRecipientId": recipientUserId,

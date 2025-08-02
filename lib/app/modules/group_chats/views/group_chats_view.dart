@@ -192,30 +192,30 @@ class GroupChatsView extends GetView<GroupChatsController> {
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: newGroup,
-                onTap: () {},
-                // ignore: prefer_const_constructors
-                child: Text(
-                  newGroup,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: blackColor,
-                  ),
-                ),
-              ),
-              const PopupMenuItem(
-                value: settings,
-                child: Text(
-                  settings,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: blackColor,
-                  ),
-                ),
-              ),
+              // PopupMenuItem(
+              //   value: newGroup,
+              //   onTap: () {},
+              //   // ignore: prefer_const_constructors
+              //   child: Text(
+              //     newGroup,
+              //     style: const TextStyle(
+              //       fontSize: 14,
+              //       fontWeight: FontWeight.w400,
+              //       color: blackColor,
+              //     ),
+              //   ),
+              // ),
+              // const PopupMenuItem(
+              //   value: settings,
+              //   child: Text(
+              //     settings,
+              //     style: TextStyle(
+              //       fontSize: 14,
+              //       fontWeight: FontWeight.w400,
+              //       color: blackColor,
+              //     ),
+              //   ),
+              // ),
               const PopupMenuItem(
                 value: clearText,
                 child: Text(

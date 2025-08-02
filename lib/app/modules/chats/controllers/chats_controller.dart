@@ -131,7 +131,7 @@ class ChatsController extends GetxController {
                     msg.isGroupMessage == true &&
                     msg.recipientId.toString() == contact.uid &&
                     msg.senderId != userId &&
-                    msg.state != MessageState.read,
+                    msg.state != MessageState.delivered,
               )
               .length;
         } else {

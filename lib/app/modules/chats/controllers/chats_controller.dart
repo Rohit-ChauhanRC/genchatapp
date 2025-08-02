@@ -90,8 +90,9 @@ class ChatsController extends GetxController {
     selectedChatUids.clear();
   }
 
-  Stream<List<ChatConntactModel>> getChatUsersStream(
-      {Duration interval = const Duration(seconds: 1)}) async* {
+  Stream<List<ChatConntactModel>> getChatUsersStream({
+    Duration interval = const Duration(seconds: 1),
+  }) async* {
     while (true) {
       await Future.delayed(interval); // controls polling frequency
       final messages = await ChatConectTable().fetchAll();
@@ -104,8 +105,8 @@ class ChatsController extends GetxController {
   Stream<List<NewMessageModel>> getMessagesStream() async* {
     while (true) {
       await Future.delayed(const Duration(seconds: 1));
-      final messages =
-          await MessageTable().getAllMessages(); // Make sure this exists
+      final messages = await MessageTable()
+          .getAllMessages(); // Make sure this exists
       yield messages;
     }
   }
@@ -114,48 +115,57 @@ class ChatsController extends GetxController {
     final userId = senderuserData?.userId;
     if (userId == null) return;
 
-    rx.Rx.combineLatest2(
-      getChatUsersStream(),
-      getMessagesStream(),
-      (List<ChatConntactModel> contacts, List<NewMessageModel> messages) {
-        // Update each contact with unread count
-        final updatedContacts = contacts.map((contact) {
-          int unreadCount = 0;
+    rx.Rx.combineLatest2(getChatUsersStream(), getMessagesStream(), (
+      List<ChatConntactModel> contacts,
+      List<NewMessageModel> messages,
+    ) {
+      // Update each contact with unread count
+      final updatedContacts = contacts.map((contact) {
+        int unreadCount = 0;
 
-          if (contact.isGroup == 1) {
-            // 🔁 For GROUPS: unread if userId != senderId and not read
-            unreadCount = messages.where((msg) =>
-            msg.isGroupMessage == true &&
-                msg.senderId.toString() == contact.uid &&
-                msg.senderId != userId &&
-                msg.state != MessageState.read).length;
-          } else {
-            // 🔁 For PERSONAL chats
-            unreadCount = messages.where((msg) =>
-            msg.senderId.toString() == contact.uid &&
-                msg.recipientId == userId &&
-                msg.state != MessageState.read).length;
-          }
+        if (contact.isGroup == 1) {
+          // 🔁 For GROUPS: unread if userId != senderId and not read
+          unreadCount = messages
+              .where(
+                (msg) =>
+                    msg.isGroupMessage == true &&
+                    msg.recipientId.toString() == contact.uid &&
+                    msg.senderId != userId &&
+                    msg.state != MessageState.read,
+              )
+              .length;
+        } else {
+          // 🔁 For PERSONAL chats
+          unreadCount = messages
+              .where(
+                (msg) =>
+                    msg.senderId.toString() == contact.uid &&
+                    msg.recipientId == userId &&
+                    msg.state != MessageState.read,
+              )
+              .length;
+        }
 
-          return ChatConntactModel(
-            uid: contact.uid,
-            name: contact.name,
-            unreadCount: unreadCount,
-            lastMessage: contact.lastMessage,
-            profilePic: contact.profilePic,
-            timeSent: contact.timeSent,
-            contactId: contact.contactId,
-            isGroup: contact.isGroup,
-          );
-        }).toList();
+        return ChatConntactModel(
+          uid: contact.uid,
+          name: contact.name,
+          unreadCount: unreadCount,
+          lastMessage: contact.lastMessage,
+          profilePic: contact.profilePic,
+          timeSent: contact.timeSent,
+          contactId: contact.contactId,
+          isGroup: contact.isGroup,
+        );
+      }).toList();
 
-        return updatedContacts;
-      },
-    ).listen((updatedList) {
+      return updatedContacts;
+    }).listen((updatedList) {
       updatedList.sort((a, b) {
-        final aTime = DateTime.tryParse(a.timeSent ?? '') ??
+        final aTime =
+            DateTime.tryParse(a.timeSent ?? '') ??
             DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime = DateTime.tryParse(b.timeSent ?? '') ??
+        final bTime =
+            DateTime.tryParse(b.timeSent ?? '') ??
             DateTime.fromMillisecondsSinceEpoch(0);
         return bTime.compareTo(aTime); // descending (latest first)
       });
@@ -195,7 +205,8 @@ class ChatsController extends GetxController {
 
       for (String uid in uidsToDelete) {
         final userId = int.parse(
-            uid); // Assuming UIDs are stored as String but are numeric
+          uid,
+        ); // Assuming UIDs are stored as String but are numeric
 
         await messageTable.deleteMessagesForUser(userId);
 
@@ -239,8 +250,7 @@ class ChatsController extends GetxController {
     return "";
   }
 
-
-// Future<void> getGroups() async {
+  // Future<void> getGroups() async {
   //   try {
   //     // Step 1: Create group
   //     final response = await groupRepository.fetchGroup();

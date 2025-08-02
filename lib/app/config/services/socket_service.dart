@@ -32,7 +32,8 @@ class SocketService extends GetxService {
   final List<VoidCallback> _onSocketConnectedQueue = [];
 
   final RxMap<String, bool> typingStatusMap = <String, bool>{}.obs;
-  final RxMap<String, Map<String, String>> typingGroupUsersMap = <String, Map<String, String>>{}.obs;
+  final RxMap<String, Map<String, String>> typingGroupUsersMap =
+      <String, Map<String, String>>{}.obs;
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
@@ -144,7 +145,9 @@ class SocketService extends GetxService {
           message: data["message"],
           senderId: data["recipientId"],
           messageId: data["messageId"],
-          recipientId: data["isGroupMessage"] == true?data["recipientId"]:data["senderId"],
+          recipientId: data["isGroupMessage"] == true
+              ? data["recipientId"]
+              : data["senderId"],
           messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
           isGroupMessage: data["isGroupMessage"],
           messageType: data['messageType'] != null
@@ -223,12 +226,12 @@ class SocketService extends GetxService {
       final bool isTyping = data["isTyping"] == true;
 
       // 👇 Save typing state in map for the current chat
-      if(senderId != userId) {
+      if (senderId != userId) {
         typingStatusMap[senderId] = isTyping;
       }
     });
 
-    _socket?.on('group-user-typing', (data) async{
+    _socket?.on('group-user-typing', (data) async {
       print('✅ Group user is typing: $data');
       print('📝 Group user Typing event received: $data');
       final String senderId = data["userId"].toString();
@@ -236,11 +239,11 @@ class SocketService extends GetxService {
       final bool isTyping = data["isTyping"] == true;
 
       // 👇 Save typing state in map for the current chat
-      if(senderId != userId){
+      if (senderId != userId) {
         await updateGroupTypingFromEvent(
-        groupId: groupId,
-        userId: senderId,
-        isTyping: isTyping,
+          groupId: groupId,
+          userId: senderId,
+          isTyping: isTyping,
         );
       }
     });
@@ -358,6 +361,17 @@ class SocketService extends GetxService {
     _socket?.emit('message-seen', {"messageId": messageId});
   }
 
+  void sendMessageSeenGroup(int messageId, String recipientUserId) {
+    messageTable.updateAckStateMessage(
+      messageId: messageId.toString(),
+      state: 3,
+    );
+    _socket?.emit('group-message-seen', {
+      "messageId": messageId,
+      "groupRecipientId": recipientUserId,
+    });
+  }
+
   void checkUserOnline(Map<String, dynamic> data) {
     _socket?.emit('user-connection-status', data);
   }
@@ -409,15 +423,14 @@ class SocketService extends GetxService {
   }
 
   void monitorGroupTyping(
-      String groupId,
-      void Function(List<String> typingUserNames) onTypingUsersChanged,
-      ) {
+    String groupId,
+    void Function(List<String> typingUserNames) onTypingUsersChanged,
+  ) {
     ever(typingGroupUsersMap, (_) {
       final users = typingGroupUsersMap[groupId]?.values.toList() ?? [];
       onTypingUsersChanged(users);
     });
   }
-
 
   void emitMessageDelete({
     required int messageId,
@@ -490,34 +503,36 @@ class SocketService extends GetxService {
       );
 
       final user = await contactsTable.getUserById(data.recipientId!);
-      final name = user?.localName == "" || user?.localName == null? data.receiverPhoneNumber: user?.localName;
+      final name = user?.localName == "" || user?.localName == null
+          ? data.receiverPhoneNumber
+          : user?.localName;
       final profilePic = user?.displayPictureUrl ?? '';
 
       // if(user != null){
-        if (existing != null) {
-          await chatConectTable.updateContact(
+      if (existing != null) {
+        await chatConectTable.updateContact(
+          uid: userId,
+          lastMessage: messageText,
+          lastMessageId: data.messageId,
+          timeSent: data.messageSentFromDeviceTime,
+          name: name,
+          profilePic: profilePic,
+          isGroup: 0,
+        );
+      } else {
+        await chatConectTable.insert(
+          contact: ChatConntactModel(
             uid: userId,
+            contactId: userId,
             lastMessage: messageText,
             lastMessageId: data.messageId,
             timeSent: data.messageSentFromDeviceTime,
             name: name,
             profilePic: profilePic,
             isGroup: 0,
-          );
-        } else {
-          await chatConectTable.insert(
-            contact: ChatConntactModel(
-              uid: userId,
-              contactId: userId,
-              lastMessage: messageText,
-              lastMessageId: data.messageId,
-              timeSent: data.messageSentFromDeviceTime,
-              name: name,
-              profilePic: profilePic,
-              isGroup: 0,
-            ),
-          );
-        }
+          ),
+        );
+      }
       // }else{
       //   final fallbackName = data.receiverPhoneNumber ??
       //       "Unknown"; // You must pass senderPhoneNumber in NewMessageModel

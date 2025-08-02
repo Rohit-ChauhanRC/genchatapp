@@ -180,7 +180,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
 
-
   @override
   void onInit() async {
     super.onInit();
@@ -198,16 +197,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       groupId = groupData.group?.id ?? 0;
       bindReceiverUserStream(groupData.group?.id ?? 0);
     }
-    socketService.monitorGroupTyping(
-      groupId.toString(),
-          (typingUsers) {
-        if (typingUsers.isNotEmpty) {
-          _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
-        } else {
-          _typingDisplayText.value = '';
-        }
-      },
-    );
+    socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
+      if (typingUsers.isNotEmpty) {
+        _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
+      } else {
+        _typingDisplayText.value = '';
+      }
+    });
 
     // print(
     //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
@@ -392,7 +388,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           curve: Curves.easeInOut,
         );
       } else {
-        itemScrollController.jumpTo(index: lastIndex);
+        itemScrollController.scrollTo(
+          index: lastIndex,
+          duration: const Duration(seconds: 1),
+        );
       }
     }
   }
@@ -428,13 +427,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           });
         }
         // Acknowledge seen if message is incoming and not already seen
-        if (message.senderId == receiverUserData?.group?.id &&
+        if (message.recipientId == receiverUserData?.group?.id &&
             socketService.isConnected &&
             (message.state == MessageState.sent ||
                 message.state == MessageState.unsent ||
                 message.state == MessageState.delivered) &&
             message.messageId != null) {
-          socketService.sendMessageSeen(message.messageId!);
+          // socketService.sendMessageSeen(message.messageId!);
+          socketService.sendMessageSeenGroup(
+            message.messageId!,
+            senderuserData!.userId.toString(),
+          );
         }
         // scrollToBottomIfNear();
       }
@@ -563,9 +566,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
                 i.state == MessageState.unsent ||
                 i.state == MessageState.delivered) &&
             i.messageId != null) {
-          if (receiverUserData!.group?.id == i.senderId &&
+          if (receiverUserData!.group?.id == i.recipientId &&
               socketService.isConnected) {
-            socketService.sendMessageSeen(i.messageId!);
+            socketService.sendMessageSeenGroup(
+              i.messageId!,
+              senderuserData!.userId.toString(),
+            );
           }
         } else if (senderuserData!.userId == i.senderId &&
             i.syncStatus == SyncStatus.pending &&
@@ -1088,7 +1094,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       messageType: messageType,
       isReplied: isReplied,
       senderName: senderName,
-      recipientUserId:recipientUserId,
+      recipientUserId: recipientUserId,
     );
   }
 

@@ -205,18 +205,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    // print(
-    //     "reciverName:----> ${receiverUserData?.localName}\nreceiverUserId:----> ${receiverUserData?.userId}");
-    // fullname = Get.arguments[1];
     getRootFolder();
 
     closeKeyboard();
     await loadInitialMessages();
     bindSocketEvents();
     monitorScrollPosition();
-    monitorScrollPosition();
     isInCurrentChat = true;
-    // scrollController.addListener(_scrollListener);
     hasScrolledInitially.value = false;
   }
 
@@ -389,8 +384,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         );
       } else {
         itemScrollController.scrollTo(
+          curve: Curves.easeInOut,
+
           index: lastIndex,
-          duration: const Duration(seconds: 1),
+          duration: const Duration(milliseconds: 300),
         );
       }
     }

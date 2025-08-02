@@ -97,7 +97,7 @@ void main() async {
     print('⚠️ Notification permission not determined');
   }
 
-  AppConfig.setEnvironment(AppEnvironment.dev);
+  AppConfig.setEnvironment(AppEnvironment.prod);
 
   runApp(const App());
 }

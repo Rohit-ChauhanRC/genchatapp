@@ -30,10 +30,11 @@ class GroupChatList extends StatelessWidget {
           // }
           if (groupChatsController.messageList.isEmpty) {
             return const Center(
-                child: Text(
-              "No messages yet!",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ));
+              child: Text(
+                "No messages yet!",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
           }
 
           final isTyping = groupChatsController.typingDisplayText.isNotEmpty;
@@ -42,7 +43,7 @@ class GroupChatList extends StatelessWidget {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!groupChatsController.hasScrolledInitially.value &&
                 groupChatsController.messageList.isNotEmpty) {
-              groupChatsController.scrollToBottom();
+              // groupChatsController.scrollToBottom();
               groupChatsController.hasScrolledInitially.value = true;
             }
           });
@@ -70,12 +71,15 @@ class GroupChatList extends StatelessWidget {
                 itemCount: messageCount + (isTyping ? 1 : 0),
                 // physics: const ClampingScrollPhysics(),
                 physics: const BouncingScrollPhysics(
-                    decelerationRate: ScrollDecelerationRate.normal),
+                  decelerationRate: ScrollDecelerationRate.normal,
+                ),
                 itemBuilder: (context, index) {
                   if (isTyping && index == messageCount) {
                     return const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       child: TypingBubble(), // 👈 your animated dots widget
                     );
                   }
@@ -91,182 +95,199 @@ class GroupChatList extends StatelessWidget {
                   // groupChatsController.messageKeys
                   //     .putIfAbsent(id, () => GlobalKey());
                   return ValueListenableBuilder<String?>(
-                      valueListenable:
-                          groupChatsController.highlightedMessageId,
-                      builder: (context, highlightId, _) {
-                        final isHighlighted =
-                            highlightId == messages.messageId.toString();
+                    valueListenable: groupChatsController.highlightedMessageId,
+                    builder: (context, highlightId, _) {
+                      final isHighlighted =
+                          highlightId == messages.messageId.toString();
 
-                        return InkWell(
-                          key: UniqueKey(),
-                          onLongPress: () {
-                            groupChatsController
-                                .toggleMessageSelection(messages);
-                            print("selected Multiple Taps");
-                          },
-                          onTap: () {
-                            groupChatsController.hideKeyboard();
-                            if (groupChatsController
-                                .selectedMessages.isNotEmpty) {
+                      return InkWell(
+                        key: UniqueKey(),
+                        onLongPress: () {
+                          groupChatsController.toggleMessageSelection(messages);
+                          print("selected Multiple Taps");
+                        },
+                        onTap: () {
+                          groupChatsController.hideKeyboard();
+                          if (groupChatsController
+                              .selectedMessages
+                              .isNotEmpty) {
+                            groupChatsController.toggleMessageSelection(
+                              messages,
+                            );
+                            print("selected tap");
+                          }
+                        },
+                        child: Obx(() {
+                          bool isMsgSelected = groupChatsController
+                              .selectedMessages
+                              .contains(messages);
+                          final bgColor = isMsgSelected || isHighlighted
+                              ? AppColors.mySideBgColor.withOpacity(0.3)
+                              : Colors.transparent;
+                          final isMine =
+                              messages.senderId ==
+                              groupChatsController.senderuserData?.userId;
+                          final messageSenderName =
                               groupChatsController
-                                  .toggleMessageSelection(messages);
-                              print("selected tap");
-                            }
-                          },
-                          child: Obx(() {
-                            bool isMsgSelected = groupChatsController
-                                .selectedMessages
-                                .contains(messages);
-                            final bgColor = isMsgSelected || isHighlighted
-                                ? AppColors.mySideBgColor.withOpacity(0.3)
-                                : Colors.transparent;
-                            final isMine = messages.senderId ==
-                                groupChatsController.senderuserData?.userId;
-                            final messageSenderName = groupChatsController.senderNamesCache[messages.senderId ?? 0] ?? "";
-                            final replyMessageSenderName = groupChatsController.senderNamesCache[messages.messageRepliedUserId ?? 0] ?? "";
-                            return Container(
-                              color: bgColor,
-                              child: isMine
-                                  ? GroupMyMessageCard(
-                                      message: messages.messageType ==
-                                                  MessageType.text ||
-                                              messages.messageType ==
-                                                  MessageType.deleted
-                                          ? (messages.message!.isNotEmpty
+                                  .senderNamesCache[messages.senderId ?? 0] ??
+                              "";
+                          final replyMessageSenderName =
+                              groupChatsController.senderNamesCache[messages
+                                      .messageRepliedUserId ??
+                                  0] ??
+                              "";
+                          return Container(
+                            color: bgColor,
+                            child: isMine
+                                ? GroupMyMessageCard(
+                                    message:
+                                        messages.messageType ==
+                                                MessageType.text ||
+                                            messages.messageType ==
+                                                MessageType.deleted
+                                        ? (messages.message!.isNotEmpty
                                               ? messages.message.toString()
                                               : '') // NULL-SAFE
-                                          : (messages
-                                                  .assetServerName!.isNotEmpty
+                                        : (messages.assetServerName!.isNotEmpty
                                               ? messages.assetServerName
-                                                  .toString()
+                                                    .toString()
                                               : ''),
-                                      date: DateFormat('hh:mm a').format(
-                                          DateTime.parse(messages
-                                                  .messageSentFromDeviceTime ??
-                                              '')),
-                                      // date: "",
-                                      type: messages.messageType ??
-                                          MessageType.text,
-                                      status:
-                                          messages.state ?? MessageState.unsent,
-                                      onLeftSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
-                                              groupChatsController
-                                                  .onMessageSwipe(
-                                                isMe: true,
-                                                message: messages.message ?? '',
-                                                messageType:
-                                                    messages.messageType ??
-                                                        MessageType.text,
-                                                isReplied: true,
-                                                messageId:
-                                                    messages.messageId ?? 0,
-                                                senderName: "",
-                                                recipientUserId: messages.senderId ?? 0
-                                              );
-                                            },
-                                      repliedMessageType:
-                                          messages.messageRepliedOnType ??
-                                              MessageType.text,
-                                      repliedText:
-                                          (messages.messageRepliedOn != ''
-                                                  ? messages.messageRepliedOn
+                                    date: DateFormat('hh:mm a').format(
+                                      DateTime.parse(
+                                        messages.messageSentFromDeviceTime ??
+                                            '',
+                                      ),
+                                    ),
+                                    // date: "",
+                                    type:
+                                        messages.messageType ??
+                                        MessageType.text,
+                                    status:
+                                        messages.state ?? MessageState.unsent,
+                                    onLeftSwipe:
+                                        messages.messageType ==
+                                            MessageType.deleted
+                                        ? null
+                                        : (v) {
+                                            groupChatsController.onMessageSwipe(
+                                              isMe: true,
+                                              message: messages.message ?? '',
+                                              messageType:
+                                                  messages.messageType ??
+                                                  MessageType.text,
+                                              isReplied: true,
+                                              messageId:
+                                                  messages.messageId ?? 0,
+                                              senderName: "",
+                                              recipientUserId:
+                                                  messages.senderId ?? 0,
+                                            );
+                                          },
+                                    repliedMessageType:
+                                        messages.messageRepliedOnType ??
+                                        MessageType.text,
+                                    repliedText:
+                                        (messages.messageRepliedOn != ''
+                                                ? messages.messageRepliedOn
                                                       .toString()
-                                                  : '')
-                                              .obs,
-                                      // username: messages.,
-                                      repliedUserId:
-                                          messages.messageRepliedUserId,
-                                      repliedUserName:
-                                          messages.messageRepliedUserId != 0
-                                              ? messages.messageRepliedUserId ==
-                                                      groupChatsController
-                                                          .senderuserData!
-                                                          .userId
-                                                  ? "You"
-                                                  : replyMessageSenderName
-                                              : "username",
-                                      onReplyTap: () => groupChatsController
-                                          .scrollToOriginalMessage(
-                                              messages.messageRepliedOnId!),
-                                      isHighlighted: isHighlighted,
-                                      isForwarded: messages.isForwarded!,
-                                      showForwarded: messages.showForwarded!,
-                                    )
-                                  : GroupSenderMessageCard(
-                                      message: messages.messageType ==
-                                                  MessageType.text ||
-                                              messages.messageType ==
-                                                  MessageType.deleted
-                                          ? (messages.message!.isNotEmpty
-                                              ? messages.message.toString()
-                                              : '')
-                                          : (messages.assetServerName ?? ''),
-                                      date: DateFormat('hh:mm a').format(
-                                          DateTime.parse(messages
-                                                  .messageSentFromDeviceTime ??
-                                              '')),
-                                      type: messages.messageType ??
-                                          MessageType.text,
-                                      onRightSwipe: messages.messageType ==
-                                              MessageType.deleted
-                                          ? null
-                                          : (v) {
-                                              // groupChatsController.isRepUpdate = true;
-                                              groupChatsController
-                                                  .onMessageSwipe(
-                                                      isMe: false,
-                                                      message:
-                                                          messages.message ??
-                                                              '',
-                                                      messageType: messages
-                                                              .messageType ??
-                                                          MessageType.text,
-                                                      isReplied: true,
-                                                      messageId:
-                                                          messages.messageId ??
-                                                              0,
-                                                senderName: messageSenderName,
-                                                recipientUserId: messages.senderId ?? 0,
-                                                  );
-                                            },
-                                      repliedMessageType:
-                                          messages.messageRepliedOnType ??
-                                              MessageType.text,
-                                      repliedText:
-                                          (messages.messageRepliedOn!.isNotEmpty
-                                                  ? messages.messageRepliedOn
-                                                      .toString()
-                                                  : '')
-                                              .obs,
-                                      // username: messages.repliedTo,
-                                      repliedUserId:
-                                          messages.messageRepliedUserId,
-                                      repliedUserName: messages
-                                                      .messageRepliedUserId !=
-                                                  0 &&
-                                              messages.messageRepliedUserId !=
-                                                  null
-                                          ? messages.messageRepliedUserId ==
+                                                : '')
+                                            .obs,
+                                    // username: messages.,
+                                    repliedUserId:
+                                        messages.messageRepliedUserId,
+                                    repliedUserName:
+                                        messages.messageRepliedUserId != 0
+                                        ? messages.messageRepliedUserId ==
                                                   groupChatsController
-                                                      .senderuserData!.userId
+                                                      .senderuserData!
+                                                      .userId
                                               ? "You"
                                               : replyMessageSenderName
-                                          : "username",
-                                      onReplyTap: () => groupChatsController
-                                          .scrollToOriginalMessage(
-                                              messages.messageRepliedOnId!),
-                                      isHighlighted: isHighlighted,
-                                      isForwarded: messages.isForwarded!,
-                                      showForwarded: messages.showForwarded!,
-                                      senderName: messageSenderName,
+                                        : "username",
+                                    onReplyTap: () => groupChatsController
+                                        .scrollToOriginalMessage(
+                                          messages.messageRepliedOnId!,
+                                        ),
+                                    isHighlighted: isHighlighted,
+                                    isForwarded: messages.isForwarded!,
+                                    showForwarded: messages.showForwarded!,
+                                  )
+                                : GroupSenderMessageCard(
+                                    message:
+                                        messages.messageType ==
+                                                MessageType.text ||
+                                            messages.messageType ==
+                                                MessageType.deleted
+                                        ? (messages.message!.isNotEmpty
+                                              ? messages.message.toString()
+                                              : '')
+                                        : (messages.assetServerName ?? ''),
+                                    date: DateFormat('hh:mm a').format(
+                                      DateTime.parse(
+                                        messages.messageSentFromDeviceTime ??
+                                            '',
+                                      ),
                                     ),
-                            );
-                          }),
-                        );
-                      });
+                                    type:
+                                        messages.messageType ??
+                                        MessageType.text,
+                                    onRightSwipe:
+                                        messages.messageType ==
+                                            MessageType.deleted
+                                        ? null
+                                        : (v) {
+                                            // groupChatsController.isRepUpdate = true;
+                                            groupChatsController.onMessageSwipe(
+                                              isMe: false,
+                                              message: messages.message ?? '',
+                                              messageType:
+                                                  messages.messageType ??
+                                                  MessageType.text,
+                                              isReplied: true,
+                                              messageId:
+                                                  messages.messageId ?? 0,
+                                              senderName: messageSenderName,
+                                              recipientUserId:
+                                                  messages.senderId ?? 0,
+                                            );
+                                          },
+                                    repliedMessageType:
+                                        messages.messageRepliedOnType ??
+                                        MessageType.text,
+                                    repliedText:
+                                        (messages.messageRepliedOn!.isNotEmpty
+                                                ? messages.messageRepliedOn
+                                                      .toString()
+                                                : '')
+                                            .obs,
+                                    // username: messages.repliedTo,
+                                    repliedUserId:
+                                        messages.messageRepliedUserId,
+                                    repliedUserName:
+                                        messages.messageRepliedUserId != 0 &&
+                                            messages.messageRepliedUserId !=
+                                                null
+                                        ? messages.messageRepliedUserId ==
+                                                  groupChatsController
+                                                      .senderuserData!
+                                                      .userId
+                                              ? "You"
+                                              : replyMessageSenderName
+                                        : "username",
+                                    onReplyTap: () => groupChatsController
+                                        .scrollToOriginalMessage(
+                                          messages.messageRepliedOnId!,
+                                        ),
+                                    isHighlighted: isHighlighted,
+                                    isForwarded: messages.isForwarded!,
+                                    showForwarded: messages.showForwarded!,
+                                    senderName: messageSenderName,
+                                  ),
+                          );
+                        }),
+                      );
+                    },
+                  );
                   // }
                 },
               ),

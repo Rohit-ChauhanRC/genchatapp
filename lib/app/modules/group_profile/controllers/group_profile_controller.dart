@@ -121,17 +121,12 @@ class GroupProfileController extends GetxController {
                 await groupTable.insertOrUpdateGroup(responseModel.data!);
                 final data = responseModel.data;
                 final groupId = data?.group?.id ?? 0;
-                await chatConectTable.insert(
-                  contact: ChatConntactModel(
-                    lastMessageId: 0,
-                    contactId: groupId.toString(),
-                    lastMessage: "",
-                    name: data?.group?.name ?? '',
-                    profilePic: data?.group?.displayPictureUrl ?? '',
-                    timeSent:  data?.group?.updatedAt ?? "",//DateTime.now().toString(),//data?.group?.createdAt ?? '',
-                    uid: groupId.toString(),
-                    isGroup: 1,
-                  ),
+                await chatConectTable.updateContact(
+                  uid: groupId.toString(),
+                  isGroup: 1,
+                  profilePic: data?.group?.displayPictureUrl ?? '',
+                  timeSent: data?.group?.updatedAt ?? "",
+                  name: data?.group?.name ?? '',
                 );
               }
             }

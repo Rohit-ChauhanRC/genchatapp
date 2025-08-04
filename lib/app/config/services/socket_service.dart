@@ -338,6 +338,30 @@ class SocketService extends GetxService {
       );
     });
 
+    _socket?.on('group-updated', (data) async {
+      print('✅ Group Details Updated: $data');
+    });
+
+    _socket?.on('group-created', (data) async {
+      print('✅ New Group created: $data');
+    });
+
+    _socket?.on('group-created', (data) async {
+      print('✅ New Group created: $data');
+    });
+
+    _socket?.on('group-user-added', (data) async {
+      print('✅ New User added in group: $data');
+    });
+
+    _socket?.on('group-user-removed', (data) async {
+      print('✅ User removed in group: $data');
+    });
+
+    _socket?.on('group-admin-toggled', (data) async {
+      print('✅ Admin toggled in group: $data');
+    });
+
     _socket?.on('custom-error', (data) {
       print('🚫 Custom Error: $data');
     });

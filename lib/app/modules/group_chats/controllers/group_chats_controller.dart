@@ -19,7 +19,9 @@ import 'package:genchatapp/app/data/models/message_reply.dart'
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/message_ack_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/upload_file_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
@@ -43,6 +45,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   final ChatConectTable chatConectTable = ChatConectTable();
 
   final EncryptionService encryptionService = Get.find();
+
+  final ProfileRepository profileRepository = Get.put<ProfileRepository>(
+    ProfileRepository(apiClient: Get.find()),
+  );
 
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
@@ -922,21 +928,142 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
   }
 
-  void selectFile(String fileType) async {
-    File? selectedFile;
+  Future<List<File>> pickImageAndVideo() async {
+    Completer<List<File>> completer = Completer<List<File>>();
+    await showMediaPickerBottomSheet(
+      onSendFiles: (img, fileType) {
+        completer.complete(img);
+      },
+    );
 
-    if (fileType == MessageType.image.value) {
-      selectedFile = await pickImage();
-    } else if (fileType == MessageType.video.value) {
-      // selectedFile = await pickVideo();
-    } else if (fileType == MessageType.audio.value) {
-      // selectedFile = await pickAudio();
-    } else if (fileType == MessageType.document.value) {
-      // selectedFile = await pickDocument();
+    return completer.future;
+  }
+
+  Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
+    try {
+      final response = await profileRepository.uploadMessageFiles(imageFile);
+
+      if (response?.statusCode == 200) {
+        final result = UploadFileModel.fromJson(response?.data);
+        if (result.status == true) {
+          print("response of upload Files:----> ${result.data?.toJson()}");
+          return result;
+        } else {
+          // showAlertMessage('Upload failed: Invalid response status.');
+        }
+      } else {
+        // showAlertMessage('Failed to upload file: ${response?.statusCode}');
+      }
+    } catch (e) {
+      // showAlertMessage('Error uploading file: ${e.toString()}');
     }
 
-    if (selectedFile != null) {
-      // sendFileMessage(file: selectedFile, messageEnum: fileType.toEnum());
+    return null; // return empty result on error
+  }
+
+  Future<void> sendFileMessage({
+    required File file,
+    required MessageType messageEnum,
+  }) async {
+    final clientSystemMessageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    final fileType = messageEnum.value.split('.').last;
+    final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+    try {
+      // Save file locally
+      final fileName =
+          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+
+      Map<String, File?> f = await compressFiles(file, fileExtension);
+
+      final localFilePath = await saveFileLocally(
+        f.values.first!,
+        fileType,
+        f.keys.first,
+        fileName,
+      );
+      final String? assetThumnail = f.keys.first == "mp4"
+          ? await getThumbnail(File(localFilePath))
+          : "";
+
+      final fileWithExtensions = "$fileName.${f.keys.first}";
+
+      final fileData = await uploadFileToServer(f.values.first!);
+      final newMessage = NewMessageModel(
+        senderId: senderuserData?.userId,
+        recipientId: receiverUserData?.group?.id,
+        message: '',
+        messageSentFromDeviceTime: timeSent.toString(),
+        clientSystemMessageId: clientSystemMessageId,
+        state: MessageState.unsent,
+        syncStatus: SyncStatus.pending,
+        createdAt: timeSent.toString(),
+        senderPhoneNumber: senderuserData?.phoneNumber,
+        messageType: messageEnum,
+        isForwarded: false,
+        isGroupMessage: true,
+        forwardedMessageId: 0,
+        showForwarded: false,
+        isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+        messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+        messageRepliedOn: messageReply == null ? '' : messageReply.message,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
+        isAsset: true,
+        assetThumbnail: assetThumnail ?? "",
+        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetServerName: fileWithExtensions,
+        assetUrl: fileData == null ? "" : fileData.data?.url,
+        messageRepliedUserId: messageReply.message == null
+            ? 0
+            : messageReply.isMe == true
+            ? senderuserData?.userId
+            : receiverUserData?.group?.id,
+      );
+      print("Message All details Request: ${newMessage.toMap()}");
+      await MessageTable().insertMessage(newMessage);
+      messageList.add(newMessage);
+
+      if (fileData?.statusCode == 200 && fileData?.status == true) {
+        if (socketService.isConnected) {
+          socketService.sendMessage(newMessage);
+        }
+      } else {
+        socketService.saveChatContacts(newMessage);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
+    }
+  }
+
+  void selectFile(String fileType) async {
+    if (fileType == MessageType.image.value ||
+        fileType == MessageType.video.value) {
+      final selectedFiles = await pickImageAndVideo();
+      for (File file in selectedFiles) {
+        print("Yes Getting back all files:---> $file");
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        cancelReply();
+      }
+    } else if (fileType == MessageType.audio.value) {
+      //  final selectedFile = await pickAudio();
+    } else if (fileType == MessageType.document.value) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
     }
   }
 
@@ -944,18 +1071,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     File file,
     String fileType,
     String fileExtension,
+    String fileName,
   ) async {
     final subFolderName = fileType.toTitleCase;
-    final fileName =
-        "GENCHAT_$fileType-${senderuserData!.userId.toString()}-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
+    final name = "$fileName.$fileExtension";
+    //     "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
     final filePath = await folderCreation.saveFileFromFile(
       sourceFile: file,
-      fileName: fileName,
+      fileName: name,
       subFolder: subFolderName,
     );
     // print("FileName for saving locally:----------------> $fileName");
     // print("FilePath for saving locally:----------------> $filePath");
-    return '$subFolderName/$fileName';
+    return filePath;
   }
 
   Future<File?> pickImage() async {

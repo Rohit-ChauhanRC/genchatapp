@@ -105,7 +105,7 @@ class GroupBottomChatField extends StatelessWidget {
                               // ),
                               InkWell(
                                 onTap: () {
-                                  // groupChatsController.selectGif();
+                                  groupChatsController.selectGif();
                                 },
                                 child: const Icon(
                                   Icons.gif,
@@ -128,9 +128,9 @@ class GroupBottomChatField extends StatelessWidget {
                               !groupChatsController.isShowSendButton
                                   ? IconButton(
                                       onPressed: () {
-                                        // groupChatsController.selectFile(
-                                        //   MessageEnum.image.type,
-                                        // );
+                                        groupChatsController.selectFile(
+                                          MessageType.image.value,
+                                        );
                                       },
                                       icon: const Icon(
                                         Icons.camera_alt,
@@ -140,9 +140,10 @@ class GroupBottomChatField extends StatelessWidget {
                                   : SizedBox.shrink(),
                               IconButton(
                                 onPressed: () {
-                                  // groupChatsController.selectVideo();
-                                  // groupChatsController.cancelReply();
-                                  // Get.to(() => AttachmentPopupDemo());
+                                  groupChatsController.cancelReply();
+                                  groupChatsController.selectFile(
+                                    MessageType.document.value,
+                                  );
                                 },
                                 icon: const Icon(
                                   Icons.attach_file,

@@ -201,7 +201,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                     placeholder: (context, url) =>
                                         const CircularProgressIndicator(),
                                     errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error),
+                                        const Icon(Icons.error, size: 70,),
                                   );
                                 }
                               }),
@@ -249,293 +249,295 @@ class GroupProfileView extends GetView<GroupProfileController> {
             ),
           ],
           body: GradientContainer(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// Description
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8),
-                  child: controller.canEditGroup
-                      ? InkWell(
-                          onTap: () => _showEditDescriptionDialog(
-                            context,
-                            controller.groupDetails,
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: Text(
-                              group?.groupDescription ??
-                                  'Add group description',
-                              key: ValueKey(group?.groupDescription),
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    group?.groupDescription == null ||
-                                        group?.groupDescription == ""
-                                    ? AppColors.textBarColor
-                                    : AppColors.blackColor,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Description
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: controller.canEditGroup
+                        ? InkWell(
+                            onTap: () => _showEditDescriptionDialog(
+                              context,
+                              controller.groupDetails,
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: Text(
+                                group?.groupDescription ??
+                                    'Add group description',
+                                key: ValueKey(group?.groupDescription),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      group?.groupDescription == null ||
+                                          group?.groupDescription == ""
+                                      ? AppColors.textBarColor
+                                      : AppColors.blackColor,
+                                ),
                               ),
                             ),
+                          )
+                        : Text(
+                            group?.groupDescription ?? 'No group description',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : Text(
-                          group?.groupDescription ?? 'No group description',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8, top: 10),
-                  child: Text(
-                    "Created by ${controller.creatorUserDetail.localName}, ${formatDateTime(group?.createdAt)}",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w400,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8, top: 10),
+                    child: Text(
+                      "Created by ${controller.creatorUserDetail.localName}, ${formatDateTime(group?.createdAt)}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Divider(),
+                  const SizedBox(height: 8),
+                  const Divider(),
 
-                /// Members Header
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "${users.length} members",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (controller.canAddParticipants)
-                        IconButton(
-                          icon: Icon(
-                            Symbols.group_add_rounded,
-                            color: AppColors.textBarColor,
+                  /// Members Header
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${users.length} members",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          onPressed: () {
-                            controller.navigateToAddParticipant();
-                          },
                         ),
-                    ],
+                        if (controller.canAddParticipants)
+                          IconButton(
+                            icon: Icon(
+                              Symbols.group_add_rounded,
+                              color: AppColors.textBarColor,
+                            ),
+                            onPressed: () {
+                              controller.navigateToAddParticipant();
+                            },
+                          ),
+                      ],
+                    ),
                   ),
-                ),
 
-                /// Members List
-                ListView.builder(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index].userInfo;
-                    final permission = users[index].userGroupInfo;
-                    final isCreator =
-                        controller.groupDetails.group?.creatorId ==
-                        permission?.userId;
-                    return PopupMenuButton(
-                      offset: const Offset(0, 56),
-                      onSelected: (value) {
-                        final userId = user?.userId;
-                        if (userId == null) return;
+                  /// Members List
+                  ListView.builder(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      final user = users[index].userInfo;
+                      final permission = users[index].userGroupInfo;
+                      final isCreator =
+                          controller.groupDetails.group?.creatorId ==
+                          permission?.userId;
+                      return PopupMenuButton(
+                        offset: const Offset(0, 56),
+                        onSelected: (value) {
+                          final userId = user?.userId;
+                          if (userId == null) return;
 
-                        switch (value) {
-                          case 'make_admin':
-                            // controller.makeAdmin(userId);
-                            break;
-                          case 'revoke_admin':
-                            // controller.revokeAdmin(userId);
-                            break;
-                          case 'remove_member':
-                            // controller.removeParticipant(userId);
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) {
-                        final currentUserId = controller.sharedPreferenceService
-                            .getUserData()
-                            ?.userId;
-                        final targetUserId = user?.userId;
-                        final isTargetSuperAdmin =
-                            targetUserId ==
-                            controller.groupDetails.group?.creatorId;
-                        final isSelf = currentUserId == targetUserId;
-                        final isTargetAdmin = permission?.isAdmin == true;
+                          switch (value) {
+                            case 'make_admin':
+                              // controller.makeAdmin(userId);
+                              break;
+                            case 'revoke_admin':
+                              // controller.revokeAdmin(userId);
+                              break;
+                            case 'remove_member':
+                              // controller.removeParticipant(userId);
+                              break;
+                          }
+                        },
+                        itemBuilder: (context) {
+                          final currentUserId = controller.sharedPreferenceService
+                              .getUserData()
+                              ?.userId;
+                          final targetUserId = user?.userId;
+                          final isTargetSuperAdmin =
+                              targetUserId ==
+                              controller.groupDetails.group?.creatorId;
+                          final isSelf = currentUserId == targetUserId;
+                          final isTargetAdmin = permission?.isAdmin == true;
 
-                        if (isSelf || isTargetSuperAdmin) return [];
+                          if (isSelf || isTargetSuperAdmin) return [];
 
-                        final List<PopupMenuEntry<String>> options = [];
+                          final List<PopupMenuEntry<String>> options = [];
 
-                        if (controller.isSuperAdmin) {
-                          if (isTargetAdmin) {
+                          if (controller.isSuperAdmin) {
+                            if (isTargetAdmin) {
+                              options.add(
+                                const PopupMenuItem(
+                                  value: 'revoke_admin',
+                                  child: Text('Revoke Admin'),
+                                ),
+                              );
+                            } else {
+                              options.add(
+                                const PopupMenuItem(
+                                  value: 'make_admin',
+                                  child: Text('Make Admin'),
+                                ),
+                              );
+                            }
                             options.add(
                               const PopupMenuItem(
-                                value: 'revoke_admin',
-                                child: Text('Revoke Admin'),
+                                value: 'remove_member',
+                                child: Text('Remove from Group'),
                               ),
                             );
-                          } else {
+                          } else if (controller.isAdmin && !isTargetAdmin) {
                             options.add(
                               const PopupMenuItem(
-                                value: 'make_admin',
-                                child: Text('Make Admin'),
+                                value: 'remove_member',
+                                child: Text('Remove from Group'),
                               ),
                             );
                           }
-                          options.add(
-                            const PopupMenuItem(
-                              value: 'remove_member',
-                              child: Text('Remove from Group'),
-                            ),
-                          );
-                        } else if (controller.isAdmin && !isTargetAdmin) {
-                          options.add(
-                            const PopupMenuItem(
-                              value: 'remove_member',
-                              child: Text('Remove from Group'),
-                            ),
-                          );
-                        }
 
-                        return options;
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6.0),
-                        child: Row(
+                          return options;
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
+                          child: Row(
+                            children: [
+                              if ((user?.displayPictureUrl ?? "").isEmpty)
+                                CircleAvatar(
+                                  backgroundColor: AppColors.greyColor
+                                      .withOpacity(0.4),
+                                  radius: 24,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 24.0,
+                                    color: AppColors.greyColor,
+                                  ),
+                                )
+                              else
+                                CachedNetworkImage(
+                                  imageUrl: user!.displayPictureUrl.toString(),
+                                  imageBuilder: (context, image) {
+                                    return CircleAvatar(
+                                      backgroundColor: AppColors.greyColor
+                                          .withOpacity(0.4),
+                                      backgroundImage: image,
+                                      radius: 24,
+                                    );
+                                  },
+                                  placeholder: (context, url) =>
+                                      const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                ),
+
+                              // CircleAvatar(
+                              //   radius: 24,
+                              //   backgroundImage:NetworkImage(user?.displayPictureUrl ?? ''),
+                              // ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FutureBuilder<String>(
+                                      future: controller.getLocalName(
+                                        user?.userId,
+                                        user?.name,
+                                      ),
+                                      builder: (context, snapshot) {
+                                        return Text(
+                                          snapshot.data ?? "Loading...",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      user?.phoneNumber ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (permission?.isAdmin == true)
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.textBarColor.withOpacity(
+                                      0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    isCreator ? "Super Admin" : "Admin",
+                                    style: TextStyle(
+                                      color: AppColors.textBarColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              // IconButton(
+                              //   icon:
+                              //   const Icon(Icons.remove_circle, color: Colors.red),
+                              //   onPressed: () {
+                              //     controller.removeParticipant(user.userId ?? 0);
+                              //   },
+                              // )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  /// Exit Group
+                  if (controller.canExitGroup) ...[
+                    const Divider(),
+
+                    const SizedBox(height: 10),
+
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0, right: 8),
+                      child: InkWell(
+                        onTap: () {
+                          // exit logic here
+                        },
+                        child: const Row(
                           children: [
-                            if ((user?.displayPictureUrl ?? "").isEmpty)
-                              CircleAvatar(
-                                backgroundColor: AppColors.greyColor
-                                    .withOpacity(0.4),
-                                radius: 24,
-                                child: Icon(
-                                  Icons.person,
-                                  size: 24.0,
-                                  color: AppColors.greyColor,
-                                ),
-                              )
-                            else
-                              CachedNetworkImage(
-                                imageUrl: user!.displayPictureUrl.toString(),
-                                imageBuilder: (context, image) {
-                                  return CircleAvatar(
-                                    backgroundColor: AppColors.greyColor
-                                        .withOpacity(0.4),
-                                    backgroundImage: image,
-                                    radius: 24,
-                                  );
-                                },
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                              ),
-
-                            // CircleAvatar(
-                            //   radius: 24,
-                            //   backgroundImage:NetworkImage(user?.displayPictureUrl ?? ''),
-                            // ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  FutureBuilder<String>(
-                                    future: controller.getLocalName(
-                                      user?.userId,
-                                      user?.name,
-                                    ),
-                                    builder: (context, snapshot) {
-                                      return Text(
-                                        snapshot.data ?? "Loading...",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    user?.phoneNumber ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
+                            Icon(Symbols.logout_rounded, color: Colors.red),
+                            SizedBox(width: 12),
+                            Text(
+                              "Exit Group",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (permission?.isAdmin == true)
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.textBarColor.withOpacity(
-                                    0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  isCreator ? "Super Admin" : "Admin",
-                                  style: TextStyle(
-                                    color: AppColors.textBarColor,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            // IconButton(
-                            //   icon:
-                            //   const Icon(Icons.remove_circle, color: Colors.red),
-                            //   onPressed: () {
-                            //     controller.removeParticipant(user.userId ?? 0);
-                            //   },
-                            // )
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
-
-                /// Exit Group
-                if (controller.canExitGroup) ...[
-                  const Divider(),
-
-                  const SizedBox(height: 10),
-
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 8),
-                    child: InkWell(
-                      onTap: () {
-                        // exit logic here
-                      },
-                      child: const Row(
-                        children: [
-                          Icon(Symbols.logout_rounded, color: Colors.red),
-                          SizedBox(width: 12),
-                          Text(
-                            "Exit Group",
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
+                    const SizedBox(height: 30),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -560,22 +562,54 @@ class GroupProfileView extends GetView<GroupProfileController> {
     );
   }
 
-  void _showEditDescriptionDialog(
-    BuildContext context,
-    GroupData groupDetails,
-  ) {
+  void _showEditDescriptionDialog(BuildContext context, GroupData groupDetails) {
     final textController = TextEditingController(
       text: groupDetails.group?.groupDescription,
     );
-    Get.defaultDialog(
-      title: "Edit Description",
-      content: TextField(controller: textController),
-      textConfirm: "Save",
-      onConfirm: () {
-        if (textController.text.isNotEmpty) {
-          controller.updateGroupDescription(textController.text);
-          Get.back();
-        }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Edit Description",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 150,
+              ),
+              child: TextFormField(
+                controller: textController,
+                autofocus: true, // Opens keyboard automatically
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  hintText: "Enter group description...",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (textController.text.isNotEmpty) {
+                  Navigator.of(context).pop();
+                  controller.updateGroupDescription(textController.text);
+
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
       },
     );
   }

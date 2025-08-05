@@ -113,7 +113,7 @@ class GroupProfileController extends GetxController {
           final uploadResponse = await groupRepository.uploadGroupPic(processedImage, groupId);
 
           if (uploadResponse != null && uploadResponse.statusCode == 200) {
-            print("✅ Group icon uploaded: ${uploadResponse.data}");
+            // print("✅ Group icon uploaded: ${uploadResponse.data}");
             final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
             if (responseModel.status == true && responseModel.data != null) {
@@ -140,15 +140,67 @@ class GroupProfileController extends GetxController {
     });
   }
 
-  void updateGroupName(String newName) async {
+  void updateGroupName(String newGroupName) async {
 
-    // await groupTable.updateGroupName(groupId, newName);
-    // await getGroupDetails(groupId: groupId);
+    try {
+      final uploadResponse = await groupRepository.updateGroupNameAndDescription(isEditingGroupName: true,groupId: groupId,groupName: newGroupName);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ Group name updated: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupTable.insertOrUpdateGroup(responseModel.data!);
+            final data = responseModel.data;
+            final groupId = data?.group?.id ?? 0;
+            await getGroupDetails(groupId: groupId);
+            await chatConectTable.updateContact(
+              uid: groupId.toString(),
+              isGroup: 1,
+              profilePic: data?.group?.displayPictureUrl ?? '',
+              timeSent: data?.group?.updatedAt ?? "",
+              name: data?.group?.name ?? '',
+            );
+          }
+        }
+      } else {
+        showAlertMessage('Failed to update group name.');
+      }
+    } catch (e) {
+      showAlertMessage("Error updating group name: $e");
+    }
   }
 
   void updateGroupDescription(String newDesc) async {
-    // await groupTable.updateGroupDescription(groupId, newDesc);
-    // await getGroupDetails(groupId: groupId);
+    try {
+      final uploadResponse = await groupRepository.updateGroupNameAndDescription(isEditingGroupName: false,groupId: groupId,groupDescription: newDesc);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ Group description updated: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupTable.insertOrUpdateGroup(responseModel.data!);
+            final data = responseModel.data;
+            final groupId = data?.group?.id ?? 0;
+            await getGroupDetails(groupId: groupId);
+            // await chatConectTable.updateContact(
+            //   uid: groupId.toString(),
+            //   isGroup: 1,
+            //   profilePic: data?.group?.displayPictureUrl ?? '',
+            //   timeSent: data?.group?.updatedAt ?? "",
+            //   name: data?.group?.name ?? '',
+            // );
+          }
+        }
+      } else {
+        showAlertMessage('Failed to update group description.');
+      }
+    } catch (e) {
+      showAlertMessage("Error updating group description: $e");
+    }
   }
 
   void removeParticipant(int userId) async {

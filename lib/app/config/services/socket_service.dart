@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import '../../data/local_database/contacts_table.dart';
+import '../../data/models/new_models/response_model/create_group_model.dart';
 import '../../data/models/new_models/response_model/message_ack_model.dart';
 
 class SocketService extends GetxService {
@@ -340,14 +341,38 @@ class SocketService extends GetxService {
 
     _socket?.on('group-updated', (data) async {
       print('✅ Group Details Updated: $data');
+      final responseModel = CreateGroupModel.fromJson(data);
+      // print("after Parsing: ${responseModel.toJson()}");
+      if (responseModel.status == true && responseModel.data != null) {
+        await groupsTable.insertOrUpdateGroup(responseModel.data!);
+        final data = responseModel.data;
+        final groupId = data?.group?.id ?? 0;
+        await chatConectTable.updateContact(
+          uid: groupId.toString(),
+          isGroup: 1,
+          profilePic: data?.group?.displayPictureUrl ?? '',
+          timeSent: data?.group?.updatedAt ?? "",
+          name: data?.group?.name ?? '',
+        );
+      }
     });
 
     _socket?.on('group-created', (data) async {
       print('✅ New Group created: $data');
-    });
-
-    _socket?.on('group-created', (data) async {
-      print('✅ New Group created: $data');
+      final responseModel = CreateGroupModel.fromJson(data);
+      // print("after Parsing: ${responseModel.toJson()}");
+      if (responseModel.status == true && responseModel.data != null) {
+        await groupsTable.insertOrUpdateGroup(responseModel.data!);
+        final data = responseModel.data;
+        final groupId = data?.group?.id ?? 0;
+        await chatConectTable.updateContact(
+          uid: groupId.toString(),
+          isGroup: 1,
+          profilePic: data?.group?.displayPictureUrl ?? '',
+          timeSent: data?.group?.updatedAt ?? "",
+          name: data?.group?.name ?? '',
+        );
+      }
     });
 
     _socket?.on('group-user-added', (data) async {

@@ -23,6 +23,7 @@ class ApiEndpoints {
   // group/fetch
   static const String groupFetch = "group/fetch";
   static const String uploadGroupIcon = "group/update-display-picture";
+  static const String updateGroup = "group/update";
 
   static const String uploadMessageFiles = "message/file";
 

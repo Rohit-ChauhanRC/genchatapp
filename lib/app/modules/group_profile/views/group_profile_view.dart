@@ -238,7 +238,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Group - ${users.length} members",
+                          "Group - $userCount members",
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.white70,

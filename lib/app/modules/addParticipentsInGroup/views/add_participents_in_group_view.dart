@@ -18,8 +18,11 @@ class AddParticipentsInGroupView
         title: Obx(
               () => Text(
             controller.selectedUserIds.isEmpty
-                ? 'New Group'
-                : 'New Group: ${controller.selectedUserIds.length} of ${controller.contacts.length} selected',
+                ? 'Add Member'
+                : 'Add Member: ${controller.selectedUserIds.length} '
+                // 'of ${controller.contacts.length} '
+                'selected',
+
             style: const TextStyle(color: Colors.white, fontSize: 15),
           ),
         ),

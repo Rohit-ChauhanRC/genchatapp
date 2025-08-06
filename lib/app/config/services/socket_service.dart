@@ -39,6 +39,7 @@ class SocketService extends GetxService {
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
   final Rxn<UserData> updateContactUser = Rxn<UserData>();
+  final Rxn<bool> updateGroupAdmins = Rxn<bool>();
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
@@ -377,14 +378,93 @@ class SocketService extends GetxService {
 
     _socket?.on('group-user-added', (data) async {
       print('✅ New User added in group: $data');
+      // final responseModel = CreateGroupModel.fromJson(data);
+      // // print("after Parsing: ${responseModel.toJson()}");
+      // if (responseModel.status == true && responseModel.data != null) {
+      final groupMap = data["group"];
+      final userMap = data["users"];
+
+      Group group = Group.fromJson(groupMap);
+      User user = User.fromJson(userMap);
+
+      if (group != null && user != null) {
+        final userInfo = user.userInfo!;
+        final userGroup = user.userGroupInfo!;
+        // Save new user info if needed
+        await groupsTable.updateUserIfNeeded(userInfo);
+
+        // Add user to group mapping
+        await groupsTable.updateUserGroupRole(
+            groupId: userGroup.groupId ?? 0,
+            userId: userGroup.userId ?? 0,
+            isAdmin: userGroup.isAdmin ?? false,
+            isRemoved: userGroup.isRemoved ?? false,
+            updaterId: userGroup.updaterId ?? 0,
+            createdAt: userGroup.createdAt ?? "",
+            updatedAt: userGroup.updatedAt ?? ""
+        );
+
+        // Refresh UI or any state observers
+        updateGroupAdmins.value = false;
+        updateGroupAdmins.value = true;
+      }
     });
 
     _socket?.on('group-user-removed', (data) async {
       print('✅ User removed in group: $data');
+
+      final groupMap = data["group"];
+      final userMap = data["users"];
+
+      Group group = Group.fromJson(groupMap);
+      User user = User.fromJson(userMap);
+
+      if (group != null && user != null) {
+        // Update user's profile if needed
+        await groupsTable.updateUserIfNeeded(user.userInfo!);
+
+        // Mark user as removed in group
+        await groupsTable.updateUserRemovedStatus(
+          groupId: user.userGroupInfo?.groupId ?? 0,
+          userId: user.userGroupInfo?.userId ?? 0,
+          isRemoved: user.userGroupInfo?.isRemoved ?? true,
+          updaterId: user.userGroupInfo?.updaterId ?? 0,
+          updatedAt: user.userGroupInfo?.updatedAt ?? "",
+        );
+
+        // Refresh UI or any state observers
+        updateGroupAdmins.value = false;
+        updateGroupAdmins.value = true;
+      }
     });
 
     _socket?.on('group-admin-toggled', (data) async {
       print('✅ Admin toggled in group: $data');
+
+      // Parse the data manually if you're not using CreateGroupModel anymore
+      final groupMap = data["group"];
+      final userMap = data["users"];
+
+      Group group = Group.fromJson(groupMap);
+      User user = User.fromJson(userMap);
+      // print("after Parsing group: ${group.toJson()} \n after Parsing group: ${user.toJson()}");
+        if (group != null && user != null) {
+          // update user's profile if needed
+          await groupsTable.updateUserIfNeeded(user.userInfo!);
+
+          // update user group role
+          await groupsTable.updateUserGroupRole(
+              groupId: user.userGroupInfo?.groupId ?? 0,
+              userId: user.userGroupInfo?.userId ?? 0,
+              isAdmin: user.userGroupInfo?.isAdmin ?? false,
+              isRemoved: user.userGroupInfo?.isRemoved ?? false,
+              updaterId: user.userGroupInfo?.updaterId ?? 0,
+              createdAt: user.userGroupInfo?.createdAt ?? "",
+              updatedAt: user.userGroupInfo?.updatedAt ?? ""
+          );
+          updateGroupAdmins.value = false;
+          updateGroupAdmins.value = true;
+        }
     });
 
     _socket?.on('custom-error', (data) {

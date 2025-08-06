@@ -24,6 +24,10 @@ class ApiEndpoints {
   static const String groupFetch = "group/fetch";
   static const String uploadGroupIcon = "group/update-display-picture";
   static const String updateGroup = "group/update";
+  static const String makeAdmin = "group/add-admin";
+  static const String removeAdmin = "group/remove-admin";
+  static const String removeUser = "group/remove-user";
+  static const String addUser = "group/add-users";
 
   static const String uploadMessageFiles = "message/file";
 

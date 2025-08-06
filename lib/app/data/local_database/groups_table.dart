@@ -254,6 +254,94 @@ class GroupsTable {
     );
   }
 
+  Future<void> updateUserGroupRole({
+    required int groupId,
+    required int userId,
+    required bool isAdmin,
+    required bool isRemoved,
+    required int updaterId,
+    required String createdAt,
+    required String updatedAt,
+  }) async {
+    final db = await DataBaseService().database;
+
+    // Check if this (groupId, userId) already exists
+    final result = await db.query(
+      userGroupsTableName,
+      where: 'groupId = ? AND userId = ?',
+      whereArgs: [groupId, userId],
+    );
+
+    if (result.isNotEmpty) {
+      // Update if exists
+      await db.update(
+        userGroupsTableName,
+        {
+          'isAdmin': isAdmin ? 1 : 0,
+          'isRemoved': isRemoved ? 1 : 0,
+          'updaterId': updaterId,
+          'updatedAt': updatedAt,
+        },
+        where: 'groupId = ? AND userId = ?',
+        whereArgs: [groupId, userId],
+      );
+    } else {
+      // Insert if not exists
+      await db.insert(
+        userGroupsTableName,
+        {
+          'groupId': groupId,
+          'userId': userId,
+          'isAdmin': isAdmin ? 1 : 0,
+          'isRemoved': isRemoved ? 1 : 0,
+          'updaterId': updaterId,
+          'createdAt': createdAt,
+          'updatedAt': updatedAt,
+        },
+      );
+    }
+  }
+
+  Future<void> updateUserRemovedStatus({
+    required int groupId,
+    required int userId,
+    required bool isRemoved,
+    required int updaterId,
+    required String updatedAt,
+  }) async {
+    final db = await DataBaseService().database;
+
+    await db.update(
+      userGroupsTableName,
+      {
+        'isRemoved': isRemoved ? 1 : 0,
+        'updaterId': updaterId,
+        'updatedAt': updatedAt,
+      },
+      where: 'groupId = ? AND userId = ?',
+      whereArgs: [groupId, userId],
+    );
+  }
+
+
+  Future<void> updateUserIfNeeded(UserInfo user) async {
+    final db = await DataBaseService().database;
+
+    await db.insert(usersTableName, {
+      'userId': user.userId,
+      'countryCode': user.countryCode,
+      'phoneNumber': user.phoneNumber,
+      'name': user.name,
+      'email': user.email,
+      'userDescription': user.userDescription,
+      'isOnline': user.isOnline! ? 1 : 0,
+      'displayPicture': user.displayPicture,
+      'displayPictureUrl': user.displayPictureUrl,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+
+
 
   Future<void> deleteGroupsTable() async {
     final db = await DataBaseService().database;

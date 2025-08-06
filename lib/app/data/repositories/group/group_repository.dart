@@ -35,7 +35,6 @@ class GroupRepository {
 
    Future<Response?> fetchGroup() async {
     try {
-     
       return await apiClient.get(ApiEndpoints.groupFetch);
     } catch (e) {
       if (e == "404_NOT_FOUND") {
@@ -64,6 +63,74 @@ class GroupRepository {
           'groupDescription': groupDescription,
       };
       return await apiClient.post(ApiEndpoints.updateGroup, param);
+    }catch(e){
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
+  Future<Response?> makeNewAdmin({
+    required int userId,
+    required int groupId,
+  }) async{
+    try{
+      final param = {
+        'groupId': groupId,
+        'userId':userId,
+      };
+      return await apiClient.post(ApiEndpoints.makeAdmin, param);
+    }catch(e){
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
+  Future<Response?> removeAdmin({
+    required int userId,
+    required int groupId,
+  }) async{
+    try{
+      final param = {
+        'groupId': groupId,
+        'userId':userId,
+      };
+      return await apiClient.post(ApiEndpoints.removeAdmin, param);
+    }catch(e){
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
+  Future<Response?> removeUser({
+    required int userId,
+    required int groupId,
+  }) async{
+    try{
+      final param = {
+        'groupId': groupId,
+        'userId':userId,
+      };
+      return await apiClient.post(ApiEndpoints.removeUser, param);
+    }catch(e){
+      // print('Error in verifyOTPAPI: $e');
+      showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
+  Future<Response?> addUsers({
+    required List<int> userId,
+    required int groupId,
+  }) async{
+    try{
+      final param = {
+        'groupId': groupId,
+        'userIdsArray':userId,
+      };
+      return await apiClient.post(ApiEndpoints.addUser, param);
     }catch(e){
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");

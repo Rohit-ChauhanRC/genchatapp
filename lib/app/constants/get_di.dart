@@ -4,6 +4,7 @@ import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
+import 'package:genchatapp/app/modules/addParticipentsInGroup/controllers/add_participents_in_group_controller.dart';
 import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/createProfile/controllers/create_profile_controller.dart';
 import 'package:genchatapp/app/modules/create_group/controllers/create_group_controller.dart';
@@ -72,6 +73,7 @@ init() async {
   Get.lazyPut(() => CreateGroupController());
   Get.lazyPut(() => GroupNameController(groupRepository: Get.find<GroupRepository>()));
   Get.lazyPut(() => GroupProfileController());
+  Get.lazyPut(() => AddParticipentsInGroupController());
 
 
 

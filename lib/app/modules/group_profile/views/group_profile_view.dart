@@ -20,6 +20,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
       body: Obx(() {
         final group = controller.groupDetails.group;
         final users = List<User>.from(controller.groupDetails.users ?? []);
+        final userCount =controller.groupDetails.users
+            ?.where((u) => u.userGroupInfo?.isRemoved != true)
+            .length ?? 0;
 
         users.sort((a, b) {
           final aId = a.userGroupInfo?.userId;
@@ -311,7 +314,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "${users.length} members",
+                          "$userCount members",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -332,180 +335,10 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   ),
 
                   /// Members List
-                  ListView.builder(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: users.length,
-                    itemBuilder: (context, index) {
-                      final user = users[index].userInfo;
-                      final permission = users[index].userGroupInfo;
-                      final isCreator =
-                          controller.groupDetails.group?.creatorId ==
-                          permission?.userId;
-                      return PopupMenuButton(
-                        offset: const Offset(0, 56),
-                        onSelected: (value) {
-                          final userId = user?.userId;
-                          if (userId == null) return;
 
-                          switch (value) {
-                            case 'make_admin':
-                              // controller.makeAdmin(userId);
-                              break;
-                            case 'revoke_admin':
-                              // controller.revokeAdmin(userId);
-                              break;
-                            case 'remove_member':
-                              // controller.removeParticipant(userId);
-                              break;
-                          }
-                        },
-                        itemBuilder: (context) {
-                          final currentUserId = controller.sharedPreferenceService
-                              .getUserData()
-                              ?.userId;
-                          final targetUserId = user?.userId;
-                          final isTargetSuperAdmin =
-                              targetUserId ==
-                              controller.groupDetails.group?.creatorId;
-                          final isSelf = currentUserId == targetUserId;
-                          final isTargetAdmin = permission?.isAdmin == true;
+                  // const SizedBox(height: 4),
 
-                          if (isSelf || isTargetSuperAdmin) return [];
-
-                          final List<PopupMenuEntry<String>> options = [];
-
-                          if (controller.isSuperAdmin) {
-                            if (isTargetAdmin) {
-                              options.add(
-                                const PopupMenuItem(
-                                  value: 'revoke_admin',
-                                  child: Text('Revoke Admin'),
-                                ),
-                              );
-                            } else {
-                              options.add(
-                                const PopupMenuItem(
-                                  value: 'make_admin',
-                                  child: Text('Make Admin'),
-                                ),
-                              );
-                            }
-                            options.add(
-                              const PopupMenuItem(
-                                value: 'remove_member',
-                                child: Text('Remove from Group'),
-                              ),
-                            );
-                          } else if (controller.isAdmin && !isTargetAdmin) {
-                            options.add(
-                              const PopupMenuItem(
-                                value: 'remove_member',
-                                child: Text('Remove from Group'),
-                              ),
-                            );
-                          }
-
-                          return options;
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6.0),
-                          child: Row(
-                            children: [
-                              if ((user?.displayPictureUrl ?? "").isEmpty)
-                                CircleAvatar(
-                                  backgroundColor: AppColors.greyColor
-                                      .withOpacity(0.4),
-                                  radius: 24,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 24.0,
-                                    color: AppColors.greyColor,
-                                  ),
-                                )
-                              else
-                                CachedNetworkImage(
-                                  imageUrl: user!.displayPictureUrl.toString(),
-                                  imageBuilder: (context, image) {
-                                    return CircleAvatar(
-                                      backgroundColor: AppColors.greyColor
-                                          .withOpacity(0.4),
-                                      backgroundImage: image,
-                                      radius: 24,
-                                    );
-                                  },
-                                  placeholder: (context, url) =>
-                                      const CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
-                                ),
-
-                              // CircleAvatar(
-                              //   radius: 24,
-                              //   backgroundImage:NetworkImage(user?.displayPictureUrl ?? ''),
-                              // ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    FutureBuilder<String>(
-                                      future: controller.getLocalName(
-                                        user?.userId,
-                                        user?.name,
-                                      ),
-                                      builder: (context, snapshot) {
-                                        return Text(
-                                          snapshot.data ?? "Loading...",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      user?.phoneNumber ?? '',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (permission?.isAdmin == true)
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.textBarColor.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    isCreator ? "Super Admin" : "Admin",
-                                    style: TextStyle(
-                                      color: AppColors.textBarColor,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              // IconButton(
-                              //   icon:
-                              //   const Icon(Icons.remove_circle, color: Colors.red),
-                              //   onPressed: () {
-                              //     controller.removeParticipant(user.userId ?? 0);
-                              //   },
-                              // )
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  _buildMembersSection(users),
 
                   /// Exit Group
                   if (controller.canExitGroup) ...[
@@ -545,19 +378,188 @@ class GroupProfileView extends GetView<GroupProfileController> {
     );
   }
 
+  Widget _buildMembersSection(List<User> allUsers) {
+    final activeMembers = allUsers.where((u) => u.userGroupInfo?.isRemoved != true).toList();
+    final pastParticipants = allUsers.where((u) => u.userGroupInfo?.isRemoved == true).toList();
+
+    bool isPastExpanded = false;
+    return StatefulBuilder(builder: (context, setState) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (activeMembers.isNotEmpty)
+            _buildUserList(activeMembers, isPast: false),
+          if (pastParticipants.isNotEmpty) ...[
+            // const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => setState(() => isPastExpanded = !isPastExpanded),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Past Participants (${pastParticipants.length})",
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey)),
+                    Icon(isPastExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+            if (isPastExpanded)
+              _buildUserList(pastParticipants, isPast: true),
+          ],
+        ],
+      );
+    });
+  }
+
+  Widget _buildUserList(List<User> users, {required bool isPast}) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: users.length,
+      itemBuilder: (context, index) {
+        final user = users[index].userInfo;
+        final perm = users[index].userGroupInfo;
+        final isCreator = controller.groupDetails.group?.creatorId == perm?.userId;
+        return buildUserTile(user, perm, isCreator, isPast: isPast);
+      },
+    );
+  }
+
+  Widget buildUserTile(UserInfo? user, UserGroupInfo? perm, bool isCreator, {required bool isPast}) {
+    final pictureUrl = user?.displayPictureUrl ?? '';
+    return Opacity(
+      opacity: isPast ? 0.6 : 1.0,
+      child: IgnorePointer(
+        ignoring: isPast, // disable actions if past participant
+        child: PopupMenuButton<String>(
+          offset: const Offset(0, 56),
+          onSelected: (val) {
+            final uid = user?.userId;
+            if (uid == null) return;
+            switch (val) {
+              case 'make_admin':
+                controller.makeAdmin(uid);
+                break;
+              case 'revoke_admin':
+                controller.revokeAdmin(uid);
+                break;
+              case 'remove_member':
+                controller.removeUser(uid);
+                break;
+            }
+          },
+          itemBuilder: (_) {
+            final curUid = controller.sharedPreferenceService.getUserData()?.userId;
+            final isSelf = user?.userId == curUid;
+            final isSuper = user?.userId == controller.groupDetails.group?.creatorId;
+            final isAdmin = perm?.isAdmin == true;
+            if (isSelf || isSuper) return [];
+            final items = <PopupMenuEntry<String>>[];
+            if (controller.isSuperAdmin) {
+              items.add(isAdmin
+                  ? const PopupMenuItem(value: 'revoke_admin', child: Text('Revoke Admin'))
+                  : const PopupMenuItem(value: 'make_admin', child: Text('Make Admin')));
+              items.add(const PopupMenuItem(value: 'remove_member', child: Text('Remove from Group')));
+            } else if (controller.isAdmin && !isAdmin) {
+              items.add(const PopupMenuItem(value: 'remove_member', child: Text('Remove from Group')));
+            }
+            return items;
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                pictureUrl.isEmpty
+                    ? CircleAvatar(radius: 24, backgroundColor: Colors.grey.withOpacity(0.4), child: const Icon(Icons.person))
+                    : CachedNetworkImage(
+                  imageUrl: pictureUrl,
+                  imageBuilder: (_, image) => CircleAvatar(backgroundImage: image, radius: 24),
+                  placeholder: (_, __) => const CircularProgressIndicator(strokeWidth: 1.5),
+                  errorWidget: (_, __, ___) => const CircleAvatar(radius: 24, backgroundColor: Colors.grey, child: Icon(Icons.error)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    FutureBuilder<String>(
+                      future: controller.getLocalName(user?.userId, user?.name),
+                      builder: (_, snap) => Text(snap.data ?? "Loading…", style: const TextStyle(fontWeight: FontWeight.w500)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(user?.phoneNumber ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                  ]),
+                ),
+                if ((perm?.isAdmin == true) && !isPast)
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.textBarColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      isCreator ? "Super Admin" : "Admin",
+                      style: TextStyle(color: AppColors.textBarColor, fontSize: 10, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showEditGroupNameDialog(BuildContext context, GroupData groupDetails) {
     final textController = TextEditingController(
       text: groupDetails.group?.name,
     );
-    Get.defaultDialog(
-      title: "Edit Group Name",
-      content: TextField(controller: textController),
-      textConfirm: "Save",
-      onConfirm: () {
-        if (textController.text.isNotEmpty) {
-          controller.updateGroupName(textController.text);
-          Get.back();
-        }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Edit Group Name",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 150,
+              ),
+              child: TextFormField(
+                controller: textController,
+                autofocus: true, // Opens keyboard automatically
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  hintText: "Enter group name...",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (textController.text.isNotEmpty) {
+                  Navigator.of(context).pop();
+                  controller.updateGroupName(textController.text);
+
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
       },
     );
   }
@@ -569,6 +571,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: const Text(

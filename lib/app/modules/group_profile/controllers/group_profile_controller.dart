@@ -3,9 +3,11 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
+import '../../../config/services/socket_service.dart';
 import '../../../data/local_database/groups_table.dart';
 import '../../../data/models/chat_conntact_model.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
@@ -19,6 +21,7 @@ class GroupProfileController extends GetxController {
   final ChatConectTable chatConectTable = ChatConectTable();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final GroupRepository groupRepository = Get.find<GroupRepository>();
+  final socketService = Get.find<SocketService>();
 
   final RxInt _groupId = 0.obs;
   int get groupId => _groupId.value;
@@ -49,7 +52,7 @@ class GroupProfileController extends GetxController {
   bool get isMember =>
       currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
-  bool get canEditGroup => isSuperAdmin;
+  bool get canEditGroup => isSuperAdmin || isAdmin;
   bool get canAddParticipants => isSuperAdmin || isAdmin;
   bool get canExitGroup => !isSuperAdmin;
   bool get canRevokeAdmin => isSuperAdmin;
@@ -63,6 +66,7 @@ class GroupProfileController extends GetxController {
     if(groupId != null || groupId != 0){
       getGroupDetails(groupId: groupId);
     }
+    bindSocketEvents();
   }
 
   @override
@@ -74,6 +78,14 @@ class GroupProfileController extends GetxController {
   void onClose() {
     super.onClose();
     groupId = 0;
+  }
+
+  void bindSocketEvents(){
+    ever(socketService.updateGroupAdmins, (bool? updateGroupAdmin){
+      if(updateGroupAdmin == true){
+        getGroupDetails(groupId: groupId);
+      }
+    });
   }
 
   Future<void> getGroupDetails({required int groupId}) async{
@@ -94,6 +106,8 @@ class GroupProfileController extends GetxController {
       );
       currentUserPermission = currentUserInfo?.userGroupInfo;
 
+    }else{
+      print("Group Data are not fetched for GroupId: $groupId");
     }
   }
 
@@ -203,13 +217,89 @@ class GroupProfileController extends GetxController {
     }
   }
 
-  void removeParticipant(int userId) async {
-    // await groupTable.removeUserFromGroup(userId, groupId);
-    // await getGroupDetails(groupId: groupId);
+  void makeAdmin(int userId) async{
+    try {
+      final uploadResponse = await groupRepository.makeNewAdmin(userId: userId, groupId: groupId);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ Make Group admin: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            // await groupTable.insertOrUpdateGroup(responseModel.data!);
+            // final data = responseModel.data;
+            // final groupId = data?.group?.id ?? 0;
+            // await getGroupDetails(groupId: groupId);
+          }
+        }
+      } else {
+        showAlertMessage('Failed to make group admin.');
+      }
+    } catch (e) {
+      showAlertMessage("Error getting make group admin: $e");
+    }
+  }
+
+  void revokeAdmin(int userId) async{
+    try {
+      final uploadResponse = await groupRepository.removeAdmin(userId: userId, groupId: groupId);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ remove Group admin: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            // await groupTable.insertOrUpdateGroup(responseModel.data!);
+            // final data = responseModel.data;
+            // final groupId = data?.group?.id ?? 0;
+            // await getGroupDetails(groupId: groupId);
+          }
+        }
+      } else {
+        showAlertMessage('Failed to remove group admin.');
+      }
+    } catch (e) {
+      showAlertMessage("Error getting remove group admin: $e");
+    }
+  }
+
+  void removeUser(int userId) async {
+    try {
+      final uploadResponse = await groupRepository.removeUser(userId: userId, groupId: groupId);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ remove Group user: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            // await groupTable.insertOrUpdateGroup(responseModel.data!);
+            // final data = responseModel.data;
+            // final groupId = data?.group?.id ?? 0;
+            await getGroupDetails(groupId: groupId);
+          }
+        }
+      } else {
+        showAlertMessage('Failed to remove group user.');
+      }
+    } catch (e) {
+      showAlertMessage("Error getting remove group user: $e");
+    }
   }
 
   void navigateToAddParticipant() {
-    // Get.toNamed('/add_participants', arguments: groupId);
+    final existingMemberIds = groupDetails.users
+        ?.where((u) => u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.userId ?? 0)
+        .toList() ?? [];
+    Get.toNamed(Routes.ADD_PARTICIPENTS_IN_GROUP,
+      arguments: {
+        'groupId': groupId,
+        'existingMemberIds': existingMemberIds,
+      },
+    );
   }
 
 

@@ -23,6 +23,7 @@ abstract class Routes {
   static const GROUP_PROFILE = _Paths.GROUP_PROFILE;
   static const SEARCH_NEW_CONTACT = _Paths.SEARCH_NEW_CONTACT;
   static const AUDIO_RECORD = _Paths.AUDIO_RECORD;
+  static const ADD_PARTICIPENTS_IN_GROUP = _Paths.ADD_PARTICIPENTS_IN_GROUP;
 }
 
 abstract class _Paths {
@@ -47,4 +48,5 @@ abstract class _Paths {
   static const GROUP_PROFILE = '/group-profile';
   static const SEARCH_NEW_CONTACT = '/search-new-contact';
   static const AUDIO_RECORD = '/audio-record';
+  static const ADD_PARTICIPENTS_IN_GROUP = '/add-participents-in-group';
 }

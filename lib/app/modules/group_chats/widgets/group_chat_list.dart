@@ -140,6 +140,8 @@ class GroupChatList extends StatelessWidget {
                             color: bgColor,
                             child: isMine
                                 ? GroupMyMessageCard(
+                                    audioMessage: messages.message ?? "",
+
                                     message:
                                         messages.messageType ==
                                                 MessageType.text ||
@@ -164,6 +166,9 @@ class GroupChatList extends StatelessWidget {
                                         MessageType.text,
                                     status:
                                         messages.state ?? MessageState.unsent,
+                                    syncStatus:
+                                        messages.syncStatus ??
+                                        SyncStatus.pending,
                                     onLeftSwipe:
                                         messages.messageType ==
                                             MessageType.deleted
@@ -181,6 +186,8 @@ class GroupChatList extends StatelessWidget {
                                               senderName: "",
                                               recipientUserId:
                                                   messages.senderId ?? 0,
+                                              assetsThumbnail:
+                                                  messages.assetThumbnail ?? "",
                                             );
                                           },
                                     repliedMessageType:
@@ -204,13 +211,26 @@ class GroupChatList extends StatelessWidget {
                                               ? "You"
                                               : replyMessageSenderName
                                         : "username",
+                                    repliedThumbnail:
+                                        messages.messageRepliedOnAssetThumbnail,
+                                    isAsset: messages.isAsset!,
                                     onReplyTap: () => groupChatsController
                                         .scrollToOriginalMessage(
                                           messages.messageRepliedOnId!,
                                         ),
+                                    onRetryTap: () async {
+                                      await groupChatsController
+                                          .retryPendingMediaFile(messages);
+                                    },
+                                    isRetryUploadFile:
+                                        messages.isRetrying ?? false.obs,
                                     isHighlighted: isHighlighted,
                                     isForwarded: messages.isForwarded!,
                                     showForwarded: messages.showForwarded!,
+                                    url: messages.assetUrl,
+                                    assetThumbnail: messages.assetThumbnail,
+                                    repliedAssetServerName: messages
+                                        .messageRepliedOnAssetServerName,
                                   )
                                 : GroupSenderMessageCard(
                                     message:
@@ -249,6 +269,8 @@ class GroupChatList extends StatelessWidget {
                                               senderName: messageSenderName,
                                               recipientUserId:
                                                   messages.senderId ?? 0,
+                                              assetsThumbnail:
+                                                  messages.assetThumbnail ?? "",
                                             );
                                           },
                                     repliedMessageType:
@@ -278,10 +300,17 @@ class GroupChatList extends StatelessWidget {
                                         .scrollToOriginalMessage(
                                           messages.messageRepliedOnId!,
                                         ),
+                                    assetThumbnail: messages.assetThumbnail,
+                                    repliedThumbnail:
+                                        messages.messageRepliedOnAssetThumbnail,
+                                    repliedAssetServerName: messages
+                                        .messageRepliedOnAssetServerName,
+
                                     isHighlighted: isHighlighted,
                                     isForwarded: messages.isForwarded!,
                                     showForwarded: messages.showForwarded!,
                                     senderName: messageSenderName,
+                                    url: messages.assetUrl,
                                   ),
                           );
                         }),

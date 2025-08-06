@@ -1129,6 +1129,36 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<void> retryPendingMediaFile(NewMessageModel messages) async {
+    if (messages.isRetrying?.value == true) return;
+    try {
+      messages.isRetrying?.value = true;
+      final rootPaths = rootPath;
+      final messageType = messages.messageType?.value;
+      final fileType = messageType?.toTitleCase;
+      final fileName = messages.assetServerName;
+      final file = File("$rootPaths$fileType/$fileName");
+      print("Full file name with path: $file");
+      update();
+      final result = await uploadFileToServer(file);
+      if (result != null) {
+        final updatedMessage = messages.copyWith(
+          assetOriginalName: result.data?.originalName,
+          assetServerName: fileName,
+          assetUrl: result.data?.url,
+        );
+        if (socketService.isConnected) {
+          print("updatedMessage:----> ${updatedMessage.toMap()}");
+          await MessageTable().updateMessageByClientId(updatedMessage);
+          socketService.sendMessageSync(updatedMessage);
+        }
+      }
+      messages.isRetrying?.value = false;
+    } finally {
+      // messages.isRetrying?.value = false;
+    }
+  }
+
   Future<void> sendGIFMessage({
     required String gifUrl,
     required MessageType messageEnum,
@@ -1211,6 +1241,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     required int messageId,
     required String senderName,
     required int recipientUserId,
+    required String assetsThumbnail,
   }) {
     messageReply = MessageReply(
       messageId: messageId,
@@ -1220,6 +1251,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isReplied: isReplied,
       senderName: senderName,
       recipientUserId: recipientUserId,
+      assetsThumbnail: assetsThumbnail,
     );
   }
 

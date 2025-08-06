@@ -26,7 +26,16 @@ class GroupSenderMessageCard extends StatelessWidget {
     this.onReplyTap,
     this.isForwarded = false,
     this.showForwarded = false,
+    this.repliedAssetServerName,
+    this.url,
+    this.assetThumbnail,
+    this.repliedThumbnail,
   });
+
+  final String? repliedAssetServerName;
+  final String? assetThumbnail;
+  final String? repliedThumbnail;
+
   final String message;
   final String date;
   final MessageType type;
@@ -41,11 +50,13 @@ class GroupSenderMessageCard extends StatelessWidget {
   final VoidCallback? onReplyTap;
   final bool isForwarded;
   final bool showForwarded;
+  final String? url;
 
   @override
   Widget build(BuildContext context) {
     final replyText1 = repliedText.value.trim();
-    final hasReply1 = replyText1.isNotEmpty &&
+    final hasReply1 =
+        replyText1.isNotEmpty &&
         replyText1.toLowerCase() != "null" &&
         type != MessageType.deleted;
     return SwipeTo(
@@ -61,11 +72,13 @@ class GroupSenderMessageCard extends StatelessWidget {
             child: Card(
               elevation: 1,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.zero,
-                      topRight: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8))),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.zero,
+                  topRight: Radius.circular(8),
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
               color:
                   // isHighlighted! ? Colors.pinkAccent.shade100 :
                   AppColors.bgColor.withOpacity(0.80),
@@ -89,71 +102,87 @@ class GroupSenderMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(senderName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textBarColor),),
-                        type != MessageType.deleted && isForwarded
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: showForwarded
-                                    ? [
-                                        Icon(
-                                          Symbols.forward_sharp,
-                                          color: AppColors.greyMsgColor,
-                                          size: 18,
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        showForwarded
-                                            ? Text("Forwarded",
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontStyle: FontStyle.italic,
-                                                    fontWeight: FontWeight.w400,
-                                                    color:
-                                                        AppColors.greyMsgColor))
-                                            : const SizedBox(),
-                                      ]
-                                    : [],
-                              )
-                            : SizedBox.shrink(),
+                        Text(
+                          senderName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textBarColor,
+                          ),
+                        ),
+                        if (type != MessageType.deleted &&
+                            isForwarded &&
+                            showForwarded)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: showForwarded
+                                ? [
+                                    Icon(
+                                      Symbols.forward_sharp,
+                                      color: AppColors.greyMsgColor,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 10),
+                                    showForwarded
+                                        ? Text(
+                                            "Forwarded",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontStyle: FontStyle.italic,
+                                              fontWeight: FontWeight.w400,
+                                              color: AppColors.greyMsgColor,
+                                            ),
+                                          )
+                                        : const SizedBox(),
+                                  ]
+                                : [],
+                          ),
                         type != MessageType.deleted &&
                                 repliedText.value.isNotEmpty &&
                                 repliedText.value != "null"
-                            ? Obx(() =>
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: replyColor.withOpacity(0.67),
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(
-                                          5,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      // mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          repliedUserName ?? "username",
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: blackColor),
-                                        ),
-                                        SizedBox(height: 3,),
-                                        GroupDisplayTextImageGIF(
-                                          message: repliedText.value,
-                                          type: repliedMessageType,
-                                          isReply: true,
-                                        ),
-                                      ],
+                            ? Obx(
+                                () => Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: replyColor.withOpacity(0.67),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5),
                                     ),
                                   ),
-                        )
+                                  child: Column(
+                                    // mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        repliedUserName ?? "username",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: blackColor,
+                                        ),
+                                      ),
+                                      SizedBox(height: 3),
+                                      GroupDisplayTextImageGIF(
+                                        message:
+                                            repliedMessageType !=
+                                                MessageType.text
+                                            ? repliedAssetServerName ?? ""
+                                            : repliedText.value,
+                                        type: repliedMessageType,
+                                        isReply: true,
+                                        url: url,
+                                        assetThumbnail: repliedThumbnail,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
                             : const SizedBox(),
                         GroupDisplayTextImageGIF(
                           message: message,
                           type: type,
+                          url: url,
+                          assetThumbnail: assetThumbnail,
                         ),
                       ],
                     ),
@@ -163,10 +192,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                     right: 10,
                     child: Text(
                       date,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: greyMsgColor,
-                      ),
+                      style: TextStyle(fontSize: 13, color: greyMsgColor),
                     ),
                   ),
                 ],

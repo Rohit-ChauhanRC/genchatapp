@@ -22,6 +22,15 @@ class GroupMyMessageCard extends StatelessWidget {
   final bool? isHighlighted;
   final bool isForwarded;
   final bool showForwarded;
+  final RxBool isRetryUploadFile;
+  final String? url;
+  final String? assetThumbnail;
+  final String? audioMessage;
+  final bool isAsset;
+  final String? repliedThumbnail;
+  final SyncStatus syncStatus;
+  final VoidCallback? onRetryTap;
+  final String? repliedAssetServerName;
 
   const GroupMyMessageCard({
     super.key, // 👈 Ensure this is passed properly in ChatList
@@ -29,6 +38,8 @@ class GroupMyMessageCard extends StatelessWidget {
     required this.date,
     required this.type,
     required this.status,
+    required this.syncStatus,
+
     required this.onLeftSwipe,
     required this.repliedText,
     required this.repliedMessageType,
@@ -38,6 +49,15 @@ class GroupMyMessageCard extends StatelessWidget {
     this.isHighlighted = false,
     this.isForwarded = false,
     this.showForwarded = false,
+    this.url,
+    this.assetThumbnail,
+    this.audioMessage,
+    required this.isRetryUploadFile,
+    this.onRetryTap,
+
+    this.isAsset = false,
+    this.repliedThumbnail,
+    this.repliedAssetServerName,
   }); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -92,30 +112,31 @@ class GroupMyMessageCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        type != MessageType.deleted && isForwarded
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: showForwarded
-                                    ? [
-                                        Icon(
-                                          Symbols.forward_sharp,
-                                          color: AppColors.greyMsgColor,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          "Forwarded",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontStyle: FontStyle.italic,
-                                            fontWeight: FontWeight.w400,
-                                            color: AppColors.greyMsgColor,
-                                          ),
-                                        ),
-                                      ]
-                                    : [],
-                              )
-                            : const SizedBox.shrink(),
+                        if (type != MessageType.deleted &&
+                            isForwarded &&
+                            showForwarded)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: showForwarded
+                                ? [
+                                    Icon(
+                                      Symbols.forward_sharp,
+                                      color: AppColors.greyMsgColor,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "Forwarded",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.greyMsgColor,
+                                      ),
+                                    ),
+                                  ]
+                                : [],
+                          ),
                         Obx(() {
                           final replyText = repliedText.value.trim();
                           final hasReply =
@@ -126,33 +147,98 @@ class GroupMyMessageCard extends StatelessWidget {
                           if (!hasReply) return const SizedBox();
 
                           return Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: replyColor.withOpacity(0.67),
-                                  borderRadius: BorderRadius.circular(5),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: replyColor.withOpacity(0.67),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  repliedUserName ?? "",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: blackColor,
+                                  ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      repliedUserName ?? "",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: blackColor,
+                                const SizedBox(height: 3),
+                                GroupDisplayTextImageGIF(
+                                  audioMessage: audioMessage,
+                                  message:
+                                      repliedMessageType != MessageType.text
+                                      ? repliedAssetServerName ?? ""
+                                      : repliedText.value,
+                                  type: repliedMessageType,
+                                  isReply: true,
+                                  url: url,
+                                  assetThumbnail: repliedThumbnail,
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 8),
+                        Stack(
+                          alignment: Alignment.center,
+
+                          children: [
+                            GroupDisplayTextImageGIF(
+                              audioMessage: audioMessage,
+                              message: message,
+                              type: type,
+                              url: url,
+                              assetThumbnail: assetThumbnail,
+                            ),
+                            if (isAsset &&
+                                (type == MessageType.image ||
+                                    type == MessageType.video ||
+                                    type == MessageType.document ||
+                                    type == MessageType.audio)) ...[
+                              Obx(() {
+                                if (isRetryUploadFile.value) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black45,
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
-                                    GroupDisplayTextImageGIF(
-                                      message: replyText,
-                                      type: repliedMessageType,
-                                      isReply: true,
+                                  );
+                                } else if (syncStatus == SyncStatus.pending) {
+                                  return InkWell(
+                                    onTap: () {
+                                      if (!isRetryUploadFile.value) {
+                                        onRetryTap?.call();
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black45,
+                                      ),
+                                      padding: const EdgeInsets.all(8),
+                                      child: const Icon(
+                                        Icons.refresh,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              );
-                        }),
-                        SizedBox(height: 5,),
-                        GroupDisplayTextImageGIF(message: message, type: type),
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              }),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                   ),

@@ -377,12 +377,21 @@ class SocketService extends GetxService {
       // // print("after Parsing: ${responseModel.toJson()}");
       // if (responseModel.status == true && responseModel.data != null) {
       final groupMap = data["group"];
-      final userMap = data["users"];
+      final usersData  = data["users"];
 
       Group group = Group.fromJson(groupMap);
-      User user = User.fromJson(userMap);
 
-      if (group != null && user != null) {
+      // Handle both list & single map
+      List<User> usersList = [];
+      if (usersData is List) {
+        usersList = usersData
+            .map((e) => User.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      } else if (usersData is Map) {
+        usersList = [User.fromJson(Map<String, dynamic>.from(usersData))];
+      }
+
+      for (var user in usersList) {
         final userInfo = user.userInfo!;
         final userGroup = user.userGroupInfo!;
         // Save new user info if needed
@@ -398,11 +407,12 @@ class SocketService extends GetxService {
             createdAt: userGroup.createdAt ?? "",
             updatedAt: userGroup.updatedAt ?? ""
         );
-
+      }
         // Refresh UI or any state observers
         updateGroupAdmins.value = false;
         updateGroupAdmins.value = true;
-      }
+
+
     });
 
     _socket?.on('group-user-removed', (data) async {

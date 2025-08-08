@@ -54,7 +54,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                   ),
                 )
               : InkWell(
-                  onTap: () => Get.toNamed(
+                  onTap: controller.isCurrentUserRemoved
+                      ? null
+                      :  () => Get.toNamed(
                     Routes.GROUP_PROFILE,
                     arguments: controller.groupId,
                   ),
@@ -118,9 +120,10 @@ class GroupChatsView extends GetView<GroupChatsController> {
                               }
 
                               return Text(
-                                user?.group?.isActive == true
-                                    ? "Online"
-                                    : "last seen ${lastSeenFormatted(user?.group?.updatedAt ?? "").toLowerCase()}",
+                                controller.groupMemberNames,
+                                // user?.group?.isActive == true
+                                //     ? "Online"
+                                //     : "last seen ${lastSeenFormatted(user?.group?.updatedAt ?? "").toLowerCase()}",
                                 maxLines: 2,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w200,
@@ -239,13 +242,29 @@ class GroupChatsView extends GetView<GroupChatsController> {
               // firebaseController: controller.firebaseController,
             ),
           ),
-          GroupBottomChatField(
-            groupChatsController: controller,
-            onTap: () {
-              controller.sendTextMessage();
-              controller.cancelReply();
-            },
-          ),
+          Obx(() {
+            if (controller.isCurrentUserRemoved) {
+              return Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.textBarColor,
+
+                ),
+                child: Text(
+                  "You can't send messages to this group because you're no longer a member.", textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.whiteColor, fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              );
+            }else {
+              return GroupBottomChatField(
+                groupChatsController: controller,
+                onTap: () {
+                  controller.sendTextMessage();
+                  controller.cancelReply();
+                },
+              );
+            }
+          }),
         ],
       ),
     );
@@ -269,7 +288,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                 controller.deleteMessages(deleteForEveryone: false);
               },
             ),
-            if (controller.canDeleteForEveryone)
+            if (controller.canDeleteForEveryone &&  !controller.isCurrentUserRemoved)
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text("Delete for Everyone"),

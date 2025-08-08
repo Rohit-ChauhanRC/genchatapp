@@ -189,11 +189,6 @@ class SocketService extends GetxService {
       //
     });
 
-    _socket?.on('group-message-acknowledgement', (data) {
-      print('✅ Group Message Ack: $data');
-      // TODO: Update message status in DB
-    });
-
     _socket?.on('user-connection-status', (data) async {
       print('✅ user connection status: $data');
       final int userId = int.parse(data['userId']);
@@ -491,10 +486,10 @@ class SocketService extends GetxService {
   }
 
   void sendMessageSeenGroup(int messageId, String recipientUserId) {
-    messageTable.updateAckStateMessage(
-      messageId: messageId.toString(),
-      state: 2,
-    );
+    // messageTable.updateAckStateMessage(
+    //   messageId: messageId.toString(),
+    //   state: 2,
+    // );
     _socket?.emit('group-message-seen', {
       "messageId": messageId,
       "groupRecipientId": recipientUserId,

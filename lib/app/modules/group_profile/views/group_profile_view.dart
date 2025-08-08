@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
+import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -351,6 +352,16 @@ class GroupProfileView extends GetView<GroupProfileController> {
                       child: InkWell(
                         onTap: () {
                           // exit logic here
+                          showAlertMessageWithAction(
+                              title: "Exit Group: ${group?.name}?",
+                              message: "Are you sure you want to leave this group.",
+                              cancelText: "Cancel",
+                              confirmText: "Exit group",
+                              // onCancel: ()=> Get.back(),
+                              onConfirm: ()=> controller.exitGroup(),
+                              context: context
+                          );
+
                         },
                         child: const Row(
                           children: [

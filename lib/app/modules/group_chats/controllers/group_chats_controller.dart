@@ -184,6 +184,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   int get groupId => _groupId.value;
   set groupId(int a) => _groupId.value = a;
 
+  final RxBool _isCurrentUserRemoved = false.obs;
+  bool get isCurrentUserRemoved => _isCurrentUserRemoved.value;
+  set isCurrentUserRemoved(bool b) => _isCurrentUserRemoved.value = b;
+
+  final RxString _groupMemberNames  = "".obs;
+  String get groupMemberNames  => _groupMemberNames.value;
+  set groupMemberNames (String b) => _groupMemberNames.value = b;
+
   final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
 
   @override
@@ -202,6 +210,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       receiverUserData = groupData;
       groupId = groupData.group?.id ?? 0;
       bindReceiverUserStream(groupData.group?.id ?? 0);
+      final groupDetails = await GroupsTable().getGroupById(groupId);
+      checkIfCurrentUserRemoved(groupDetails);
+      groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
     }
     socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
       if (typingUsers.isNotEmpty) {
@@ -399,10 +410,69 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  void checkIfCurrentUserRemoved(GroupData? groupData){
+    final currentUserId = senderuserData?.userId ?? 0;
+    // print("CurrentUserId: $currentUserId");
+
+    final matchingUser = groupData?.users?.firstWhere(
+          (u) => u.userInfo?.userId == currentUserId,
+      orElse: () => User(userInfo: null, userGroupInfo: null),
+    );
+
+    // print("Matched User: ${matchingUser?.toJson()}");
+
+    final removed = matchingUser?.userGroupInfo?.isRemoved == true;
+    // print("IsUserRemoved: $removed");
+
+    isCurrentUserRemoved = removed;
+    // // Optional: log all user IDs
+    // print("All group user IDs:");
+    // receiverUserData?.users?.forEach((u) {
+    //   print("-> ${u.userInfo?.userId}");
+    // });
+  }
+
+  Future<String> getSortedGroupMemberNames(List<User>? users) async {
+    if (users == null) return '';
+
+    // Step 1: Filter out removed users
+    final activeUserIds = users
+        .where((u) => u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.userId)
+        .whereType<int>()
+        .toList();
+
+    // Step 2: Separate saved and unsaved contacts
+    final savedNames = <String>[];
+    final unsavedNumbers = <String>[];
+
+    for (final userId in activeUserIds) {
+      final contact = await contactsTable.getUserById(userId);
+      final localName = contact?.localName?.trim();
+      final phone = contact?.phoneNumber?.trim();
+
+      if (localName != null && localName.isNotEmpty) {
+        savedNames.add(localName);
+      } else if (phone != null && phone.isNotEmpty) {
+        unsavedNumbers.add(phone);
+      }
+    }
+
+    // Step 3: Sort both lists alphabetically
+    savedNames.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    unsavedNumbers.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    // Step 4: Combine both lists
+    final allNames = [...savedNames, ...unsavedNumbers];
+
+    return allNames.join(', ');
+  }
+
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
       if (user != null) {
         receiverUserData = user;
+        checkIfCurrentUserRemoved(receiverUserData);
       }
     });
   }

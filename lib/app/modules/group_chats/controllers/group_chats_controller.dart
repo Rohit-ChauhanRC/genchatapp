@@ -717,6 +717,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       messageRepliedOnType: messageReply == null
           ? MessageType.text
           : messageReply.messageType,
+      messageRepliedOnAssetThumbnail: messageReply == null
+          ? ''
+          : messageReply.assetsThumbnail,
+      messageRepliedOnAssetServerName: messageReply == null
+          ? ''
+          : messageReply.message,
       isAsset: false,
       assetOriginalName: "",
       assetServerName: "",

@@ -175,17 +175,25 @@ class GroupChatList extends StatelessWidget {
                                         ? null
                                         : (v) {
                                             groupChatsController.onMessageSwipe(
+                                              recipientUserId:
+                                                  groupChatsController
+                                                      .receiverUserData!
+                                                      .group!
+                                                      .id!,
+                                              senderName: "",
                                               isMe: true,
-                                              message: messages.message ?? '',
+                                              message:
+                                                  messages.messageType !=
+                                                      MessageType.text
+                                                  ? messages.assetServerName
+                                                        .toString()
+                                                  : messages.message.toString(),
                                               messageType:
                                                   messages.messageType ??
                                                   MessageType.text,
                                               isReplied: true,
                                               messageId:
                                                   messages.messageId ?? 0,
-                                              senderName: "",
-                                              recipientUserId:
-                                                  messages.senderId ?? 0,
                                               assetsThumbnail:
                                                   messages.assetThumbnail ?? "",
                                             );

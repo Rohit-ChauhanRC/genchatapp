@@ -61,6 +61,8 @@ class GroupMessageReplyPreview extends StatelessWidget {
           Obx(
             () => groupChatsController.messageReply.message != null
                 ? GroupDisplayTextImageGIF(
+                    assetThumbnail: groupChatsController.messageReply.message
+                        .toString(),
                     message: groupChatsController.messageReply.message
                         .toString(),
                     type: groupChatsController.messageReply.messageType!,

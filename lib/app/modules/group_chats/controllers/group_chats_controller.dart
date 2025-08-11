@@ -507,10 +507,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
                 message.state == MessageState.delivered) &&
             message.messageId != null) {
           // socketService.sendMessageSeen(message.messageId!);
-          socketService.sendMessageSeenGroup(
-            message.messageId!,
-            senderuserData!.userId.toString(),
-          );
+          if(message.senderId != senderuserData?.userId && message.state != MessageState.read ) {
+            socketService.sendMessageSeen(
+              message.messageId!,
+              // senderuserData!.userId.toString(),
+            );
+          }
         }
         // scrollToBottomIfNear();
       }
@@ -641,10 +643,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             i.messageId != null) {
           if (receiverUserData!.group?.id == i.recipientId &&
               socketService.isConnected) {
-            socketService.sendMessageSeenGroup(
-              i.messageId!,
-              senderuserData!.userId.toString(),
-            );
+            if(i.senderId != senderuserData?.userId && i.state != MessageState.read) {
+              socketService.sendMessageSeen(
+                i.messageId!,
+                // senderuserData!.userId.toString(),
+              );
+            }
           }
         } else if (senderuserData!.userId == i.senderId &&
             i.syncStatus == SyncStatus.pending &&
@@ -893,18 +897,18 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           // 🟣 Remove from messageList
           messageList.removeWhere((m) => m.messageId == message.messageId);
           if (isOnline) {
-            if (message.senderId != receiverUserData?.group?.id) {
-              socketService.emitMessageDelete(
-                messageId: message.messageId!,
-                isDeleteFromEveryOne: false,
-              );
+            if (message.senderId != senderuserData?.userId) {
+              // socketService.emitMessageDelete(
+              //   messageId: message.messageId!,
+              //   isDeleteFromEveryOne: false,
+              // );
             }
           } else {
-            if (message.senderId != receiverUserData?.group?.id) {
-              await MessageTable().markForDeletion(
-                messageId: message.messageId!,
-                isDeleteFromEveryone: false,
-              );
+            if (message.senderId != senderuserData?.userId) {
+              // await MessageTable().markForDeletion(
+              //   messageId: message.messageId!,
+              //   isDeleteFromEveryone: false,
+              // );
             }
           }
           if (isLast) {

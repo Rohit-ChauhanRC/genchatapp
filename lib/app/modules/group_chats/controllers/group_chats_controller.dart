@@ -918,12 +918,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             );
             if (newLast != null) {
               final isFromMe = newLast.senderId == senderuserData?.userId;
-              final contactUid = isFromMe
-                  ? newLast.recipientId.toString()
-                  : newLast.senderId.toString();
+              // final contactUid = isFromMe
+              //     ? newLast.recipientId.toString()
+              //     : newLast.senderId.toString();
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
-                uid: contactUid,
+                uid: newLast.recipientId.toString(),
                 isGroup: 1,
                 lastMessage: newLast.message,
                 timeSent: newLast.messageSentFromDeviceTime,
@@ -931,13 +931,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             } else {
               // If no new message, still determine correct uid for contact
               final isFromMe = message.senderId == senderuserData?.userId;
-              final contactUid = isFromMe
-                  ? message.recipientId.toString()
-                  : message.senderId.toString();
+              // final contactUid = isFromMe
+              //     ? message.recipientId.toString()
+              //     : message.senderId.toString();
               // Optional: reset chat contact if all messages deleted
               await chatConectTable.updateContact(
                 lastMessageId: 0,
-                uid: contactUid,
+                uid: message.recipientId.toString(),
                 isGroup: 1,
                 lastMessage: '',
                 timeSent: '',

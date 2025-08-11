@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -8,10 +9,11 @@ import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
-import 'package:genchatapp/app/utils/utils.dart';
-import 'package:get/get.dart';
+import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+import '../../common/user_defaults/user_defaults_keys.dart';
 import '../../data/local_database/contacts_table.dart';
 import '../../data/models/new_models/response_model/create_group_model.dart';
 import '../../data/models/new_models/response_model/message_ack_model.dart';
@@ -27,6 +29,7 @@ class SocketService extends GetxService {
 
   final MessageTable messageTable = MessageTable();
   final FolderCreation folderCreation = FolderCreation();
+  final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   bool get isConnected => _socket?.connected == true;
 
@@ -59,6 +62,7 @@ class SocketService extends GetxService {
           .disableAutoConnect() // prevent auto connect before setting everything
           .enableForceNew()
           .setQuery({'userId': userId})
+          .setAuth({"token":"${sharedPreferenceService.getString(UserDefaultsKeys.accessToken)}"})
           .build(),
     );
     _registerSocketListeners(onConnected, userId);
@@ -258,6 +262,7 @@ class SocketService extends GetxService {
           senderId: msg?.senderId ?? 0,
           receiverId: msg?.recipientId ?? 0,
         );
+        final isGroupMessage =  msg?.isGroupMessage;
 
         if (isDeleteFromEveryOne) {
           await messageTable.updateMessageContent(
@@ -279,8 +284,8 @@ class SocketService extends GetxService {
         if (isLast) {
           if (isDeleteFromEveryOne) {
             await chatConectTable.updateContact(
-              uid: msg!.senderId.toString(),
-              isGroup: 0,
+              uid: isGroupMessage == true ? msg!.recipientId.toString():msg!.senderId.toString(),
+              isGroup: isGroupMessage == true ?1:0,
               lastMessageId: 0,
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
@@ -290,6 +295,7 @@ class SocketService extends GetxService {
               msg?.recipientId ?? 0,
               msg?.senderId ?? 0,
             );
+            final isGroupNewLast = newLast?.isGroupMessage;
             if (newLast != null) {
               await chatConectTable.updateContact(
                 lastMessageId: newLast.messageId,
@@ -472,8 +478,17 @@ class SocketService extends GetxService {
         }
     });
 
-    _socket?.on('custom-error', (data) {
+    _socket?.on('custom-error', (data) async {
       print('🚫 Custom Error: $data');
+      final statusCode = data['statusCode'];
+      if (statusCode == 401){
+        final refreshed = await refreshToken();
+        if(refreshed){
+          await initSocket(sharedPreferenceService.getUserData()!.userId.toString(), onConnected: (){
+            print("custom Error called init socket");
+          });
+        }
+      }
     });
   }
 
@@ -769,5 +784,66 @@ class SocketService extends GetxService {
     // _socket?.off('typing');
     // _socket?.off('message-delete');
     // _socket?.off('custom-error');
+  }
+
+  Future<bool> refreshToken() async {
+    String? refreshToken =
+    sharedPreferenceService.getString(UserDefaultsKeys.refreshToken);
+    int? userId = sharedPreferenceService.getUserData()?.userId;
+
+    print(
+        "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId");
+
+    if (refreshToken == null || userId == null) {
+      print("🔴 No refresh token or user ID found!");
+      return false;
+    }
+
+    try {
+      final dio = Dio(BaseOptions(
+        baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
+        connectTimeout: const Duration(seconds: 50),
+        receiveTimeout: const Duration(seconds: 50),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+      ));
+
+      Response response = await dio.post(
+        'refresh-access-token',
+        data: {"userId": userId, "refreshToken": refreshToken},
+      );
+
+      if (response.statusCode == 200 && response.data['status'] == true) {
+        print("🔁 Refresh token response: ${response.statusCode} ${response.data}");
+        String newAccessToken =
+        response.data['data']['accessToken']; // ✅ Corrected key
+        String newRefreshToken =
+        response.data['data']['refreshToken']; // ✅ Corrected key
+
+        print(
+            "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken");
+        await sharedPreferenceService.remove(UserDefaultsKeys.accessToken);
+        await sharedPreferenceService.remove(UserDefaultsKeys.refreshToken);
+        await sharedPreferenceService.setString(
+            UserDefaultsKeys.accessToken, newAccessToken);
+        await sharedPreferenceService.setString(
+            UserDefaultsKeys.refreshToken, newRefreshToken);
+
+        print("✅ Token refreshed successfully!");
+        return true;
+      } else {
+        print("🔴 Token refresh failed: ${response.data}");
+      }
+    } catch (e) {
+      print("🔴 Refresh token request failed: $e");
+    }
+    print("🔴 Refresh token invalid, logging out...");
+
+    // await sharedPreference.clear().then((onValue) {
+    //   Get.offAllNamed(Routes.LANDING);
+    // });
+    return false;
   }
 }

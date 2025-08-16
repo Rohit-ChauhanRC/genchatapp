@@ -367,12 +367,18 @@ class SocketService extends GetxService {
         await groupsTable.insertOrUpdateGroup(responseModel.data!);
         final data = responseModel.data;
         final groupId = data?.group?.id ?? 0;
-        await chatConectTable.updateContact(
-          uid: groupId.toString(),
-          isGroup: 1,
-          profilePic: data?.group?.displayPictureUrl ?? '',
-          timeSent: data?.group?.updatedAt ?? "",
-          name: data?.group?.name ?? '',
+        await chatConectTable.insert(
+            contact:  ChatConntactModel(
+                uid: groupId.toString(),
+                isGroup: 1,
+                profilePic: data?.group?.displayPictureUrl ?? '',
+                timeSent: data?.group?.updatedAt ?? "",
+                name: data?.group?.name ?? '',
+                contactId: groupId.toString(),
+                lastMessage: "",
+                lastMessageId: 0,
+                unreadCount: 0
+            )
         );
       }
     });

@@ -1,6 +1,7 @@
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/repositories/auth/auth_repository.dart';
+import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository_impl.dart';
@@ -39,18 +40,27 @@ init() async {
   await sharedPreferenceService.init();
   Get.put(sharedPreferenceService);
 
-// Initialize Repositories
+  // Initialize Repositories
   Get.lazyPut(() => ApiClient());
-  Get.lazyPut(() => AuthRepository(
+  Get.lazyPut(
+    () => AuthRepository(
       apiClient: Get.find<ApiClient>(),
-      sharedPreferences: Get.find<SharedPreferenceService>()));
+      sharedPreferences: Get.find<SharedPreferenceService>(),
+    ),
+  );
   Get.lazyPut(() => ProfileRepository(apiClient: Get.find<ApiClient>()));
+  Get.lazyPut(() => ChatRepository(apiClient: Get.find<ApiClient>()));
+
   // GroupRepository
-  Get.lazyPut(() => GroupRepository(
+  Get.lazyPut(
+    () => GroupRepository(
       apiClient: Get.find<ApiClient>(),
-      sharedPreferences: Get.find<SharedPreferenceService>()));
+      sharedPreferences: Get.find<SharedPreferenceService>(),
+    ),
+  );
   Get.lazyPut<IContactRepository>(
-      () => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
+    () => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()),
+  );
 
   Get.lazyPut(() => ContactRepositoryImpl(apiClient: Get.find<ApiClient>()));
 
@@ -59,11 +69,16 @@ init() async {
 
   // Initialize Controllers
   Get.lazyPut(() => LandingController());
-  Get.lazyPut(() =>
-      VerifyPhoneNumberController(authRepository: Get.find<AuthRepository>()));
+  Get.lazyPut(
+    () =>
+        VerifyPhoneNumberController(authRepository: Get.find<AuthRepository>()),
+  );
   Get.lazyPut(() => OtpController(authRepository: Get.find<AuthRepository>()));
-  Get.lazyPut(() => CreateProfileController(
-      profileRepository: Get.find<ProfileRepository>()));
+  Get.lazyPut(
+    () => CreateProfileController(
+      profileRepository: Get.find<ProfileRepository>(),
+    ),
+  );
   Get.lazyPut(() => HomeController());
   Get.lazyPut(() => ChatsController());
   Get.lazyPut(() => SelectContactsController());
@@ -71,10 +86,9 @@ init() async {
 
   Get.lazyPut(() => ForwardMessagesController());
   Get.lazyPut(() => CreateGroupController());
-  Get.lazyPut(() => GroupNameController(groupRepository: Get.find<GroupRepository>()));
+  Get.lazyPut(
+    () => GroupNameController(groupRepository: Get.find<GroupRepository>()),
+  );
   Get.lazyPut(() => GroupProfileController());
   Get.lazyPut(() => AddParticipentsInGroupController());
-
-
-
 }

@@ -62,7 +62,10 @@ class SocketService extends GetxService {
           .disableAutoConnect() // prevent auto connect before setting everything
           .enableForceNew()
           .setQuery({'userId': userId})
-          .setAuth({"token":"${sharedPreferenceService.getString(UserDefaultsKeys.accessToken)}"})
+          .setAuth({
+            "token":
+                "${sharedPreferenceService.getString(UserDefaultsKeys.accessToken)}",
+          })
           .build(),
     );
     _registerSocketListeners(onConnected, userId);
@@ -262,7 +265,7 @@ class SocketService extends GetxService {
           senderId: msg?.senderId ?? 0,
           receiverId: msg?.recipientId ?? 0,
         );
-        final isGroupMessage =  msg?.isGroupMessage;
+        final isGroupMessage = msg?.isGroupMessage;
 
         if (isDeleteFromEveryOne) {
           await messageTable.updateMessageContent(
@@ -284,8 +287,10 @@ class SocketService extends GetxService {
         if (isLast) {
           if (isDeleteFromEveryOne) {
             await chatConectTable.updateContact(
-              uid: isGroupMessage == true ? msg!.recipientId.toString():msg!.senderId.toString(),
-              isGroup: isGroupMessage == true ?1:0,
+              uid: isGroupMessage == true
+                  ? msg!.recipientId.toString()
+                  : msg!.senderId.toString(),
+              isGroup: isGroupMessage == true ? 1 : 0,
               lastMessageId: 0,
               lastMessage: "This message was deleted",
               timeSent: msg.messageSentFromDeviceTime,
@@ -383,7 +388,7 @@ class SocketService extends GetxService {
       // // print("after Parsing: ${responseModel.toJson()}");
       // if (responseModel.status == true && responseModel.data != null) {
       final groupMap = data["group"];
-      final usersData  = data["users"];
+      final usersData = data["users"];
 
       Group group = Group.fromJson(groupMap);
 
@@ -405,20 +410,18 @@ class SocketService extends GetxService {
 
         // Add user to group mapping
         await groupsTable.updateUserGroupRole(
-            groupId: userGroup.groupId ?? 0,
-            userId: userGroup.userId ?? 0,
-            isAdmin: userGroup.isAdmin ?? false,
-            isRemoved: userGroup.isRemoved ?? false,
-            updaterId: userGroup.updaterId ?? 0,
-            createdAt: userGroup.createdAt ?? "",
-            updatedAt: userGroup.updatedAt ?? ""
+          groupId: userGroup.groupId ?? 0,
+          userId: userGroup.userId ?? 0,
+          isAdmin: userGroup.isAdmin ?? false,
+          isRemoved: userGroup.isRemoved ?? false,
+          updaterId: userGroup.updaterId ?? 0,
+          createdAt: userGroup.createdAt ?? "",
+          updatedAt: userGroup.updatedAt ?? "",
         );
       }
-        // Refresh UI or any state observers
-        updateGroupAdmins.value = false;
-        updateGroupAdmins.value = true;
-
-
+      // Refresh UI or any state observers
+      updateGroupAdmins.value = false;
+      updateGroupAdmins.value = true;
     });
 
     _socket?.on('group-user-removed', (data) async {
@@ -459,36 +462,49 @@ class SocketService extends GetxService {
       Group group = Group.fromJson(groupMap);
       User user = User.fromJson(userMap);
       // print("after Parsing group: ${group.toJson()} \n after Parsing group: ${user.toJson()}");
-        if (group != null && user != null) {
-          // update user's profile if needed
-          await groupsTable.updateUserIfNeeded(user.userInfo!);
+      if (group != null && user != null) {
+        // update user's profile if needed
+        await groupsTable.updateUserIfNeeded(user.userInfo!);
 
-          // update user group role
-          await groupsTable.updateUserGroupRole(
-              groupId: user.userGroupInfo?.groupId ?? 0,
-              userId: user.userGroupInfo?.userId ?? 0,
-              isAdmin: user.userGroupInfo?.isAdmin ?? false,
-              isRemoved: user.userGroupInfo?.isRemoved ?? false,
-              updaterId: user.userGroupInfo?.updaterId ?? 0,
-              createdAt: user.userGroupInfo?.createdAt ?? "",
-              updatedAt: user.userGroupInfo?.updatedAt ?? ""
-          );
-          updateGroupAdmins.value = false;
-          updateGroupAdmins.value = true;
-        }
+        // update user group role
+        await groupsTable.updateUserGroupRole(
+          groupId: user.userGroupInfo?.groupId ?? 0,
+          userId: user.userGroupInfo?.userId ?? 0,
+          isAdmin: user.userGroupInfo?.isAdmin ?? false,
+          isRemoved: user.userGroupInfo?.isRemoved ?? false,
+          updaterId: user.userGroupInfo?.updaterId ?? 0,
+          createdAt: user.userGroupInfo?.createdAt ?? "",
+          updatedAt: user.userGroupInfo?.updatedAt ?? "",
+        );
+        updateGroupAdmins.value = false;
+        updateGroupAdmins.value = true;
+      }
     });
 
     _socket?.on('custom-error', (data) async {
       print('🚫 Custom Error: $data');
       final statusCode = data['statusCode'];
-      if (statusCode == 401){
+      if (statusCode == 401) {
         final refreshed = await refreshToken();
-        if(refreshed){
-          await initSocket(sharedPreferenceService.getUserData()!.userId.toString(), onConnected: (){
-            print("custom Error called init socket");
-          });
+        if (refreshed) {
+          await initSocket(
+            sharedPreferenceService.getUserData()!.userId.toString(),
+            onConnected: () {
+              print("custom Error called init socket");
+            },
+          );
         }
       }
+    });
+
+    _socket?.on('user-blocked', (data) async {
+      print(data);
+      // {blockedBy: 3, isBlock: true}
+      await contactsTable.updateUserBlockUnblock(
+        data["blockedBy"],
+        data["isBlock"] == true ? 1 : 0,
+      );
+      await chatConectTable.updateUserBlockUnblock(data["blockedBy"]);
     });
   }
 
@@ -787,12 +803,14 @@ class SocketService extends GetxService {
   }
 
   Future<bool> refreshToken() async {
-    String? refreshToken =
-    sharedPreferenceService.getString(UserDefaultsKeys.refreshToken);
+    String? refreshToken = sharedPreferenceService.getString(
+      UserDefaultsKeys.refreshToken,
+    );
     int? userId = sharedPreferenceService.getUserData()?.userId;
 
     print(
-        "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId");
+      "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
+    );
 
     if (refreshToken == null || userId == null) {
       print("🔴 No refresh token or user ID found!");
@@ -800,15 +818,17 @@ class SocketService extends GetxService {
     }
 
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
-        connectTimeout: const Duration(seconds: 50),
-        receiveTimeout: const Duration(seconds: 50),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
+          connectTimeout: const Duration(seconds: 50),
+          receiveTimeout: const Duration(seconds: 50),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
       Response response = await dio.post(
         'refresh-access-token',
@@ -816,20 +836,27 @@ class SocketService extends GetxService {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
-        print("🔁 Refresh token response: ${response.statusCode} ${response.data}");
+        print(
+          "🔁 Refresh token response: ${response.statusCode} ${response.data}",
+        );
         String newAccessToken =
-        response.data['data']['accessToken']; // ✅ Corrected key
+            response.data['data']['accessToken']; // ✅ Corrected key
         String newRefreshToken =
-        response.data['data']['refreshToken']; // ✅ Corrected key
+            response.data['data']['refreshToken']; // ✅ Corrected key
 
         print(
-            "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken");
+          "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken",
+        );
         await sharedPreferenceService.remove(UserDefaultsKeys.accessToken);
         await sharedPreferenceService.remove(UserDefaultsKeys.refreshToken);
         await sharedPreferenceService.setString(
-            UserDefaultsKeys.accessToken, newAccessToken);
+          UserDefaultsKeys.accessToken,
+          newAccessToken,
+        );
         await sharedPreferenceService.setString(
-            UserDefaultsKeys.refreshToken, newRefreshToken);
+          UserDefaultsKeys.refreshToken,
+          newRefreshToken,
+        );
 
         print("✅ Token refreshed successfully!");
         return true;

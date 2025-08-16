@@ -15,8 +15,10 @@ class ProfileRepository {
   ProfileRepository({required this.apiClient});
 
   /// Update user details (Name & Email)
-  Future<Response?> updateUserDetails(
-      {required String name, required String email}) async {
+  Future<Response?> updateUserDetails({
+    required String name,
+    required String email,
+  }) async {
     try {
       final param = {'name': name, 'email': email};
       return await apiClient.post(ApiEndpoints.updateUser, param);
@@ -28,7 +30,10 @@ class ProfileRepository {
   }
 
   /// Upload Profile Picture (Multipart FormData)
-  Future<Response?> uploadProfilePicture(File imageFile) async {
+  Future<Response?> uploadProfilePicture(
+    File imageFile, {
+    ProgressCallback? onProgress,
+  }) async {
     String fileName = imageFile.path.split('/').last;
     String mimeType = getImageMimeType(imageFile);
 
@@ -45,15 +50,22 @@ class ProfileRepository {
     }
 
     return await retryFormDataUpload(
-      url: ApiEndpoints.updateUserProPic,
+      url: ApiEndpoints.uploadMessageFiles,
       formDataBuilder: buildFormData,
-      uploadCall: (formData) =>
-          apiClient.uploadFile(ApiEndpoints.updateUserProPic, formData),
+      onProgress: onProgress,
+      uploadCall: (formData, {onProgress}) => apiClient.uploadFile(
+        ApiEndpoints.uploadMessageFiles,
+        formData,
+        onSendProgress: onProgress,
+      ),
     );
   }
 
   /// Upload Files like doc and image video (Multipart FormData)
-  Future<Response?> uploadMessageFiles(File imageFile) async {
+  Future<Response?> uploadMessageFiles(
+    File imageFile, {
+    ProgressCallback? onProgress,
+  }) async {
     String fileName = imageFile.path.split('/').last;
     String mimeType = getFileMimeType(imageFile);
 
@@ -71,9 +83,13 @@ class ProfileRepository {
 
     return await retryFormDataUpload(
       url: ApiEndpoints.uploadMessageFiles,
+      onProgress: onProgress,
       formDataBuilder: buildFormData,
-      uploadCall: (formData) =>
-          apiClient.uploadFile(ApiEndpoints.uploadMessageFiles, formData),
+      uploadCall: (formData, {onProgress}) => apiClient.uploadFile(
+        ApiEndpoints.uploadMessageFiles,
+        formData,
+        onSendProgress: onProgress,
+      ),
     );
   }
 }

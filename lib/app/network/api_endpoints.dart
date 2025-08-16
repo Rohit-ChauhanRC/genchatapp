@@ -1,7 +1,6 @@
 import 'app_config.dart';
 
 class ApiEndpoints {
-
   /// Base URLs
   // Local: http://app.maklife.in:10000
   // Production: https://payment-payu.maklifedairy.in:6040
@@ -30,9 +29,5 @@ class ApiEndpoints {
   static const String addUser = "group/add-users";
 
   static const String uploadMessageFiles = "message/file";
-
-
-
+  static const String userBlock = "user/block-contact";
 }
-
-

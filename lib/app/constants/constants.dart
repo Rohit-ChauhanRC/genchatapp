@@ -18,6 +18,7 @@ const newGroup = "New Group";
 const settings = "Settings";
 const clearText = "Clear chat";
 const logout = "Logout";
+const block = "Block";
 
 //Shared preferences Keys Names
 const isNumVerify = "isNumberVerified";

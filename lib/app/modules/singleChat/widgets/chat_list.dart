@@ -130,101 +130,152 @@ class ChatList extends StatelessWidget {
                           return Container(
                             color: bgColor,
                             child: isMine
-                                ? MyMessageCard(
-                                    audioMessage: messages.message ?? "",
-                                    message:
-                                        messages.messageType ==
-                                                MessageType.text ||
+                                ? Column(
+                                    children: [
+                                      // Obx(
+                                      //   () =>
+                                      //       singleChatController.percent.value >
+                                      //           0.0
+                                      //       ? Align(
+                                      //           alignment:
+                                      //               Alignment.centerRight,
+                                      //           child: ConstrainedBox(
+                                      //             constraints: BoxConstraints(
+                                      //               minWidth: 130,
+                                      //               maxWidth:
+                                      //                   MediaQuery.of(
+                                      //                     context,
+                                      //                   ).size.width *
+                                      //                   0.75,
+                                      //             ),
+                                      //             child: Row(
+                                      //               children: [
+                                      //                 Container(
+                                      //                   child: CircularProgressIndicator(
+                                      //                     value:
+                                      //                         singleChatController
+                                      //                             .percent
+                                      //                             .value,
+                                      //                   ),
+                                      //                 ),
+                                      //                 const SizedBox(width: 8),
+                                      //                 Text(
+                                      //                   "Uploading...${singleChatController.percent.value.toStringAsFixed(0)}%",
+                                      //                 ),
+                                      //               ],
+                                      //             ),
+                                      //           ),
+                                      //         )
+                                      //       : const SizedBox.shrink(),
+                                      // ),
+                                      MyMessageCard(
+                                        isProgess: singleChatController.percent,
+                                        audioMessage: messages.message ?? "",
+                                        message:
                                             messages.messageType ==
-                                                MessageType.deleted
-                                        ? (messages.message!.isNotEmpty
-                                              ? messages.message.toString()
-                                              : '') // NULL-SAFE
-                                        : (messages.assetServerName!.isNotEmpty
-                                              ? messages.assetServerName
-                                                    .toString()
-                                              : ''),
-                                    date: DateFormat('hh:mm a').format(
-                                      DateTime.parse(
-                                        messages.messageSentFromDeviceTime ??
-                                            '',
-                                      ),
-                                    ),
-                                    // date: "",
-                                    type:
-                                        messages.messageType ??
-                                        MessageType.text,
-                                    status:
-                                        messages.state ?? MessageState.unsent,
-                                    syncStatus:
-                                        messages.syncStatus ??
-                                        SyncStatus.pending,
-                                    onLeftSwipe:
-                                        messages.messageType ==
-                                            MessageType.deleted
-                                        ? null
-                                        : (v) {
-                                            singleChatController.onMessageSwipe(
-                                              isMe: true,
-                                              message:
-                                                  messages.messageType !=
-                                                      MessageType.text
+                                                    MessageType.text ||
+                                                messages.messageType ==
+                                                    MessageType.deleted
+                                            ? (messages.message!.isNotEmpty
+                                                  ? messages.message.toString()
+                                                  : '') // NULL-SAFE
+                                            : (messages
+                                                      .assetServerName!
+                                                      .isNotEmpty
                                                   ? messages.assetServerName
                                                         .toString()
-                                                  : messages.message.toString(),
-                                              messageType:
-                                                  messages.messageType ??
-                                                  MessageType.text,
-                                              isReplied: true,
-                                              messageId:
-                                                  messages.messageId ?? 0,
-                                              assetsThumbnail:
-                                                  messages.assetThumbnail ?? "",
-                                            );
-                                          },
-                                    repliedMessageType:
-                                        messages.messageRepliedOnType ??
-                                        MessageType.text,
-                                    repliedText:
-                                        (messages.messageRepliedOn != ''
-                                                ? messages.messageRepliedOn
-                                                      .toString()
-                                                : '')
-                                            .obs,
-                                    // username: messages.,
-                                    repliedUserId:
-                                        messages.messageRepliedUserId,
-                                    repliedUserName:
-                                        messages.messageRepliedUserId != 0
-                                        ? messages.messageRepliedUserId ==
-                                                  singleChatController
-                                                      .senderuserData!
-                                                      .userId
-                                              ? "You"
-                                              : singleChatController
-                                                    .receiverUserData!
-                                                    .localName
-                                        : "username",
-                                    repliedAssetServerName: messages
-                                        .messageRepliedOnAssetServerName,
-                                    repliedThumbnail:
-                                        messages.messageRepliedOnAssetThumbnail,
-                                    onReplyTap: () => singleChatController
-                                        .scrollToOriginalMessage(
-                                          messages.messageRepliedOnId!,
+                                                  : ''),
+                                        date: DateFormat('hh:mm a').format(
+                                          DateTime.parse(
+                                            messages.messageSentFromDeviceTime ??
+                                                '',
+                                          ),
                                         ),
-                                    isHighlighted: isHighlighted,
-                                    isForwarded: messages.isForwarded!,
-                                    showForwarded: messages.showForwarded!,
-                                    isAsset: messages.isAsset!,
-                                    onRetryTap: () async {
-                                      await singleChatController
-                                          .retryPendingMediaFile(messages);
-                                    },
-                                    url: messages.assetUrl,
-                                    isRetryUploadFile:
-                                        messages.isRetrying ?? false.obs,
-                                    assetThumbnail: messages.assetThumbnail,
+                                        // date: "",
+                                        type:
+                                            messages.messageType ??
+                                            MessageType.text,
+                                        status:
+                                            messages.state ??
+                                            MessageState.unsent,
+                                        syncStatus:
+                                            messages.syncStatus ??
+                                            SyncStatus.pending,
+                                        onLeftSwipe:
+                                            messages.messageType ==
+                                                MessageType.deleted
+                                            ? null
+                                            : (v) {
+                                                singleChatController
+                                                    .onMessageSwipe(
+                                                      isMe: true,
+                                                      message:
+                                                          messages.messageType !=
+                                                              MessageType.text
+                                                          ? messages
+                                                                .assetServerName
+                                                                .toString()
+                                                          : messages.message
+                                                                .toString(),
+                                                      messageType:
+                                                          messages
+                                                              .messageType ??
+                                                          MessageType.text,
+                                                      isReplied: true,
+                                                      messageId:
+                                                          messages.messageId ??
+                                                          0,
+                                                      assetsThumbnail:
+                                                          messages
+                                                              .assetThumbnail ??
+                                                          "",
+                                                    );
+                                              },
+                                        repliedMessageType:
+                                            messages.messageRepliedOnType ??
+                                            MessageType.text,
+                                        repliedText:
+                                            (messages.messageRepliedOn != ''
+                                                    ? messages.messageRepliedOn
+                                                          .toString()
+                                                    : '')
+                                                .obs,
+                                        // username: messages.,
+                                        repliedUserId:
+                                            messages.messageRepliedUserId,
+                                        repliedUserName:
+                                            messages.messageRepliedUserId != 0
+                                            ? messages.messageRepliedUserId ==
+                                                      singleChatController
+                                                          .senderuserData!
+                                                          .userId
+                                                  ? "You"
+                                                  : singleChatController
+                                                        .receiverUserData!
+                                                        .localName
+                                            : "username",
+                                        repliedAssetServerName: messages
+                                            .messageRepliedOnAssetServerName,
+                                        repliedThumbnail: messages
+                                            .messageRepliedOnAssetThumbnail,
+                                        onReplyTap: () => singleChatController
+                                            .scrollToOriginalMessage(
+                                              messages.messageRepliedOnId!,
+                                            ),
+                                        isHighlighted: isHighlighted,
+                                        isForwarded: messages.isForwarded!,
+                                        showForwarded: messages.showForwarded!,
+                                        isAsset: messages.isAsset!,
+                                        onRetryTap: () async {
+                                          await singleChatController
+                                              .retryPendingMediaFile(messages);
+                                        },
+                                        url: messages.assetUrl,
+                                        isRetryUploadFile:
+                                            messages.isRetrying ?? false.obs,
+                                        assetThumbnail: messages.assetThumbnail,
+                                      ),
+                                    ],
                                   )
                                 : SenderMessageCard(
                                     message:

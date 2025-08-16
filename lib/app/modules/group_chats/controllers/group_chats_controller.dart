@@ -188,9 +188,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   bool get isCurrentUserRemoved => _isCurrentUserRemoved.value;
   set isCurrentUserRemoved(bool b) => _isCurrentUserRemoved.value = b;
 
-  final RxString _groupMemberNames  = "".obs;
-  String get groupMemberNames  => _groupMemberNames.value;
-  set groupMemberNames (String b) => _groupMemberNames.value = b;
+  final RxString _groupMemberNames = "".obs;
+  String get groupMemberNames => _groupMemberNames.value;
+  set groupMemberNames(String b) => _groupMemberNames.value = b;
 
   final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
 
@@ -410,12 +410,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void checkIfCurrentUserRemoved(GroupData? groupData){
+  void checkIfCurrentUserRemoved(GroupData? groupData) {
     final currentUserId = senderuserData?.userId ?? 0;
     // print("CurrentUserId: $currentUserId");
 
     final matchingUser = groupData?.users?.firstWhere(
-          (u) => u.userInfo?.userId == currentUserId,
+      (u) => u.userInfo?.userId == currentUserId,
       orElse: () => User(userInfo: null, userGroupInfo: null),
     );
 
@@ -507,7 +507,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
                 message.state == MessageState.delivered) &&
             message.messageId != null) {
           // socketService.sendMessageSeen(message.messageId!);
-          if(message.senderId != senderuserData?.userId && message.state != MessageState.read ) {
+          if (message.senderId != senderuserData?.userId &&
+              message.state != MessageState.read) {
             socketService.sendMessageSeen(
               message.messageId!,
               // senderuserData!.userId.toString(),
@@ -643,7 +644,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             i.messageId != null) {
           if (receiverUserData!.group?.id == i.recipientId &&
               socketService.isConnected) {
-            if(i.senderId != senderuserData?.userId && i.state != MessageState.read) {
+            if (i.senderId != senderuserData?.userId &&
+                i.state != MessageState.read) {
               socketService.sendMessageSeen(
                 i.messageId!,
                 // senderuserData!.userId.toString(),
@@ -1021,7 +1023,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
     try {
-      final response = await profileRepository.uploadMessageFiles(imageFile);
+      final response = await profileRepository.uploadMessageFiles(
+        imageFile,
+        onProgress: (sent, total) {
+          final percent = (sent / total) * 100;
+          print("📤 Upload progress: ${percent.toStringAsFixed(0)}%");
+        },
+      );
 
       if (response?.statusCode == 200) {
         final result = UploadFileModel.fromJson(response?.data);

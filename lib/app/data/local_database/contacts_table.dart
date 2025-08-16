@@ -38,10 +38,13 @@ class ContactsTable {
     final db = await DataBaseService().database;
 
     // 1. Fetch all existing contacts with userId and localName
-    final existing = await db.query(tableName, columns: ['userId', 'localName']);
+    final existing = await db.query(
+      tableName,
+      columns: ['userId', 'localName'],
+    );
     final existingMap = {
       for (var row in existing)
-        row['userId'].toString(): (row['localName'] ?? '') as String
+        row['userId'].toString(): (row['localName'] ?? '') as String,
     };
 
     // 2. Get new userIds from the incoming contacts list
@@ -81,7 +84,9 @@ class ContactsTable {
 
     // 5. Logging
     if (clearedLocalNames.isNotEmpty) {
-      print('🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames');
+      print(
+        '🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames',
+      );
     } else {
       print('✅ No contacts were removed from phone, nothing to clear.');
     }
@@ -95,12 +100,15 @@ class ContactsTable {
     return result.map((e) => UserList.fromMap(e)).toList();
   }
 
-  Future<bool> updateUserOnlineStatus(int userId, int isOnline, String lastSeenTime) async {
+  Future<bool> updateUserOnlineStatus(
+    int userId,
+    int isOnline,
+    String lastSeenTime,
+  ) async {
     final db = await DataBaseService().database;
     final rowsUpdated = await db.update(
       tableName,
-      {'isOnline': isOnline,
-      'lastSeen': lastSeenTime},
+      {'isOnline': isOnline, 'lastSeen': lastSeenTime},
       where: 'userId = ?',
       whereArgs: [userId],
     );
@@ -136,7 +144,6 @@ class ContactsTable {
     required String displayPictureUrl,
     required String lastSeen,
     required int isBlocked,
-
   }) async {
     final db = await DataBaseService().database;
 
@@ -176,16 +183,19 @@ class ContactsTable {
 
     // Build only non-null values to update
     final Map<String, dynamic> updateFields = {};
-      if (name != null) updateFields['name'] = name;
-      if (localName != null) updateFields['localName'] = localName;
-      if (phoneNumber != null) updateFields['phoneNumber'] = phoneNumber;
-      if (email != null) updateFields['email'] = email;
-      if (userDescription != null) updateFields['userDescription'] = userDescription;
-      if (displayPicture != null) updateFields['displayPicture'] = displayPicture;
-      if (displayPictureUrl != null) updateFields['displayPictureUrl'] = displayPictureUrl;
+    if (name != null) updateFields['name'] = name;
+    if (localName != null) updateFields['localName'] = localName;
+    if (phoneNumber != null) updateFields['phoneNumber'] = phoneNumber;
+    if (email != null) updateFields['email'] = email;
+    if (userDescription != null)
+      updateFields['userDescription'] = userDescription;
+    if (displayPicture != null) updateFields['displayPicture'] = displayPicture;
+    if (displayPictureUrl != null)
+      updateFields['displayPictureUrl'] = displayPictureUrl;
 
-
-    print('📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields');
+    print(
+      '📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields',
+    );
 
     if (updateFields.isEmpty) {
       print('⚠️ No fields to update for userId=$userId');
@@ -200,7 +210,7 @@ class ContactsTable {
         where: 'userId = ?',
         whereArgs: [userId],
       );
-    }else {
+    } else {
       print('⚠️ [updateContact] No values to update for uid=$userId');
     }
     // if (rowsAffected == 0) {
@@ -212,7 +222,9 @@ class ContactsTable {
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {
     if (oldVersion < newVersion) {
-      db.execute("ALTER TABLE $tableName RENAME COLUMN lastSeenTime to lastSeen;");
+      db.execute(
+        "ALTER TABLE $tableName RENAME COLUMN lastSeenTime to lastSeen;",
+      );
     }
   }
 
@@ -221,7 +233,34 @@ class ContactsTable {
     await db.execute('DROP TABLE IF EXISTS $tableName');
     await createTable(db);
   }
+
+  Future<bool?> isUserBlocked(int userId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      columns: ['isBlocked'],
+      where: 'userId = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      final value = result.first['isBlocked'] as int?;
+      if (value == null) return null; // Means no data
+      return value == 1; // 1 = blocked, 0 = not blocked
+    }
+
+    return false; // User not found
+  }
+
+  Future<bool> updateUserBlockUnblock(int userId, int isBlocked) async {
+    final db = await DataBaseService().database;
+    final rowsUpdated = await db.update(
+      tableName,
+      {'isBlocked': isBlocked},
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+    return rowsUpdated > 0;
+  }
 }
-
-
-

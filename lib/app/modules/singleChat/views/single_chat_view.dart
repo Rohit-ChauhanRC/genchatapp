@@ -46,120 +46,132 @@ class SingleChatView extends GetView<SingleChatController> {
           final selectedCount = controller.selectedMessages.length;
           return selectedCount > 0
               ? Text(
-            "$selectedCount selected",
-            style: TextStyle(
-              fontSize: 20,
-              color: whiteColor,
-              fontWeight: FontWeight.bold,
-            ),
-          )
+                  "$selectedCount selected",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: whiteColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
               : Row(
-            children: [
-              (user?.displayPictureUrl?.isNotEmpty ?? false)
-                  ? CachedNetworkImage(
-                      imageUrl: user!.displayPictureUrl.toString(),
-                      imageBuilder: (context, image) {
-                        return CircleAvatar(
-                            backgroundColor: greyColor.withOpacity(0.4),
-                            radius: 20,
-                            backgroundImage: image);
-                      },
-                      placeholder: (context, url) =>
-                          const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    )
-                  : const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-              const SizedBox(
-                width: 10,
-              ),
-              SizedBox(
-                width: Get.width * 0.32,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '${user?.localName == "" ||  user?.localName == null? user?.phoneNumber: user?.localName}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: whiteColor,
-                        fontWeight: FontWeight.w400,
+                    ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
+                            !controller.blocked)
+                        ? CachedNetworkImage(
+                            imageUrl: user!.displayPictureUrl.toString(),
+                            imageBuilder: (context, image) {
+                              return CircleAvatar(
+                                backgroundColor: greyColor.withOpacity(0.4),
+                                radius: 20,
+                                backgroundImage: image,
+                              );
+                            },
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          )
+                        : const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: Get.width * 0.32,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${user?.localName == "" || user?.localName == null ? user?.phoneNumber : user?.localName}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: whiteColor,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+
+                          // 👇 Wrap with Obx to reactively update UI
+                          Obx(() {
+                            if (!controller
+                                .connectivityService
+                                .isConnected
+                                .value) {
+                              return const SizedBox.shrink();
+                            }
+
+                            if (controller.isReceiverTyping) {
+                              return const Text(
+                                "Typing...",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w200,
+                                  color: whiteColor,
+                                  fontSize: 12,
+                                ),
+                              );
+                            }
+
+                            return Text(
+                              user?.isOnline == true
+                                  ? "Online"
+                                  : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
+                              maxLines: 2,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w200,
+                                color: whiteColor,
+                                fontSize: 12,
+                              ),
+                            );
+                          }),
+                        ],
                       ),
                     ),
-
-                    // 👇 Wrap with Obx to reactively update UI
-                    Obx(() {
-                      if (!controller.connectivityService.isConnected.value) {
-                        return const SizedBox.shrink();
-                      }
-
-                      if (controller.isReceiverTyping) {
-                        return const Text(
-                          "Typing...",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w200,
-                            color: whiteColor,
-                            fontSize: 12,
-                          ),
-                        );
-                      }
-
-                      return Text(
-                        user?.isOnline == true
-                            ? "Online"
-                            : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
-                        maxLines: 2,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w200,
-                          color: whiteColor,
-                          fontSize: 12,
-                        ),
-                      );
-                    }),
                   ],
-                ),
-              ),
-            ],
-          );
+                );
         }),
         actions: [
-          Obx(() => controller.selectedMessages.isNotEmpty
-              ? Row(
-                children: [
-                  IconButton(
-                      icon: const Icon(Symbols.delete, color: whiteColor),
-                      onPressed: () => _showDeletePopup(context, controller),
-                    ),
-                  if (controller.canForward)
-                    IconButton(
-                      icon: Icon(Symbols.forward, color: AppColors.whiteColor,),
-                      onPressed: () {
-                        controller.prepareToForward();
-                      },
-                    ),
-                ],
-              )
-              : Row(
-                  children: [
-                    InkWell(
-                      onTap: () {},
-                      child: Icon(Symbols.videocam_rounded, color: AppColors.whiteColor),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    InkWell(
-                      onTap: () {},
-                      child: Icon(Symbols.call_rounded, color: AppColors.whiteColor),
-                    ),
-                  ],
-                )),
+          Obx(
+            () => controller.selectedMessages.isNotEmpty
+                ? Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Symbols.delete, color: whiteColor),
+                        onPressed: () => _showDeletePopup(context, controller),
+                      ),
+                      if (controller.canForward)
+                        IconButton(
+                          icon: Icon(
+                            Symbols.forward,
+                            color: AppColors.whiteColor,
+                          ),
+                          onPressed: () {
+                            controller.prepareToForward();
+                          },
+                        ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Symbols.videocam_rounded,
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Symbols.call_rounded,
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert, color: whiteColor),
             offset: const Offset(0, 40),
@@ -170,6 +182,10 @@ class SingleChatView extends GetView<SingleChatController> {
                 case clearText:
                   print(clearText);
                   await controller.deleteTextMessage();
+                  break;
+                case block:
+                  print(block);
+                  await controller.blockUser();
                   break;
                 default:
               }
@@ -188,17 +204,17 @@ class SingleChatView extends GetView<SingleChatController> {
               //     ),
               //   ),
               // ),
-              // const PopupMenuItem(
-              //   value: settings,
-              //   child: Text(
-              //     settings,
-              //     style: TextStyle(
-              //       fontSize: 14,
-              //       fontWeight: FontWeight.w400,
-              //       color: blackColor,
-              //     ),
-              //   ),
-              // ),
+              const PopupMenuItem(
+                value: block,
+                child: Text(
+                  block,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: blackColor,
+                  ),
+                ),
+              ),
               const PopupMenuItem(
                 value: clearText,
                 child: Text(

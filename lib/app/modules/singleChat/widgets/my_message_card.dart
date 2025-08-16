@@ -33,6 +33,7 @@ class MyMessageCard extends StatelessWidget {
     this.url,
     this.assetThumbnail,
     this.audioMessage,
+    required this.isProgess,
   }) : super(key: key);
 
   final String message;
@@ -57,6 +58,7 @@ class MyMessageCard extends StatelessWidget {
   final String? url;
   final String? assetThumbnail;
   final String? audioMessage;
+  final RxDouble isProgess;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +95,7 @@ class MyMessageCard extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
+                  // percent.value
                   Padding(
                     padding: type == MessageType.text
                         ? const EdgeInsets.only(

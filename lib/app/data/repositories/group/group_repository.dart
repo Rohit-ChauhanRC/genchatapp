@@ -15,15 +15,12 @@ class GroupRepository {
 
   GroupRepository({required this.apiClient, required this.sharedPreferences});
 
-  
-
   Future<Response?> createGroup(
-      String groupName, List<int> userIdsArray) async {
+    String groupName,
+    List<int> userIdsArray,
+  ) async {
     try {
-      final param = {
-        'userIdsArray': userIdsArray,
-        'groupName': groupName,
-      };
+      final param = {'userIdsArray': userIdsArray, 'groupName': groupName};
       return await apiClient.post(ApiEndpoints.createGroup, param);
     } catch (e) {
       // print('Error in verifyOTPAPI: $e');
@@ -32,8 +29,7 @@ class GroupRepository {
     }
   }
 
-
-   Future<Response?> fetchGroup() async {
+  Future<Response?> fetchGroup() async {
     try {
       return await apiClient.get(ApiEndpoints.groupFetch);
     } catch (e) {
@@ -49,12 +45,12 @@ class GroupRepository {
   }
 
   Future<Response?> updateGroupNameAndDescription({
-        required bool isEditingGroupName,
-        int? groupId,
-        String? groupName,
-        String? groupDescription
-      }) async{
-    try{
+    required bool isEditingGroupName,
+    int? groupId,
+    String? groupName,
+    String? groupDescription,
+  }) async {
+    try {
       final param = {
         'groupId': groupId,
         if (isEditingGroupName)
@@ -63,7 +59,7 @@ class GroupRepository {
           'groupDescription': groupDescription,
       };
       return await apiClient.post(ApiEndpoints.updateGroup, param);
-    }catch(e){
+    } catch (e) {
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");
       return null;
@@ -73,14 +69,11 @@ class GroupRepository {
   Future<Response?> makeNewAdmin({
     required int userId,
     required int groupId,
-  }) async{
-    try{
-      final param = {
-        'groupId': groupId,
-        'userId':userId,
-      };
+  }) async {
+    try {
+      final param = {'groupId': groupId, 'userId': userId};
       return await apiClient.post(ApiEndpoints.makeAdmin, param);
-    }catch(e){
+    } catch (e) {
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");
       return null;
@@ -90,14 +83,11 @@ class GroupRepository {
   Future<Response?> removeAdmin({
     required int userId,
     required int groupId,
-  }) async{
-    try{
-      final param = {
-        'groupId': groupId,
-        'userId':userId,
-      };
+  }) async {
+    try {
+      final param = {'groupId': groupId, 'userId': userId};
       return await apiClient.post(ApiEndpoints.removeAdmin, param);
-    }catch(e){
+    } catch (e) {
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");
       return null;
@@ -107,14 +97,11 @@ class GroupRepository {
   Future<Response?> removeUser({
     required int userId,
     required int groupId,
-  }) async{
-    try{
-      final param = {
-        'groupId': groupId,
-        'userId':userId,
-      };
+  }) async {
+    try {
+      final param = {'groupId': groupId, 'userId': userId};
       return await apiClient.post(ApiEndpoints.removeUser, param);
-    }catch(e){
+    } catch (e) {
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");
       return null;
@@ -124,14 +111,11 @@ class GroupRepository {
   Future<Response?> addUsers({
     required List<int> userId,
     required int groupId,
-  }) async{
-    try{
-      final param = {
-        'groupId': groupId,
-        'userIdsArray':userId,
-      };
+  }) async {
+    try {
+      final param = {'groupId': groupId, 'userIdsArray': userId};
       return await apiClient.post(ApiEndpoints.addUser, param);
-    }catch(e){
+    } catch (e) {
       // print('Error in verifyOTPAPI: $e');
       showAlertMessage("Error: $e");
       return null;
@@ -139,7 +123,11 @@ class GroupRepository {
   }
 
   /// Upload Profile Picture (Multipart FormData)
-  Future<Response?> uploadGroupPic(File imageFile, int groupId) async {
+  Future<Response?> uploadGroupPic(
+    File imageFile,
+    int groupId, {
+    ProgressCallback? onProgress,
+  }) async {
     String fileName = imageFile.path.split('/').last;
     String mimeType = getImageMimeType(imageFile);
 
@@ -158,8 +146,10 @@ class GroupRepository {
 
     return await retryFormDataUpload(
       url: ApiEndpoints.uploadGroupIcon,
+      onProgress: onProgress,
+
       formDataBuilder: buildFormData,
-      uploadCall: (formData) =>
+      uploadCall: (formData, {onProgress}) =>
           apiClient.uploadFile(ApiEndpoints.uploadGroupIcon, formData),
     );
   }

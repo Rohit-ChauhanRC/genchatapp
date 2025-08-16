@@ -13,6 +13,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/contact_res
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/upload_file_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -46,6 +47,10 @@ class SingleChatController extends GetxController
   final socketService = Get.find<SocketService>();
 
   final ProfileRepository profileRepository = Get.find<ProfileRepository>();
+
+  final ChatRepository chatRepository = Get.put<ChatRepository>(
+    ChatRepository(apiClient: Get.find()),
+  );
 
   final ChatConectTable chatConectTable = ChatConectTable();
 
@@ -100,6 +105,11 @@ class SingleChatController extends GetxController
   final RxBool _isLoading = true.obs;
   bool get isLoading => _isLoading.value;
   set isLoading(bool b) => _isLoading.value = b;
+
+  // blocked
+  final RxBool _blocked = true.obs;
+  bool get blocked => _blocked.value;
+  set blocked(bool b) => _blocked.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
 
@@ -201,10 +211,12 @@ class SingleChatController extends GetxController
   Rx<Duration> currentDuration = Duration.zero.obs;
   Rx<Duration> totalDuration = Duration.zero.obs;
   Rx<String> audioTime = "".obs;
+  RxDouble percent = 0.0.obs;
 
   @override
   void onInit() async {
     super.onInit();
+
     FocusManager.instance.primaryFocus?.unfocus();
 
     SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -221,6 +233,8 @@ class SingleChatController extends GetxController
       receiverUserData = user;
       bindReceiverUserStream(user.userId ?? 0);
     }
+
+    await findUserBlock();
 
     // animationController = AnimationController(
     //   vsync: this,
@@ -287,6 +301,7 @@ class SingleChatController extends GetxController
         if (connectivityService.isConnected.value) {
           socketService.runWhenConnected(() {
             checkUserOnline(receiverUserData);
+            findUserBlock();
           });
         }
 
@@ -296,6 +311,41 @@ class SingleChatController extends GetxController
       case AppLifecycleState.paused:
         break;
       default:
+    }
+  }
+  // user/block-contact
+  //   {
+  //     "blockContactUserId": 2,
+  //     "isBlock":false
+  // }
+
+  Future<void> blockUser() async {
+    final response = await chatRepository.userBlock(
+      receiverUserData!.userId!,
+      true,
+    );
+    if (response != null && response.statusCode == 200) {
+      await contactsTable.updateUserBlockUnblock(receiverUserData!.userId!, 1);
+      await findUserBlock();
+      await chatConectTable.updateUserBlockUnblock(
+        receiverUserData!.userId!.toString(),
+      );
+      // "contact blocked successfully"
+    }
+  }
+
+  Future<void> findUserBlock() async {
+    blocked =
+        await contactsTable.isUserBlocked(receiverUserData!.userId!) ?? false;
+    if (blocked == true) {
+      await chatConectTable.updateUserBlockUnblock(
+        receiverUserData!.userId!.toString(),
+      );
+      print("🚫 User is blocked");
+    } else if (blocked == false) {
+      print("✅ User is not blocked");
+    } else {
+      print("ℹ️ User not found in DB");
     }
   }
 
@@ -368,7 +418,7 @@ class SingleChatController extends GetxController
   void checkUserOnline(UserList? user) async {
     if (user == null) return;
     var params = {"recipientId": user.userId};
-    if (socketService.isConnected) {
+    if (socketService.isConnected && !blocked) {
       socketService.checkUserOnline(params);
     }
   }
@@ -715,7 +765,7 @@ class SingleChatController extends GetxController
     await MessageTable().insertMessage(newMessage).then((onValue) async {
       Future.delayed(Durations.medium4);
       final user = await contactsTable.getUserById(newMessage.recipientId!);
-      if(user != null){
+      if (user != null) {
         if (socketService.isConnected) {
           _sendingMessageIds.add(clientSystemMessageId);
           // encryptionService.encryptText();
@@ -724,20 +774,20 @@ class SingleChatController extends GetxController
         } else {
           socketService.saveChatContacts(newMessage);
         }
-      }else{
+      } else {
         await contactsTable.insertPlaceholderUser(
-            userId: receiverUserData?.userId ?? 0,
-            isOnline: receiverUserData?.isOnline == true ? 1:0,
-            phoneNumber: receiverUserData?.phoneNumber ?? "",
-            localName: "",
-            countryCode: receiverUserData?.countryCode ?? 0,
-            name: receiverUserData?.name ??'',
-            email: receiverUserData?.email??'',
-            userDescription: receiverUserData?.userDescription??'',
-            displayPicture: receiverUserData?.displayPicture??'',
-            displayPictureUrl: receiverUserData?.displayPictureUrl??'',
-            lastSeen: receiverUserData?.lastSeenTime??'',
-            isBlocked: receiverUserData?.isBlocked == true? 1:0,
+          userId: receiverUserData?.userId ?? 0,
+          isOnline: receiverUserData?.isOnline == true ? 1 : 0,
+          phoneNumber: receiverUserData?.phoneNumber ?? "",
+          localName: "",
+          countryCode: receiverUserData?.countryCode ?? 0,
+          name: receiverUserData?.name ?? '',
+          email: receiverUserData?.email ?? '',
+          userDescription: receiverUserData?.userDescription ?? '',
+          displayPicture: receiverUserData?.displayPicture ?? '',
+          displayPictureUrl: receiverUserData?.displayPictureUrl ?? '',
+          lastSeen: receiverUserData?.lastSeenTime ?? '',
+          isBlocked: receiverUserData?.isBlocked == true ? 1 : 0,
         );
         if (socketService.isConnected) {
           _sendingMessageIds.add(clientSystemMessageId);
@@ -1182,7 +1232,16 @@ class SingleChatController extends GetxController
 
   Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
     try {
-      final response = await profileRepository.uploadMessageFiles(imageFile);
+      final response = await profileRepository.uploadMessageFiles(
+        imageFile,
+        onProgress: (sent, total) {
+          percent.value = (sent / total) * 100;
+          print("📤 Upload progress: ${percent.value.toStringAsFixed(0)}%");
+          if (percent.value == 100) {
+            percent.value = 0.0;
+          }
+        },
+      );
 
       if (response?.statusCode == 200) {
         final result = UploadFileModel.fromJson(response?.data);

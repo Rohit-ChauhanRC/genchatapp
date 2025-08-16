@@ -197,4 +197,15 @@ class ChatConectTable {
     //   db.execute("ALTER TABLE $tableName ADD COLUMN newCol TEXT;");
     // }
   }
+
+  Future<bool> updateUserBlockUnblock(String userId) async {
+    final db = await DataBaseService().database;
+    final rowsUpdated = await db.update(
+      tableName,
+      {'profilePic': ""},
+      where: 'uid = ?',
+      whereArgs: [userId],
+    );
+    return rowsUpdated > 0;
+  }
 }

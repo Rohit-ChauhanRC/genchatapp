@@ -47,7 +47,7 @@ class SingleChatView extends GetView<SingleChatController> {
           return selectedCount > 0
               ? Text(
                   "$selectedCount selected",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     color: whiteColor,
                     fontWeight: FontWeight.bold,
@@ -96,9 +96,10 @@ class SingleChatView extends GetView<SingleChatController> {
                           // 👇 Wrap with Obx to reactively update UI
                           Obx(() {
                             if (!controller
-                                .connectivityService
-                                .isConnected
-                                .value) {
+                                    .connectivityService
+                                    .isConnected
+                                    .value ||
+                                controller.blocked == true) {
                               return const SizedBox.shrink();
                             }
 
@@ -178,37 +179,35 @@ class SingleChatView extends GetView<SingleChatController> {
             color: whiteColor,
             onSelected: (value) async {
               // Handle menu item selection
-              switch (value) {
-                case clearText:
-                  print(clearText);
-                  await controller.deleteTextMessage();
-                  break;
-                case block:
-                  print(block);
-                  await controller.blockUser();
-                  break;
-                default:
+
+              if (value == clearText) {
+                await controller.deleteTextMessage();
+              } else if (value == unBlock || value == block) {
+                await controller.blockUser();
               }
+              // switch (value) {
+              //   case clearText:
+              //     print(clearText);
+              //     await controller.deleteTextMessage();
+              //     break;
+              //   case  controller.blocked? unBlock: block:
+              //     print(block);
+              //     await controller.blockUser();
+              //     break;
+              //      case controller.blocked? unBlock:
+              //     block:
+              //     print(block);
+              //     await controller.blockUser();
+              //     break;
+              //   default:
+              // }
             },
             itemBuilder: (context) => [
-              // PopupMenuItem(
-              //   value: newGroup,
-              //   onTap: () {},
-              //   // ignore: prefer_const_constructors
-              //   child: Text(
-              //     newGroup,
-              //     style: const TextStyle(
-              //       fontSize: 14,
-              //       fontWeight: FontWeight.w400,
-              //       color: blackColor,
-              //     ),
-              //   ),
-              // ),
-              const PopupMenuItem(
-                value: block,
+              PopupMenuItem(
+                value: controller.blocked ? unBlock : block,
                 child: Text(
-                  block,
-                  style: TextStyle(
+                  controller.blocked ? unBlock : block,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: blackColor,
@@ -238,12 +237,41 @@ class SingleChatView extends GetView<SingleChatController> {
               // firebaseController: controller.firebaseController,
             ),
           ),
-          BottomChatField(
-            singleChatController: controller,
-            onTap: () {
-              controller.sendTextMessage();
-              controller.cancelReply();
-            },
+          Obx(
+            () => !controller.blocked
+                ? BottomChatField(
+                    singleChatController: controller,
+                    onTap: () {
+                      controller.sendTextMessage();
+                      controller.cancelReply();
+                    },
+                  )
+                : Container(
+                    color: textBarColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            await controller.deleteTextMessage();
+                          },
+                          child: const Text(
+                            "Delete Chats",
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await controller.blockUser();
+                          },
+                          child: const Text(
+                            "Unblock User",
+                            style: TextStyle(color: whiteColor, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
@@ -268,7 +296,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 controller.deleteMessages(deleteForEveryone: false);
               },
             ),
-            if (controller.canDeleteForEveryone)
+            if (controller.canDeleteForEveryone && controller.blocked == false)
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text("Delete for Everyone"),

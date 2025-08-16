@@ -101,9 +101,10 @@ class ChatsView extends GetView<ChatsController> {
                       child: Text(
                         newGroup,
                         style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: blackColor),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: blackColor,
+                        ),
                       ),
                     ),
                     const PopupMenuItem(
@@ -170,108 +171,123 @@ class ChatsView extends GetView<ChatsController> {
 
             // Chat List
             GetX<ChatsController>(
-                init: Get.find<ChatsController>(),
-                builder: (ctc) {
-                  final contactsToDisplay = ctc.filteredContacts;
-                  return contactsToDisplay.isNotEmpty
-                      ? Expanded(
-                          child: ListView.builder(
-                            // padding: const EdgeInsets.only(top: 10),
-                            itemCount: contactsToDisplay.length,
-                            itemBuilder: (context, i) {
-                              ChatConntactModel chatConntactModel =
-                                  contactsToDisplay[i];
-                              // final isTyping = controller.socketService
-                              //         .typingStatusMap[chatConntactModel.uid] ==
-                              //     true && chatConntactModel.isGroup == 0;
+              init: Get.find<ChatsController>(),
+              builder: (ctc) {
+                final contactsToDisplay = ctc.filteredContacts;
+                return contactsToDisplay.isNotEmpty
+                    ? Expanded(
+                        child: ListView.builder(
+                          // padding: const EdgeInsets.only(top: 10),
+                          itemCount: contactsToDisplay.length,
+                          itemBuilder: (context, i) {
+                            ChatConntactModel chatConntactModel =
+                                contactsToDisplay[i];
+                            // final isTyping = controller.socketService
+                            //         .typingStatusMap[chatConntactModel.uid] ==
+                            //     true && chatConntactModel.isGroup == 0;
 
-                              final typingStatusText = controller.getTypingStatusText(
-                                chatConntactModel.uid.toString(),
-                                chatConntactModel.isGroup == 1,
-                              );
-                              final isTyping = typingStatusText?.isNotEmpty;
-                              final lastMessageText = chatConntactModel.lastMessage!.isNotEmpty &&
-                                  ![
-                                    MessageType.image.value,
-                                    MessageType.video.value,
-                                    MessageType.document.value,
-                                    MessageType.gif.value,
-                                    MessageType.audio.value
-                                  ].contains(chatConntactModel.lastMessage)
-                                  ? controller.encryptionService.decryptText(chatConntactModel.lastMessage!)
-                                  : chatConntactModel.lastMessage.toString();
-                              final isSelected = controller.selectedChatUids
-                                  .contains(chatConntactModel.uid);
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.mySideBgColor.withOpacity(0.3)
-                                      : Colors.transparent,
+                            final typingStatusText = controller
+                                .getTypingStatusText(
+                                  chatConntactModel.uid.toString(),
+                                  chatConntactModel.isGroup == 1,
+                                );
+                            final isTyping =
+                                typingStatusText!.isNotEmpty &&
+                                chatConntactModel.isBlocked == 0;
+                            final lastMessageText =
+                                chatConntactModel.lastMessage!.isNotEmpty &&
+                                    ![
+                                      MessageType.image.value,
+                                      MessageType.video.value,
+                                      MessageType.document.value,
+                                      MessageType.gif.value,
+                                      MessageType.audio.value,
+                                    ].contains(chatConntactModel.lastMessage)
+                                ? controller.encryptionService.decryptText(
+                                    chatConntactModel.lastMessage!,
+                                  )
+                                : chatConntactModel.lastMessage.toString();
+                            final isSelected = controller.selectedChatUids
+                                .contains(chatConntactModel.uid);
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.mySideBgColor.withOpacity(0.3)
+                                    : Colors.transparent,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 10,
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      // Profile Image
-                                      InkWell(
-                                        onTap:(){
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => ProfileImageDialog(
-                                              imageUrl: chatConntactModel.profilePic,
-                                              userName: chatConntactModel.name,
-                                              isGroup: chatConntactModel.isGroup == 1,
-                                            ),
-                                          );
-                                        },
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                          child: chatConntactModel.profilePic ==
-                                                      null ||
-                                                  chatConntactModel
-                                                      .profilePic!.isEmpty
-                                              ? Container(
-                                                  color: textBarColor,
-                                                  child: CircleAvatar(
-                                                    radius: 25,
-                                                    child: Icon(
-                                                      chatConntactModel
-                                                                  .isGroup ==
-                                                              1
-                                                          ? Icons.group_rounded
-                                                          : Icons.person,
-                                                      color: whiteColor,
-                                                      // size: 25,
-                                                    ),
-                                                  ))
-                                              : CachedNetworkImage(
-                                                  imageUrl: chatConntactModel
-                                                      .profilePic
-                                                      .toString(),
-                                                  imageBuilder: (context,
-                                                          imageProvider) =>
-                                                      CircleAvatar(
-                                                    backgroundImage:
-                                                        imageProvider,
-                                                    radius: 25,
-                                                  ),
-                                                  placeholder: (context, url) =>
-                                                      const CircleAvatar(
-                                                    radius: 25,
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          const CircleAvatar(
-                                                    radius: 25,
-                                                    child: Icon(Icons.error),
+                                child: Row(
+                                  children: [
+                                    // Profile Image
+                                    InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => ProfileImageDialog(
+                                            imageUrl:
+                                                chatConntactModel.profilePic,
+                                            userName: chatConntactModel.name,
+                                            isGroup:
+                                                chatConntactModel.isGroup == 1,
+                                          ),
+                                        );
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(25),
+                                        child:
+                                            (chatConntactModel.profilePic ==
+                                                    null ||
+                                                chatConntactModel
+                                                    .profilePic!
+                                                    .isEmpty ||
+                                                chatConntactModel.isBlocked ==
+                                                    1)
+                                            ? Container(
+                                                color: textBarColor,
+                                                child: CircleAvatar(
+                                                  radius: 25,
+                                                  child: Icon(
+                                                    chatConntactModel.isGroup ==
+                                                            1
+                                                        ? Icons.group_rounded
+                                                        : Icons.person,
+                                                    color: whiteColor,
+                                                    // size: 25,
                                                   ),
                                                 ),
-                                        ),
+                                              )
+                                            : CachedNetworkImage(
+                                                imageUrl: chatConntactModel
+                                                    .profilePic
+                                                    .toString(),
+                                                imageBuilder:
+                                                    (context, imageProvider) =>
+                                                        CircleAvatar(
+                                                          backgroundImage:
+                                                              imageProvider,
+                                                          radius: 25,
+                                                        ),
+                                                placeholder: (context, url) =>
+                                                    const CircleAvatar(
+                                                      radius: 25,
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        const CircleAvatar(
+                                                          radius: 25,
+                                                          child: Icon(
+                                                            Icons.error,
+                                                          ),
+                                                        ),
+                                              ),
                                       ),
+                                    ),
                                     const SizedBox(width: 10),
 
                                     // Chat Info
@@ -309,11 +325,16 @@ class ChatsView extends GetView<ChatsController> {
                                                 Routes.GROUP_CHATS,
                                                 arguments: GroupData(
                                                   group: Group(
-                                                    id: int.parse(chatConntactModel.uid.toString()),
-                                                    name: chatConntactModel.name,
-                                                    displayPictureUrl: chatConntactModel
-                                                        .profilePic,
-                                                  )
+                                                    id: int.parse(
+                                                      chatConntactModel.uid
+                                                          .toString(),
+                                                    ),
+                                                    name:
+                                                        chatConntactModel.name,
+                                                    displayPictureUrl:
+                                                        chatConntactModel
+                                                            .profilePic,
+                                                  ),
                                                 ),
                                               );
                                             }

@@ -19,6 +19,7 @@ class ChatConectTable {
     "uid" TEXT,
     "unreadCount" INTEGER,
     "isGroup" INTEGER,
+    "isBlocked" INTEGER
     UNIQUE(uid, isGroup)
   );
 """);
@@ -100,6 +101,7 @@ class ChatConectTable {
     String? timeSent,
     String? name,
     int? unreadCount,
+    int? isBlocked,
   }) async {
     final db = await DataBaseService().database;
 
@@ -111,7 +113,8 @@ class ChatConectTable {
     if (name != null) updatedValues['name'] = name;
     if (unreadCount != 0) updatedValues["unreadCount"] = unreadCount;
     if (isGroup != null) updatedValues["isGroup"] = isGroup;
-
+    // isBlocked
+    if (isBlocked != null) updatedValues["isBlocked"] = isBlocked;
     print(
       '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues',
     );
@@ -193,16 +196,16 @@ class ChatConectTable {
   }
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {
-    // if (oldVersion < newVersion) {
-    //   db.execute("ALTER TABLE $tableName ADD COLUMN newCol TEXT;");
-    // }
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE $tableName ADD COLUMN isBlocked INTEGER;");
+    }
   }
 
-  Future<bool> updateUserBlockUnblock(String userId) async {
+  Future<bool> updateUserBlockUnblock(String userId, int? blocked) async {
     final db = await DataBaseService().database;
     final rowsUpdated = await db.update(
       tableName,
-      {'profilePic': ""},
+      {'isBlocked': blocked},
       where: 'uid = ?',
       whereArgs: [userId],
     );

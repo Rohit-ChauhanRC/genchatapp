@@ -37,7 +37,9 @@ class ChatList extends StatelessWidget {
             );
           }
 
-          final isTyping = singleChatController.isReceiverTyping;
+          final isTyping =
+              singleChatController.isReceiverTyping &&
+              singleChatController.blocked == false;
           final messageCount = singleChatController.messageList.length;
 
           WidgetsBinding.instance.addPostFrameCallback((_) {

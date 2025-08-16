@@ -243,7 +243,9 @@ class SingleChatController extends GetxController
     socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
       isTyping,
     ) {
-      _isReceiverTyping.value = isTyping;
+      if (blocked == false) {
+        _isReceiverTyping.value = isTyping;
+      }
     });
 
     // print(
@@ -322,13 +324,17 @@ class SingleChatController extends GetxController
   Future<void> blockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,
-      true,
+      blocked ? false : true,
     );
     if (response != null && response.statusCode == 200) {
-      await contactsTable.updateUserBlockUnblock(receiverUserData!.userId!, 1);
+      await contactsTable.updateUserBlockUnblock(
+        receiverUserData!.userId!,
+        blocked ? 0 : 1,
+      );
       await findUserBlock();
       await chatConectTable.updateUserBlockUnblock(
         receiverUserData!.userId!.toString(),
+        blocked ? 0 : 1,
       );
       // "contact blocked successfully"
     }
@@ -338,9 +344,26 @@ class SingleChatController extends GetxController
     blocked =
         await contactsTable.isUserBlocked(receiverUserData!.userId!) ?? false;
     if (blocked == true) {
-      await chatConectTable.updateUserBlockUnblock(
-        receiverUserData!.userId!.toString(),
+      final user = await chatConectTable.fetchById(
+        uid: receiverUserData!.userId!.toString(),
+        isGroup: false,
       );
+
+      final c = await chatConectTable.updateUserBlockUnblock(
+        receiverUserData!.userId!.toString(),
+        blocked ? 1 : 0,
+      );
+      print(c);
+
+      print(user);
+      // await chatConectTable.updateUserBlockUnblock(
+      //   receiverUserData!.userId!.toString(),
+      //   blocked ? 0 : 1,
+      // );
+      // await contactsTable.updateUserBlockUnblock(
+      //   receiverUserData!.userId!,
+      //   blocked ? 0 : 1,
+      // );
       print("🚫 User is blocked");
     } else if (blocked == false) {
       print("✅ User is not blocked");
@@ -418,7 +441,7 @@ class SingleChatController extends GetxController
   void checkUserOnline(UserList? user) async {
     if (user == null) return;
     var params = {"recipientId": user.userId};
-    if (socketService.isConnected && !blocked) {
+    if (socketService.isConnected && blocked == false) {
       socketService.checkUserOnline(params);
     }
   }
@@ -568,7 +591,7 @@ class SingleChatController extends GetxController
       int index = messageList.indexWhere((m) => m.messageId == del.messageId);
 
       if (index != -1) {
-        if (del.isDeleteFromEveryone) {
+        if (del.isDeleteFromEveryone && blocked == false) {
           final updated = messageList[index].copyWith(
             message: "This message was deleted",
             messageType: MessageType.deleted,
@@ -825,7 +848,9 @@ class SingleChatController extends GetxController
       isPreviewing.value = false;
 
       // Emit isTyping: true
-      socketService.emitTypingStatus(recipientId: receiverId, isTyping: true);
+      if (blocked == false) {
+        socketService.emitTypingStatus(recipientId: receiverId, isTyping: true);
+      }
 
       // Debounce logic for isTyping: false
       typingTimer?.cancel();
@@ -895,7 +920,7 @@ class SingleChatController extends GetxController
       }
 
       if (hasMessageId) {
-        if (deleteForEveryone) {
+        if (deleteForEveryone && blocked == false) {
           // 🔵 Emit socket event or mark for deletion
           if (isOnline) {
             socketService.emitMessageDelete(

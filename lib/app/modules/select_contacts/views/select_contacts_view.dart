@@ -24,17 +24,25 @@ class SelectContactsView extends GetView<SelectContactsController> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          subtitle: Obx(() => controller.contacts.isNotEmpty
-              ? Text('${controller.contacts.length} contacts',
-                  style: const TextStyle(
+          subtitle: Obx(
+            () => controller.contacts.isNotEmpty
+                ? Text(
+                    '${controller.contacts.length} contacts',
+                    style: const TextStyle(
                       fontWeight: FontWeight.w200,
                       color: whiteColor,
-                      fontSize: 12))
-              : const Text("0  contact",
-                  style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  )
+                : const Text(
+                    "0  contact",
+                    style: TextStyle(
                       fontWeight: FontWeight.w200,
                       color: whiteColor,
-                      fontSize: 12))),
+                      fontSize: 12,
+                    ),
+                  ),
+          ),
           // trailing: ,
         ),
         actions: [
@@ -42,9 +50,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
             onPressed: () async {
               await controller.refreshSync();
             },
-            icon: const Icon(
-              Icons.refresh,
-            ),
+            icon: const Icon(Icons.refresh),
           ),
         ],
         centerTitle: true,
@@ -70,14 +76,14 @@ class SelectContactsView extends GetView<SelectContactsController> {
                 ),
                 keyboardType: TextInputType.text,
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               InkWell(
                 onTap: () {
                   // controller.selectContact(contact);
-                  Get.toNamed(Routes.SEARCH_NEW_CONTACT,
-                      arguments: controller.filteredContacts);
+                  Get.toNamed(
+                    Routes.SEARCH_NEW_CONTACT,
+                    arguments: controller.filteredContacts,
+                  );
                 },
                 child: Container(
                   // height: 50,
@@ -85,9 +91,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
                   child: const ListTile(
                     title: Text(
                       "Search New Contact",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
+                      style: TextStyle(fontSize: 18),
                     ),
                     leading: CircleAvatar(
                       child: Icon(Icons.search_rounded),
@@ -97,9 +101,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
                 ),
               ),
 
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Expanded(
                 child: Obx(() {
                   if (!controller.isContactRefreshed) {
@@ -109,62 +111,61 @@ class SelectContactsView extends GetView<SelectContactsController> {
                   }
                   var filteredContacts = controller.filteredContacts;
                   if (filteredContacts.isEmpty) {
-                    return const Center(
-                      child: Text("No contacts found."),
-                    );
+                    return const Center(child: Text("No contacts found."));
                   }
                   return ListView.builder(
-                      itemCount: filteredContacts.length,
-                      itemBuilder: (context, i) {
-                        var contact = filteredContacts[i];
-                        return InkWell(
-                          onTap: () {
-                            controller.selectContact(contact);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: ListTile(
-                              title: Text(
-                                contact.localName ?? "No Name",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                ),
-                              ),
-                              leading: contact.displayPictureUrl == null ||
-                                      contact.displayPictureUrl == ""
-                                  ? const CircleAvatar(
-                                      child: Icon(Icons.person),
-                                      radius: 30,
-                                    )
-                                  : CachedNetworkImage(
-                                      imageUrl:
-                                          contact.displayPictureUrl.toString(),
-                                      imageBuilder: (context, imageProvider) =>
-                                          CircleAvatar(
-                                        backgroundImage: imageProvider,
-                                        radius: 30,
-                                      ),
-                                      placeholder: (context, url) =>
-                                          const CircleAvatar(
-                                        radius: 30,
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          const CircleAvatar(
-                                        radius: 30,
-                                        child: Icon(Icons.error),
-                                      ),
-                                    ),
-                              subtitle: Text(
-                                contact.phoneNumber ?? '',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
-                              ),
+                    itemCount: filteredContacts.length,
+                    itemBuilder: (context, i) {
+                      var contact = filteredContacts[i];
+                      return InkWell(
+                        onTap: () {
+                          controller.selectContact(contact);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: ListTile(
+                            title: Text(
+                              contact.localName ?? "No Name",
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            leading:
+                                contact.displayPictureUrl == null ||
+                                    contact.displayPictureUrl == "" ||
+                                    contact.isBlocked == true
+                                ? const CircleAvatar(
+                                    child: Icon(Icons.person),
+                                    radius: 30,
+                                  )
+                                : CachedNetworkImage(
+                                    imageUrl: contact.displayPictureUrl
+                                        .toString(),
+                                    imageBuilder: (context, imageProvider) =>
+                                        CircleAvatar(
+                                          backgroundImage: imageProvider,
+                                          radius: 30,
+                                        ),
+                                    placeholder: (context, url) =>
+                                        const CircleAvatar(
+                                          radius: 30,
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget: (context, url, error) =>
+                                        const CircleAvatar(
+                                          radius: 30,
+                                          child: Icon(Icons.error),
+                                        ),
+                                  ),
+                            subtitle: Text(
+                              contact.isBlocked == true
+                                  ? "This user is blocked!"
+                                  : contact.phoneNumber ?? '',
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
-                        );
-                      });
+                        ),
+                      );
+                    },
+                  );
                 }),
               ),
             ],

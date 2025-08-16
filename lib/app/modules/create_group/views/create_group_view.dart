@@ -104,8 +104,15 @@ class CreateGroupView extends GetView<CreateGroupController> {
 
     return InkWell(
       onTap: () {
-        controller.toggleSelection(user.userId!);
-        controller.hideKeyboard();
+        // controller.toggleSelection(user.userId!);
+        // controller.hideKeyboard();
+
+        if (user.isBlocked == true) {
+          //
+        } else {
+          controller.toggleSelection(user.userId!);
+          controller.hideKeyboard();
+        }
       },
       child: Container(
         // margin: const EdgeInsets.only(bottom: 8),
@@ -118,7 +125,8 @@ class CreateGroupView extends GetView<CreateGroupController> {
         child: ListTile(
           leading: Stack(
             children: [
-              (user.displayPictureUrl?.isNotEmpty ?? false)
+              ((user.displayPictureUrl?.isNotEmpty ?? false) &&
+                      user.isBlocked == false)
                   ? Padding(
                       padding: const EdgeInsets.only(right: 4.0),
                       child: CachedNetworkImage(
@@ -169,7 +177,9 @@ class CreateGroupView extends GetView<CreateGroupController> {
             ],
           ),
           title: Text(
-            user.localName ?? user.phoneNumber ?? '',
+            user.isBlocked == true
+                ? "${user.localName} (This user is blocked!)"
+                : user.localName ?? user.phoneNumber ?? '',
             style: const TextStyle(fontSize: 16),
           ),
         ),

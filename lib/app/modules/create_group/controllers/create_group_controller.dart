@@ -103,6 +103,7 @@ class CreateGroupController extends GetxController {
             phoneNumber: chat.name,
             displayPictureUrl: chat.profilePic,
             localName: chat.name,
+            isBlocked: chat.isBlocked == 1 ? true : false,
           ),
         )
         .toList();

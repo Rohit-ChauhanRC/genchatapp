@@ -10,9 +10,9 @@ class ChatConntactModel extends Equatable {
   final String? lastMessage;
   final String? uid;
   final int? unreadCount;
-  final int? lastMessageId;   
+  final int? lastMessageId;
   final int? isGroup;
-
+  final int? isBlocked;
 
   const ChatConntactModel({
     this.name,
@@ -24,6 +24,7 @@ class ChatConntactModel extends Equatable {
     this.uid,
     this.unreadCount = 0,
     this.isGroup,
+    this.isBlocked = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -37,21 +38,23 @@ class ChatConntactModel extends Equatable {
       'uid': uid,
       "unreadCount": unreadCount,
       'isGroup': isGroup,
-
+      'isBlocked': isBlocked,
     };
   }
 
   factory ChatConntactModel.fromMap(Map<String, dynamic> map) {
     return ChatConntactModel(
-        name: map['name'],
-        profilePic: map['profilePic'] as String,
-        contactId: map['contactId'] as String,
-        timeSent: map['timeSent'],
-        lastMessage: map['lastMessage'] as String,
-        lastMessageId: map['lastMessageId'],
-        uid: map['uid'] as String,
-        unreadCount: map["unreadCount"],
-        isGroup: map["isGroup"]);
+      name: map['name'],
+      profilePic: map['profilePic'] as String,
+      contactId: map['contactId'] as String,
+      timeSent: map['timeSent'],
+      lastMessage: map['lastMessage'] as String,
+      lastMessageId: map['lastMessageId'],
+      uid: map['uid'] as String,
+      unreadCount: map["unreadCount"],
+      isGroup: map["isGroup"],
+      isBlocked: map["isBlocked"],
+    );
   }
 
   String toJson() => json.encode(toMap());
@@ -69,6 +72,7 @@ class ChatConntactModel extends Equatable {
     final String? uid,
     final int? unreadCount,
     final int? isGroup,
+    final int? isBlocked,
   }) {
     return ChatConntactModel(
       contactId: contactId ?? this.contactId,
@@ -79,12 +83,22 @@ class ChatConntactModel extends Equatable {
       uid: uid ?? this.uid,
       lastMessageId: lastMessageId ?? this.lastMessageId,
       unreadCount: unreadCount ?? this.unreadCount,
-      isGroup: isGroup?? this.isGroup,
+      isGroup: isGroup ?? this.isGroup,
+      isBlocked: isBlocked ?? this.isBlocked,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [name, profilePic, contactId, timeSent, lastMessage, uid, unreadCount, lastMessageId, isGroup
-      ];
+  List<Object?> get props => [
+    name,
+    profilePic,
+    contactId,
+    timeSent,
+    lastMessage,
+    uid,
+    unreadCount,
+    lastMessageId,
+    isGroup,
+    isBlocked,
+  ];
 }

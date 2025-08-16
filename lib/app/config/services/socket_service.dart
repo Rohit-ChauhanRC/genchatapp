@@ -504,7 +504,10 @@ class SocketService extends GetxService {
         data["blockedBy"],
         data["isBlock"] == true ? 1 : 0,
       );
-      await chatConectTable.updateUserBlockUnblock(data["blockedBy"]);
+      await chatConectTable.updateUserBlockUnblock(
+        data["blockedBy"].toString(),
+        data["isBlock"] == true ? 1 : 0,
+      );
     });
   }
 

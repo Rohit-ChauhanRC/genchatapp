@@ -6,6 +6,7 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/block_user_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
@@ -39,6 +40,8 @@ class SocketService extends GetxService {
   final RxMap<String, Map<String, String>> typingGroupUsersMap =
       <String, Map<String, String>>{}.obs;
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
+  final Rx<BlockUserModel?> blockUserModel = Rx<BlockUserModel?>(null);
+
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
   final Rxn<UserData> updateContactUser = Rxn<UserData>();
@@ -500,9 +503,14 @@ class SocketService extends GetxService {
     _socket?.on('user-blocked', (data) async {
       print(data);
       // {blockedBy: 3, isBlock: true}
+      blockUserModel.value = BlockUserModel(
+        blockedBy: data["blockedBy"],
+        isBlock: data["isBlock"],
+      );
       await contactsTable.updateUserBlockUnblock(
         data["blockedBy"],
         data["isBlock"] == true ? 1 : 0,
+        data["blockedBy"],
       );
       await chatConectTable.updateUserBlockUnblock(
         data["blockedBy"].toString(),

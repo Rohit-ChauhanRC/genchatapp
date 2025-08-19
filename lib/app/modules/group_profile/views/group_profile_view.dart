@@ -21,9 +21,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
       body: Obx(() {
         final group = controller.groupDetails.group;
         final users = List<User>.from(controller.groupDetails.users ?? []);
-        final userCount =controller.groupDetails.users
-            ?.where((u) => u.userGroupInfo?.isRemoved != true)
-            .length ?? 0;
+        final userCount =
+            controller.groupDetails.users
+                ?.where((u) => u.userGroupInfo?.isRemoved != true)
+                .length ??
+            0;
 
         users.sort((a, b) {
           final aId = a.userGroupInfo?.userId;
@@ -205,7 +207,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                     placeholder: (context, url) =>
                                         const CircularProgressIndicator(),
                                     errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error, size: 70,),
+                                        const Icon(Icons.error, size: 70),
                                   );
                                 }
                               }),
@@ -295,7 +297,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 8, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 8.0,
+                      right: 8,
+                      top: 10,
+                    ),
                     child: Text(
                       "Created by ${controller.creatorUserDetail.localName}, ${formatDateTime(group?.createdAt)}",
                       style: const TextStyle(
@@ -338,7 +344,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   /// Members List
 
                   // const SizedBox(height: 4),
-
                   _buildMembersSection(users),
 
                   /// Exit Group
@@ -353,15 +358,15 @@ class GroupProfileView extends GetView<GroupProfileController> {
                         onTap: () {
                           // exit logic here
                           showAlertMessageWithAction(
-                              title: "Exit Group: ${group?.name}?",
-                              message: "Are you sure you want to leave this group.",
-                              cancelText: "Cancel",
-                              confirmText: "Exit group",
-                              // onCancel: ()=> Get.back(),
-                              onConfirm: ()=> controller.exitGroup(),
-                              context: context
+                            title: "Exit Group: ${group?.name}?",
+                            message:
+                                "Are you sure you want to leave this group.",
+                            cancelText: "Cancel",
+                            confirmText: "Exit group",
+                            // onCancel: ()=> Get.back(),
+                            onConfirm: () => controller.exitGroup(),
+                            context: context,
                           );
-
                         },
                         child: const Row(
                           children: [
@@ -390,38 +395,56 @@ class GroupProfileView extends GetView<GroupProfileController> {
   }
 
   Widget _buildMembersSection(List<User> allUsers) {
-    final activeMembers = allUsers.where((u) => u.userGroupInfo?.isRemoved != true).toList();
-    final pastParticipants = allUsers.where((u) => u.userGroupInfo?.isRemoved == true).toList();
+    final activeMembers = allUsers
+        .where((u) => u.userGroupInfo?.isRemoved != true)
+        .toList();
+    final pastParticipants = allUsers
+        .where((u) => u.userGroupInfo?.isRemoved == true)
+        .toList();
 
     bool isPastExpanded = false;
-    return StatefulBuilder(builder: (context, setState) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (activeMembers.isNotEmpty)
-            _buildUserList(activeMembers, isPast: false),
-          if (pastParticipants.isNotEmpty) ...[
-            // const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () => setState(() => isPastExpanded = !isPastExpanded),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Past Participants (${pastParticipants.length})",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey)),
-                    Icon(isPastExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
-                  ],
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (activeMembers.isNotEmpty)
+              _buildUserList(activeMembers, isPast: false),
+            if (pastParticipants.isNotEmpty) ...[
+              // const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () => setState(() => isPastExpanded = !isPastExpanded),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Past Participants (${pastParticipants.length})",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      Icon(
+                        isPastExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if (isPastExpanded)
-              _buildUserList(pastParticipants, isPast: true),
+              if (isPastExpanded)
+                _buildUserList(pastParticipants, isPast: true),
+            ],
           ],
-        ],
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget _buildUserList(List<User> users, {required bool isPast}) {
@@ -433,13 +456,19 @@ class GroupProfileView extends GetView<GroupProfileController> {
       itemBuilder: (context, index) {
         final user = users[index].userInfo;
         final perm = users[index].userGroupInfo;
-        final isCreator = controller.groupDetails.group?.creatorId == perm?.userId;
+        final isCreator =
+            controller.groupDetails.group?.creatorId == perm?.userId;
         return buildUserTile(user, perm, isCreator, isPast: isPast);
       },
     );
   }
 
-  Widget buildUserTile(UserInfo? user, UserGroupInfo? perm, bool isCreator, {required bool isPast}) {
+  Widget buildUserTile(
+    UserInfo? user,
+    UserGroupInfo? perm,
+    bool isCreator, {
+    required bool isPast,
+  }) {
     final pictureUrl = user?.displayPictureUrl ?? '';
     return Opacity(
       opacity: isPast ? 0.6 : 1.0,
@@ -463,19 +492,40 @@ class GroupProfileView extends GetView<GroupProfileController> {
             }
           },
           itemBuilder: (_) {
-            final curUid = controller.sharedPreferenceService.getUserData()?.userId;
+            final curUid = controller.sharedPreferenceService
+                .getUserData()
+                ?.userId;
             final isSelf = user?.userId == curUid;
-            final isSuper = user?.userId == controller.groupDetails.group?.creatorId;
+            final isSuper =
+                user?.userId == controller.groupDetails.group?.creatorId;
             final isAdmin = perm?.isAdmin == true;
             if (isSelf || isSuper) return [];
             final items = <PopupMenuEntry<String>>[];
             if (controller.isSuperAdmin) {
-              items.add(isAdmin
-                  ? const PopupMenuItem(value: 'revoke_admin', child: Text('Revoke Admin'))
-                  : const PopupMenuItem(value: 'make_admin', child: Text('Make Admin')));
-              items.add(const PopupMenuItem(value: 'remove_member', child: Text('Remove from Group')));
+              items.add(
+                isAdmin
+                    ? const PopupMenuItem(
+                        value: 'revoke_admin',
+                        child: Text('Revoke Admin'),
+                      )
+                    : const PopupMenuItem(
+                        value: 'make_admin',
+                        child: Text('Make Admin'),
+                      ),
+              );
+              items.add(
+                const PopupMenuItem(
+                  value: 'remove_member',
+                  child: Text('Remove from Group'),
+                ),
+              );
             } else if (controller.isAdmin && !isAdmin) {
-              items.add(const PopupMenuItem(value: 'remove_member', child: Text('Remove from Group')));
+              items.add(
+                const PopupMenuItem(
+                  value: 'remove_member',
+                  child: Text('Remove from Group'),
+                ),
+              );
             }
             return items;
           },
@@ -483,24 +533,62 @@ class GroupProfileView extends GetView<GroupProfileController> {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
               children: [
-                pictureUrl.isEmpty
-                    ? CircleAvatar(radius: 24, backgroundColor: Colors.grey.withOpacity(0.4), child: const Icon(Icons.person))
-                    : CachedNetworkImage(
-                  imageUrl: pictureUrl,
-                  imageBuilder: (_, image) => CircleAvatar(backgroundImage: image, radius: 24),
-                  placeholder: (_, __) => const CircularProgressIndicator(strokeWidth: 1.5),
-                  errorWidget: (_, __, ___) => const CircleAvatar(radius: 24, backgroundColor: Colors.grey, child: Icon(Icons.error)),
+                // final userBlock = controller.getUerBlock(user!.userId);
+                //
+                FutureBuilder<bool>(
+                  future: controller.getUerBlock(user!.userId),
+                  builder: (_, snap) => pictureUrl.isEmpty || snap.data == true
+                      ? CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey.withOpacity(0.4),
+                          child: const Icon(Icons.person),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: pictureUrl,
+                          imageBuilder: (_, image) =>
+                              CircleAvatar(backgroundImage: image, radius: 24),
+                          placeholder: (_, __) =>
+                              const CircularProgressIndicator(strokeWidth: 1.5),
+                          errorWidget: (_, __, ___) => const CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.error),
+                          ),
+                        ),
                 ),
+                // pictureUrl.isEmpty || userBlock == true
+                //     ? CircleAvatar(radius: 24, backgroundColor: Colors.grey.withOpacity(0.4), child: const Icon(Icons.person))
+                //     : CachedNetworkImage(
+                //   imageUrl: pictureUrl,
+                //   imageBuilder: (_, image) => CircleAvatar(backgroundImage: image, radius: 24),
+                //   placeholder: (_, __) => const CircularProgressIndicator(strokeWidth: 1.5),
+                //   errorWidget: (_, __, ___) => const CircleAvatar(radius: 24, backgroundColor: Colors.grey, child: Icon(Icons.error)),
+                // ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    FutureBuilder<String>(
-                      future: controller.getLocalName(user?.userId, user?.name),
-                      builder: (_, snap) => Text(snap.data ?? "Loading…", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(user?.phoneNumber ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                  ]),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FutureBuilder<String>(
+                        future: controller.getLocalName(
+                          user?.userId,
+                          user?.name,
+                        ),
+                        builder: (_, snap) => Text(
+                          snap.data ?? "Loading…",
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user?.phoneNumber ?? '',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 if ((perm?.isAdmin == true) && !isPast)
                   Container(
@@ -511,7 +599,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     ),
                     child: Text(
                       isCreator ? "Super Admin" : "Admin",
-                      style: TextStyle(color: AppColors.textBarColor, fontSize: 10, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: AppColors.textBarColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
               ],
@@ -539,9 +631,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
           ),
           content: SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 150,
-              ),
+              constraints: const BoxConstraints(maxHeight: 150),
               child: TextFormField(
                 controller: textController,
                 autofocus: true, // Opens keyboard automatically
@@ -564,7 +654,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                 if (textController.text.isNotEmpty) {
                   Navigator.of(context).pop();
                   controller.updateGroupName(textController.text);
-
                 }
               },
               child: const Text("Save"),
@@ -575,7 +664,10 @@ class GroupProfileView extends GetView<GroupProfileController> {
     );
   }
 
-  void _showEditDescriptionDialog(BuildContext context, GroupData groupDetails) {
+  void _showEditDescriptionDialog(
+    BuildContext context,
+    GroupData groupDetails,
+  ) {
     final textController = TextEditingController(
       text: groupDetails.group?.groupDescription,
     );
@@ -592,9 +684,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
           ),
           content: SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 150,
-              ),
+              constraints: const BoxConstraints(maxHeight: 150),
               child: TextFormField(
                 controller: textController,
                 autofocus: true, // Opens keyboard automatically
@@ -617,7 +707,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                 if (textController.text.isNotEmpty) {
                   Navigator.of(context).pop();
                   controller.updateGroupDescription(textController.text);
-
                 }
               },
               child: const Text("Save"),

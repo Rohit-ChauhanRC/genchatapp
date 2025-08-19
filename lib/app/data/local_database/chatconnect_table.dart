@@ -19,7 +19,7 @@ class ChatConectTable {
     "uid" TEXT,
     "unreadCount" INTEGER,
     "isGroup" INTEGER,
-    "isBlocked" INTEGER
+    "isBlocked" INTEGER,
     UNIQUE(uid, isGroup)
   );
 """);

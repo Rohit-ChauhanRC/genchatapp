@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-ContactResponseModel contactResponseModelFromJson(String str) => ContactResponseModel.fromJson(json.decode(str));
+ContactResponseModel contactResponseModelFromJson(String str) =>
+    ContactResponseModel.fromJson(json.decode(str));
 
-String contactResponseModelToJson(ContactResponseModel data) => json.encode(data.toJson());
+String contactResponseModelToJson(ContactResponseModel data) =>
+    json.encode(data.toJson());
 
 class ContactResponseModel {
   bool? status;
@@ -14,25 +16,27 @@ class ContactResponseModel {
   int? statusCode;
   List<UserList>? data;
 
-  ContactResponseModel({
-    this.status,
-    this.message,
-    this.statusCode,
-    this.data,
-  });
+  ContactResponseModel({this.status, this.message, this.statusCode, this.data});
 
-  factory ContactResponseModel.fromJson(Map<String, dynamic> json) => ContactResponseModel(
-    status: json["status"],
-    message: json["message"],
-    statusCode: json["statusCode"],
-    data: json["data"] == null ? [] : List<UserList>.from(json["data"]!.map((x) => UserList.fromJson(x))),
-  );
+  factory ContactResponseModel.fromJson(Map<String, dynamic> json) =>
+      ContactResponseModel(
+        status: json["status"],
+        message: json["message"],
+        statusCode: json["statusCode"],
+        data: json["data"] == null
+            ? []
+            : List<UserList>.from(
+                json["data"]!.map((x) => UserList.fromJson(x)),
+              ),
+      );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "message": message,
     "statusCode": statusCode,
-    "data": data == null ? [] : List<UserList>.from(data!.map((x) => x.toJson())),
+    "data": data == null
+        ? []
+        : List<UserList>.from(data!.map((x) => x.toJson())),
   };
 }
 
@@ -49,6 +53,7 @@ class UserList {
   String? displayPictureUrl;
   bool? isBlocked;
   String? lastSeenTime;
+  int? blockedByMe;
 
   UserList({
     this.userId,
@@ -63,6 +68,7 @@ class UserList {
     this.displayPictureUrl,
     this.isBlocked,
     this.lastSeenTime,
+    this.blockedByMe,
   });
 
   factory UserList.fromJson(Map<String, dynamic> json) => UserList(
@@ -78,6 +84,7 @@ class UserList {
     displayPictureUrl: json["displayPictureUrl"],
     isBlocked: json["isBlocked"],
     lastSeenTime: json["lastSeen"],
+    blockedByMe: json["blockedByMe"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -93,6 +100,7 @@ class UserList {
     "displayPictureUrl": displayPictureUrl,
     "isBlocked": isBlocked,
     "lastSeen": lastSeenTime,
+    "blockedByMe": blockedByMe,
   };
 
   factory UserList.fromMap(Map<String, dynamic> map) {
@@ -109,6 +117,7 @@ class UserList {
       displayPictureUrl: map["displayPictureUrl"],
       isBlocked: map["isBlocked"] == 1,
       lastSeenTime: map["lastSeen"],
+      blockedByMe: map["blockedByMe"],
     );
   }
 
@@ -126,6 +135,7 @@ class UserList {
       "displayPictureUrl": displayPictureUrl,
       "isBlocked": isBlocked == true ? 1 : 0,
       "lastSeen": lastSeenTime,
+      "blockedByMe": blockedByMe,
     };
   }
 
@@ -142,6 +152,7 @@ class UserList {
     String? displayPictureUrl,
     bool? isBlocked,
     String? lastSeenTime,
+    int? blockedByMe,
   }) {
     return UserList(
       userId: userId ?? this.userId,
@@ -156,6 +167,7 @@ class UserList {
       displayPictureUrl: displayPictureUrl ?? this.displayPictureUrl,
       isBlocked: isBlocked ?? this.isBlocked,
       lastSeenTime: lastSeenTime ?? this.lastSeenTime,
+      blockedByMe: blockedByMe ?? this.blockedByMe,
     );
   }
 }

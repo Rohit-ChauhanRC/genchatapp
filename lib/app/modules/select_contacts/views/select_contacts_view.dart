@@ -157,7 +157,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
                                   ),
                             subtitle: Text(
                               contact.isBlocked == true
-                                  ? "This user is blocked!"
+                                  ? "This user is blocked by you!"
                                   : contact.phoneNumber ?? '',
                               style: const TextStyle(fontSize: 14),
                             ),

@@ -20,7 +20,8 @@ class ContactsTable {
         displayPicture TEXT,
         displayPictureUrl TEXT,
         lastSeen TEXT,
-        isBlocked INTEGER
+        isBlocked INTEGER,
+        blockedByMe INTEGER
       );
     """);
   }
@@ -144,6 +145,7 @@ class ContactsTable {
     required String displayPictureUrl,
     required String lastSeen,
     required int isBlocked,
+    required int? blockedByMe,
   }) async {
     final db = await DataBaseService().database;
 
@@ -160,6 +162,7 @@ class ContactsTable {
       'displayPictureUrl': displayPictureUrl,
       'lastSeen': lastSeen,
       'isBlocked': isBlocked,
+      'blockedByMe': blockedByMe,
     };
 
     await db.insert(
@@ -178,6 +181,8 @@ class ContactsTable {
     String? userDescription,
     String? displayPicture,
     String? displayPictureUrl,
+    int? blockedByMe,
+    int? isBlocked,
   }) async {
     final db = await DataBaseService().database;
 
@@ -187,11 +192,15 @@ class ContactsTable {
     if (localName != null) updateFields['localName'] = localName;
     if (phoneNumber != null) updateFields['phoneNumber'] = phoneNumber;
     if (email != null) updateFields['email'] = email;
-    if (userDescription != null)
+    if (blockedByMe != null) updateFields['blockedByMe'] = blockedByMe;
+    if (isBlocked != null) updateFields['isBlocked'] = isBlocked;
+    if (userDescription != null) {
       updateFields['userDescription'] = userDescription;
+    }
     if (displayPicture != null) updateFields['displayPicture'] = displayPicture;
-    if (displayPictureUrl != null)
+    if (displayPictureUrl != null) {
       updateFields['displayPictureUrl'] = displayPictureUrl;
+    }
 
     print(
       '📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields',
@@ -222,9 +231,7 @@ class ContactsTable {
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {
     if (oldVersion < newVersion) {
-      db.execute(
-        "ALTER TABLE $tableName RENAME COLUMN lastSeenTime to lastSeen;",
-      );
+      db.execute("ALTER TABLE $tableName ADD COLUMN blockedByMe INTEGER;");
     }
   }
 
@@ -234,11 +241,11 @@ class ContactsTable {
     await createTable(db);
   }
 
-  Future<bool?> isUserBlocked(int userId) async {
+  Future<(bool?, int?)> isUserBlocked(int userId) async {
     final db = await DataBaseService().database;
     final result = await db.query(
       tableName,
-      columns: ['isBlocked'],
+      columns: ['isBlocked', 'blockedByMe'],
       where: 'userId = ?',
       whereArgs: [userId],
       limit: 1,
@@ -246,18 +253,26 @@ class ContactsTable {
 
     if (result.isNotEmpty) {
       final value = result.first['isBlocked'] as int?;
-      if (value == null) return null; // Means no data
-      return value == 1; // 1 = blocked, 0 = not blocked
+      final blockedByMe = result.first['blockedByMe'] as int?;
+
+      if (value == null) {
+        return (null, 0); // Means no data
+      }
+      return (value == 1, blockedByMe ?? 0); // 1 = blocked, 0 = not blocked
     }
 
-    return false; // User not found
+    return (false, null); // User not found
   }
 
-  Future<bool> updateUserBlockUnblock(int userId, int isBlocked) async {
+  Future<bool> updateUserBlockUnblock(
+    int userId,
+    int isBlocked,
+    int? blockedByMe,
+  ) async {
     final db = await DataBaseService().database;
     final rowsUpdated = await db.update(
       tableName,
-      {'isBlocked': isBlocked},
+      {'isBlocked': isBlocked, 'blockedByMe': blockedByMe},
       where: 'userId = ?',
       whereArgs: [userId],
     );

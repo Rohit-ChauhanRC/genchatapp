@@ -182,8 +182,10 @@ class SingleChatView extends GetView<SingleChatController> {
 
               if (value == clearText) {
                 await controller.deleteTextMessage();
-              } else if (value == unBlock || value == block) {
+              } else if (value == block) {
                 await controller.blockUser();
+              } else if (value == unBlock) {
+                await controller.unblockUser();
               }
               // switch (value) {
               //   case clearText:
@@ -204,9 +206,13 @@ class SingleChatView extends GetView<SingleChatController> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(
-                value: controller.blocked ? unBlock : block,
+                value: controller.blocked && controller.blockedByMe != 0
+                    ? unBlock
+                    : block,
                 child: Text(
-                  controller.blocked ? unBlock : block,
+                  controller.blocked && controller.blockedByMe != 0
+                      ? unBlock
+                      : block,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -238,7 +244,7 @@ class SingleChatView extends GetView<SingleChatController> {
             ),
           ),
           Obx(
-            () => !controller.blocked
+            () => (controller.blockedByMe == 0)
                 ? BottomChatField(
                     singleChatController: controller,
                     onTap: () {
@@ -260,15 +266,16 @@ class SingleChatView extends GetView<SingleChatController> {
                             style: TextStyle(color: Colors.red, fontSize: 16),
                           ),
                         ),
-                        TextButton(
+
+                        (TextButton(
                           onPressed: () async {
-                            await controller.blockUser();
+                            await controller.unblockUser();
                           },
                           child: const Text(
                             "Unblock User",
                             style: TextStyle(color: whiteColor, fontSize: 16),
                           ),
-                        ),
+                        )),
                       ],
                     ),
                   ),

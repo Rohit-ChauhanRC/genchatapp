@@ -15,6 +15,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/upload_file
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
+import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -55,6 +56,8 @@ class SingleChatController extends GetxController
   final ChatConectTable chatConectTable = ChatConectTable();
 
   final EncryptionService encryptionService = Get.find();
+
+  final selectedContactController = Get.find<SelectContactsController>();
 
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
@@ -110,6 +113,12 @@ class SingleChatController extends GetxController
   final RxBool _blocked = true.obs;
   bool get blocked => _blocked.value;
   set blocked(bool b) => _blocked.value = b;
+
+  // blockedByMe
+
+  final RxInt _blockedByMe = 0.obs;
+  int get blockedByMe => _blockedByMe.value;
+  set blockedByMe(int b) => _blockedByMe.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
 
@@ -324,25 +333,62 @@ class SingleChatController extends GetxController
   Future<void> blockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,
-      blocked ? false : true,
+      true,
     );
+
     if (response != null && response.statusCode == 200) {
+      blocked = true;
+      blockedByMe = 1;
+
       await contactsTable.updateUserBlockUnblock(
         receiverUserData!.userId!,
-        blocked ? 0 : 1,
+        1,
+        senderuserData!.userId!,
       );
       await findUserBlock();
       await chatConectTable.updateUserBlockUnblock(
         receiverUserData!.userId!.toString(),
-        blocked ? 0 : 1,
+        1,
       );
+
+      await selectedContactController.syncContactsWithServer();
+
+      // "contact blocked successfully"
+    }
+  }
+
+  Future<void> unblockUser() async {
+    final response = await chatRepository.userBlock(
+      receiverUserData!.userId!,
+      false,
+    );
+
+    if (response != null && response.statusCode == 200) {
+      blocked = false;
+      blockedByMe = 0;
+      await contactsTable.updateUserBlockUnblock(
+        receiverUserData!.userId!,
+        0,
+        senderuserData!.userId!,
+      );
+      // await findUserBlock();
+      await chatConectTable.updateUserBlockUnblock(
+        receiverUserData!.userId!.toString(),
+        0,
+      );
+
+      await selectedContactController.syncContactsWithServer();
+
       // "contact blocked successfully"
     }
   }
 
   Future<void> findUserBlock() async {
-    blocked =
-        await contactsTable.isUserBlocked(receiverUserData!.userId!) ?? false;
+    final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
+      receiverUserData!.userId!,
+    ));
+    blocked = blockedI!;
+    blockedByMe = blockedByMeI!;
     if (blocked == true) {
       final user = await chatConectTable.fetchById(
         uid: receiverUserData!.userId!.toString(),
@@ -811,6 +857,7 @@ class SingleChatController extends GetxController
           displayPictureUrl: receiverUserData?.displayPictureUrl ?? '',
           lastSeen: receiverUserData?.lastSeenTime ?? '',
           isBlocked: receiverUserData?.isBlocked == true ? 1 : 0,
+          blockedByMe: senderuserData!.userId!,
         );
         if (socketService.isConnected) {
           _sendingMessageIds.add(clientSystemMessageId);

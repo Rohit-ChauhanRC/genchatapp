@@ -400,8 +400,6 @@ class SocketService extends GetxService {
       final usersData = data["users"];
 
       Group group = Group.fromJson(groupMap);
-
-      // Handle both list & single map
       List<User> usersList = [];
       if (usersData is List) {
         usersList = usersData
@@ -411,26 +409,59 @@ class SocketService extends GetxService {
         usersList = [User.fromJson(Map<String, dynamic>.from(usersData))];
       }
 
-      for (var user in usersList) {
-        final userInfo = user.userInfo!;
-        final userGroup = user.userGroupInfo!;
-        // Save new user info if needed
-        await groupsTable.updateUserIfNeeded(userInfo);
+      final isGroupExists = await groupsTable.isGroupExists(group.id!);
 
-        // Add user to group mapping
-        await groupsTable.updateUserGroupRole(
-          groupId: userGroup.groupId ?? 0,
-          userId: userGroup.userId ?? 0,
-          isAdmin: userGroup.isAdmin ?? false,
-          isRemoved: userGroup.isRemoved ?? false,
-          updaterId: userGroup.updaterId ?? 0,
-          createdAt: userGroup.createdAt ?? "",
-          updatedAt: userGroup.updatedAt ?? "",
+      if(!isGroupExists){
+        print("group not found:----> Going to inserted");
+        final responseModel = CreateGroupModel(
+            status: true,
+            message: "",
+            statusCode: 200,
+            data: GroupData(group: group, users: usersList));
+        await groupsTable.insertOrUpdateGroup(responseModel.data!);
+        final data = responseModel.data;
+        print("New group inserted:---> $data");
+        final groupId = data?.group?.id ?? 0;
+        await chatConectTable.insert(
+            contact:  ChatConntactModel(
+                uid: groupId.toString(),
+                isGroup: 1,
+                profilePic: data?.group?.displayPictureUrl ?? '',
+                timeSent: data?.group?.updatedAt ?? "",
+                name: data?.group?.name ?? '',
+                contactId: groupId.toString(),
+                lastMessage: "",
+                lastMessageId: 0,
+                unreadCount: 0
+            )
         );
+        print("Group inserted Sucessfully: $groupId");
+      }else {
+        // Handle both list & single map
+
+        print('Adding users in group:----> $usersList');
+
+        for (var user in usersList) {
+          final userInfo = user.userInfo!;
+          final userGroup = user.userGroupInfo!;
+          // Save new user info if needed
+          await groupsTable.updateUserIfNeeded(userInfo);
+
+          // Add user to group mapping
+          await groupsTable.updateUserGroupRole(
+            groupId: userGroup.groupId ?? 0,
+            userId: userGroup.userId ?? 0,
+            isAdmin: userGroup.isAdmin ?? false,
+            isRemoved: userGroup.isRemoved ?? false,
+            updaterId: userGroup.updaterId ?? 0,
+            createdAt: userGroup.createdAt ?? "",
+            updatedAt: userGroup.updatedAt ?? "",
+          );
+        }
+        // Refresh UI or any state observers
+        updateGroupAdmins.value = false;
+        updateGroupAdmins.value = true;
       }
-      // Refresh UI or any state observers
-      updateGroupAdmins.value = false;
-      updateGroupAdmins.value = true;
     });
 
     _socket?.on('group-user-removed', (data) async {

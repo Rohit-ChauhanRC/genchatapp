@@ -19,6 +19,7 @@ const settings = "Settings";
 const clearText = "Clear chat";
 const logout = "Logout";
 const block = "Block";
+const unBlock = "unBlock";
 
 //Shared preferences Keys Names
 const isNumVerify = "isNumberVerified";

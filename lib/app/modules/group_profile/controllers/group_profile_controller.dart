@@ -15,7 +15,6 @@ import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 
 class GroupProfileController extends GetxController {
-
   final GroupsTable groupTable = GroupsTable();
   final ContactsTable contactsTable = ContactsTable();
   final ChatConectTable chatConectTable = ChatConectTable();
@@ -37,7 +36,8 @@ class GroupProfileController extends GetxController {
 
   final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
-  set currentUserPermission(UserGroupInfo? info) => _currentUserPermission.value = info;
+  set currentUserPermission(UserGroupInfo? info) =>
+      _currentUserPermission.value = info;
 
   final Rx<File?> _image = Rx<File?>(null);
   File? get image => _image.value;
@@ -46,11 +46,9 @@ class GroupProfileController extends GetxController {
   bool get isSuperAdmin =>
       groupDetails.group?.creatorId == currentUserPermission?.userId;
 
-  bool get isAdmin =>
-      currentUserPermission?.isAdmin == true && !isSuperAdmin;
+  bool get isAdmin => currentUserPermission?.isAdmin == true && !isSuperAdmin;
 
-  bool get isMember =>
-      currentUserPermission?.isAdmin != true && !isSuperAdmin;
+  bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
   bool get canEditGroup => isSuperAdmin || isAdmin;
   bool get canAddParticipants => isSuperAdmin || isAdmin;
@@ -63,7 +61,7 @@ class GroupProfileController extends GetxController {
   void onInit() {
     super.onInit();
     groupId = Get.arguments;
-    if(groupId != null || groupId != 0){
+    if (groupId != null || groupId != 0) {
       getGroupDetails(groupId: groupId);
     }
     bindSocketEvents();
@@ -80,84 +78,102 @@ class GroupProfileController extends GetxController {
     groupId = 0;
   }
 
-  void bindSocketEvents(){
-    ever(socketService.updateGroupAdmins, (bool? updateGroupAdmin){
-      if(updateGroupAdmin == true){
+  void bindSocketEvents() {
+    ever(socketService.updateGroupAdmins, (bool? updateGroupAdmin) {
+      if (updateGroupAdmin == true) {
         getGroupDetails(groupId: groupId);
       }
     });
   }
 
-  Future<void> getGroupDetails({required int groupId}) async{
-
+  Future<void> getGroupDetails({required int groupId}) async {
     final groupDetail = await groupTable.getGroupById(groupId);
-    if(groupDetail != null){
+    if (groupDetail != null) {
       groupDetails = groupDetail;
-      print("Data Fetched for GroupId: $groupId\nGroupDetails: ${groupDetail.toJson()}");
-      final userDetail = await contactsTable.getUserById(groupDetails.group?.creatorId ?? 0);
-      if(userDetail != null){
+      print(
+        "Data Fetched for GroupId: $groupId\nGroupDetails: ${groupDetail.toJson()}",
+      );
+      final userDetail = await contactsTable.getUserById(
+        groupDetails.group?.creatorId ?? 0,
+      );
+      if (userDetail != null) {
         creatorUserDetail = userDetail;
       }
 
       final currentUserId = sharedPreferenceService.getUserData()?.userId;
       final currentUserInfo = groupDetail.users?.firstWhere(
-            (u) => u.userInfo?.userId == currentUserId,
+        (u) => u.userInfo?.userId == currentUserId,
         orElse: () => User(userInfo: null, userGroupInfo: null),
       );
       currentUserPermission = currentUserInfo?.userGroupInfo;
-
-    }else{
+    } else {
       print("Group Data are not fetched for GroupId: $groupId");
     }
   }
 
-  Future<String> getLocalName(int? userId, String? name) async{
+  Future<String> getLocalName(int? userId, String? name) async {
     if (userId == null) return name ?? "";
     final contact = await contactsTable.getUserById(userId);
-    return contact?.localName ?? name ?? "";
+    return "${contact?.localName ?? name}${contact!.isBlocked! ? "  This user is blocked by you!" : ""}";
+  }
+
+  Future<bool> getUerBlock(int? userId) async {
+    final contact = await contactsTable.getUserById(userId!);
+    return contact!.isBlocked!;
   }
 
   Future<void> selectImage() async {
-    showImagePicker(onGetImage: (img) async {
-      if (img != null) {
-        image = img;
+    showImagePicker(
+      onGetImage: (img) async {
+        if (img != null) {
+          image = img;
 
-        try {
-          final processedImage = image!;
-          final uploadResponse = await groupRepository.uploadGroupPic(processedImage, groupId);
+          try {
+            final processedImage = image!;
+            final uploadResponse = await groupRepository.uploadGroupPic(
+              processedImage,
+              groupId,
+            );
 
-          if (uploadResponse != null && uploadResponse.statusCode == 200) {
-            // print("✅ Group icon uploaded: ${uploadResponse.data}");
-            final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+            if (uploadResponse != null && uploadResponse.statusCode == 200) {
+              // print("✅ Group icon uploaded: ${uploadResponse.data}");
+              final responseModel = CreateGroupModel.fromJson(
+                uploadResponse.data,
+              );
 
-            if (responseModel.status == true && responseModel.data != null) {
-              if (responseModel.status == true) {
-                await groupTable.insertOrUpdateGroup(responseModel.data!);
-                final data = responseModel.data;
-                final groupId = data?.group?.id ?? 0;
-                await chatConectTable.updateContact(
-                  uid: groupId.toString(),
-                  isGroup: 1,
-                  profilePic: data?.group?.displayPictureUrl ?? '',
-                  timeSent: data?.group?.updatedAt ?? "",
-                  name: data?.group?.name ?? '',
-                );
+              if (responseModel.status == true && responseModel.data != null) {
+                if (responseModel.status == true) {
+                  await groupTable.insertOrUpdateGroup(responseModel.data!);
+                  final data = responseModel.data;
+                  final groupId = data?.group?.id ?? 0;
+                  await chatConectTable.updateContact(
+                    uid: groupId.toString(),
+                    isGroup: 1,
+                    profilePic: data?.group?.displayPictureUrl ?? '',
+                    timeSent: data?.group?.updatedAt ?? "",
+                    name: data?.group?.name ?? '',
+                  );
+                }
               }
+            } else {
+              showAlertMessage('Failed to upload group picture.');
             }
-          } else {
-            showAlertMessage('Failed to upload group picture.');
+          } catch (e) {
+            showAlertMessage("Error uploading group icon: $e");
           }
-        } catch (e) {
-          showAlertMessage("Error uploading group icon: $e");
         }
-      }
-    });
+      },
+    );
   }
 
   void updateGroupName(String newGroupName) async {
-
     try {
-      final uploadResponse = await groupRepository.updateGroupNameAndDescription(isEditingGroupName: true,groupId: groupId,groupName: newGroupName);
+      final uploadResponse = await groupRepository
+          .updateGroupNameAndDescription(
+            isEditingGroupName: true,
+            groupId: groupId,
+            groupName: newGroupName,
+          );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ Group name updated: ${uploadResponse.data}");
@@ -188,7 +204,12 @@ class GroupProfileController extends GetxController {
 
   void updateGroupDescription(String newDesc) async {
     try {
-      final uploadResponse = await groupRepository.updateGroupNameAndDescription(isEditingGroupName: false,groupId: groupId,groupDescription: newDesc);
+      final uploadResponse = await groupRepository
+          .updateGroupNameAndDescription(
+            isEditingGroupName: false,
+            groupId: groupId,
+            groupDescription: newDesc,
+          );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ Group description updated: ${uploadResponse.data}");
@@ -217,9 +238,12 @@ class GroupProfileController extends GetxController {
     }
   }
 
-  void makeAdmin(int userId) async{
+  void makeAdmin(int userId) async {
     try {
-      final uploadResponse = await groupRepository.makeNewAdmin(userId: userId, groupId: groupId);
+      final uploadResponse = await groupRepository.makeNewAdmin(
+        userId: userId,
+        groupId: groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ Make Group admin: ${uploadResponse.data}");
@@ -241,9 +265,12 @@ class GroupProfileController extends GetxController {
     }
   }
 
-  void revokeAdmin(int userId) async{
+  void revokeAdmin(int userId) async {
     try {
-      final uploadResponse = await groupRepository.removeAdmin(userId: userId, groupId: groupId);
+      final uploadResponse = await groupRepository.removeAdmin(
+        userId: userId,
+        groupId: groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ remove Group admin: ${uploadResponse.data}");
@@ -267,7 +294,10 @@ class GroupProfileController extends GetxController {
 
   void removeUser(int userId) async {
     try {
-      final uploadResponse = await groupRepository.removeUser(userId: userId, groupId: groupId);
+      final uploadResponse = await groupRepository.removeUser(
+        userId: userId,
+        groupId: groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ remove Group user: ${uploadResponse.data}");
@@ -290,23 +320,25 @@ class GroupProfileController extends GetxController {
   }
 
   void navigateToAddParticipant() {
-    final existingMemberIds = groupDetails.users
-        ?.where((u) => u.userGroupInfo?.isRemoved != true)
-        .map((u) => u.userInfo?.userId ?? 0)
-        .toList() ?? [];
-    Get.toNamed(Routes.ADD_PARTICIPENTS_IN_GROUP,
-      arguments: {
-        'groupId': groupId,
-        'existingMemberIds': existingMemberIds,
-      },
+    final existingMemberIds =
+        groupDetails.users
+            ?.where((u) => u.userGroupInfo?.isRemoved != true)
+            .map((u) => u.userInfo?.userId ?? 0)
+            .toList() ??
+        [];
+    Get.toNamed(
+      Routes.ADD_PARTICIPENTS_IN_GROUP,
+      arguments: {'groupId': groupId, 'existingMemberIds': existingMemberIds},
     );
   }
 
   Future<void> exitGroup() async {
-
-    try{
+    try {
       final currentUserId = sharedPreferenceService.getUserData()?.userId;
-      final uploadResponse = await groupRepository.removeUser(userId: int.parse(currentUserId.toString()), groupId: groupId);
+      final uploadResponse = await groupRepository.removeUser(
+        userId: int.parse(currentUserId.toString()),
+        groupId: groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ left Group user: ${uploadResponse.data}");
@@ -324,7 +356,7 @@ class GroupProfileController extends GetxController {
       } else {
         showAlertMessage('Failed to left group user.');
       }
-    }catch(e){
+    } catch (e) {
       showAlertMessage("Error getting left group user: $e");
     }
   }
@@ -349,10 +381,10 @@ class GroupProfileController extends GetxController {
           }
         }
       } else {
-        showAlertMessage('Failed to left group user.');
+        showAlertMessage('Failed to delete group.');
       }
     }catch(e){
-      showAlertMessage("Error getting left group user: $e");
+      showAlertMessage("Error getting delete group: $e");
     }
   }
 

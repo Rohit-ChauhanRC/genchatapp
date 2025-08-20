@@ -135,13 +135,18 @@ class SelectContactsController extends GetxController {
         await contactsTable.createBulk(enrichedUsers);
         final updatedList = await contactsTable.fetchAll();
         for (var user in updatedList) {
-          final isGroup = await chatConectTable.isGroupContact(user.userId.toString());
+          final isGroup = await chatConectTable.isGroupContact(
+            user.userId.toString(),
+          );
           if (!isGroup) {
             await chatConectTable.updateContact(
               uid: user.userId.toString(),
               profilePic: user.displayPictureUrl,
-              name: user.localName == "" || user.localName == null? user.phoneNumber : user.localName,
+              name: user.localName == "" || user.localName == null
+                  ? user.phoneNumber
+                  : user.localName,
               isGroup: 0,
+              isBlocked: user.isBlocked == true ? 1 : 0,
             );
             // Download and save profile image using the same name
             if (user.displayPictureUrl != null && user.displayPicture != null) {

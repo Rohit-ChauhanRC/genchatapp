@@ -16,19 +16,23 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(
-          controller.selectedUserIds.isEmpty
-              ? 'Forward To'
-              : '${controller.selectedUserIds.length} selected',
-          style: const TextStyle(color: Colors.white),
-        )),
+        title: Obx(
+          () => Text(
+            controller.selectedUserIds.isEmpty
+                ? 'Forward To'
+                : '${controller.selectedUserIds.length} selected',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
         actions: [
-          Obx(() => controller.selectedUserIds.isNotEmpty
-              ? IconButton(
-            icon: const Icon(Icons.send, color: Colors.white),
-            onPressed: controller.forwardMessages,
-          )
-              : const SizedBox.shrink()),
+          Obx(
+            () => controller.selectedUserIds.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: controller.forwardMessages,
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
         backgroundColor: AppColors.textBarColor,
         centerTitle: false,
@@ -47,8 +51,7 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
                 children: [
                   _buildSearchBar(),
 
-                  if (controller.showRecent)
-                    _buildSectionTitle('Recent Chats'),
+                  if (controller.showRecent) _buildSectionTitle('Recent Chats'),
                   ...controller.filteredRecents.map(_buildUserTile),
 
                   if (controller.showAllContacts)
@@ -58,24 +61,30 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
               ),
 
               // Bottom "Sending to" section
-              Obx(() => controller.selectedUserIds.isNotEmpty
-                  ? Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  color: AppColors.textBarColor.withOpacity(0.15),
-                  child: Text(
-                    "Sending to: ${controller.selectedUserNames.join(', ')}",
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w500),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              )
-                  : const SizedBox.shrink()),
+              Obx(
+                () => controller.selectedUserIds.isNotEmpty
+                    ? Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          color: AppColors.textBarColor.withOpacity(0.15),
+                          child: Text(
+                            "Sending to: ${controller.selectedUserNames.join(', ')}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
         );
@@ -86,57 +95,67 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      child: Text(title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
     );
   }
-
 
   Widget _buildUserTile(UserList user) {
     final isSelected = controller.selectedUserIds.contains(user.userId);
 
     return InkWell(
       onTap: () {
-        controller.toggleSelection(user.userId!);
-        controller.hideKeyboard();},
+        if (user.isBlocked == true) {
+          //
+        } else {
+          controller.toggleSelection(user.userId!);
+          controller.hideKeyboard();
+        }
+      },
       child: Container(
         // margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.textBarColor.withOpacity(0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.textBarColor.withOpacity(0.1)
+              : Colors.transparent,
           // borderRadius: BorderRadius.circular(12),
         ),
         child: ListTile(
           leading: Stack(
             children: [
-              (user.displayPictureUrl?.isNotEmpty ?? false)
+              ((user.displayPictureUrl?.isNotEmpty ?? false) &&
+                      user.isBlocked == false)
                   ? Padding(
-                    padding: const EdgeInsets.only(right: 4.0),
-                    child: CachedNetworkImage(
-                                    imageUrl: user.displayPictureUrl.toString(),
-                                    imageBuilder: (context, image) {
-                    return CircleAvatar(
-                        backgroundColor: greyColor.withOpacity(0.4),
-                        radius: 25,
-                        backgroundImage: image);
-                                    },
-                                    placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                    errorWidget: (context, url, error) =>
-                                        CircleAvatar(
-                                            radius: 25,
-                                            backgroundColor: Colors.grey,
-                                            child: const Icon(Icons.error,color: Colors.white)
-                                        ),
-                                  ),
-                  )
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: CachedNetworkImage(
+                        imageUrl: user.displayPictureUrl.toString(),
+                        imageBuilder: (context, image) {
+                          return CircleAvatar(
+                            backgroundColor: greyColor.withOpacity(0.4),
+                            radius: 25,
+                            backgroundImage: image,
+                          );
+                        },
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            const CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.error, color: Colors.white),
+                            ),
+                      ),
+                    )
                   : const Padding(
-                    padding: EdgeInsets.only(right: 4.0),
-                    child: CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.white),
-                                  ),
-                  ),
+                      padding: EdgeInsets.only(right: 4.0),
+                      child: CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                    ),
               if (isSelected)
                 Positioned(
                   bottom: 0,
@@ -147,13 +166,21 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
                       shape: BoxShape.circle,
                     ),
                     padding: const EdgeInsets.all(3),
-                    child: const Icon(Icons.check, color: Colors.white, size: 16),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
             ],
           ),
-          title: Text(user.localName ?? user.phoneNumber ?? '',
-              style: const TextStyle(fontSize: 16)),
+          title: Text(
+            user.isBlocked == true
+                ? "${user.localName} (This user is blocked by you!)"
+                : user.localName ?? user.phoneNumber ?? '',
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
       ),
     );
@@ -181,4 +208,3 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
     );
   }
 }
-

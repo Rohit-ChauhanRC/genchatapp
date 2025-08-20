@@ -155,6 +155,7 @@ class ChatsController extends GetxController {
           timeSent: contact.timeSent,
           contactId: contact.contactId,
           isGroup: contact.isGroup,
+          isBlocked: contact.isBlocked,
         );
       }).toList();
 

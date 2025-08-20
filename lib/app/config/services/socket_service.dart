@@ -378,17 +378,17 @@ class SocketService extends GetxService {
         final data = responseModel.data;
         final groupId = data?.group?.id ?? 0;
         await chatConectTable.insert(
-            contact:  ChatConntactModel(
-                uid: groupId.toString(),
-                isGroup: 1,
-                profilePic: data?.group?.displayPictureUrl ?? '',
-                timeSent: data?.group?.updatedAt ?? "",
-                name: data?.group?.name ?? '',
-                contactId: groupId.toString(),
-                lastMessage: "",
-                lastMessageId: 0,
-                unreadCount: 0
-            )
+          contact: ChatConntactModel(
+            uid: groupId.toString(),
+            isGroup: 1,
+            profilePic: data?.group?.displayPictureUrl ?? '',
+            timeSent: data?.group?.updatedAt ?? "",
+            name: data?.group?.name ?? '',
+            contactId: groupId.toString(),
+            lastMessage: "",
+            lastMessageId: 0,
+            unreadCount: 0,
+          ),
         );
       }
     });
@@ -410,32 +410,33 @@ class SocketService extends GetxService {
 
       final isGroupExists = await groupsTable.isGroupExists(group.id!);
 
-      if(!isGroupExists){
+      if (!isGroupExists) {
         print("group not found:----> Going to inserted");
         final responseModel = CreateGroupModel(
-            status: true,
-            message: "",
-            statusCode: 200,
-            data: GroupData(group: group, users: usersList));
+          status: true,
+          message: "",
+          statusCode: 200,
+          data: GroupData(group: group, users: usersList),
+        );
         await groupsTable.insertOrUpdateGroup(responseModel.data!);
         final data = responseModel.data;
         print("New group inserted:---> $data");
         final groupId = data?.group?.id ?? 0;
         await chatConectTable.insert(
-            contact:  ChatConntactModel(
-                uid: groupId.toString(),
-                isGroup: 1,
-                profilePic: data?.group?.displayPictureUrl ?? '',
-                timeSent: data?.group?.updatedAt ?? "",
-                name: data?.group?.name ?? '',
-                contactId: groupId.toString(),
-                lastMessage: "",
-                lastMessageId: 0,
-                unreadCount: 0
-            )
+          contact: ChatConntactModel(
+            uid: groupId.toString(),
+            isGroup: 1,
+            profilePic: data?.group?.displayPictureUrl ?? '',
+            timeSent: data?.group?.updatedAt ?? "",
+            name: data?.group?.name ?? '',
+            contactId: groupId.toString(),
+            lastMessage: "",
+            lastMessageId: 0,
+            unreadCount: 0,
+          ),
         );
         print("Group inserted Sucessfully: $groupId");
-      }else {
+      } else {
         // Handle both list & single map
 
         print('Adding users in group:----> $usersList');
@@ -569,6 +570,23 @@ class SocketService extends GetxService {
         data["blockedBy"].toString(),
         data["isBlock"] == true ? 1 : 0,
       );
+    });
+    _socket?.on('group-deleted', (data) async {
+      print("divyanshu shanky: $data");
+      final responseModel = CreateGroupModel.fromJson(data);
+      // print("after Parsing: ${responseModel.toJson()}");
+      if (responseModel.status == true && responseModel.data != null) {
+        await groupsTable.insertOrUpdateGroup(responseModel.data!);
+        final data = responseModel.data;
+        final groupId = data?.group?.id ?? 0;
+        await chatConectTable.updateContact(
+          uid: groupId.toString(),
+          isGroup: 1,
+          profilePic: data?.group?.displayPictureUrl ?? '',
+          timeSent: data?.group?.updatedAt ?? "",
+          name: data?.group?.name ?? '',
+        );
+      }
     });
   }
 

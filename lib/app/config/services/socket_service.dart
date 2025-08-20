@@ -571,23 +571,7 @@ class SocketService extends GetxService {
         data["isBlock"] == true ? 1 : 0,
       );
     });
-    _socket?.on('group-deleted', (data) async {
-      print("divyanshu shanky: $data");
-      final responseModel = CreateGroupModel.fromJson(data);
-      // print("after Parsing: ${responseModel.toJson()}");
-      if (responseModel.status == true && responseModel.data != null) {
-        await groupsTable.insertOrUpdateGroup(responseModel.data!);
-        final data = responseModel.data;
-        final groupId = data?.group?.id ?? 0;
-        await chatConectTable.updateContact(
-          uid: groupId.toString(),
-          isGroup: 1,
-          profilePic: data?.group?.displayPictureUrl ?? '',
-          timeSent: data?.group?.updatedAt ?? "",
-          name: data?.group?.name ?? '',
-        );
-      }
-    });
+
   }
 
   void sendMessage(NewMessageModel data) async {

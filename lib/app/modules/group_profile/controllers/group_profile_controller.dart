@@ -329,4 +329,31 @@ class GroupProfileController extends GetxController {
     }
   }
 
+  Future<void> deleteGroup() async {
+
+    try{
+      // final currentUserId = sharedPreferenceService.getUserData()?.userId;
+      final uploadResponse = await groupRepository.deleteGroup(groupId: groupId);
+
+      if (uploadResponse != null && uploadResponse.statusCode == 200) {
+        print("✅ delete Group: ${uploadResponse.data}");
+        final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupTable.insertOrUpdateGroup(responseModel.data!);
+            final data = responseModel.data;
+            final groupId = data?.group?.id ?? 0;
+            await getGroupDetails(groupId: groupId);
+            Get.until((route) => route.settings.name == Routes.HOME);
+          }
+        }
+      } else {
+        showAlertMessage('Failed to left group user.');
+      }
+    }catch(e){
+      showAlertMessage("Error getting left group user: $e");
+    }
+  }
+
 }

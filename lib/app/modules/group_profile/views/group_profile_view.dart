@@ -385,46 +385,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     ),
                     const SizedBox(height: 30),
                   ],
-
-                  ///Delete Group
-                  if (controller.isSuperAdmin) ...[
-                    const Divider(),
-
-                    const SizedBox(height: 10),
-
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0, right: 8),
-                      child: InkWell(
-                        onTap: () {
-                          // exit logic here
-                          showAlertMessageWithAction(
-                              title: "Delete Group: ${group?.name}?",
-                              message: "Are you sure you want to delete this group.",
-                              cancelText: "Cancel",
-                              confirmText: "Delete group",
-                              // onCancel: ()=> Get.back(),
-                              onConfirm: ()=> controller.deleteGroup(),
-                              context: context
-                          );
-
-                        },
-                        child: const Row(
-                          children: [
-                            Icon(Symbols.logout_rounded, color: Colors.red),
-                            SizedBox(width: 12),
-                            Text(
-                              "Delete Group",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                  ],
                 ],
               ),
             ),

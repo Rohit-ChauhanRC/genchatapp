@@ -387,5 +387,4 @@ class GroupProfileController extends GetxController {
       showAlertMessage("Error getting delete group: $e");
     }
   }
-
 }

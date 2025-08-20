@@ -27,7 +27,6 @@ class ApiEndpoints {
   static const String removeAdmin = "group/remove-admin";
   static const String removeUser = "group/remove-user";
   static const String addUser = "group/add-users";
-  static const String deleteGroup = "group/delete";
 
   static const String uploadMessageFiles = "message/file";
   static const String userBlock = "user/block-contact";

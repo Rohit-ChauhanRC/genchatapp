@@ -341,16 +341,7 @@ class GroupsTable {
   }
 
 
-  Future<bool> isGroupExists(int groupId) async {
-    final db = await DataBaseService().database;
-    final result = await db.query(
-      groupsTableName,
-      where: 'id = ?',
-      whereArgs: [groupId],
-      limit: 1,
-    );
-    return result.isNotEmpty;
-  }
+
 
   Future<void> deleteGroupsTable() async {
     final db = await DataBaseService().database;

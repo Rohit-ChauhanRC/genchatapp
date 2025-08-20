@@ -108,19 +108,6 @@ class GroupRepository {
     }
   }
 
-  Future<Response?> deleteGroup({
-    required int groupId,
-  }) async {
-    try {
-      final param = {'groupId': groupId};
-      return await apiClient.post(ApiEndpoints.deleteGroup, param);
-    } catch (e) {
-      // print('Error in verifyOTPAPI: $e');
-      showAlertMessage("Error: $e");
-      return null;
-    }
-  }
-
   Future<Response?> addUsers({
     required List<int> userId,
     required int groupId,

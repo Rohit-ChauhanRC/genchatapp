@@ -214,13 +214,15 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       checkIfCurrentUserRemoved(groupDetails);
       groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
     }
-    socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
-      if (typingUsers.isNotEmpty) {
-        _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
-      } else {
-        _typingDisplayText.value = '';
-      }
-    });
+    if(isCurrentUserRemoved == false){
+      socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
+        if (typingUsers.isNotEmpty) {
+          _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
+        } else {
+          _typingDisplayText.value = '';
+        }
+      });
+    }
 
     getRootFolder();
 

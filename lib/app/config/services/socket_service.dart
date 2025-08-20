@@ -365,6 +365,8 @@ class SocketService extends GetxService {
           name: data?.group?.name ?? '',
         );
       }
+      updateGroupAdmins.value = false;
+      updateGroupAdmins.value = true;
     });
 
     _socket?.on('group-created', (data) async {
@@ -393,9 +395,6 @@ class SocketService extends GetxService {
 
     _socket?.on('group-user-added', (data) async {
       print('✅ New User added in group: $data');
-      // final responseModel = CreateGroupModel.fromJson(data);
-      // // print("after Parsing: ${responseModel.toJson()}");
-      // if (responseModel.status == true && responseModel.data != null) {
       final groupMap = data["group"];
       final usersData = data["users"];
 
@@ -518,6 +517,23 @@ class SocketService extends GetxService {
         );
         updateGroupAdmins.value = false;
         updateGroupAdmins.value = true;
+      }
+    });
+
+    _socket?.on('group-deleted',(data) async{
+      print("✅ Group deleted: $data");
+      final responseModel = CreateGroupModel.fromJson(data);
+      if (responseModel.status == true && responseModel.data != null) {
+        await groupsTable.insertOrUpdateGroup(responseModel.data!);
+        final data = responseModel.data;
+        final groupId = data?.group?.id ?? 0;
+        await chatConectTable.updateContact(
+          uid: groupId.toString(),
+          isGroup: 1,
+          profilePic: data?.group?.displayPictureUrl ?? '',
+          timeSent: data?.group?.updatedAt ?? "",
+          name: data?.group?.name ?? '',
+        );
       }
     });
 

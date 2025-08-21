@@ -50,11 +50,11 @@ class ProfileRepository {
     }
 
     return await retryFormDataUpload(
-      url: ApiEndpoints.uploadMessageFiles,
+      url: ApiEndpoints.updateUserProPic,
       formDataBuilder: buildFormData,
       onProgress: onProgress,
       uploadCall: (formData, {onProgress}) => apiClient.uploadFile(
-        ApiEndpoints.uploadMessageFiles,
+        ApiEndpoints.updateUserProPic,
         formData,
         onSendProgress: onProgress,
       ),

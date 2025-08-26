@@ -134,43 +134,8 @@ class ChatList extends StatelessWidget {
                             child: isMine
                                 ? Column(
                                     children: [
-                                      // Obx(
-                                      //   () =>
-                                      //       singleChatController.percent.value >
-                                      //           0.0
-                                      //       ? Align(
-                                      //           alignment:
-                                      //               Alignment.centerRight,
-                                      //           child: ConstrainedBox(
-                                      //             constraints: BoxConstraints(
-                                      //               minWidth: 130,
-                                      //               maxWidth:
-                                      //                   MediaQuery.of(
-                                      //                     context,
-                                      //                   ).size.width *
-                                      //                   0.75,
-                                      //             ),
-                                      //             child: Row(
-                                      //               children: [
-                                      //                 Container(
-                                      //                   child: CircularProgressIndicator(
-                                      //                     value:
-                                      //                         singleChatController
-                                      //                             .percent
-                                      //                             .value,
-                                      //                   ),
-                                      //                 ),
-                                      //                 const SizedBox(width: 8),
-                                      //                 Text(
-                                      //                   "Uploading...${singleChatController.percent.value.toStringAsFixed(0)}%",
-                                      //                 ),
-                                      //               ],
-                                      //             ),
-                                      //           ),
-                                      //         )
-                                      //       : const SizedBox.shrink(),
-                                      // ),
                                       MyMessageCard(
+                                        percent: singleChatController.percent,
                                         isProgess: singleChatController.percent,
                                         audioMessage: messages.message ?? "",
                                         message:
@@ -277,6 +242,42 @@ class ChatList extends StatelessWidget {
                                             messages.isRetrying ?? false.obs,
                                         assetThumbnail: messages.assetThumbnail,
                                       ),
+                                      // Obx(
+                                      //   () =>
+                                      //       singleChatController.percent.value >
+                                      //           0.0
+                                      //       ? Align(
+                                      //           alignment:
+                                      //               Alignment.centerRight,
+                                      //           child: ConstrainedBox(
+                                      //             constraints: BoxConstraints(
+                                      //               minWidth: 130,
+                                      //               maxWidth:
+                                      //                   MediaQuery.of(
+                                      //                     context,
+                                      //                   ).size.width *
+                                      //                   0.75,
+                                      //             ),
+                                      //             child: Row(
+                                      //               children: [
+                                      //                 Container(
+                                      //                   child: CircularProgressIndicator(
+                                      //                     value:
+                                      //                         singleChatController
+                                      //                             .percent
+                                      //                             .value,
+                                      //                   ),
+                                      //                 ),
+                                      //                 const SizedBox(width: 8),
+                                      //                 Text(
+                                      //                   "Uploading...${singleChatController.percent.value.toStringAsFixed(0)}%",
+                                      //                 ),
+                                      //               ],
+                                      //             ),
+                                      //           ),
+                                      //         )
+                                      //       : const SizedBox.shrink(),
+                                      // ),
                                     ],
                                   )
                                 : SenderMessageCard(

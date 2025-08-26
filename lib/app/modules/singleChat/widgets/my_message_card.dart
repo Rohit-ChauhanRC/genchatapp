@@ -34,6 +34,7 @@ class MyMessageCard extends StatelessWidget {
     this.assetThumbnail,
     this.audioMessage,
     required this.isProgess,
+    required this.percent,
   }) : super(key: key);
 
   final String message;
@@ -59,6 +60,7 @@ class MyMessageCard extends StatelessWidget {
   final String? assetThumbnail;
   final String? audioMessage;
   final RxDouble isProgess;
+  final RxDouble percent;
 
   @override
   Widget build(BuildContext context) {
@@ -183,13 +185,45 @@ class MyMessageCard extends StatelessWidget {
                               url: url,
                               assetThumbnail: assetThumbnail,
                             ),
+
                             if (isAsset &&
                                 (type == MessageType.image ||
                                     type == MessageType.video ||
                                     type == MessageType.document ||
                                     type == MessageType.audio)) ...[
+                              // Obx(
+                              //   () =>
+                              //       percent.value > 0.0 &&
+                              //           !isRetryUploadFile.value
+                              //       ? ConstrainedBox(
+                              //           constraints: BoxConstraints(
+                              //             minWidth: 130,
+                              //             maxWidth:
+                              //                 MediaQuery.of(
+                              //                   context,
+                              //                 ).size.width *
+                              //                 0.75,
+                              //           ),
+                              //           child: Row(
+                              //             children: [
+                              //               Container(
+                              //                 child: CircularProgressIndicator(
+                              //                   value: percent.value,
+                              //                 ),
+                              //               ),
+                              //               const SizedBox(width: 8),
+                              //               Text(
+                              //                 "Uploading...${percent.value.toStringAsFixed(0)}%",
+                              //               ),
+                              //             ],
+                              //           ),
+                              //         )
+                              //       : const SizedBox.shrink(),
+                              // ),
                               Obx(() {
-                                if (isRetryUploadFile.value) {
+                                if (isRetryUploadFile.value &&
+                                    percent.value < 1.0 &&
+                                    syncStatus == SyncStatus.pending) {
                                   return Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
@@ -205,7 +239,8 @@ class MyMessageCard extends StatelessWidget {
                                       ),
                                     ),
                                   );
-                                } else if (syncStatus == SyncStatus.pending) {
+                                } else if (syncStatus == SyncStatus.pending &&
+                                    percent.value < 1.0) {
                                   return InkWell(
                                     onTap: () {
                                       if (!isRetryUploadFile.value) {
@@ -225,7 +260,33 @@ class MyMessageCard extends StatelessWidget {
                                       ),
                                     ),
                                   );
-                                } else {
+                                }
+                                // else if (syncStatus == SyncStatus.synced &&
+                                //     percent.value > 1.0 &&
+                                //     type == MessageType.video) {
+                                //   return ConstrainedBox(
+                                //     constraints: BoxConstraints(
+                                //       minWidth: 130,
+                                //       maxWidth:
+                                //           MediaQuery.of(context).size.width *
+                                //           0.75,
+                                //     ),
+                                //     child: Row(
+                                //       children: [
+                                //         Container(
+                                //           child: CircularProgressIndicator(
+                                //             value: percent.value,
+                                //           ),
+                                //         ),
+                                //         const SizedBox(width: 8),
+                                //         Text(
+                                //           "Uploading...${percent.value.toStringAsFixed(0)}%",
+                                //         ),
+                                //       ],
+                                //     ),
+                                //   );
+                                // }
+                                else {
                                   return const SizedBox.shrink();
                                 }
                               }),

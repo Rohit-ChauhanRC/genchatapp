@@ -511,6 +511,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
     required bool isPast,
   }) {
     final pictureUrl = user?.displayPictureUrl ?? '';
+    final nameServer = user?.name ?? "";
     return Opacity(
       opacity: isPast ? 0.6 : 1.0,
       child: IgnorePointer(
@@ -518,7 +519,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
         child: PopupMenuButton<String>(
           offset: const Offset(0, 56),
           onSelected: (val) {
-            final uid = user?.userId;
+            final uid = user.userId;
             if (uid == null) return;
             switch (val) {
               case 'make_admin':
@@ -612,17 +613,17 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     children: [
                       FutureBuilder<String>(
                         future: controller.getLocalName(
-                          user?.userId,
-                          user?.name,
+                          user.userId,
+                          user.name,
                         ),
                         builder: (_, snap) => Text(
-                          snap.data ?? "Loading…",
+                          snap.data ?? "~ $nameServer",
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        user?.phoneNumber ?? '',
+                        user.phoneNumber ?? '',
                         style: const TextStyle(
                           fontSize: 13,
                           color: Colors.grey,

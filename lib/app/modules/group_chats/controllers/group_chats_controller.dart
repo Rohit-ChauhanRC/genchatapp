@@ -443,6 +443,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         .map((u) => u.userInfo?.userId)
         .whereType<int>()
         .toList();
+    final activePhoneNumbers = users.where((u)=> u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.phoneNumber).whereType<String>().toList();
 
     // Step 2: Separate saved and unsaved contacts
     final savedNames = <String>[];
@@ -450,13 +452,21 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     for (final userId in activeUserIds) {
       final contact = await contactsTable.getUserById(userId);
-      final localName = contact?.localName?.trim();
-      final phone = contact?.phoneNumber?.trim();
+      if(contact != null) {
+        final localName = contact.localName?.trim();
+        final phone = contact.phoneNumber?.trim();
 
-      if (localName != null && localName.isNotEmpty) {
-        savedNames.add(localName);
-      } else if (phone != null && phone.isNotEmpty) {
-        unsavedNumbers.add(phone);
+        if (localName != null && localName.isNotEmpty) {
+          savedNames.add(localName);
+        }
+          // else if (phone != null && phone.isNotEmpty) {
+        //   unsavedNumbers.add(phone);
+        // }
+      }else{
+
+        if (activePhoneNumbers.isNotEmpty) {
+          unsavedNumbers.addAll(activePhoneNumbers);
+        }
       }
     }
 
@@ -495,11 +505,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
         final id = message.senderId ?? 0;
+        final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
-          await contactsTable.getUserById(id).then((user) {
-            final name = user?.localName ?? user?.name;
+          var userList = await contactsTable.getUserById(id);
+          if(userList != null){
+            final name = userList.localName ?? userList.name;
             senderNamesCache[id] = name!;
-          });
+          }else{
+            senderNamesCache[id] = senderNumber;
+          }
+
         }
         // Acknowledge seen if message is incoming and not already seen
         if (message.recipientId == receiverUserData?.group?.id &&
@@ -630,11 +645,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       // ✅ Cache sender names for newly loaded messages
       for (var msg in messages) {
         final id = msg.senderId ?? 0;
+        final senderNumber = msg.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
-          await contactsTable.getUserById(id).then((user) {
-            final name = user?.localName ?? user?.name;
+          var user = await contactsTable.getUserById(id);
+
+          if(user != null){
+            final name = user.localName ?? user.name;
             senderNamesCache[id] = name!;
-          });
+          }else{
+            senderNamesCache[id] = senderNumber;
+          }
+
         }
       }
 

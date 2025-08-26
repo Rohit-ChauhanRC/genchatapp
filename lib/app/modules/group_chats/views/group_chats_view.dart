@@ -111,6 +111,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                               if (controller.typingDisplayText.isNotEmpty) {
                                 return Text(
                                   controller.typingDisplayText,
+                                  maxLines: 2,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w200,
                                     color: whiteColor,

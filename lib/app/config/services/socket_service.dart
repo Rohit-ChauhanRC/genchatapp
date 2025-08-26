@@ -637,19 +637,34 @@ class SocketService extends GetxService {
     required String userId,
     required bool isTyping,
   }) async {
-    // 🔍 Fetch user name from local database
-    final user = await contactsTable.getUserById(int.parse(userId));
-    final userName = user?.localName ?? user?.name;
+    final uid = int.tryParse(userId) ?? -1;
+    final gid = int.tryParse(groupId) ?? -1;
 
+    String? userName;
+
+    // 🔍 Step 1: Check local contact table
+    final user = await contactsTable.getUserById(uid);
+    if (user != null) {
+      userName = user.localName?.isNotEmpty == true
+          ? user.localName
+          : user.name;
+    } else {
+      // 🔍 Step 2: Fallback → get phoneNumber from group members
+      final groupData = await groupsTable.getGroupById(gid);
+      userName = groupData?.users
+          ?.firstWhere(
+            (u) => u.userInfo?.userId == uid,
+        orElse: () => User(userInfo: null, userGroupInfo: null),
+      ).userInfo?.phoneNumber;
+    }
+
+    // 🔄 Step 3: Update typing map
     final groupMap = typingGroupUsersMap[groupId] ?? {};
-
-    if (isTyping) {
-      groupMap[userId] = userName!;
+    if (isTyping && userName != null && userName.isNotEmpty) {
+      groupMap[userId] = userName;
     } else {
       groupMap.remove(userId);
     }
-
-    // 🧠 Reassign to trigger update in .obs
     typingGroupUsersMap[groupId] = Map.from(groupMap);
   }
 

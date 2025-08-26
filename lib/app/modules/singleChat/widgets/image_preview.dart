@@ -8,12 +8,26 @@ import 'package:get/get.dart';
 
 class ImagePreviewScreen extends StatelessWidget {
   final String imagePath;
+  final bool networkImage;
 
-  ImagePreviewScreen({super.key, required this.imagePath});
+  const ImagePreviewScreen({
+    super.key,
+    required this.imagePath,
+    required this.networkImage,
+  });
 
   @override
   Widget build(BuildContext context) {
     final imageProvider = FileImage(File(imagePath));
+
+    final imageNetworkProvider = Image.network(
+      imagePath,
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.broken_image, size: 50, color: Colors.grey);
+      },
+    ).image;
+
+    Future.delayed(Durations.medium4);
 
     return Scaffold(
       backgroundColor: AppColors.blackColor,
@@ -36,7 +50,10 @@ class ImagePreviewScreen extends StatelessWidget {
         alignment: Alignment.center,
         // width: Get.width * 0.7,
         height: Get.height,
-        child: EasyImageView(imageProvider: imageProvider),
+        child: EasyImageView(
+          imageProvider: networkImage ? imageNetworkProvider : imageProvider,
+        ),
+
         // SizedBox.expand(
         //   child: InteractiveViewer(
         //     transformationController: _transformationController,

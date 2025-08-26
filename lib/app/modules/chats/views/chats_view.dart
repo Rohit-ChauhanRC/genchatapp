@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -13,6 +16,7 @@ import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../constants/constants.dart';
 import '../../../utils/profile_image_dialog.dart';
@@ -73,14 +77,14 @@ class ChatsView extends GetView<ChatsController> {
                   ),
 
                 // Only show camera icon when no selection
-                if (!hasSelection)
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.camera_alt_outlined,
-                      color: whiteColor,
-                    ),
-                  ),
+                // if (!hasSelection)
+                //   IconButton(
+                //     onPressed: () {},
+                //     icon: const Icon(
+                //       Icons.camera_alt_outlined,
+                //       color: whiteColor,
+                //     ),
+                //   ),
 
                 // Always show the popup menu
                 PopupMenuButton(
@@ -224,7 +228,50 @@ class ChatsView extends GetView<ChatsController> {
                                   children: [
                                     // Profile Image
                                     InkWell(
-                                      onTap: () {
+                                      onTap: () async {
+                                        // final filePath = await FolderCreation()
+                                        //     .checkAndHandleFile(
+                                        //       fileUrl:
+                                        //           chatConntactModel.profilePic!,
+                                        //       fileName:
+                                        //           chatConntactModel.profilePic!
+                                        //               .split(
+                                        //                 "/",
+                                        //               )[chatConntactModel
+                                        //                   .profilePic!
+                                        //                   .split("/")
+                                        //                   .length -
+                                        //               1],
+                                        //       subFolderName: "Image",
+                                        //       messageType:
+                                        //           MessageType.image.value,
+                                        //       onReceiveProgress:
+                                        //           (received, total) {},
+                                        //       onCancel: () {},
+                                        //     );
+
+                                        final Directory thumDir;
+                                        if (Platform.isAndroid) {
+                                          thumDir = Directory(
+                                            "/storage/emulated/0/Android/media",
+                                          );
+                                        } else {
+                                          thumDir =
+                                              await getApplicationDocumentsDirectory();
+                                        }
+
+                                        final String rootFolderPath =
+                                            '${thumDir.path}/$appPackageName/GenChat/Image';
+
+                                        String filePath =
+                                            rootFolderPath +
+                                            chatConntactModel.profilePic!.split(
+                                              "/",
+                                            )[chatConntactModel.profilePic!
+                                                    .split("/")
+                                                    .length -
+                                                1];
+                                        print(filePath);
                                         showDialog(
                                           context: context,
                                           builder: (_) => ProfileImageDialog(

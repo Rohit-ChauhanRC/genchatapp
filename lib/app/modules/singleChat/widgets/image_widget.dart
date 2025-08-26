@@ -23,7 +23,10 @@ class ImageWidget extends StatelessWidget {
   Future<void> _downloadAndOpenFile(BuildContext context) async {
     final file = File(rootFolderPath);
     if (file.existsSync()) {
-      Get.to(() => ImagePreviewScreen(imagePath: rootFolderPath));
+      Get.to(
+        () =>
+            ImagePreviewScreen(imagePath: rootFolderPath, networkImage: false),
+      );
       // final imageProvider = FileImage(File(rootFolderPath));
 
       // showImageViewer(
@@ -42,7 +45,10 @@ class ImageWidget extends StatelessWidget {
       final dio = Dio();
       await dio.download(url.toString(), rootFolderPath);
       // await OpenFile.open(widget.localFilePath);
-      Get.to(() => ImagePreviewScreen(imagePath: rootFolderPath));
+      Get.to(
+        () =>
+            ImagePreviewScreen(imagePath: rootFolderPath, networkImage: false),
+      );
 
       return;
     } catch (e) {

@@ -97,6 +97,18 @@ class ChatsController extends GetxController {
       await Future.delayed(interval); // controls polling frequency
       final messages = await ChatConectTable().fetchAll();
       // print("All Chats:----> $messages");
+      // for (var e in messages) {
+      //   await FolderCreation().checkAndHandleFile(
+      //     fileUrl: e.profilePic!,
+      //     fileName: e.profilePic!.split(
+      //       "/",
+      //     )[e.profilePic!.split("/").length - 1],
+      //     subFolderName: "Image",
+      //     messageType: MessageType.image.value,
+      //     onReceiveProgress: (received, total) {},
+      //     onCancel: () {},
+      //   );
+      // }
 
       yield messages;
     }
@@ -174,13 +186,14 @@ class ChatsController extends GetxController {
     });
   }
 
-  void filterContacts() {
+  void filterContacts() async {
     if (searchText.isEmpty) {
       filteredContacts.assignAll(contactsList); // Show full list
     } else {
       filteredContacts.assignAll(
         contactsList.where((contact) {
           final name = contact.name?.toLowerCase() ?? '';
+
           return name.contains(searchText);
         }).toList(),
       );

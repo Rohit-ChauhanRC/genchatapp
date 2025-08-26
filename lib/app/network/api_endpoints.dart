@@ -10,7 +10,7 @@ class ApiEndpoints {
   // static const String baseUrl = "$_base/api/";
   static String get socketBaseUrl => AppConfig.socketUrl;
   // static const String socketBaseUrl = _base;
-  static const String apiVersion = "v1/";
+  static const String apiVersion = "v2/";
 
   /// API Endpoints
   static const String sendOtp = "send-otp";

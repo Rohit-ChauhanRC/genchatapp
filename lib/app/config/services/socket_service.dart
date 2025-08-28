@@ -663,7 +663,7 @@ class SocketService extends GetxService {
     if (isTyping && userName != null && userName.isNotEmpty) {
       groupMap[userId] = userName;
     } else {
-      groupMap.remove(userId);
+      groupMap.remove(userId);//lmlmgmrogrogm
     }
     typingGroupUsersMap[groupId] = Map.from(groupMap);
   }

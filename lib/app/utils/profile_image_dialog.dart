@@ -9,12 +9,14 @@ class ProfileImageDialog extends StatelessWidget {
   final String? imageUrl;
   final String? userName;
   final bool isGroup;
+  final String? imagePath;
 
   ProfileImageDialog({
     super.key,
     required this.imageUrl,
     required this.userName,
     required this.isGroup,
+    required this.imagePath,
   });
 
   final FolderCreation folderCreation = Get.find<FolderCreation>();
@@ -33,7 +35,7 @@ class ProfileImageDialog extends StatelessWidget {
               if (imageUrl != null && imageUrl!.isNotEmpty) {
                 Get.to(
                   () => ImagePreviewScreen(
-                    imagePath: imageUrl!,
+                    imagePath: imagePath!,
                     networkImage: true,
                   ),
                 );

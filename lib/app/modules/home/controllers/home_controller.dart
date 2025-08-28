@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -13,12 +15,16 @@ import 'package:genchatapp/app/modules/updates/controllers/updates_controller.da
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../main.dart';
 import '../../../data/local_database/chatconnect_table.dart';
 import '../../../data/local_database/groups_table.dart';
 import '../../../data/models/chat_conntact_model.dart';
 import '../../../data/models/new_models/response_model/create_group_model.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 
 class HomeController extends GetxController with WidgetsBindingObserver {
   //
@@ -47,11 +53,17 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     controllerInit();
 
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
-    await socketService.initSocket(userId!, onConnected: () {
-      print(
-          'Initial socket connection established in HomeController: UserId for socket connection: $userId');
-    });
-    String? userPhoneNumber = sharedPreferenceService.getUserData()?.phoneNumber;
+    await socketService.initSocket(
+      userId!,
+      onConnected: () {
+        print(
+          'Initial socket connection established in HomeController: UserId for socket connection: $userId',
+        );
+      },
+    );
+    String? userPhoneNumber = sharedPreferenceService
+        .getUserData()
+        ?.phoneNumber;
     var subscriptionTopic = ["genchat-message-$userPhoneNumber"];
     await NotificationService.subscribeToTopics(subscriptionTopic);
     await getGroups();
@@ -147,6 +159,15 @@ class HomeController extends GetxController with WidgetsBindingObserver {
             await groupsTable.insertOrUpdateGroup(i);
 
             // Step 3: Only upload image if selected
+            if (i.group!.displayPictureUrl!.isNotEmpty &&
+                connectivityService.isConnected.value) {
+              _downloadAndCacheProfileImage(
+                i.group!.displayPictureUrl!,
+                i.group!.displayPictureUrl!.split(
+                  "/",
+                )[i.group!.displayPictureUrl!.split("/").length - 1],
+              );
+            }
 
             await chatConectTable.insertOrUpdateGroupChat(
               ChatConntactModel(
@@ -168,5 +189,41 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       // showAlertMessage("Something went wrong: $e");
     } finally {}
+  }
+
+  Future<void> _downloadAndCacheProfileImage(
+    String imageUrl,
+    String fileName,
+  ) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+
+      final pngFileName = fileName.replaceAll(
+        RegExp(r'\.jpg$'),
+        '.png',
+      ); // ensure .png
+      final filePath = '${directory.path}/$pngFileName';
+
+      final file = File(filePath);
+
+      if (file.existsSync()) {
+        print("file exist already!");
+      } else {
+        final response = await http.get(Uri.parse(imageUrl));
+        if (response.statusCode != 200) {
+          throw Exception("Failed to download image");
+        }
+
+        final imageBytes = response.bodyBytes;
+        final originalImage = img.decodeImage(imageBytes);
+        if (originalImage == null) throw Exception("Image decode failed");
+
+        await file.writeAsBytes(img.encodePng(originalImage));
+
+        print("✅ Circular PNG with transparency saved: $filePath");
+      }
+    } catch (e) {
+      print("❌ Silent crop failed: $e");
+    }
   }
 }

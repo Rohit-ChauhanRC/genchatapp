@@ -138,6 +138,12 @@ class SelectContactsController extends GetxController {
           final isGroup = await chatConectTable.isGroupContact(
             user.userId.toString(),
           );
+          if (user.displayPictureUrl != null && user.displayPicture != null) {
+            await _downloadAndCacheProfileImage(
+              user.displayPictureUrl!,
+              user.displayPicture!,
+            );
+          }
           if (!isGroup) {
             await chatConectTable.updateContact(
               uid: user.userId.toString(),
@@ -149,12 +155,6 @@ class SelectContactsController extends GetxController {
               isBlocked: user.isBlocked == true ? 1 : 0,
             );
             // Download and save profile image using the same name
-            if (user.displayPictureUrl != null && user.displayPicture != null) {
-              await _downloadAndCacheProfileImage(
-                user.displayPictureUrl!,
-                user.displayPicture!,
-              );
-            }
           }
         }
         contacts = enrichedUsers;

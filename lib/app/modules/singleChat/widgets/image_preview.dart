@@ -51,7 +51,9 @@ class ImagePreviewScreen extends StatelessWidget {
         // width: Get.width * 0.7,
         height: Get.height,
         child: EasyImageView(
-          imageProvider: networkImage ? imageNetworkProvider : imageProvider,
+          imageProvider: networkImage
+              ? Image.file(File(imagePath)).image
+              : imageProvider,
         ),
 
         // SizedBox.expand(

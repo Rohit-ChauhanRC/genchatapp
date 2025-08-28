@@ -229,54 +229,36 @@ class ChatsView extends GetView<ChatsController> {
                                     // Profile Image
                                     InkWell(
                                       onTap: () async {
-                                        // final filePath = await FolderCreation()
-                                        //     .checkAndHandleFile(
-                                        //       fileUrl:
-                                        //           chatConntactModel.profilePic!,
-                                        //       fileName:
-                                        //           chatConntactModel.profilePic!
-                                        //               .split(
-                                        //                 "/",
-                                        //               )[chatConntactModel
-                                        //                   .profilePic!
-                                        //                   .split("/")
-                                        //                   .length -
-                                        //               1],
-                                        //       subFolderName: "Image",
-                                        //       messageType:
-                                        //           MessageType.image.value,
-                                        //       onReceiveProgress:
-                                        //           (received, total) {},
-                                        //       onCancel: () {},
-                                        //     );
-
                                         final Directory thumDir;
-                                        if (Platform.isAndroid) {
-                                          thumDir = Directory(
-                                            "/storage/emulated/0/Android/media",
-                                          );
-                                        } else {
-                                          thumDir =
-                                              await getApplicationDocumentsDirectory();
-                                        }
-
-                                        final String rootFolderPath =
-                                            '${thumDir.path}/$appPackageName/GenChat/Image';
-
-                                        String filePath =
-                                            rootFolderPath +
+                                        // if (Platform.isAndroid) {
+                                        //   thumDir = Directory(
+                                        //     "/storage/emulated/0/Android/media",
+                                        //   );
+                                        // } else {
+                                        thumDir =
+                                            await getApplicationDocumentsDirectory();
+                                        // }
+                                        final fileName =
                                             chatConntactModel.profilePic!.split(
                                               "/",
                                             )[chatConntactModel.profilePic!
                                                     .split("/")
                                                     .length -
                                                 1];
+                                        final pngFileName = fileName.replaceAll(
+                                          RegExp(r'\.jpg$'),
+                                          '.png',
+                                        ); // ensure .png
+                                        final filePath =
+                                            '${thumDir.path}/$pngFileName';
+
                                         print(filePath);
                                         showDialog(
                                           context: context,
                                           builder: (_) => ProfileImageDialog(
+                                            imagePath: filePath,
                                             imageUrl:
-                                                chatConntactModel.profilePic,
+                                                chatConntactModel.profilePic!,
                                             userName: chatConntactModel.name,
                                             isGroup:
                                                 chatConntactModel.isGroup == 1,

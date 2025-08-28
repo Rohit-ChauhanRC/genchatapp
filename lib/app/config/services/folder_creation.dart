@@ -40,6 +40,7 @@ class FolderCreation {
           '$rootFolderPath/Document',
           '$rootFolderPath/Backups',
           '$rootFolderPath/Thumbnail',
+          '$rootFolderPath/ProfilePhotos',
         ];
 
         // Create the root and subfolders
@@ -281,6 +282,7 @@ class FolderCreation {
       '$rootFolderPath/GIFs',
       '$rootFolderPath/Document',
       '$rootFolderPath/Backups',
+      "$rootFolderPath/ProfilePhotos",
     ];
     try {
       for (final folder in subFolders) {

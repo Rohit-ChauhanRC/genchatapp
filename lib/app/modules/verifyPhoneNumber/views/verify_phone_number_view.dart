@@ -19,9 +19,16 @@ class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
           verifyPhoneNumber,
         ),
       ),
-      body: SingleChildScrollView(
-        child: GradientContainer(
-          child: Padding(
+      body: GradientContainer(
+          child: LayoutBuilder(
+              builder: (context,constraints){
+                return Center(
+                child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: 500,
+                      minHeight: constraints.maxHeight,
+                    ),
+          child:Padding(
             padding: const EdgeInsets.all(18.0),
             child: Form(
               key: controller.loginFormKey,
@@ -162,7 +169,10 @@ class VerifyPhoneNumberView extends GetView<VerifyPhoneNumberController> {
                 ],
               ),
             ),
-          ),
+          )
+                )
+          );
+              }
         ),
       ),
     );

@@ -114,6 +114,7 @@ class SingleChatView extends GetView<SingleChatController> {
                               );
                             }
 
+
                             return Text(
                               user?.isOnline == true
                                   ? "Online"

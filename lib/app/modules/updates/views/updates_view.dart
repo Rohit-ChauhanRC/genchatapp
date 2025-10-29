@@ -4,6 +4,7 @@ import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 import 'package:get/get.dart';
 
 import '../../../constants/colors.dart';
+import '../../../routes/app_pages.dart';
 import '../controllers/updates_controller.dart';
 
 class UpdatesView extends GetView<UpdatesController> {
@@ -25,7 +26,10 @@ class UpdatesView extends GetView<UpdatesController> {
         ),
         actions: [
           IconButton(
-              onPressed: (){},
+              onPressed: (){
+
+                Get.toNamed(Routes.CAMERA);
+              },
               icon: const Icon(Icons.camera_alt_outlined, color: whiteColor,)
           ),
           IconButton(

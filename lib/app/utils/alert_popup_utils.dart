@@ -55,6 +55,8 @@ void showAlertMessageWithAction({
       builder: (BuildContext context) => CupertinoAlertDialog(
         title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blackColor),),
         content: Text(
+
+
           message,
           style: TextStyle(
               fontWeight: FontWeight.w400,

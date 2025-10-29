@@ -10,7 +10,6 @@ class ProfileImageDialog extends StatelessWidget {
   final String? userName;
   final bool isGroup;
   final String? imagePath;
-
   ProfileImageDialog({
     super.key,
     required this.imageUrl,
@@ -20,7 +19,6 @@ class ProfileImageDialog extends StatelessWidget {
   });
 
   final FolderCreation folderCreation = Get.find<FolderCreation>();
-
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -97,6 +95,7 @@ class ProfileImageDialog extends StatelessWidget {
               ),
             ),
           ),
+          
 
           // 🔴 Optional Close Button
           // Positioned(

@@ -24,7 +24,15 @@ class GroupBottomChatField extends StatelessWidget {
   Widget build(BuildContext context) {
     // final isShowMessageReply =
     //     groupChatsController.messageReply.message != null;
-    return Column(
+
+    return SafeArea(
+        child: Padding(
+            padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom
+            ),
+
+
+    child:  Column(
       children: [
         Obx(
           () =>
@@ -59,6 +67,7 @@ class GroupBottomChatField extends StatelessWidget {
                       // }
                       print(v.length);
                       groupChatsController.onTextChanged(v);
+
                       if (v.length >= 800) {
                         // You could show a SnackBar, error, or shake animation here
                         showAlertMessage(
@@ -210,6 +219,6 @@ class GroupBottomChatField extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
       ],
-    );
+    )));
   }
 }

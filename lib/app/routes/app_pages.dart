@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../Camera/CameraView/CameraView.dart';
+import '../Camera/Camera_binding.dart';
 import '../modules/addParticipentsInGroup/bindings/add_participents_in_group_binding.dart';
 import '../modules/addParticipentsInGroup/views/add_participents_in_group_view.dart';
 import '../modules/audio_record/bindings/audio_record_binding.dart';
@@ -38,6 +40,7 @@ import '../modules/singleChat/bindings/single_chat_binding.dart';
 import '../modules/singleChat/views/single_chat_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
+
 import '../modules/updates/bindings/updates_binding.dart';
 import '../modules/updates/views/updates_view.dart';
 import '../modules/verifyPhoneNumber/bindings/verify_phone_number_binding.dart';
@@ -155,5 +158,13 @@ class AppPages {
       page: () => const AddParticipentsInGroupView(),
       binding: AddParticipentsInGroupBinding(),
     ),
+    GetPage(
+      name: Routes.CAMERA,
+      page: () =>  CameraView(),
+      binding: CameraBindings(),
+    ),
+    
+    
+    
   ];
 }

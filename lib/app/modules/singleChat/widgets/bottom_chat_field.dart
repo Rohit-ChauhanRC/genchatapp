@@ -24,7 +24,12 @@ class BottomChatField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(child:
+        Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom
+          ),
+            child:  Column(
       children: [
         Obx(
           () =>
@@ -325,6 +330,6 @@ class BottomChatField extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
       ],
-    );
+    )));
   }
 }

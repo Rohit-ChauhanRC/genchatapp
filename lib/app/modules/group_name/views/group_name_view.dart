@@ -15,6 +15,7 @@ class GroupNameView extends GetView<GroupNameController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+
         title: const Text(
           'New Group',
           style: TextStyle(color: Colors.white, fontSize: 15),

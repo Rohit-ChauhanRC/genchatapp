@@ -14,6 +14,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
   const CreateProfileView({super.key});
   @override
   Widget build(BuildContext context) {
+
     return Obx(() {
       final isRestoring = controller.restoreProgress.value > 0 &&
           controller.restoreProgress.value < 1;
@@ -22,6 +23,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
           child: Stack(
             children: [
               Scaffold(
+                resizeToAvoidBottomInset: false,
                 appBar: AppBar(
                   backgroundColor: appBarColor,
                   automaticallyImplyLeading:
@@ -138,7 +140,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 50,
+                                height: 20
                               ),
                               Obx(
                                 () => controller.circularProgress

@@ -46,9 +46,7 @@ class SingleChatController extends GetxController
   final FolderCreation folderCreation = Get.find<FolderCreation>();
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
-
   final ProfileRepository profileRepository = Get.find<ProfileRepository>();
-
   final ChatRepository chatRepository = Get.put<ChatRepository>(
     ChatRepository(apiClient: Get.find()),
   );
@@ -58,7 +56,6 @@ class SingleChatController extends GetxController
   final EncryptionService encryptionService = Get.find();
 
   final selectedContactController = Get.find<SelectContactsController>();
-
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
@@ -100,7 +97,7 @@ class SingleChatController extends GetxController
   final RxBool _isRecorderInit = false.obs;
   bool get isRecorderInit => _isRecorderInit.value;
   set isRecorderInit(bool b) => _isRecorderInit.value = b;
-
+  RxBool isSending = false.obs;
   final RxBool _isReceiverTyping = false.obs;
   bool get isReceiverTyping => _isReceiverTyping.value;
   set isReceiverTyping(bool b) => _isReceiverTyping.value = b;
@@ -382,7 +379,34 @@ class SingleChatController extends GetxController
       // "contact blocked successfully"
     }
   }
-
+  Future<void> selectFile(String fileType) async {
+    try {
+      if (fileType == MessageType.image.value ||
+          fileType == MessageType.video.value) {
+        final selectedFiles = await pickImageAndVideo();
+        for (File file in selectedFiles) {
+          // Send file directly - shows immediately in chat list
+          await sendFileMessage(
+            file: file,
+            messageEnum: getMessageType(file),
+          );
+          cancelReply();
+        }
+      } else if (fileType == MessageType.document.value) {
+        await pickAndSendDocuments((selectedFiles) async {
+          for (File file in selectedFiles) {
+            await sendFileMessage(
+              file: file,
+              messageEnum: MessageType.document,
+            );
+          }
+        });
+        cancelReply();
+      }
+    } catch (e) {
+      print("Error sending file: $e");
+    }
+  }
   Future<void> findUserBlock() async {
     final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
       receiverUserData!.userId!,
@@ -981,6 +1005,7 @@ class SingleChatController extends GetxController
             );
           }
 
+
           // 🔵 Update local DB
           await MessageTable().updateMessageContent(
             messageId: message.messageId!,
@@ -1125,27 +1150,37 @@ class SingleChatController extends GetxController
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
   }
 
-  void selectFile(String fileType) async {
-    if (fileType == MessageType.image.value ||
-        fileType == MessageType.video.value) {
-      final selectedFiles = await pickImageAndVideo();
-      for (File file in selectedFiles) {
-        print("Yes Getting back all files:---> $file");
-        await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        cancelReply();
-      }
-    } else if (fileType == MessageType.audio.value) {
-      //  final selectedFile = await pickAudio();
-    } else if (fileType == MessageType.document.value) {
-      await pickAndSendDocuments((selectedFiles) async {
-        for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
-          await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        }
-      });
-      cancelReply();
-    }
-  }
+
+  // void selectFile(String fileType) async {
+  //   try {
+  //    isSending.value=true;
+  //
+  //     if (fileType == MessageType.image.value ||
+  //         fileType == MessageType.video.value) {
+  //       final selectedFiles = await pickImageAndVideo();
+  //       for (File file in selectedFiles) {
+  //         print("Yes Getting back all files:---> $file");
+  //         await sendFileMessage(file: file, messageEnum: getMessageType(file));
+  //         cancelReply();
+  //       }
+  //     } else if (fileType == MessageType.audio.value) {
+  //       // final selectedFile = await pickAudio();
+  //     } else if (fileType == MessageType.document.value) {
+  //       await pickAndSendDocuments((selectedFiles) async {
+  //         for (File file in selectedFiles) {
+  //           print("Yes Getting back all files:---> $file");
+  //           await sendFileMessage(file: file, messageEnum: getMessageType(file));
+  //         }
+  //       });
+  //       cancelReply();
+  //     }
+  //   } catch (e) {
+  //     print("Error sending file: $e");
+  //   } finally {
+  //     isSending.value=false;
+  //   }
+  // }
+
 
   Future<List<File>> pickImageAndVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
@@ -1205,16 +1240,66 @@ class SingleChatController extends GetxController
   Future<void> sendFileMessage({
     required File file,
     required MessageType messageEnum,
+    Function(double)? onProgress,
   }) async {
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-    try {
-      // Save file locally
-      final fileName =
-          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+    
+    // Create and show message immediately
+    final fileName =
+        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+    final fileWithExtensions = "$fileName.$fileExtension";
 
+    // Create message first and add to list immediately
+    final newMessage = NewMessageModel(
+      senderId: senderuserData?.userId,
+      recipientId: receiverUserData?.userId,
+      message: '',
+      messageSentFromDeviceTime: timeSent.toString(),
+      clientSystemMessageId: clientSystemMessageId,
+      state: MessageState.unsent,
+      syncStatus: SyncStatus.pending,
+      createdAt: timeSent.toString(),
+      senderPhoneNumber: senderuserData?.phoneNumber,
+      messageType: messageEnum,
+      isForwarded: false,
+      isGroupMessage: false,
+      forwardedMessageId: 0,
+      showForwarded: false,
+      isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+      messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+      messageRepliedOn: messageReply == null ? '' : messageReply.message,
+      messageRepliedOnType: messageReply == null
+          ? MessageType.text
+          : messageReply.messageType,
+      messageRepliedOnAssetServerName: messageReply == null
+          ? ''
+          : messageReply.message,
+      messageRepliedOnAssetThumbnail: messageReply == null
+          ? ''
+          : messageReply.assetsThumbnail,
+      isAsset: true,
+      assetThumbnail: "",
+      assetOriginalName: "",
+      assetServerName: fileWithExtensions,
+      assetUrl: "",
+      messageRepliedUserId: messageReply.message == null
+          ? 0
+          : messageReply.isMe == true
+          ? senderuserData?.userId
+          : receiverUserData?.userId,
+      isUploading: true.obs,
+      uploadProgress: 0.0.obs,
+    );
+
+    // Add message to list and database immediately - user sees it right away
+    await MessageTable().insertMessage(newMessage);
+    messageList.add(newMessage);
+
+    try {
+      // Now do file processing in background
       Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
@@ -1223,61 +1308,72 @@ class SingleChatController extends GetxController
         f.keys.first,
         fileName,
       );
-      final String? assetThumnail = f.keys.first == "mp4"
+      final String? assetThumnail = messageEnum == MessageType.video
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      final fileWithExtensions = "$fileName.${f.keys.first}";
+      print("📹 Video thumbnail generated: $assetThumnail");
 
-      final fileData = await uploadFileToServer(f.values.first!);
-      final newMessage = NewMessageModel(
-        senderId: senderuserData?.userId,
-        recipientId: receiverUserData?.userId,
-        message: '',
-        messageSentFromDeviceTime: timeSent.toString(),
-        clientSystemMessageId: clientSystemMessageId,
-        state: MessageState.unsent,
-        syncStatus: SyncStatus.pending,
-        createdAt: timeSent.toString(),
-        senderPhoneNumber: senderuserData?.phoneNumber,
-        messageType: messageEnum,
-        isForwarded: false,
-        isGroupMessage: false,
-        forwardedMessageId: 0,
-        showForwarded: false,
-        isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
-        messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
-        messageRepliedOn: messageReply == null ? '' : messageReply.message,
-        messageRepliedOnType: messageReply == null
-            ? MessageType.text
-            : messageReply.messageType,
-        messageRepliedOnAssetServerName: messageReply == null
-            ? ''
-            : messageReply.message,
-        messageRepliedOnAssetThumbnail: messageReply == null
-            ? ''
-            : messageReply.assetsThumbnail,
-        isAsset: true,
-        assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
-        assetServerName: fileWithExtensions,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
-        messageRepliedUserId: messageReply.message == null
-            ? 0
-            : messageReply.isMe == true
-            ? senderuserData?.userId
-            : receiverUserData?.userId,
+      // Update message with thumbnail immediately after generation
+      if (assetThumnail != null && assetThumnail.isNotEmpty) {
+        final messageIndex = messageList.indexWhere(
+          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (messageIndex != -1) {
+          final messageWithThumbnail = messageList[messageIndex].copyWith(
+            assetThumbnail: assetThumnail,
+          );
+          messageList[messageIndex] = messageWithThumbnail;
+          print("📹 Thumbnail updated in message: ${messageWithThumbnail.assetThumbnail}");
+        }
+      }
+
+      // Upload file with progress tracking
+      final fileData = await uploadFileToServer(
+        f.values.first!,
+        onProgress: (progress) {
+          newMessage.uploadProgress?.value = progress;
+          onProgress?.call(progress);
+        },
       );
-      print("Message All details Request: ${newMessage.toMap()}");
-      await MessageTable().insertMessage(newMessage);
-      messageList.add(newMessage);
 
+      // Update message after upload completion
+      final updatedMessage = newMessage.copyWith(
+        assetOriginalName: fileData?.data?.originalName ?? "",
+        assetUrl: fileData?.data?.url ?? "",
+        isUploading: false.obs,
+        uploadProgress: 1.0.obs,
+      );
+
+      // Update in database and list
+      final messageIndex = messageList.indexWhere(
+        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+      );
+      if (messageIndex != -1) {
+        messageList[messageIndex] = updatedMessage;
+        await MessageTable().updateMessageByClientId(updatedMessage);
+      }
+
+      // Send message via socket if upload was successful
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
-          socketService.sendMessage(newMessage);
+          socketService.sendMessage(updatedMessage);
         }
       } else {
-        socketService.saveChatContacts(newMessage);
+        // Handle upload failure - mark as pending for retry
+        final failedMessage = newMessage.copyWith(
+          isUploading: false.obs,
+          uploadProgress: 0.0.obs,
+          syncStatus: SyncStatus.pending,
+        );
+        final failedIndex = messageList.indexWhere(
+          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (failedIndex != -1) {
+          messageList[failedIndex] = failedMessage;
+          await MessageTable().updateMessageByClientId(failedMessage);
+        }
+        socketService.saveChatContacts(failedMessage);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1302,16 +1398,18 @@ class SingleChatController extends GetxController
     }
   }
 
-  Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
+  Future<UploadFileModel?> uploadFileToServer(
+      File imageFile, {
+        Function(double)? onProgress,
+      }) async {
     try {
       final response = await profileRepository.uploadMessageFiles(
         imageFile,
         onProgress: (sent, total) {
-          percent.value = (sent / total) * 100;
-          print("📤 Upload progress: ${percent.value.toStringAsFixed(0)}%");
-          if (percent.value == 100) {
-            percent.value = 0.0;
-          }
+          final progress = (sent / total);
+          onProgress?.call(progress); // ✅ notify caller
+
+          print("📤 Upload progress: ${(progress * 100).toStringAsFixed(0)}%");
         },
       );
 
@@ -1320,17 +1418,13 @@ class SingleChatController extends GetxController
         if (result.status == true) {
           print("response of upload Files:----> ${result.data?.toJson()}");
           return result;
-        } else {
-          // showAlertMessage('Upload failed: Invalid response status.');
         }
-      } else {
-        // showAlertMessage('Failed to upload file: ${response?.statusCode}');
       }
     } catch (e) {
-      // showAlertMessage('Error uploading file: ${e.toString()}');
+      print('Error uploading file: $e');
     }
 
-    return null; // return empty result on error
+    return null;
   }
 
   Future<void> retryPendingMediaFile(NewMessageModel messages) async {
@@ -1816,9 +1910,7 @@ class SingleChatController extends GetxController
 
       print(serverName);
 
-      final fileData = await uploadFileToServer(
-        File(recordedPath.value.toString()),
-      );
+      // Create message first and add to list
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1848,27 +1940,67 @@ class SingleChatController extends GetxController
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: serverName,
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetOriginalName: "",
         assetServerName: serverName,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
+        assetUrl: "",
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
             ? senderuserData?.userId
             : receiverUserData?.userId,
+        isUploading: true.obs,
+        uploadProgress: 0.0.obs,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+
+      // Add message to list and database first
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
+
+      // Upload audio file
+      final fileData = await uploadFileToServer(
+        File(recordedPath.value.toString()),
+      );
+
+      // Update message after upload completion
+      final updatedMessage = newMessage.copyWith(
+        assetOriginalName: fileData?.data?.originalName ?? "",
+        assetUrl: fileData?.data?.url ?? "",
+        isUploading: false.obs,
+        uploadProgress: 1.0.obs,
+      );
+
+      // Update in database and list
+      final messageIndex = messageList.indexWhere(
+        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+      );
+      if (messageIndex != -1) {
+        messageList[messageIndex] = updatedMessage;
+        await MessageTable().updateMessageByClientId(updatedMessage);
+      }
+
       recordedPath.value = "";
 
+      // Send message via socket if upload was successful
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
-          socketService.sendMessage(newMessage);
+          socketService.sendMessage(updatedMessage);
           isPreviewing.value = false;
         }
       } else {
-        socketService.saveChatContacts(newMessage);
+        // Handle upload failure - mark as pending for retry
+        final failedMessage = newMessage.copyWith(
+          isUploading: false.obs,
+          uploadProgress: 0.0.obs,
+          syncStatus: SyncStatus.pending,
+        );
+        final failedIndex = messageList.indexWhere(
+          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (failedIndex != -1) {
+          messageList[failedIndex] = failedMessage;
+          await MessageTable().updateMessageByClientId(failedMessage);
+        }
+        socketService.saveChatContacts(failedMessage);
         isPreviewing.value = false;
       }
     } catch (e) {

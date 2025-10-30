@@ -207,6 +207,7 @@ class BottomChatField extends StatelessWidget {
                                           // Get.to(() => AttachmentPopupDemo());
                                           singleChatController.selectFile(
                                             MessageType.document.value,
+
                                           );
                                         },
                                         icon: const Icon(

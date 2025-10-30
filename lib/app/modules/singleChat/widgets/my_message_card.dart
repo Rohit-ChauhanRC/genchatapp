@@ -35,6 +35,8 @@ class MyMessageCard extends StatelessWidget {
     this.audioMessage,
     required this.isProgess,
     required this.percent,
+    this.isUploading,
+    this.uploadProgress,
   }) : super(key: key);
 
   final String message;
@@ -61,6 +63,143 @@ class MyMessageCard extends StatelessWidget {
   final String? audioMessage;
   final RxDouble isProgess;
   final RxDouble percent;
+  final RxBool? isUploading;
+  final RxDouble? uploadProgress;
+
+  String _getFileTypeText(MessageType type) {
+    switch (type) {
+      case MessageType.image:
+        return "Sharing photo";
+      case MessageType.video:
+        return "Sharing video";
+      case MessageType.document:
+        return "Sharing document";
+      case MessageType.audio:
+        return "Sharing audio";
+      case MessageType.gif:
+        return "Sharing GIF";
+      default:
+        return "Shared file";
+    }
+  }
+
+  Widget _buildMessageContent() {
+    // For text messages and audio messages, show content directly without Obx
+    if (!isAsset || 
+        type == MessageType.text || 
+        type == MessageType.audio ||
+        isUploading == null || 
+        uploadProgress == null) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          DisplayTextImageGIF(
+            audioMessage: audioMessage,
+            message: message,
+            type: type,
+            url: url,
+            assetThumbnail: assetThumbnail,
+          ),
+          // Only show retry button for failed uploads
+          if (isAsset &&
+              syncStatus == SyncStatus.pending &&
+              isRetryUploadFile.value) ...[
+            InkWell(
+              onTap: () {
+                if (!isRetryUploadFile.value) {
+                  onRetryTap?.call();
+                }
+              },
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black45,
+                ),
+                padding: const EdgeInsets.all(8),
+                child: const Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    // For file
+    // uploads (image, video, document, gif), use Obx to observe upload state
+    return Obx(() {
+      if (isUploading!.value == true &&
+          (type == MessageType.image ||
+           type == MessageType.video ||
+           type == MessageType.document ||
+           type == MessageType.gif)) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: uploadProgress!.value,
+                color: greyMsgColor,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _getFileTypeText(type),
+              style: const TextStyle(
+                fontSize: 14,
+                color: blackColor,
+              ),
+            ),
+          ],
+        );
+      }
+      
+      // Show normal content after upload
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          DisplayTextImageGIF(
+            audioMessage: audioMessage,
+            message: message,
+            type: type,
+            url: url,
+            assetThumbnail: assetThumbnail,
+          ),
+          // Only show retry button for failed file uploads
+          if (isAsset &&
+              syncStatus == SyncStatus.pending &&
+              isRetryUploadFile.value &&
+              !isUploading!.value) ...[
+            InkWell(
+              onTap: () {
+                if (!isRetryUploadFile.value) {
+                  onRetryTap?.call();
+                }
+              },
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black45,
+                ),
+                padding: const EdgeInsets.all(8),
+                child: const Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,124 +314,7 @@ class MyMessageCard extends StatelessWidget {
                           ),
 
                         // Main message
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            DisplayTextImageGIF(
-                              audioMessage: audioMessage,
-                              message: message,
-                              type: type,
-                              url: url,
-                              assetThumbnail: assetThumbnail,
-                            ),
-
-                            if (isAsset &&
-                                (type == MessageType.image ||
-                                    type == MessageType.video ||
-                                    type == MessageType.document ||
-                                    type == MessageType.audio)) ...[
-                              // Obx(
-                              //   () =>
-                              //       percent.value > 0.0 &&
-                              //           !isRetryUploadFile.value
-                              //       ? ConstrainedBox(
-                              //           constraints: BoxConstraints(
-                              //             minWidth: 130,
-                              //             maxWidth:
-                              //                 MediaQuery.of(
-                              //                   context,
-                              //                 ).size.width *
-                              //                 0.75,
-                              //           ),
-                              //           child: Row(
-                              //             children: [
-                              //               Container(
-                              //                 child: CircularProgressIndicator(
-                              //                   value: percent.value,
-                              //                 ),
-                              //               ),
-                              //               const SizedBox(width: 8),
-                              //               Text(
-                              //                 "Uploading...${percent.value.toStringAsFixed(0)}%",
-                              //               ),
-                              //             ],
-                              //           ),
-                              //         )
-                              //       : const SizedBox.shrink(),
-                              // ),
-                              Obx(() {
-                                if (isRetryUploadFile.value &&
-                                    percent.value < 1.0 &&
-                                    syncStatus == SyncStatus.pending) {
-                                  return Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black45,
-                                    ),
-                                    padding: const EdgeInsets.all(12),
-                                    child: const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  );
-                                } else if (syncStatus == SyncStatus.pending &&
-                                    percent.value < 1.0) {
-                                  return InkWell(
-                                    onTap: () {
-                                      if (!isRetryUploadFile.value) {
-                                        onRetryTap?.call();
-                                      }
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.black45,
-                                      ),
-                                      padding: const EdgeInsets.all(8),
-                                      child: const Icon(
-                                        Icons.refresh,
-                                        color: Colors.white,
-                                        size: 28,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                // else if (syncStatus == SyncStatus.synced &&
-                                //     percent.value > 1.0 &&
-                                //     type == MessageType.video) {
-                                //   return ConstrainedBox(
-                                //     constraints: BoxConstraints(
-                                //       minWidth: 130,
-                                //       maxWidth:
-                                //           MediaQuery.of(context).size.width *
-                                //           0.75,
-                                //     ),
-                                //     child: Row(
-                                //       children: [
-                                //         Container(
-                                //           child: CircularProgressIndicator(
-                                //             value: percent.value,
-                                //           ),
-                                //         ),
-                                //         const SizedBox(width: 8),
-                                //         Text(
-                                //           "Uploading...${percent.value.toStringAsFixed(0)}%",
-                                //         ),
-                                //       ],
-                                //     ),
-                                //   );
-                                // }
-                                else {
-                                  return const SizedBox.shrink();
-                                }
-                              }),
-                            ],
-                          ],
-                        ),
+                        _buildMessageContent(),
                       ],
                     ),
                   ),

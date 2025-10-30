@@ -245,7 +245,7 @@ class SingleChatView extends GetView<SingleChatController> {
             ),
           ),
           Obx(
-            () => (controller.blockedByMe == 0)
+            () => (controller.blockedByMe ==0 )
                 ? BottomChatField(
                     singleChatController: controller,
                     onTap: () {

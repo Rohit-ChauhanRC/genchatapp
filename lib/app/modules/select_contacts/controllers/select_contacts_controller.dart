@@ -138,7 +138,10 @@ class SelectContactsController extends GetxController {
           final isGroup = await chatConectTable.isGroupContact(
             user.userId.toString(),
           );
-          if (user.displayPictureUrl != null && user.displayPicture != null) {
+          if (user.displayPictureUrl != null &&
+              user.displayPicture != null &&
+              user.displayPictureUrl!.isNotEmpty &&
+              user.displayPicture!.isNotEmpty) {
             await _downloadAndCacheProfileImage(
               user.displayPictureUrl!,
               user.displayPicture!,
@@ -193,54 +196,60 @@ class SelectContactsController extends GetxController {
     String imageUrl,
     String fileName,
   ) async {
-    try {
-      final response = await http.get(Uri.parse(imageUrl));
-      if (response.statusCode != 200)
-        throw Exception("Failed to download image");
+    final directory = await getApplicationDocumentsDirectory();
 
-      final imageBytes = response.bodyBytes;
-      final originalImage = img.decodeImage(imageBytes);
-      if (originalImage == null) throw Exception("Image decode failed");
+    final pngFileName = fileName.replaceAll(
+      RegExp(r'\.jpg$'),
+      '.png',
+    ); // ensure .png
+    final filePath = '${directory.path}/$pngFileName';
 
-      // Crop to square
-      final int size = originalImage.width < originalImage.height
-          ? originalImage.width
-          : originalImage.height;
-      final square = img.copyCrop(
-        originalImage,
-        x: (originalImage.width - size) ~/ 2,
-        y: (originalImage.height - size) ~/ 2,
-        width: size,
-        height: size,
-      );
+    final file = File(filePath);
 
-      // Create transparent circular image
-      final circular = img.Image(width: size, height: size);
-      circular.clear(img.ColorInt8.rgba(0, 0, 0, 0)); // fully transparent
+    if (file.existsSync()) {
+      print("file exist already!");
+    } else {
+      try {
+        final response = await http.get(Uri.parse(imageUrl));
+        if (response.statusCode != 200)
+          throw Exception("Failed to download image");
 
-      for (int y = 0; y < size; y++) {
-        for (int x = 0; x < size; x++) {
-          final dx = x - size ~/ 2;
-          final dy = y - size ~/ 2;
-          if (dx * dx + dy * dy <= (size ~/ 2) * (size ~/ 2)) {
-            circular.setPixel(x, y, square.getPixel(x, y));
+        final imageBytes = response.bodyBytes;
+        final originalImage = img.decodeImage(imageBytes);
+        if (originalImage == null) throw Exception("Image decode failed");
+
+        // Crop to square
+        final int size = originalImage.width < originalImage.height
+            ? originalImage.width
+            : originalImage.height;
+        final square = img.copyCrop(
+          originalImage,
+          x: (originalImage.width - size) ~/ 2,
+          y: (originalImage.height - size) ~/ 2,
+          width: size,
+          height: size,
+        );
+
+        // Create transparent circular image
+        final circular = img.Image(width: size, height: size);
+        circular.clear(img.ColorInt8.rgba(0, 0, 0, 0)); // fully transparent
+
+        for (int y = 0; y < size; y++) {
+          for (int x = 0; x < size; x++) {
+            final dx = x - size ~/ 2;
+            final dy = y - size ~/ 2;
+            if (dx * dx + dy * dy <= (size ~/ 2) * (size ~/ 2)) {
+              circular.setPixel(x, y, square.getPixel(x, y));
+            }
           }
         }
+
+        await file.writeAsBytes(img.encodePng(circular));
+
+        print("✅ Circular PNG with transparency saved: $filePath");
+      } catch (e) {
+        print("❌ Silent crop failed: $e");
       }
-
-      final directory = await getApplicationDocumentsDirectory();
-      final pngFileName = fileName.replaceAll(
-        RegExp(r'\.jpg$'),
-        '.png',
-      ); // ensure .png
-      final filePath = '${directory.path}/$pngFileName';
-
-      final file = File(filePath);
-      await file.writeAsBytes(img.encodePng(circular));
-
-      print("✅ Circular PNG with transparency saved: $filePath");
-    } catch (e) {
-      print("❌ Silent crop failed: $e");
     }
   }
 }

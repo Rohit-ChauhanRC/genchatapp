@@ -27,8 +27,8 @@ class UpdatesView extends GetView<UpdatesController> {
         actions: [
           IconButton(
               onPressed: (){
-
                 Get.toNamed(Routes.CAMERA);
+
               },
               icon: const Icon(Icons.camera_alt_outlined, color: whiteColor,)
           ),

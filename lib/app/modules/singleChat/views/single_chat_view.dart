@@ -56,7 +56,7 @@ class SingleChatView extends GetView<SingleChatController> {
               : Row(
                   children: [
                     ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
-                            !controller.blocked)
+                            !controller.blocked.value)
                         ? CachedNetworkImage(
                             imageUrl: user!.displayPictureUrl.toString(),
                             imageBuilder: (context, image) {
@@ -113,7 +113,6 @@ class SingleChatView extends GetView<SingleChatController> {
                                 ),
                               );
                             }
-
 
                             return Text(
                               user?.isOnline == true
@@ -207,11 +206,13 @@ class SingleChatView extends GetView<SingleChatController> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(
-                value: controller.blocked && controller.blockedByMe != 0
+                value:
+                    controller.blocked.value &&
+                        controller.blockedByMe.value == 1
                     ? unBlock
                     : block,
                 child: Text(
-                  controller.blocked && controller.blockedByMe != 0
+                  controller.blocked.value && controller.blockedByMe.value == 1
                       ? unBlock
                       : block,
                   style: const TextStyle(
@@ -245,15 +246,9 @@ class SingleChatView extends GetView<SingleChatController> {
             ),
           ),
           Obx(
-            () => (controller.blockedByMe ==0 )
-                ? BottomChatField(
-                    singleChatController: controller,
-                    onTap: () {
-                      controller.sendTextMessage();
-                      controller.cancelReply();
-                    },
-                  )
-                : Container(
+            () =>
+                (controller.blocked.value && controller.blockedByMe.value == 1)
+                ? Container(
                     color: textBarColor,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -279,6 +274,13 @@ class SingleChatView extends GetView<SingleChatController> {
                         )),
                       ],
                     ),
+                  )
+                : BottomChatField(
+                    singleChatController: controller,
+                    onTap: () {
+                      controller.sendTextMessage();
+                      controller.cancelReply();
+                    },
                   ),
           ),
         ],

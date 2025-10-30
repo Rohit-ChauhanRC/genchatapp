@@ -119,7 +119,7 @@ class GroupProfileController extends GetxController {
 
   Future<bool> getUerBlock(int? userId) async {
     final contact = await contactsTable.getUserById(userId!);
-    return contact!.isBlocked!;
+    return contact!.isBlocked ?? false;
   }
 
   Future<void> selectImage() async {
@@ -362,10 +362,11 @@ class GroupProfileController extends GetxController {
   }
 
   Future<void> deleteGroup() async {
-
-    try{
+    try {
       // final currentUserId = sharedPreferenceService.getUserData()?.userId;
-      final uploadResponse = await groupRepository.deleteGroup(groupId: groupId);
+      final uploadResponse = await groupRepository.deleteGroup(
+        groupId: groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ delete Group: ${uploadResponse.data}");
@@ -383,7 +384,7 @@ class GroupProfileController extends GetxController {
       } else {
         showAlertMessage('Failed to delete group.');
       }
-    }catch(e){
+    } catch (e) {
       showAlertMessage("Error getting delete group: $e");
     }
   }

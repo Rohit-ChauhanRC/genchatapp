@@ -110,15 +110,15 @@ class SingleChatController extends GetxController
   set isLoading(bool b) => _isLoading.value = b;
 
   // blocked
-  final RxBool _blocked = true.obs;
-  bool get blocked => _blocked.value;
-  set blocked(bool b) => _blocked.value = b;
+  final RxBool blocked = true.obs;
+  // bool get blocked => _blocked.value;
+  // set blocked(bool b) => _blocked.value = b;
 
   // blockedByMe
 
-  final RxInt _blockedByMe = 0.obs;
-  int get blockedByMe => _blockedByMe.value;
-  set blockedByMe(int b) => _blockedByMe.value = b;
+  final RxInt blockedByMe = 0.obs;
+  // int get blockedByMe => _blockedByMe.value;
+  // set blockedByMe(int b) => _blockedByMe.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
 
@@ -337,8 +337,8 @@ class SingleChatController extends GetxController
     );
 
     if (response != null && response.statusCode == 200) {
-      blocked = true;
-      blockedByMe = 1;
+      blocked.value = true;
+      blockedByMe.value = 1;
 
       await contactsTable.updateUserBlockUnblock(
         receiverUserData!.userId!,
@@ -364,8 +364,8 @@ class SingleChatController extends GetxController
     );
 
     if (response != null && response.statusCode == 200) {
-      blocked = false;
-      blockedByMe = 0;
+      blocked.value = false;
+      blockedByMe.value = 0;
       await contactsTable.updateUserBlockUnblock(
         receiverUserData!.userId!,
         0,
@@ -387,8 +387,8 @@ class SingleChatController extends GetxController
     final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
       receiverUserData!.userId!,
     ));
-    blocked = blockedI!;
-    blockedByMe = blockedByMeI!;
+    blocked.value = blockedI!;
+    blockedByMe.value = senderuserData?.userId! == blockedByMeI ? 1 : 0;
     if (blocked == true) {
       final user = await chatConectTable.fetchById(
         uid: receiverUserData!.userId!.toString(),
@@ -397,7 +397,7 @@ class SingleChatController extends GetxController
 
       final c = await chatConectTable.updateUserBlockUnblock(
         receiverUserData!.userId!.toString(),
-        blocked ? 1 : 0,
+        blocked.value ? 1 : 0,
       );
       print(c);
 

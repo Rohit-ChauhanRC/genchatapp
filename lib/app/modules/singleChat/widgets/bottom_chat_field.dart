@@ -184,9 +184,13 @@ class BottomChatField extends StatelessWidget {
                                       !singleChatController.isShowSendButton
                                           ? IconButton(
                                               onPressed: () {
-                                                singleChatController.selectFile(
-                                                  MessageType.image.value,
-                                                );
+                                                // singleChatController.selectFile(
+                                                //   MessageType.image.value,
+                                                // );
+                                                singleChatController
+                                                    .selectFileTest(
+                                                      MessageType.image.value,
+                                                    );
                                               },
                                               icon: const Icon(
                                                 Symbols.camera_alt_rounded,

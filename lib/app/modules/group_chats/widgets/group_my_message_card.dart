@@ -31,6 +31,8 @@ class GroupMyMessageCard extends StatelessWidget {
   final SyncStatus syncStatus;
   final VoidCallback? onRetryTap;
   final String? repliedAssetServerName;
+  final RxBool? isUploading;
+  final RxDouble? uploadProgress;
 
   const GroupMyMessageCard({
     super.key, // 👈 Ensure this is passed properly in ChatList
@@ -58,6 +60,8 @@ class GroupMyMessageCard extends StatelessWidget {
     this.isAsset = false,
     this.repliedThumbnail,
     this.repliedAssetServerName,
+    this.isUploading,
+    this.uploadProgress,
   }); // 👈 Needed for scroll-to-original to work
 
   @override
@@ -155,13 +159,13 @@ class GroupMyMessageCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  repliedUserName ?? "",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: blackColor,
-                                  ),
-                                ),
+                                // Text(
+                                //   repliedUserName ?? "",
+                                //   style: const TextStyle(
+                                //     fontWeight: FontWeight.bold,
+                                //     color: blackColor,
+                                //   ),
+                                // ),
                                 const SizedBox(height: 3),
                                 GroupDisplayTextImageGIF(
                                   audioMessage: audioMessage,
@@ -196,7 +200,27 @@ class GroupMyMessageCard extends StatelessWidget {
                                     type == MessageType.document ||
                                     type == MessageType.audio)) ...[
                               Obx(() {
-                                if (isRetryUploadFile.value) {
+                                final uploading = isUploading?.value == true;
+                                final progress = uploadProgress?.value ?? 0.0;
+                                
+                                if (uploading) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black45,
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                        value: progress > 0 ? progress : null,
+                                      ),
+                                    ),
+                                  );
+                                } else if (isRetryUploadFile.value) {
                                   return Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
@@ -256,17 +280,46 @@ class GroupMyMessageCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 5),
                         if (type != MessageType.deleted)
-                          Icon(
-                            status == MessageState.unsent
-                                ? Icons.watch_later
-                                : status == MessageState.sent
-                                ? Icons.done
-                                : Icons.done_all,
-                            size: 20,
-                            color: status == MessageState.read
-                                ? Colors.blue
-                                : greyMsgColor,
-                          ),
+                          (isUploading != null && uploadProgress != null) 
+                            ? Obx(() {
+                                final uploading = isUploading?.value == true;
+                                final progress = uploadProgress?.value ?? 0.0;
+                                
+                                if (uploading) {
+                                  return SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      value: progress > 0 ? progress : null,
+                                      color: greyMsgColor,
+                                    ),
+                                  );
+                                } else {
+                                  return Icon(
+                                    status == MessageState.unsent
+                                        ? Icons.watch_later
+                                        : status == MessageState.sent
+                                        ? Icons.done
+                                        : Icons.done_all,
+                                    size: 20,
+                                    color: status == MessageState.read
+                                        ? Colors.blue
+                                        : greyMsgColor,
+                                  );
+                                }
+                              })
+                            : Icon(
+                                status == MessageState.unsent
+                                    ? Icons.watch_later
+                                    : status == MessageState.sent
+                                    ? Icons.done
+                                    : Icons.done_all,
+                                size: 20,
+                                color: status == MessageState.read
+                                    ? Colors.blue
+                                    : greyMsgColor,
+                              ),
                       ],
                     ),
                   ),

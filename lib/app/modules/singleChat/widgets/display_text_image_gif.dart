@@ -46,7 +46,7 @@ class DisplayTextImageGIF extends StatelessWidget {
 
     if (type == MessageType.text || type == MessageType.deleted) {
       return SelectableText(
-        type == MessageType.text
+        type == MessageType.text && isReply != true
             ? controller.encryptionService.decryptText(message)
             : message,
         autofocus: true,
@@ -222,11 +222,56 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply ?? false,
               );
             case MessageType.video:
-              return VideoPlayerItem(
-                videoUrl: path,
-                localFilePath: thumbnailPath,
-                url: url ?? '',
-                isReply: isReply ?? false,
+              // Simple video display without reactive wrapper since assetThumbnail is passed as parameter
+              final thumb = assetThumbnail ?? '';
+              final controller = Get.find<SingleChatController>();
+
+              // No thumbnail yet → placeholder
+              if (thumb.isEmpty) {
+                return _videoPlaceholder();
+              }
+
+              // Thumbnails are stored in Thumbnail folder, not Video folder
+              final thumbPath = "${controller.rootPath}Thumbnail/$thumb";
+              final thumbFile = File(thumbPath);
+
+              return InkWell(
+                onTap: () {
+                  // Play the **full video** (the one that was downloaded)
+                  Get.to(() => VideoPlayerItem(
+                    videoUrl: path,
+                    localFilePath: thumbPath,
+                    url: url ?? '',
+                    isReply: isReply ?? false,
+                  ));
+                },
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: thumbFile.existsSync()
+                          ? Image.file(
+                        thumbFile,
+                        key: ValueKey(thumb), 
+                        width: 220,
+                        height: 140,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _videoPlaceholder(),
+                      )
+                          : _videoPlaceholder(),
+                    ),
+                    // Play icon
+                    const Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.black54,
+                        child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
+                      ),
+                    ),
+                  ],
+                ),
               );
             case MessageType.image:
               return ImageWidget(
@@ -320,5 +365,18 @@ class DisplayTextImageGIF extends StatelessWidget {
     const suffixes = ["B", "KB", "MB", "GB"];
     final i = (bytes != 0) ? (log(bytes) / log(1024)).floor() : 0;
     return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+  }
+  Widget _videoPlaceholder() {
+    return Container(
+      width: 220,
+      height: 140,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Icon(Icons.video_library, color: Colors.grey, size: 40),
+      ),
+    );
   }
 }

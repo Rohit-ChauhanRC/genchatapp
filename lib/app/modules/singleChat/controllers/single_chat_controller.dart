@@ -52,7 +52,6 @@ class SingleChatController extends GetxController
   );
 
   final ChatConectTable chatConectTable = ChatConectTable();
-
   final EncryptionService encryptionService = Get.find();
 
   final selectedContactController = Get.find<SelectContactsController>();
@@ -1324,6 +1323,8 @@ class SingleChatController extends GetxController
             assetThumbnail: assetThumnail,
           );
           messageList[messageIndex] = messageWithThumbnail;
+          // Update in database immediately so thumbnail persists
+          await MessageTable().updateMessageByClientId(messageWithThumbnail);
           print("📹 Thumbnail updated in message: ${messageWithThumbnail.assetThumbnail}");
         }
       }
@@ -1337,47 +1338,58 @@ class SingleChatController extends GetxController
         },
       );
 
-      // Update message after upload completion
-      final updatedMessage = newMessage.copyWith(
-        assetOriginalName: fileData?.data?.originalName ?? "",
-        assetUrl: fileData?.data?.url ?? "",
-        isUploading: false.obs,
-        uploadProgress: 1.0.obs,
-      );
-
-      // Update in database and list
-      final messageIndex = messageList.indexWhere(
-        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-      );
-      if (messageIndex != -1) {
-        messageList[messageIndex] = updatedMessage;
-        await MessageTable().updateMessageByClientId(updatedMessage);
-      }
-
-      // Send message via socket if upload was successful
+      // Update message after successful upload
       if (fileData?.statusCode == 200 && fileData?.status == true) {
-        if (socketService.isConnected) {
-          socketService.sendMessage(updatedMessage);
-        }
-      } else {
-        // Handle upload failure - mark as pending for retry
-        final failedMessage = newMessage.copyWith(
-          isUploading: false.obs,
-          uploadProgress: 0.0.obs,
-          syncStatus: SyncStatus.pending,
-        );
-        final failedIndex = messageList.indexWhere(
+        final messageIndex = messageList.indexWhere(
           (msg) => msg.clientSystemMessageId == clientSystemMessageId,
         );
-        if (failedIndex != -1) {
-          messageList[failedIndex] = failedMessage;
+        if (messageIndex != -1) {
+          final updatedMessage = messageList[messageIndex].copyWith(
+            assetOriginalName: fileData!.data?.originalName ?? "",
+            assetUrl: fileData.data?.url ?? "",
+            isUploading: false.obs,
+            uploadProgress: 1.0.obs,
+            syncStatus: SyncStatus.synced,
+          );
+          messageList[messageIndex] = updatedMessage;
+          
+          // Update in database
+          await MessageTable().updateMessageByClientId(updatedMessage);
+        }
+
+        if (socketService.isConnected) {
+          socketService.sendMessage(messageList[messageIndex]);
+        }
+      } else {
+        // Handle upload failure
+        final messageIndex = messageList.indexWhere(
+          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (messageIndex != -1) {
+          final failedMessage = messageList[messageIndex].copyWith(
+            isUploading: false.obs,
+            syncStatus: SyncStatus.pending,
+          );
+          messageList[messageIndex] = failedMessage;
           await MessageTable().updateMessageByClientId(failedMessage);
         }
-        socketService.saveChatContacts(failedMessage);
+        socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
         print("Error sending file message: $e");
+      }
+      // Handle error - mark upload as failed
+      final messageIndex = messageList.indexWhere(
+        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+      );
+      if (messageIndex != -1) {
+        final failedMessage = messageList[messageIndex].copyWith(
+          isUploading: false.obs,
+          syncStatus: SyncStatus.pending,
+        );
+        messageList[messageIndex] = failedMessage;
+        await MessageTable().updateMessageByClientId(failedMessage);
       }
     }
   }

@@ -116,7 +116,7 @@ class ChatList extends StatelessWidget {
                                 MessageType.text ||
                                 messages.messageType ==
                                     MessageType.deleted
-                                ? (messages.message!.isNotEmpty
+                                ? (messages.message?.isNotEmpty == true
                                 ? messages.message.toString()
                                 : '') // NULL-SAFE
                                 : (messages
@@ -175,7 +175,7 @@ class ChatList extends StatelessWidget {
                             messages.messageRepliedOnType ??
                                 MessageType.text,
                             repliedText:
-                            (messages.messageRepliedOn != ''
+                            (messages.messageRepliedOn != null && messages.messageRepliedOn != ''
                                 ? messages.messageRepliedOn
                                 .toString()
                                 : '')
@@ -192,7 +192,7 @@ class ChatList extends StatelessWidget {
                                 ? "You"
                                 : singleChatController
                                 .receiverUserData!
-                                .localName
+                                .localName ?? "User"
                                 : "username",
                             repliedAssetServerName: messages
                                 .messageRepliedOnAssetServerName,
@@ -224,7 +224,7 @@ class ChatList extends StatelessWidget {
                                 MessageType.text ||
                                 messages.messageType ==
                                     MessageType.deleted
-                                ? (messages.message!.isNotEmpty
+                                ? (messages.message?.isNotEmpty == true
                                 ? messages.message.toString()
                                 : '')
                                 : (messages.assetServerName ?? ''),
@@ -265,7 +265,7 @@ class ChatList extends StatelessWidget {
                             messages.messageRepliedOnType ??
                                 MessageType.text,
                             repliedText:
-                            (messages.messageRepliedOn!.isNotEmpty
+                            (messages.messageRepliedOn != null && messages.messageRepliedOn!.isNotEmpty
                                 ? messages.messageRepliedOn
                                 .toString()
                                 : '')
@@ -284,7 +284,7 @@ class ChatList extends StatelessWidget {
                                 ? "You"
                                 : singleChatController
                                 .receiverUserData!
-                                .localName
+                                .localName ?? "User"
                                 : "username",
                             repliedAssetServerName: messages
                                 .messageRepliedOnAssetServerName,

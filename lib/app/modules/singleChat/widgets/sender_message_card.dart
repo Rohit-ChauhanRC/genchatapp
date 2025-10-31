@@ -120,13 +120,13 @@ class SenderMessageCard extends StatelessWidget {
 
                         // Reply UI
                         if (hasReply) ...[
-                          Text(
-                            repliedUserName ?? "username",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: blackColor,
-                            ),
-                          ),
+                          // Text(
+                          //   repliedUserName ?? "username",
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: blackColor,
+                          //   ),
+                          // ),
                           const SizedBox(height: 3),
                           Container(
                             padding: const EdgeInsets.all(10),

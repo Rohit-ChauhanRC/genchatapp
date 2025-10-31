@@ -43,7 +43,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
 
     if (type == MessageType.text || type == MessageType.deleted) {
       return SelectableText(
-        type == MessageType.text
+        type == MessageType.text && isReply != true
             ? controller.encryptionService.decryptText(message)
             : message,
         autofocus: true,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -7,6 +9,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 import '../../../config/theme/app_colors.dart';
+import '../controllers/single_chat_controller.dart';
 
 class MyMessageCard extends StatelessWidget {
   const MyMessageCard({
@@ -66,150 +69,100 @@ class MyMessageCard extends StatelessWidget {
   final RxBool? isUploading;
   final RxDouble? uploadProgress;
 
+  // Get controller once
+  SingleChatController get controller => Get.find<SingleChatController>();
+
   String _getFileTypeText(MessageType type) {
     switch (type) {
-      case MessageType.image:
-        return "Sharing photo";
-      case MessageType.video:
-        return "Sharing video";
-      case MessageType.document:
-        return "Sharing document";
-      case MessageType.audio:
-        return "Sharing audio";
-      case MessageType.gif:
-        return "Sharing GIF";
-      default:
-        return "Shared file";
+      case MessageType.image: return "Sharing photo";
+      case MessageType.video: return "Sharing video";
+      case MessageType.document: return "Sharing document";
+      case MessageType.audio: return "Sharing audio";
+      case MessageType.gif: return "Sharing GIF";
+      default: return "Shared file";
     }
   }
 
   Widget _buildMessageContent() {
-    // For text messages and audio messages, show content directly without Obx
-    if (!isAsset || 
-        type == MessageType.text || 
-        type == MessageType.audio ||
-        isUploading == null || 
-        uploadProgress == null) {
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          DisplayTextImageGIF(
-            audioMessage: audioMessage,
-            message: message,
-            type: type,
-            url: url,
-            assetThumbnail: assetThumbnail,
-          ),
-          // Only show retry button for failed uploads
-          if (isAsset &&
-              syncStatus == SyncStatus.pending &&
-              isRetryUploadFile.value) ...[
-            InkWell(
-              onTap: () {
-                if (!isRetryUploadFile.value) {
-                  onRetryTap?.call();
-                }
-              },
-              child: Container(
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black45,
-                ),
-                padding: const EdgeInsets.all(8),
-                child: const Icon(
-                  Icons.refresh,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-          ],
-        ],
-      );
+    // Text, audio, deleted → no upload progress
+    if (!isAsset || type == MessageType.text || type == MessageType.audio) {
+      return _buildStaticContent();
     }
 
-    // For file
-    // uploads (image, video, document, gif), use Obx to observe upload state
+    // File uploads (image, video, document, gif) → show progress
     return Obx(() {
-      if (isUploading!.value == true &&
-          (type == MessageType.image ||
-           type == MessageType.video ||
-           type == MessageType.document ||
-           type == MessageType.gif)) {
+      final uploading = isUploading?.value == true;
+      final failed = syncStatus == SyncStatus.pending && isRetryUploadFile.value && !uploading;
+
+      if (uploading && (type == MessageType.image|| type == MessageType.document || type == MessageType.gif)) {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 16,
-              height: 16,
+              width: 16, height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                value: uploadProgress!.value,
+                value: uploadProgress?.value ?? 0,
                 color: greyMsgColor,
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              _getFileTypeText(type),
-              style: const TextStyle(
-                fontSize: 14,
-                color: blackColor,
-              ),
-            ),
+            Text(_getFileTypeText(type), style: const TextStyle(fontSize: 14, color: blackColor)),
           ],
         );
       }
-      
-      // Show normal content after upload
+
+
       return Stack(
         alignment: Alignment.center,
         children: [
+          // This now reacts to assetThumbnail changes
           DisplayTextImageGIF(
             audioMessage: audioMessage,
             message: message,
             type: type,
             url: url,
             assetThumbnail: assetThumbnail,
+
           ),
-          // Only show retry button for failed file uploads
-          if (isAsset &&
-              syncStatus == SyncStatus.pending &&
-              isRetryUploadFile.value &&
-              !isUploading!.value) ...[
-            InkWell(
-              onTap: () {
-                if (!isRetryUploadFile.value) {
-                  onRetryTap?.call();
-                }
-              },
-              child: Container(
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black45,
-                ),
-                padding: const EdgeInsets.all(8),
-                child: const Icon(
-                  Icons.refresh,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-          ],
+          if (failed) _retryButton(),
         ],
       );
     });
   }
 
+  Widget _buildStaticContent() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        DisplayTextImageGIF(
+          audioMessage: audioMessage,
+          message: message,
+          type: type,
+          url: url,
+          assetThumbnail: assetThumbnail,
+        ),
+        if (isAsset && syncStatus == SyncStatus.pending && isRetryUploadFile.value) _retryButton(),
+      ],
+    );
+  }
+
+  Widget _retryButton() {
+    return InkWell(
+      onTap: () => onRetryTap?.call(),
+      child: Container(
+        decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.black45),
+        padding: const EdgeInsets.all(8),
+        child: const Icon(Icons.refresh, color: Colors.white, size: 28),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final hasReply =
-        type != MessageType.deleted &&
-        ((repliedMessageType != MessageType.text &&
-                (repliedAssetServerName?.isNotEmpty ?? false)) ||
-            (repliedMessageType == MessageType.text &&
-                repliedText.value.trim().isNotEmpty &&
-                repliedText.value.trim().toLowerCase() != "null"));
+    final hasReply = type != MessageType.deleted &&
+        ((repliedMessageType != MessageType.text && (repliedAssetServerName?.isNotEmpty ?? false)) ||
+            (repliedMessageType == MessageType.text && repliedText.value.trim().isNotEmpty));
 
     return SwipeTo(
       onLeftSwipe: onLeftSwipe,
@@ -236,123 +189,79 @@ class MyMessageCard extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: Stack(
                 children: [
-                  // percent.value
                   Padding(
                     padding: type == MessageType.text
-                        ? const EdgeInsets.only(
-                            left: 10,
-                            right: 20,
-                            top: 5,
-                            bottom: 20,
-                          )
-                        : const EdgeInsets.only(
-                            left: 5,
-                            top: 5,
-                            right: 5,
-                            bottom: 25,
-                          ),
+                        ? const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 20)
+                        : const EdgeInsets.only(left: 5, top: 5, right: 5, bottom: 25),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (type != MessageType.deleted &&
-                            isForwarded &&
-                            showForwarded)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Symbols.forward_sharp,
-                                color: AppColors.greyMsgColor,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                "Forwarded",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.greyMsgColor,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                        // ✅ Fixed reply condition
-                        if (hasReply)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                repliedUserName ?? "",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: blackColor,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: replyColor.withOpacity(0.67),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: DisplayTextImageGIF(
-                                  audioMessage: audioMessage,
-                                  message:
-                                      repliedMessageType != MessageType.text
-                                      ? repliedAssetServerName ?? ""
-                                      : repliedText.value,
-                                  type: repliedMessageType,
-                                  isReply: true,
-                                  url: url,
-                                  assetThumbnail: repliedThumbnail,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-
-                        // Main message
+                        if (type != MessageType.deleted && isForwarded && showForwarded)
+                          _forwardedLabel(),
+                        if (hasReply) _replyPreview(),
                         _buildMessageContent(),
                       ],
                     ),
                   ),
-
-                  // Bottom timestamp + ticks
-                  Positioned(
-                    bottom: 4,
-                    right: 10,
-                    child: Row(
-                      children: [
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: greyMsgColor,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        if (type != MessageType.deleted)
-                          Icon(
-                            status == MessageState.unsent
-                                ? Icons.watch_later
-                                : status == MessageState.sent
-                                ? Icons.done
-                                : Icons.done_all,
-                            size: 20,
-                            color: status == MessageState.read
-                                ? Colors.blue
-                                : greyMsgColor,
-                          ),
-                      ],
-                    ),
-                  ),
+                  _bottomTimestampAndTicks(),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _forwardedLabel() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Symbols.forward_sharp, color: AppColors.greyMsgColor, size: 18),
+        const SizedBox(width: 10),
+        Text("Forwarded", style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: AppColors.greyMsgColor)),
+      ],
+    );
+  }
+
+  Widget _replyPreview() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 3),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: replyColor.withOpacity(0.67), borderRadius: BorderRadius.circular(5)),
+          child: DisplayTextImageGIF(
+            audioMessage: audioMessage,
+            message: repliedMessageType != MessageType.text ? repliedAssetServerName ?? "" : repliedText.value,
+            type: repliedMessageType,
+            isReply: true,
+            url: url,
+            assetThumbnail: repliedThumbnail,
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _bottomTimestampAndTicks() {
+    return Positioned(
+      bottom: 4,
+      right: 10,
+      child: Row(
+        children: [
+          Text(date, style: const TextStyle(fontSize: 13, color: greyMsgColor)),
+          const SizedBox(width: 5),
+          if (type != MessageType.deleted)
+            Icon(
+              status == MessageState.unsent ? Icons.watch_later :
+              status == MessageState.sent ? Icons.done : Icons.done_all,
+              size: 20,
+              color: status == MessageState.read ? Colors.blue : greyMsgColor,
+            ),
+        ],
       ),
     );
   }

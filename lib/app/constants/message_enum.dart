@@ -8,12 +8,9 @@ enum MessageEnum {
   document('documents');
 
   const MessageEnum(this.type);
+
   final String type;
 }
-
-// Using an extension
-// Enhanced enums
-
 extension ConvertMessage on String {
   MessageEnum toEnum() {
     switch (this) {

@@ -521,7 +521,7 @@ class SocketService extends GetxService {
       }
     });
 
-    _socket?.on('group-deleted',(data) async{
+    _socket?.on('group-deleted', (data) async {
       print("✅ Group deleted: $data");
       final responseModel = CreateGroupModel.fromJson(data);
       if (responseModel.status == true && responseModel.data != null) {
@@ -571,7 +571,6 @@ class SocketService extends GetxService {
         data["isBlock"] == true ? 1 : 0,
       );
     });
-
   }
 
   void sendMessage(NewMessageModel data) async {
@@ -654,8 +653,10 @@ class SocketService extends GetxService {
       userName = groupData?.users
           ?.firstWhere(
             (u) => u.userInfo?.userId == uid,
-        orElse: () => User(userInfo: null, userGroupInfo: null),
-      ).userInfo?.phoneNumber;
+            orElse: () => User(userInfo: null, userGroupInfo: null),
+          )
+          .userInfo
+          ?.phoneNumber;
     }
 
     // 🔄 Step 3: Update typing map
@@ -663,7 +664,7 @@ class SocketService extends GetxService {
     if (isTyping && userName != null && userName.isNotEmpty) {
       groupMap[userId] = userName;
     } else {
-      groupMap.remove(userId);//lmlmgmrogrogm
+      groupMap.remove(userId); //lmlmgmrogrogm
     }
     typingGroupUsersMap[groupId] = Map.from(groupMap);
   }
@@ -953,5 +954,9 @@ class SocketService extends GetxService {
     //   Get.offAllNamed(Routes.LANDING);
     // });
     return false;
+  }
+
+  void sendBase64(String data) async {
+    _socket?.emit('message-event', data);
   }
 }

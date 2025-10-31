@@ -37,3 +37,7 @@ const groupTable = "group_table";
 const usersTable = "group_users_table";
 const userGroupsTable = "user_groups_info";
 const subscribedTopics = "subscribedTopics";
+const messageText = "Message";
+const voiceCall = "Voice Call";
+const videoCall = "Video Call";
+const viewContact = "View Contact";

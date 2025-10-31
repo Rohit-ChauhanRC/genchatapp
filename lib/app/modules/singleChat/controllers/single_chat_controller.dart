@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -2023,4 +2024,32 @@ class SingleChatController extends GetxController
   }
 
   // record
+
+  void selectFileTest(String fileType) async {
+    if (fileType == MessageType.image.value ||
+        fileType == MessageType.video.value) {
+      final selectedFiles = await pickImageAndVideo();
+      for (File file in selectedFiles) {
+        print("Yes Getting back all files:---> $file");
+
+        final bytes = await File(file.path).readAsBytes();
+
+        // Convert bytes to Base64 string
+        final String base64String = base64Encode(bytes);
+        // await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        // cancelReply();
+        socketService.sendBase64(file);
+      }
+    } else if (fileType == MessageType.audio.value) {
+      //  final selectedFile = await pickAudio();
+    } else if (fileType == MessageType.document.value) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
+    }
+  }
 }

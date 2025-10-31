@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
@@ -956,7 +959,46 @@ class SocketService extends GetxService {
     return false;
   }
 
-  void sendBase64(String data) async {
-    _socket?.emit('message-event', data);
+  void sendBase64(File data) async {
+    print(data.length);
+    _socket?.emit('asset-start');
+
+    // final base64String = await convertImageToBase64(data);
+    // final chunks = splitIntoChunks(
+    //   base64String,
+    //   1024,
+    // ); // 1KB per chunk (adjust as needed)
+    final stream = data.openRead();
+
+    await for (final chunk in stream) {
+      // Option A: send raw binary (best)
+      _socket?.emit("asset-chunk", chunk);
+
+      // Option B: send base64 if your server requires text
+      // final base64Chunk = base64Encode(chunk);
+      // socket.write(jsonEncode({'type': 'chunk', 'data': base64Chunk}) + "\n");
+    }
+
+    // for (int i = 0; i < chunks.length; i++) {
+    //   _socket?.emit("asset-chunk", chunks[i]);
+    // }
+    // _socket?.emit('test-asset-event', data);
+    _socket?.emit('asset-end');
+  }
+
+  Future<String> convertImageToBase64(File imageFile) async {
+    final bytes = await imageFile.readAsBytes();
+    return base64Encode(bytes);
+  }
+
+  List<String> splitIntoChunks(String base64String, int chunkSize) {
+    final chunks = <String>[];
+    for (var i = 0; i < base64String.length; i += chunkSize) {
+      final end = (i + chunkSize < base64String.length)
+          ? i + chunkSize
+          : base64String.length;
+      chunks.add(base64String.substring(i, end));
+    }
+    return chunks;
   }
 }

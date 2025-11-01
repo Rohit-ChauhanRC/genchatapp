@@ -47,15 +47,19 @@ class SingleChatController extends GetxController
   final FolderCreation folderCreation = Get.find<FolderCreation>();
   final ContactsTable contactsTable = ContactsTable();
   final socketService = Get.find<SocketService>();
+
   final ProfileRepository profileRepository = Get.find<ProfileRepository>();
+
   final ChatRepository chatRepository = Get.put<ChatRepository>(
     ChatRepository(apiClient: Get.find()),
   );
 
   final ChatConectTable chatConectTable = ChatConectTable();
+
   final EncryptionService encryptionService = Get.find();
 
   final selectedContactController = Get.find<SelectContactsController>();
+
   var hasScrolledInitially = false.obs;
   // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
@@ -1005,7 +1009,6 @@ class SingleChatController extends GetxController
             );
           }
 
-
           // 🔵 Update local DB
           await MessageTable().updateMessageContent(
             messageId: message.messageId!,
@@ -1150,37 +1153,27 @@ class SingleChatController extends GetxController
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
   }
 
-
   // void selectFile(String fileType) async {
-  //   try {
-  //    isSending.value=true;
-  //
-  //     if (fileType == MessageType.image.value ||
-  //         fileType == MessageType.video.value) {
-  //       final selectedFiles = await pickImageAndVideo();
+  //   if (fileType == MessageType.image.value ||
+  //       fileType == MessageType.video.value) {
+  //     final selectedFiles = await pickImageAndVideo();
+  //     for (File file in selectedFiles) {
+  //       print("Yes Getting back all files:---> $file");
+  //       await sendFileMessage(file: file, messageEnum: getMessageType(file));
+  //       cancelReply();
+  //     }
+  //   } else if (fileType == MessageType.audio.value) {
+  //     //  final selectedFile = await pickAudio();
+  //   } else if (fileType == MessageType.document.value) {
+  //     await pickAndSendDocuments((selectedFiles) async {
   //       for (File file in selectedFiles) {
   //         print("Yes Getting back all files:---> $file");
   //         await sendFileMessage(file: file, messageEnum: getMessageType(file));
-  //         cancelReply();
   //       }
-  //     } else if (fileType == MessageType.audio.value) {
-  //       // final selectedFile = await pickAudio();
-  //     } else if (fileType == MessageType.document.value) {
-  //       await pickAndSendDocuments((selectedFiles) async {
-  //         for (File file in selectedFiles) {
-  //           print("Yes Getting back all files:---> $file");
-  //           await sendFileMessage(file: file, messageEnum: getMessageType(file));
-  //         }
-  //       });
-  //       cancelReply();
-  //     }
-  //   } catch (e) {
-  //     print("Error sending file: $e");
-  //   } finally {
-  //     isSending.value=false;
+  //     });
+  //     cancelReply();
   //   }
   // }
-
 
   Future<List<File>> pickImageAndVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
@@ -1246,7 +1239,7 @@ class SingleChatController extends GetxController
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-    
+
     // Create and show message immediately
     final fileName =
         "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
@@ -1317,7 +1310,7 @@ class SingleChatController extends GetxController
       // Update message with thumbnail immediately after generation
       if (assetThumnail != null && assetThumnail.isNotEmpty) {
         final messageIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+              (msg) => msg.clientSystemMessageId == clientSystemMessageId,
         );
         if (messageIndex != -1) {
           final messageWithThumbnail = messageList[messageIndex].copyWith(
@@ -1342,7 +1335,7 @@ class SingleChatController extends GetxController
       // Update message after successful upload
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         final messageIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+              (msg) => msg.clientSystemMessageId == clientSystemMessageId,
         );
         if (messageIndex != -1) {
           final updatedMessage = messageList[messageIndex].copyWith(
@@ -1353,7 +1346,7 @@ class SingleChatController extends GetxController
             syncStatus: SyncStatus.synced,
           );
           messageList[messageIndex] = updatedMessage;
-          
+
           // Update in database
           await MessageTable().updateMessageByClientId(updatedMessage);
         }
@@ -1364,7 +1357,7 @@ class SingleChatController extends GetxController
       } else {
         // Handle upload failure
         final messageIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+              (msg) => msg.clientSystemMessageId == clientSystemMessageId,
         );
         if (messageIndex != -1) {
           final failedMessage = messageList[messageIndex].copyWith(
@@ -1382,7 +1375,7 @@ class SingleChatController extends GetxController
       }
       // Handle error - mark upload as failed
       final messageIndex = messageList.indexWhere(
-        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
+            (msg) => msg.clientSystemMessageId == clientSystemMessageId,
       );
       if (messageIndex != -1) {
         final failedMessage = messageList[messageIndex].copyWith(
@@ -1431,13 +1424,17 @@ class SingleChatController extends GetxController
         if (result.status == true) {
           print("response of upload Files:----> ${result.data?.toJson()}");
           return result;
+        } else {
+          // showAlertMessage('Upload failed: Invalid response status.');
         }
+      } else {
+        // showAlertMessage('Failed to upload file: ${response?.statusCode}');
       }
     } catch (e) {
-      print('Error uploading file: $e');
+      // showAlertMessage('Error uploading file: ${e.toString()}');
     }
 
-    return null;
+    return null; // return empty result on error
   }
 
   Future<void> retryPendingMediaFile(NewMessageModel messages) async {
@@ -1923,7 +1920,9 @@ class SingleChatController extends GetxController
 
       print(serverName);
 
-      // Create message first and add to list
+      final fileData = await uploadFileToServer(
+        File(recordedPath.value.toString()),
+      );
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1953,67 +1952,27 @@ class SingleChatController extends GetxController
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: serverName,
-        assetOriginalName: "",
+        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: serverName,
-        assetUrl: "",
+        assetUrl: fileData == null ? "" : fileData.data?.url,
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
             ? senderuserData?.userId
             : receiverUserData?.userId,
-        isUploading: true.obs,
-        uploadProgress: 0.0.obs,
       );
-
-      // Add message to list and database first
+      print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
-
-      // Upload audio file
-      final fileData = await uploadFileToServer(
-        File(recordedPath.value.toString()),
-      );
-
-      // Update message after upload completion
-      final updatedMessage = newMessage.copyWith(
-        assetOriginalName: fileData?.data?.originalName ?? "",
-        assetUrl: fileData?.data?.url ?? "",
-        isUploading: false.obs,
-        uploadProgress: 1.0.obs,
-      );
-
-      // Update in database and list
-      final messageIndex = messageList.indexWhere(
-        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-      );
-      if (messageIndex != -1) {
-        messageList[messageIndex] = updatedMessage;
-        await MessageTable().updateMessageByClientId(updatedMessage);
-      }
-
       recordedPath.value = "";
 
-      // Send message via socket if upload was successful
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
-          socketService.sendMessage(updatedMessage);
+          socketService.sendMessage(newMessage);
           isPreviewing.value = false;
         }
       } else {
-        // Handle upload failure - mark as pending for retry
-        final failedMessage = newMessage.copyWith(
-          isUploading: false.obs,
-          uploadProgress: 0.0.obs,
-          syncStatus: SyncStatus.pending,
-        );
-        final failedIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-        );
-        if (failedIndex != -1) {
-          messageList[failedIndex] = failedMessage;
-          await MessageTable().updateMessageByClientId(failedMessage);
-        }
-        socketService.saveChatContacts(failedMessage);
+        socketService.saveChatContacts(newMessage);
         isPreviewing.value = false;
       }
     } catch (e) {

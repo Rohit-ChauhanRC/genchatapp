@@ -102,18 +102,17 @@ class FilePickerService {
           _imageFiles.add(File(croppedFile.path));
         }
       } else if (getMessageType(file) == MessageType.video) {
-        // final file = File(pickedVideo!.path);
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
-        // if (sizeInMB > 50) {
-        //   showSnackBar(
-        //     context: Get.context!,
-        //     content:
-        //         "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
-        //   );
-        // } else {
-        _imageFiles.add(file);
-        // }
+        if (sizeInMB >= 50) {
+          showSnackBar(
+            context: Get.context!,
+            content:
+                "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+          );
+        } else {
+          _imageFiles.add(file);
+        }
       } else {
         _imageFiles.add(file);
       }

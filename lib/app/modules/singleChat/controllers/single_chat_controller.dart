@@ -1216,21 +1216,21 @@ class SingleChatController extends GetxController
       final fileName =
           "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
-      Map<String, File?> f = await compressFiles(file, fileExtension);
+      // Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
-        f.values.first!,
+        file,
         fileType,
-        f.keys.first,
+        fileExtension,
         fileName,
       );
-      final String? assetThumnail = f.keys.first == "mp4"
+      final String? assetThumnail = fileExtension == "mp4"
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      final fileWithExtensions = "$fileName.${f.keys.first}";
+      final fileWithExtensions = "$fileName.$fileExtension";
 
-      final fileData = await uploadFileToServer(f.values.first!);
+      final fileData = await uploadFileToServer(file);
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1894,7 +1894,7 @@ class SingleChatController extends GetxController
         final String base64String = base64Encode(bytes);
         // await sendFileMessage(file: file, messageEnum: getMessageType(file));
         // cancelReply();
-        socketService.sendBase64(file);
+        await socketService.sendBase64(file);
       }
     } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();

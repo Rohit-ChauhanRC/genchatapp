@@ -959,7 +959,7 @@ class SocketService extends GetxService {
     return false;
   }
 
-  void sendBase64(File data) async {
+  Future<void> sendBase64(File data) async {
     print(data.length);
     _socket?.emit('asset-start');
 
@@ -971,7 +971,8 @@ class SocketService extends GetxService {
     final stream = data.openRead();
 
     await for (final chunk in stream) {
-      // Option A: send raw binary (best)
+      // Option A: send raw binary (best)int
+      print("chunk: $chunk");
       _socket?.emit("asset-chunk", chunk);
 
       // Option B: send base64 if your server requires text

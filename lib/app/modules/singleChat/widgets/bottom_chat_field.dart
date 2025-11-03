@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -108,6 +107,7 @@ class BottomChatField extends StatelessWidget {
               Obx(
                 () => !singleChatController.isRecording.value
                     ? Expanded(
+
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 200),
                           child: TextFormField(

@@ -7,53 +7,67 @@ import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 
 class FilePickerService {
   final ImagePicker _picker = ImagePicker();
 
   /// Pick either image or video from camera (let user decide)
   /// Pick from camera (either image or fallback to video)
-  Future<List<File>> pickFromCamera() async {
-    List<File> _imageFiles = [];
+  Future<List<File>> pickFromCamera(BuildContext context) async {
+    List<File> _files = [];
 
-    final image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-      preferredCameraDevice: CameraDevice.rear,
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select media type'),
+        actions: [
+       
+          TextButton(
+              onPressed: () => Navigator.pop(context, 'image'),
+              child: const Text('Photo')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, 'video'),
+              child: const Text('Video')),
+        ],
+      ),
     );
 
-    if (image != null) {
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: File(image!.path).path,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-            ],
-          ),
-          IOSUiSettings(
-            title: 'Cropper',
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-            ],
-          ),
-        ],
+    if (choice == 'image') {
+      final image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        preferredCameraDevice: CameraDevice.rear,
       );
-      if (croppedFile != null) {
-        _imageFiles.add(File(croppedFile!.path));
+
+      if (image != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Cropper',
+              toolbarColor: Colors.deepOrange,
+              toolbarWidgetColor: Colors.white,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.square,
+              ],
+            ),
+            IOSUiSettings(title: 'Cropper'),
+          ],
+        );
+
+        if (croppedFile != null) _files.add(File(croppedFile.path));
       }
-      return _imageFiles;
+    } else if (choice == 'video') {
+      final video = await _picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(minutes: 5),
+      );
+      if (video != null) _files.add(File(video.path));
     }
 
-    // final video = await _picker.pickVideo(source: ImageSource.camera);
-    // if (video != null) return [File(video.path)];
-
-    return [];
+    return _files;
   }
 
   /// Pick multiple images/videos from gallery

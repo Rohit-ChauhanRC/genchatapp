@@ -214,7 +214,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       checkIfCurrentUserRemoved(groupDetails);
       groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
     }
-    if(isCurrentUserRemoved == false){
+    if (isCurrentUserRemoved == false) {
       socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
         if (typingUsers.isNotEmpty) {
           _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
@@ -443,8 +443,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         .map((u) => u.userInfo?.userId)
         .whereType<int>()
         .toList();
-    final activePhoneNumbers = users.where((u)=> u.userGroupInfo?.isRemoved != true)
-        .map((u) => u.userInfo?.phoneNumber).whereType<String>().toList();
+    final activePhoneNumbers = users
+        .where((u) => u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.phoneNumber)
+        .whereType<String>()
+        .toList();
 
     // Step 2: Separate saved and unsaved contacts
     final savedNames = <String>[];
@@ -452,18 +455,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     for (final userId in activeUserIds) {
       final contact = await contactsTable.getUserById(userId);
-      if(contact != null) {
+      if (contact != null) {
         final localName = contact.localName?.trim();
         final phone = contact.phoneNumber?.trim();
 
         if (localName != null && localName.isNotEmpty) {
           savedNames.add(localName);
         }
-          // else if (phone != null && phone.isNotEmpty) {
+        // else if (phone != null && phone.isNotEmpty) {
         //   unsavedNumbers.add(phone);
         // }
-      }else{
-
+      } else {
         if (activePhoneNumbers.isNotEmpty) {
           unsavedNumbers.addAll(activePhoneNumbers);
         }
@@ -508,13 +510,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
           var userList = await contactsTable.getUserById(id);
-          if(userList != null){
+          if (userList != null) {
             final name = userList.localName ?? userList.name;
             senderNamesCache[id] = name!;
-          }else{
+          } else {
             senderNamesCache[id] = senderNumber;
           }
-
         }
         // Acknowledge seen if message is incoming and not already seen
         if (message.recipientId == receiverUserData?.group?.id &&
@@ -649,13 +650,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         if (!senderNamesCache.containsKey(id)) {
           var user = await contactsTable.getUserById(id);
 
-          if(user != null){
+          if (user != null) {
             final name = user.localName ?? user.name;
             senderNamesCache[id] = name!;
-          }else{
+          } else {
             senderNamesCache[id] = senderNumber;
           }
-
         }
       }
 
@@ -1085,21 +1085,25 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final fileName =
           "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
-      Map<String, File?> f = await compressFiles(file, fileExtension);
+      // Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
-        f.values.first!,
+        file,
         fileType,
-        f.keys.first,
+        fileExtension,
         fileName,
       );
-      final String? assetThumnail = f.keys.first == "mp4"
+      final String? assetThumnail =
+          fileExtension == "mp4" ||
+              fileExtension == "mov" ||
+              fileExtension == "avi" ||
+              fileExtension == "mkv"
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      final fileWithExtensions = "$fileName.${f.keys.first}";
+      final fileWithExtensions = "$fileName.$fileExtension";
 
-      final fileData = await uploadFileToServer(f.values.first!);
+      final fileData = await uploadFileToServer(file);
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.group?.id,

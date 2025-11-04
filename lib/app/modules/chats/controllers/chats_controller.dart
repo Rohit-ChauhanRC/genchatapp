@@ -157,7 +157,7 @@ class ChatsController extends GetxController {
               )
               .length;
         }
-
+        print(messages.first.senderPhoneNumber);
         return ChatConntactModel(
           uid: contact.uid,
           name: contact.name,

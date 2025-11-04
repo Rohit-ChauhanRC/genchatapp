@@ -104,6 +104,7 @@ class FilePickerService {
       } else if (getMessageType(file) == MessageType.video) {
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
+
         if (sizeInMB >= 50) {
           showSnackBar(
             context: Get.context!,

@@ -580,61 +580,6 @@ Future<File?> compressVideoFfmpeg(File file) async {
   }
 }
 
-// Future<Map<String, File?>> compressVideoFfmpeg(File file) async {
-//   try {
-//     Directory appDir = await getApplicationDocumentsDirectory();
-
-//     final dir = Platform.isAndroid
-//         ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
-//         : Directory('${appDir.path}/picked_images');
-
-//     if (!await dir.exists()) {
-//       await dir.create(recursive: true);
-//     }
-
-//     // Define the directory for storing the thumbnail
-//     final thumDir = Platform.isAndroid
-//         ? Directory("/storage/emulated/0")
-//         : await getApplicationDocumentsDirectory();
-
-//     final String rootFolderPath = '${thumDir.path}/GenChat/Thumbnail';
-//     final Directory dirThum = Directory(rootFolderPath);
-
-//     if (!await dirThum.exists()) {
-//       await dirThum.create(recursive: true);
-//     }
-
-//     getReadableFileSize(file);
-
-//     final outputPath = '${dirThum.path}/rotated_${file.uri.pathSegments.last}';
-//     final thumbnailPath =
-//         '${dir.path}/thumbnail_${file.uri.pathSegments.last}.jpg';
-
-//     final command =
-//         '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
-
-//     final session = await FFmpegKit.execute(command);
-//     final returnCode = await session.getReturnCode();
-
-//     if (ReturnCode.isSuccess(returnCode)) {
-//       print("Video compressed successfully!");
-//       getReadableFileSize(File(outputPath));
-
-//       // Return both the compressed video and the thumbnail
-//       return {
-//         'video': File(outputPath),
-//         'thumbnail': File(thumbnailPath),
-//       };
-//     } else {
-//       print("Compression failed: $returnCode");
-//       return {};
-//     }
-//   } catch (e) {
-//     print("Video compression error: $e");
-//     return {};
-//   }
-// }
-
 Future<Map<String, File?>> compressFiles(
   File file,
   String extension, {

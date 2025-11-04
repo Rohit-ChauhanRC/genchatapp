@@ -1894,7 +1894,7 @@ class SingleChatController extends GetxController
         final String base64String = base64Encode(bytes);
         // await sendFileMessage(file: file, messageEnum: getMessageType(file));
         // cancelReply();
-        await socketService.sendBase64(file);
+        await socketService.sendBase64Scientist(file);
       }
     } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();

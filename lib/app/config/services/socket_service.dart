@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -777,7 +778,9 @@ class SocketService extends GetxService {
             lastMessage: messageText,
             lastMessageId: data.messageId,
             timeSent: data.messageSentFromDeviceTime,
-            name: name,
+            name: name != null && name.isNotEmpty
+                ? name
+                : data.senderPhoneNumber,
             profilePic: profilePic,
             isGroup: 0,
           ),
@@ -1001,5 +1004,34 @@ class SocketService extends GetxService {
       chunks.add(base64String.substring(i, end));
     }
     return chunks;
+  }
+
+  Future<void> sendBase64Scientist(File data) async {
+    const chunkSize = 512 * 1024;
+    final raf = await data.open(mode: FileMode.read);
+    final fileSize = await data.length();
+
+    Uint8List buffer = Uint8List(chunkSize);
+    int offset = 0;
+
+    _socket?.emit('asset-start', {'size': fileSize});
+
+    try {
+      while (true) {
+        final bytesRead = await raf.read(chunkSize);
+        if (bytesRead.isEmpty) break;
+
+        // ✅ Use sublistView to avoid copy overhead
+        // final chunk = base64Encode(Uint8List.sublistView(buffer, 0, bytesRead));
+
+        _socket?.emit('asset-chunk', bytesRead);
+        // offset += bytesRead;
+        // print("Progress: ${(offset / fileSize * 100).toStringAsFixed(2)}%");
+      }
+
+      _socket?.emit('asset-end', {'success': true});
+    } finally {
+      raf.closeSync();
+    }
   }
 }

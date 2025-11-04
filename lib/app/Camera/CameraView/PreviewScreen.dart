@@ -20,6 +20,7 @@ class PreviewScreen extends StatelessWidget {
         children: [
           Center(
             child: imagePath != null
+
                 ? Image.file(File(imagePath!))
                 : (videoPath != null
                 ? VideoPlayerScreen(videoPath: videoPath!)

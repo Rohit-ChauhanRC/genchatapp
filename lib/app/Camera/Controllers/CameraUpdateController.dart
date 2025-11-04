@@ -55,6 +55,7 @@ class CameraControllerX extends GetxController {
     try {
       await cameraController!.startVideoRecording();
       isRecording.value = true;
+
     } catch (e) {
       Get.snackbar("Error", "Failed to start video: $e");
     }

@@ -98,6 +98,7 @@ class ChatsController extends GetxController {
       final messages = await ChatConectTable().fetchAll();
       // print("All Chats:----> $messages");
       // for (var e in messages) {
+
       //   await FolderCreation().checkAndHandleFile(
       //     fileUrl: e.profilePic!,
       //     fileName: e.profilePic!.split(

@@ -54,7 +54,7 @@ class UpdatesController extends GetxController
   var statusList = <StatusModel>[].obs;
 
   RxDouble progress = 0.0.obs;
-  Timer? _timer;
+  Timer? timer;
 
   @override
   void onInit() {
@@ -81,7 +81,7 @@ class UpdatesController extends GetxController
     super.onClose();
     contactsList.clear();
     selectedChatUids.clear();
-    _timer?.cancel();
+    timer?.cancel();
   }
 
   void startProgress() {
@@ -89,7 +89,7 @@ class UpdatesController extends GetxController
     int count = 0;
     const total = 50; // 5 seconds total
 
-    _timer = Timer.periodic(duration, (timer) {
+    timer = Timer.periodic(duration, (timer) {
       count++;
       progress.value = count / total;
       if (count >= total) {
@@ -100,7 +100,7 @@ class UpdatesController extends GetxController
   }
 
   void skip() {
-    _timer?.cancel();
+    timer?.cancel();
     Get.back();
   }
 

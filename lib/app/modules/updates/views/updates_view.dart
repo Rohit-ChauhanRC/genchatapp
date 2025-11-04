@@ -36,10 +36,16 @@ class UpdatesView extends GetView<UpdatesController> {
       ),
       body: GradientContainer(
         child: Obx(() {
-          return ListView(
+          return
+
+
+            ListView(
             children: [
-              // My Status
-              ListTile(
+              GestureDetector(
+            onTap: (){
+              Get.toNamed(Routes.CAMERA);
+            },
+              child:ListTile(
                 leading: Stack(
                   children: [
                     CircleAvatar(
@@ -88,14 +94,21 @@ class UpdatesView extends GetView<UpdatesController> {
                 subtitle: const Text("Tap to add status update"),
               ),
 
-              const Padding(
+              //  Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              //   child: Text(
+              //     "Recent updates",
+              //     style: TextStyle(color: Colors.grey),
+              //   ),
+              // ),
+              ),
+               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   "Recent updates",
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-
               ...controller.statusList.map(
                     (status) => StatusTile(
                   status: status,

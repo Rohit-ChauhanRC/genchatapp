@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -395,27 +394,6 @@ class DisplayTextImageGIF extends StatelessWidget {
     
     // For sent messages, check if file exists locally first
     if (isSentByMe == true) {
-      // First check if this message is currently being uploaded
-      final message = controller.messageList.firstWhereOrNull((msg) => 
-        msg.assetServerName == fileName
-      );
-      
-      print("🔍 [DisplayTextImageGIF] Found message: ${message != null}, isUploading: ${message?.isUploading?.value}, syncStatus: ${message?.syncStatus}");
-      
-      if (message != null && message.isUploading?.value == true) {
-        // File is being processed, show upload progress but mark as "available" for display
-        controller.isDownloaded[fileName] = true;
-        print("🔄 [DisplayTextImageGIF] File is being uploaded, marked as available: $fileName");
-        return;
-      }
-      
-      // For sent messages that are pending (not yet processed), also mark as available
-      if (message != null && message.syncStatus == SyncStatus.pending && message.isAsset == true) {
-        controller.isDownloaded[fileName] = true;
-        print("🔄 [DisplayTextImageGIF] Sent message pending processing, marked as available: $fileName");
-        return;
-      }
-
       final path = controller.getFilePath(type, fileName);
       final file = File(path);
       final exists = await file.exists();

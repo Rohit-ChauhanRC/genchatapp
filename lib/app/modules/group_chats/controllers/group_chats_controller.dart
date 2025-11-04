@@ -214,7 +214,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       checkIfCurrentUserRemoved(groupDetails);
       groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
     }
-    if (isCurrentUserRemoved == false) {
+    if(isCurrentUserRemoved == false){
       socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
         if (typingUsers.isNotEmpty) {
           _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
@@ -443,11 +443,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         .map((u) => u.userInfo?.userId)
         .whereType<int>()
         .toList();
-    final activePhoneNumbers = users
-        .where((u) => u.userGroupInfo?.isRemoved != true)
-        .map((u) => u.userInfo?.phoneNumber)
-        .whereType<String>()
-        .toList();
+    final activePhoneNumbers = users.where((u)=> u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.phoneNumber).whereType<String>().toList();
 
     // Step 2: Separate saved and unsaved contacts
     final savedNames = <String>[];
@@ -455,17 +452,18 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     for (final userId in activeUserIds) {
       final contact = await contactsTable.getUserById(userId);
-      if (contact != null) {
+      if(contact != null) {
         final localName = contact.localName?.trim();
         final phone = contact.phoneNumber?.trim();
 
         if (localName != null && localName.isNotEmpty) {
           savedNames.add(localName);
         }
-        // else if (phone != null && phone.isNotEmpty) {
+          // else if (phone != null && phone.isNotEmpty) {
         //   unsavedNumbers.add(phone);
         // }
-      } else {
+      }else{
+
         if (activePhoneNumbers.isNotEmpty) {
           unsavedNumbers.addAll(activePhoneNumbers);
         }
@@ -510,12 +508,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
           var userList = await contactsTable.getUserById(id);
-          if (userList != null) {
+          if(userList != null){
             final name = userList.localName ?? userList.name;
             senderNamesCache[id] = name!;
-          } else {
+          }else{
             senderNamesCache[id] = senderNumber;
           }
+
         }
         // Acknowledge seen if message is incoming and not already seen
         if (message.recipientId == receiverUserData?.group?.id &&
@@ -650,12 +649,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         if (!senderNamesCache.containsKey(id)) {
           var user = await contactsTable.getUserById(id);
 
-          if (user != null) {
+          if(user != null){
             final name = user.localName ?? user.name;
             senderNamesCache[id] = name!;
-          } else {
+          }else{
             senderNamesCache[id] = senderNumber;
           }
+
         }
       }
 
@@ -1086,30 +1086,33 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-
+    
+    // Create and show message immediately
     final fileName =
         "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+    final fileWithExtensions = "$fileName.$fileExtension";
 
     try {
-      // Map<String, File?> f = await compressFiles(file, fileExtension);
+      // Do file processing first so file is available immediately
+      Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
-        file,
+        f.values.first!,
         fileType,
-        fileExtension,
+        f.keys.first,
         fileName,
       );
-      final String? assetThumnail =
-          fileExtension == "mp4" ||
-              fileExtension == "mov" ||
-              fileExtension == "av" ||
-              fileExtension == "mkv"
+      final String? assetThumnail = messageEnum == MessageType.video
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      final fileWithExtensions = "$fileName.$fileExtension";
+      print("📹 Video thumbnail generated: $assetThumnail");
 
-      // Create message first and add to list immediately
+      // Mark file as downloaded since it exists locally now
+      isDownloaded[fileWithExtensions] = true;
+      print("✅ [GroupChatsController] File marked as downloaded during processing: $fileWithExtensions");
+
+      // Create message after file is saved locally
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.group?.id,
@@ -1150,18 +1153,21 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
+
+      // Add message to list and database after file is ready
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
       // Upload file with progress tracking
       final fileData = await uploadFileToServer(
-        file,
+        f.values.first!,
         onProgress: (progress) {
           newMessage.uploadProgress?.value = progress;
           onProgress?.call(progress);
         },
       );
 
+      // Update message after successful upload
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         final messageIndex = messageList.indexWhere(
           (msg) => msg.clientSystemMessageId == clientSystemMessageId,
@@ -1175,10 +1181,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             syncStatus: SyncStatus.synced,
           );
           messageList[messageIndex] = updatedMessage;
-
+          
           // Mark file as downloaded since it exists locally
           isDownloaded[fileWithExtensions] = true;
-
+          print("✅ [GroupChatsController] File marked as downloaded after upload: $fileWithExtensions");
+          
           // Update in database
           await MessageTable().updateMessageByClientId(updatedMessage);
         }
@@ -1194,7 +1201,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         if (messageIndex != -1) {
           final failedMessage = messageList[messageIndex].copyWith(
             isUploading: false.obs,
-            syncStatus: SyncStatus.pending,
+            syncStatus: SyncStatus.pending
           );
           messageList[messageIndex] = failedMessage;
           await MessageTable().updateMessageByClientId(failedMessage);
@@ -1202,9 +1209,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
-      print("❌ [GroupChatsController] Error during file processing: $e");
-      print("❌ [GroupChatsController] Stack trace: ${StackTrace.current}");
-
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
       // Handle error - mark upload as failed
       final messageIndex = messageList.indexWhere(
         (msg) => msg.clientSystemMessageId == clientSystemMessageId,
@@ -1443,15 +1450,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> deleteTextMessage() async {
     MessageTable().deleteMessageText(
+
       messageType: "text",
       receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
-      // print("receiverId:$receiverId");
-      //     print("  messageType: text");
-      //     print("  receiverId: ${receiverUserData?.group?.id}");
-      // print("  senderId: ${senderuserData?.userId}");
+    // print("receiverId:$receiverId");
+    //     print("  messageType: text");
+    //     print("  receiverId: ${receiverUserData?.group?.id}");
+    // print("  senderId: ${senderuserData?.userId}");
     );
-    messageList.clear();
+      messageList.clear();
     //  'deleted'
     MessageTable().deleteMessageText(
       messageType: 'deleted',

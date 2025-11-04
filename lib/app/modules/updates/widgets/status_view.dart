@@ -1,196 +1,160 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:genchatapp/app/constants/colors.dart';
-import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/status_model.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
-import 'package:get/get.dart';
 
-class StatusView extends StatelessWidget {
-  const StatusView({super.key, required this.controller, required this.status});
-
+class StatusView extends StatefulWidget {
   final UpdatesController controller;
   final StatusModel status;
 
+  const StatusView({
+    super.key,
+    required this.controller,
+    required this.status,
+  });
+
+  @override
+  State<StatusView> createState() => _StatusViewState();
+}
+
+class _StatusViewState extends State<StatusView> {
+  late UpdatesController controller;
+  late StatusModel status;
+
+
+  @override
+  void initState() {
+    super.initState();
+    controller = widget.controller;
+    status = widget.status;
+    controller.progress.value = 0;
+    controller.startProgress();
+  }
+
+  @override
+  void dispose() {
+    controller.timer?.cancel();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details, BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final dx = details.globalPosition.dx;
+    if (dx < width / 2) {
+      // tap left → previous status
+      controller.skip(); // close or move to previous
+    } else {
+      // tap right → next status
+      controller.skip(); // close or move to next
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
-      onTap: controller.skip,
+      onTapDown: (details) => _onTapDown(details, context),
       child: Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: textBarColor,
-          title: Column(
-            children: [
-              Obx(
-                () => LinearProgressIndicator(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                status.imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const Center(child: CircularProgressIndicator(color: Colors.white));
+                },
+              ),
+            ),
+
+            Positioned(
+              top: 40,
+              left: 10,
+              right: 10,
+              child: Obx(
+                    () => ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
                   value: controller.progress.value,
-                  color: Colors.white,
-                  backgroundColor: Colors.white24,
+                    color: Colors.white,
+                    backgroundColor: Colors.white24,
+                  ),
                 ),
               ),
-              const SizedBox(height: 5),
-              Row(
+            ),
+
+            Positioned(
+              top: 55,
+              left: 15,
+              child: Row(
                 children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(status.imageUrl),
+                  ),
                   const SizedBox(width: 10),
-                  CircleAvatar(backgroundImage: NetworkImage(status.imageUrl)),
-                  const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         status.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         status.time,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
-          actions: [
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: whiteColor),
-              offset: const Offset(0, 40),
-              color: textBarColor,
-              onSelected: (value) async {
-                // Handle menu item selection
-
-                // if (value == clearText) {
-                //   await controller.deleteTextMessage();
-                // } else if (value == block) {
-                //   await controller.blockUser();
-                // } else if (value == unBlock) {
-                //   await controller.unblockUser();
-                // }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: messageText,
-                  child: Text(
-                    messageText,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: whiteColor,
-                    ),
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: voiceCall,
-                  child: Text(
-                    voiceCall,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: whiteColor,
-                    ),
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: videoCall,
-                  child: Text(
-                    videoCall,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: whiteColor,
-                    ),
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: viewContact,
-                  child: Text(
-                    viewContact,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: whiteColor,
-                    ),
-                  ),
-                ),
-              ],
             ),
-          ],
-        ),
-        body: Column(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // story image
-            Container(
-              color: Colors.white,
-              height: 200,
-              width: Get.width,
-              margin: const EdgeInsets.only(top: 120),
-              // alignment: Alignment.center,
-              child: Image.network(
-                status.imageUrl.toString(),
-                height: Get.height,
-                width: Get.width,
-                fit: BoxFit.fill,
 
-                // imageBuilder: (context, imageProvider) =>
-                //     CircleAvatar(backgroundImage: imageProvider),
+            // 💬 Reply Box (Bottom)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Reply...',
+                            hintStyle: const TextStyle(color: Colors.white54),
+                            filled: true,
+                            fillColor: Colors.white12,
+                            border: OutlineInputBorder(
+
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const CircleAvatar(
+
+                        backgroundColor: Colors.white,
+                        radius: 30,
+                        child: Icon(Icons.send, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            // const SizedBox(height: 20),
-            const Spacer(),
-            // const Spacer(),
-            // const Spacer(),
-
-            // const Spacer(),
-            Row(
-              children: [
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: Get.width * .8,
-                  child: TextFormField(
-                    // maxLines: null,
-                    style: const TextStyle(color: whiteColor),
-                    // autofocus: true,
-                    keyboardType: TextInputType.text,
-                    onChanged: (v) {},
-
-                    inputFormatters: [LengthLimitingTextInputFormatter(200)],
-                    // maxLength: 800,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: textBarColor,
-
-                      hintText: 'Reply',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.all(10),
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 2, right: 2, bottom: 2),
-                  child: CircleAvatar(
-                    backgroundColor: textBarColor,
-                    radius: 25,
-                    child: Icon(Icons.send),
-                  ),
-                ),
-              ],
-            ),
-            // progress bar
-            const SizedBox(height: 10),
-            // user info
           ],
         ),
       ),

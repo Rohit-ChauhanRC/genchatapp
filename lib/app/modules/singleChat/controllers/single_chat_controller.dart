@@ -1292,12 +1292,12 @@ class SingleChatController extends GetxController
 
     try {
       // Now do file processing in background
-      Map<String, File?> f = await compressFiles(file, fileExtension);
+      // Map<String, File?> f = await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
-        f.values.first!,
+        file,
         fileType,
-        f.keys.first,
+        fileExtension,
         fileName,
       );
       final String? assetThumnail = messageEnum == MessageType.video
@@ -1329,7 +1329,7 @@ class SingleChatController extends GetxController
 
       // Upload file with progress tracking
       final fileData = await uploadFileToServer(
-        f.values.first!,
+        file,
         onProgress: (progress) {
           newMessage.uploadProgress?.value = progress;
           onProgress?.call(progress);

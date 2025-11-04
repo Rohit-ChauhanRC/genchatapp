@@ -1091,19 +1091,23 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
     try {
-      Map<String, File?> f = await compressFiles(file, fileExtension);
-      
+      // Map<String, File?> f = await compressFiles(file, fileExtension);
+
       final localFilePath = await saveFileLocally(
-        f.values.first!,
+        file,
         fileType,
-        f.keys.first,
+        fileExtension,
         fileName,
       );
-      final String? assetThumnail = f.keys.first == "mp4"
+      final String? assetThumnail =
+          fileExtension == "mp4" ||
+              fileExtension == "mov" ||
+              fileExtension == "av" ||
+              fileExtension == "mkv"
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      final fileWithExtensions = "$fileName.${f.keys.first}";
+      final fileWithExtensions = "$fileName.$fileExtension";
 
       // Create message first and add to list immediately
       final newMessage = NewMessageModel(
@@ -1151,7 +1155,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       // Upload file with progress tracking
       final fileData = await uploadFileToServer(
-        f.values.first!,
+        file,
         onProgress: (progress) {
           newMessage.uploadProgress?.value = progress;
           onProgress?.call(progress);

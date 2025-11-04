@@ -1,6 +1,8 @@
 PODS:
   - audio_waveforms (0.0.1):
     - Flutter
+  - camera_avfoundation (0.0.1):
+    - Flutter
   - connectivity_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.9):
@@ -37,9 +39,9 @@ PODS:
   - emoji_picker_flutter (0.0.1):
     - Flutter
   - ffmpeg_kit_flutter_new (1.0.0):
-    - ffmpeg_kit_flutter_new/full-gpl-lts (= 1.0.0)
+    - ffmpeg_kit_flutter_new/full-gpl (= 1.0.0)
     - Flutter
-  - ffmpeg_kit_flutter_new/full-gpl-lts (1.0.0):
+  - ffmpeg_kit_flutter_new/full-gpl (1.0.0):
     - Flutter
   - file_picker (0.0.1):
     - DKImagePickerController/PhotoGallery
@@ -52,14 +54,14 @@ PODS:
   - Firebase/Messaging (11.15.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 11.15.0)
-  - firebase_core (3.15.1):
+  - firebase_core (3.15.2):
     - Firebase/CoreOnly (= 11.15.0)
     - Flutter
-  - firebase_crashlytics (4.3.9):
+  - firebase_crashlytics (4.3.10):
     - Firebase/Crashlytics (= 11.15.0)
     - firebase_core
     - Flutter
-  - firebase_messaging (15.2.9):
+  - firebase_messaging (15.2.10):
     - Firebase/Messaging (= 11.15.0)
     - firebase_core
     - Flutter
@@ -201,6 +203,7 @@ PODS:
 
 DEPENDENCIES:
   - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
   - ffmpeg_kit_flutter_new (from `.symlinks/plugins/ffmpeg_kit_flutter_new/ios`)
@@ -251,6 +254,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   audio_waveforms:
     :path: ".symlinks/plugins/audio_waveforms/ios"
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   emoji_picker_flutter:
@@ -296,16 +301,17 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
+  camera_avfoundation: be3be85408cd4126f250386828e9b1dfa40ab436
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   emoji_picker_flutter: ed468d9746c21711e66b2788880519a9de5de211
-  ffmpeg_kit_flutter_new: fd5914d838ca5791b32805e3b0c545a99ab96c15
+  ffmpeg_kit_flutter_new: 12426a19f10ac81186c67c6ebc4717f8f4364b7f
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
-  firebase_core: ece862f94b2bc72ee0edbeec7ab5c7cb09fe1ab5
-  firebase_crashlytics: f89f5137e667ba1733ca5d7ab1b7af3390572520
-  firebase_messaging: e1a5fae495603115be1d0183bc849da748734e2b
+  firebase_core: 995454a784ff288be5689b796deb9e9fa3601818
+  firebase_crashlytics: 30dcd6dfd2fe895c0848af46722a4227346c19aa
+  firebase_messaging: f4a41dd102ac18b840eba3f39d67e77922d3f707
   FirebaseCore: efb3893e5b94f32b86e331e3bd6dadf18b66568e
   FirebaseCoreExtension: edbd30474b5ccf04e5f001470bdf6ea616af2435
   FirebaseCoreInternal: 9afa45b1159304c963da48addb78275ef701c6b4

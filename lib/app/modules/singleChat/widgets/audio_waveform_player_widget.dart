@@ -140,110 +140,91 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.blackColor,
-      appBar: AppBar(
-        backgroundColor: textBarColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-        // automaticallyImplyLeading: false,
-        centerTitle: false,
-        title: const Text(
-          "Audio Preview",
-          style: TextStyle(
-            fontSize: 20,
-            color: whiteColor,
-            fontWeight: FontWeight.bold,
-          ),
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+          color: textBarColor,
+          borderRadius: BorderRadius.circular(20),
         ),
-      ),
-
-      body: Center(
-        child: GestureDetector(
+        // height: 40,
+        child: ListTile(
           onTap: () {
             widget.isReply == true ? null : downloadAndOpenFile(context);
           },
-          child: Container(
-            // width: MediaQuery.of(context).size.width * 0.6,
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: textBarColor,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                StreamBuilder<int>(
-                  stream: playerController.onCurrentDurationChanged,
-                  builder: (context, snapshot) {
-                    final currentMs = snapshot.data ?? 0;
-                    final totalMs = playerController.maxDuration;
+          subtitle: StreamBuilder<int>(
+            stream: playerController.onCurrentDurationChanged,
+            builder: (context, snapshot) {
+              final currentMs = snapshot.data ?? 0;
+              final totalMs = playerController.maxDuration;
 
-                    // Prevent crash when totalMs is invalid (0 or less)
-                    if (totalMs <= 0) {
-                      return const SizedBox.shrink();
+              // Prevent crash when totalMs is invalid (0 or less)
+              if (totalMs <= 0) {
+                return const SizedBox.shrink();
+              }
+
+              // Clamp and convert to int safely
+              final remainingMs = (totalMs - currentMs)
+                  .clamp(0, totalMs)
+                  .toInt();
+              final remaining = Duration(milliseconds: remainingMs);
+              final hours = remaining.inHours.toString().padLeft(2, '0');
+
+              final minutes = remaining.inMinutes
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+              final seconds = remaining.inSeconds
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  "$hours:$minutes:$seconds",
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              );
+            },
+          ),
+          title: Row(
+            children: [
+              Obx(
+                () => IconButton(
+                  icon: !playAudio.value
+                      ? const Icon(
+                          Icons.play_arrow,
+                          color: whiteColor,
+                          size: 25,
+                        )
+                      : const Icon(Icons.pause, color: whiteColor, size: 25),
+                  onPressed: () {
+                    if (!playAudio.value) {
+                      playRecordingAudioWaveform();
+                    } else {
+                      pausePlayback();
                     }
-
-                    // Clamp and convert to int safely
-                    final remainingMs = (totalMs - currentMs)
-                        .clamp(0, totalMs)
-                        .toInt();
-                    final remaining = Duration(milliseconds: remainingMs);
-                    final hours = remaining.inHours.toString().padLeft(2, '0');
-
-                    final minutes = remaining.inMinutes
-                        .remainder(60)
-                        .toString()
-                        .padLeft(2, '0');
-                    final seconds = remaining.inSeconds
-                        .remainder(60)
-                        .toString()
-                        .padLeft(2, '0');
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Text(
-                        "$hours:$minutes:$seconds",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
                   },
                 ),
-
-                Obx(
-                  () => IconButton(
-                    icon: !playAudio.value
-                        ? const Icon(
-                            Icons.play_arrow,
-                            color: whiteColor,
-                            size: 30,
-                          )
-                        : const Icon(Icons.pause, color: whiteColor, size: 30),
-                    onPressed: () {
-                      if (!playAudio.value) {
-                        playRecordingAudioWaveform();
-                      } else {
-                        pausePlayback();
-                      }
-                    },
-                  ),
+              ),
+              AudioFileWaveforms(
+                size: const Size(120, 40),
+                playerController: playerController,
+                animationCurve: Curves.elasticInOut,
+                waveformType: WaveformType.fitWidth,
+                playerWaveStyle: const PlayerWaveStyle(
+                  fixedWaveColor: Colors.white,
+                  liveWaveColor: Colors.red,
+                  spacing: 2,
+                  waveThickness: 1,
                 ),
-                AudioFileWaveforms(
-                  size: const Size(150, 40),
-                  playerController: playerController,
-                  animationCurve: Curves.elasticInOut,
-                  waveformType: WaveformType.fitWidth,
-                  playerWaveStyle: const PlayerWaveStyle(
-                    fixedWaveColor: Colors.white,
-                    liveWaveColor: Colors.red,
-                    spacing: 2,
-                    waveThickness: 1,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
+
+      //     ),
     );
   }
 }

@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -170,7 +171,7 @@ class DisplayTextImageGIF extends StatelessWidget {
                               const SizedBox(height: 12),
                               InkWell(
                                 onTap: () {
-                                  controller.cancelDownload(type,message);
+                                  controller.cancelDownload(type, message);
                                 },
                                 child: Icon(
                                   Icons.cancel_outlined,
@@ -234,7 +235,6 @@ class DisplayTextImageGIF extends StatelessWidget {
                 return _videoPlaceholder();
               }
 
-
               // Thumbnails are stored in Thumbnail folder, not Video folder
               final thumbPath = "${controller.rootPath}Thumbnail/$thumb";
               final thumbFile = File(thumbPath);
@@ -242,12 +242,14 @@ class DisplayTextImageGIF extends StatelessWidget {
               return InkWell(
                 onTap: () {
                   // Play the **full video** (the one that was downloaded)
-                  Get.to(() => VideoPlayerItem(
-                    videoUrl: path,
-                    localFilePath: thumbPath,
-                    url: url ?? '',
-                    isReply: isReply ?? false,
-                  ));
+                  Get.to(
+                    () => VideoPlayerItem(
+                      videoUrl: path,
+                      localFilePath: thumbPath,
+                      url: url ?? '',
+                      isReply: isReply ?? false,
+                    ),
+                  );
                 },
                 child: Stack(
                   children: [
@@ -255,13 +257,13 @@ class DisplayTextImageGIF extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       child: thumbFile.existsSync()
                           ? Image.file(
-                        thumbFile,
-                        key: ValueKey(thumb), 
-                        width: 220,
-                        height: 140,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _videoPlaceholder(),
-                      )
+                              thumbFile,
+                              key: ValueKey(thumb),
+                              width: 220,
+                              height: 140,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _videoPlaceholder(),
+                            )
                           : _videoPlaceholder(),
                     ),
                     // Play icon
@@ -271,7 +273,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.black54,
-                        child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -284,11 +290,15 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply,
               );
             case MessageType.audio:
-              return AudioPreview(
-                audioPath: path,
-                audioUrl: url,
-                isReply: isReply,
-                message: audioMessage,
+              return SizedBox(
+                // height: 150,
+                // width: 200,
+                child: AudioPlayerScreen(
+                  audioPath: path,
+                  audioUrl: url,
+                  isReply: isReply,
+                  // message: audioMessage,
+                ),
               ); // if using
             case MessageType.gif:
               return DisplayGifImage(
@@ -370,6 +380,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     final i = (bytes != 0) ? (log(bytes) / log(1024)).floor() : 0;
     return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
   }
+
   Widget _videoPlaceholder() {
     return Container(
       width: 220,
@@ -390,16 +401,49 @@ class DisplayTextImageGIF extends StatelessWidget {
     MessageType type,
     String fileName,
   ) async {
-    print("🔍 [DisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe");
-    
+    print(
+      "🔍 [DisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
+    );
+
     // For sent messages, check if file exists locally first
     if (isSentByMe == true) {
+      // First check if this message is currently being uploaded
+      final message = controller.messageList.firstWhereOrNull(
+        (msg) => msg.assetServerName == fileName,
+      );
+
+      print(
+        "🔍 [DisplayTextImageGIF] Found message: ${message != null}, isUploading: ${message?.isUploading?.value}, syncStatus: ${message?.syncStatus}",
+      );
+
+      if (message != null && message.isUploading?.value == true) {
+        // File is being processed, show upload progress but mark as "available" for display
+        controller.isDownloaded[fileName] = true;
+        print(
+          "🔄 [DisplayTextImageGIF] File is being uploaded, marked as available: $fileName",
+        );
+        return;
+      }
+
+      // For sent messages that are pending (not yet processed), also mark as available
+      if (message != null &&
+          message.syncStatus == SyncStatus.pending &&
+          message.isAsset == true) {
+        controller.isDownloaded[fileName] = true;
+        print(
+          "🔄 [DisplayTextImageGIF] Sent message pending processing, marked as available: $fileName",
+        );
+        return;
+      }
+
       final path = controller.getFilePath(type, fileName);
       final file = File(path);
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
 
-      print("🔍 [DisplayTextImageGIF] File path: $path, exists: $exists, size: $size");
+      print(
+        "🔍 [DisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
+      );
 
       if (exists && size > 0) {
         // File exists locally, mark as downloaded immediately
@@ -414,7 +458,9 @@ class DisplayTextImageGIF extends StatelessWidget {
       }
     } else {
       // For received messages, use the standard check
-      print("📥 [DisplayTextImageGIF] Using standard check for received message");
+      print(
+        "📥 [DisplayTextImageGIF] Using standard check for received message",
+      );
       await controller.checkIfFileExists(type, fileName);
     }
   }

@@ -108,18 +108,21 @@ class UpdatesController extends GetxController
     statusList.assignAll([
       StatusModel(
         name: "Alice",
-        imageUrl: "https://i.pravatar.cc/150?img=1",
+        imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
+        ProfilePic: "https://i.pravatar.cc/150?img=2",
         time: "Today, 9:00 AM",
       ),
       StatusModel(
         name: "Bob",
-        imageUrl: "https://i.pravatar.cc/150?img=2",
+        imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
         time: "Today, 10:30 AM",
+        ProfilePic: "https://i.pravatar.cc/150?img=2",
       ),
       StatusModel(
         name: "Charlie",
-        imageUrl: "https://i.pravatar.cc/150?img=3",
+        imageUrl: ["https://i.pravatar.cc/150?img=3","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
         time: "Yesterday, 8:15 PM",
+        ProfilePic: "https://i.pravatar.cc/150?img=2",
         viewed: true,
       ),
     ]);

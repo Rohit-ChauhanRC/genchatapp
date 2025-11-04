@@ -21,7 +21,7 @@ class StatusView extends StatefulWidget {
 class _StatusViewState extends State<StatusView> {
   late UpdatesController controller;
   late StatusModel status;
-
+   int index=0;
 
   @override
   void initState() {
@@ -61,7 +61,7 @@ class _StatusViewState extends State<StatusView> {
           children: [
             Positioned.fill(
               child: Image.network(
-                status.imageUrl,
+                status.imageUrl[index],
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, progress) {
                   if (progress == null) return child;
@@ -93,7 +93,7 @@ class _StatusViewState extends State<StatusView> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage(status.imageUrl),
+                    backgroundImage: NetworkImage(status.ProfilePic),
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -147,7 +147,7 @@ class _StatusViewState extends State<StatusView> {
                       const CircleAvatar(
 
                         backgroundColor: Colors.white,
-                        radius: 30,
+                        radius: 20,
                         child: Icon(Icons.send, color: Colors.black),
                       ),
                     ],

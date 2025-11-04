@@ -15,7 +15,7 @@ class StatusTile extends StatelessWidget {
         radius: 28,
         backgroundColor: status.viewed ? Colors.grey : Colors.green,
         child: CachedNetworkImage(
-          imageUrl: status.imageUrl.toString(),
+          imageUrl: status.ProfilePic,
           imageBuilder: (context, imageProvider) =>
               CircleAvatar(backgroundImage: imageProvider, radius: 25),
           placeholder: (context, url) => const CircleAvatar(

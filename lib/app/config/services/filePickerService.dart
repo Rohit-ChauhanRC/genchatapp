@@ -22,7 +22,6 @@ class FilePickerService {
       builder: (context) => AlertDialog(
         title: const Text('Select media type'),
         actions: [
-       
           TextButton(
               onPressed: () => Navigator.pop(context, 'image'),
               child: const Text('Photo')),

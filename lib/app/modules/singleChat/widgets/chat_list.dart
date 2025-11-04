@@ -125,6 +125,8 @@ class ChatList extends StatelessWidget {
                                 ? messages.assetServerName
                                 .toString()
                                 : ''),
+                            isSentByMe: true,
+
                             date: DateFormat('hh:mm a').format(
                               DateTime.parse(
                                 messages.messageSentFromDeviceTime ??

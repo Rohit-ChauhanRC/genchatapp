@@ -67,6 +67,7 @@ class GroupMessageReplyPreview extends StatelessWidget {
                         .toString(),
                     type: groupChatsController.messageReply.messageType!,
                     isReply: true,
+                    isSentByMe: false, // Reply previews should not use sent message logic
                   )
                 : const SizedBox.shrink(),
           ),

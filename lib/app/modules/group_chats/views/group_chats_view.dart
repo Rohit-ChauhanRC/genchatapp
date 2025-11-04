@@ -173,7 +173,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       const SizedBox(width: 10),
                       InkWell(
                         onTap: () {},
-                        child: Icon(
+                        child: const Icon(
                           Symbols.call_rounded,
                           color: AppColors.whiteColor,
                         ),
@@ -189,12 +189,13 @@ class GroupChatsView extends GetView<GroupChatsController> {
               // Handle menu item selection
               switch (value) {
                 case clearText:
-                  print(clearText);
-                  await controller.deleteTextMessage();
+                  print("clear text in group:$clearText");
+                   await controller.deleteTextMessage();
                   break;
                 default:
               }
             },
+
             itemBuilder: (context) => [
               // PopupMenuItem(
               //   value: newGroup,

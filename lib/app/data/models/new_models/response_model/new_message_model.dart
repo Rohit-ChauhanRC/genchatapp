@@ -114,7 +114,7 @@ class NewMessageModel extends Equatable {
       messageRepliedOnAssetServerName: map['messageRepliedOnAssetServerName'],
       messageRepliedOnAssetThumbnail: map['messageRepliedOnAssetThumbnail'],
       isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
-      assetThumbnail: map['assetThumbnail'] ?? '',
+      assetThumbnail: map['assetThumbnail'] ??'',
       assetOriginalName: map['assetOriginalName'] ?? '',
       assetServerName: map['assetServerName'] ?? '',
       assetUrl: map['assetUrl'] ?? '',

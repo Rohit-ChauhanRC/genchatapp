@@ -1082,6 +1082,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     required MessageType messageEnum,
     Function(double)? onProgress,
   }) async {
+    print("🚀 [GroupChatsController] sendFileMessage called for: ${file.path}");
+    
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
@@ -1091,6 +1093,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     final fileName =
         "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
     final fileWithExtensions = "$fileName.$fileExtension";
+    
+    print("🚀 [GroupChatsController] Generated filename: $fileWithExtensions");
 
     // Create message first and add to list immediately
     final newMessage = NewMessageModel(
@@ -1137,10 +1141,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     // Add message to list and database immediately - user sees it right away
     await MessageTable().insertMessage(newMessage);
     messageList.add(newMessage);
+    print("✅ [GroupChatsController] Message added to list: $fileWithExtensions, isUploading: ${newMessage.isUploading?.value}");
 
     try {
       // Now do file processing in background
+      print("🔄 [GroupChatsController] Starting file processing for: $fileWithExtensions");
       Map<String, File?> f = await compressFiles(file, fileExtension);
+      print("🔄 [GroupChatsController] File compression completed");
 
       final localFilePath = await saveFileLocally(
         f.values.first!,
@@ -1148,11 +1155,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         f.keys.first,
         fileName,
       );
+      print("💾 [GroupChatsController] File saved locally at: $localFilePath");
       final String? assetThumnail = messageEnum == MessageType.video
           ? await getThumbnail(File(localFilePath))
           : "";
 
       print("📹 Video thumbnail generated: $assetThumnail");
+
+      // Mark file as downloaded since it exists locally now
+      isDownloaded[fileWithExtensions] = true;
+      print("✅ [GroupChatsController] File marked as downloaded during processing: $fileWithExtensions");
 
       // Update message with thumbnail immediately after generation
       if (assetThumnail != null && assetThumnail.isNotEmpty) {
@@ -1165,7 +1177,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           );
           messageList[messageIndex] = messageWithThumbnail;
           // Update in database immediately so thumbnail persists
-          await MessageTable().updateMessage(messageWithThumbnail);
+          await MessageTable().updateMessageByClientId(messageWithThumbnail);
           print("📹 Thumbnail updated in message: ${messageWithThumbnail.assetThumbnail}");
         }
       }
@@ -1194,8 +1206,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           );
           messageList[messageIndex] = updatedMessage;
           
+          // Mark file as downloaded since it exists locally
+          isDownloaded[fileWithExtensions] = true;
+          print("✅ [GroupChatsController] File marked as downloaded after upload: $fileWithExtensions");
+          
           // Update in database
-          await MessageTable().updateMessage(updatedMessage);
+          await MessageTable().updateMessageByClientId(updatedMessage);
         }
 
         if (socketService.isConnected) {
@@ -1212,14 +1228,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             syncStatus: SyncStatus.pending
           );
           messageList[messageIndex] = failedMessage;
-          await MessageTable().updateMessage(failedMessage);
+          await MessageTable().updateMessageByClientId(failedMessage);
         }
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Error sending file message: $e");
-      }
+      print("❌ [GroupChatsController] Error during file processing: $e");
+      print("❌ [GroupChatsController] Stack trace: ${StackTrace.current}");
+      
       // Handle error - mark upload as failed
       final messageIndex = messageList.indexWhere(
         (msg) => msg.clientSystemMessageId == clientSystemMessageId,
@@ -1230,7 +1246,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           syncStatus: SyncStatus.pending,
         );
         messageList[messageIndex] = failedMessage;
-        await MessageTable().updateMessage(failedMessage);
+        await MessageTable().updateMessageByClientId(failedMessage);
       }
     }
   }
@@ -1458,11 +1474,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> deleteTextMessage() async {
     MessageTable().deleteMessageText(
+
       messageType: "text",
       receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
+    // print("receiverId:$receiverId");
+    //     print("  messageType: text");
+    //     print("  receiverId: ${receiverUserData?.group?.id}");
+    // print("  senderId: ${senderuserData?.userId}");
     );
-
+      messageList.clear();
     //  'deleted'
     MessageTable().deleteMessageText(
       messageType: 'deleted',

@@ -40,6 +40,7 @@ class MyMessageCard extends StatelessWidget {
     required this.percent,
     this.isUploading,
     this.uploadProgress,
+    this.isSentByMe = true, // New parameter for sent messages
   }) : super(key: key);
 
   final String message;
@@ -68,6 +69,7 @@ class MyMessageCard extends StatelessWidget {
   final RxDouble percent;
   final RxBool? isUploading;
   final RxDouble? uploadProgress;
+  final bool isSentByMe;
 
   // Get controller once
   SingleChatController get controller => Get.find<SingleChatController>();
@@ -123,7 +125,7 @@ class MyMessageCard extends StatelessWidget {
             type: type,
             url: url,
             assetThumbnail: assetThumbnail,
-
+            isSentByMe: true,
           ),
           if (failed) _retryButton(),
         ],
@@ -141,6 +143,7 @@ class MyMessageCard extends StatelessWidget {
           type: type,
           url: url,
           assetThumbnail: assetThumbnail,
+          isSentByMe: isSentByMe,
         ),
         if (isAsset && syncStatus == SyncStatus.pending && isRetryUploadFile.value) _retryButton(),
       ],
@@ -239,6 +242,7 @@ class MyMessageCard extends StatelessWidget {
             isReply: true,
             url: url,
             assetThumbnail: repliedThumbnail,
+            isSentByMe: false, // Reply previews should not use sent message logic
           ),
         ),
         const SizedBox(height: 8),

@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/colors.dart' as AppColors;
@@ -19,6 +20,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
   final MessageType type;
   final bool? isReply;
   final String? url;
+  final bool? isSentByMe; // New parameter to identify sent messages
 
   final String? assetThumbnail;
   final String? audioMessage;
@@ -29,6 +31,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     required this.type,
     this.url,
     this.isReply = false,
+    this.isSentByMe = false, // Default to false for received messages
     this.assetThumbnail,
     this.audioMessage,
   }) : super(key: key);
@@ -59,11 +62,13 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     }
 
     return FutureBuilder(
-      future: controller.checkIfFileExists(type, message),
+      future: _checkFileAvailability(controller, type, message),
       builder: (context, snapshot) {
         return Obx(() {
           final isDownloaded = controller.isDownloaded[message] ?? false;
           final isDownloading = controller.isDownloading[message] ?? false;
+
+          print("🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe");
 
           if (!isDownloaded) {
             return GestureDetector(
@@ -204,6 +209,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                           ),
                         ),
                       ),
+                    
                   ],
                 ),
               ),
@@ -317,5 +323,61 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     const suffixes = ["B", "KB", "MB", "GB"];
     final i = (bytes != 0) ? (log(bytes) / log(1024)).floor() : 0;
     return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+  }
+
+  /// Check file availability with special handling for sent messages
+  Future<void> _checkFileAvailability(
+    GroupChatsController controller,
+    MessageType type,
+    String fileName,
+  ) async {
+    print("🔍 [GroupDisplayTextImageGIF] NEW VERSION - Checking file availability for: $fileName, isSentByMe: $isSentByMe");
+    
+    // For sent messages, check if file exists locally first
+    if (isSentByMe == true) {
+      // First check if this message is currently being uploaded
+      final message = controller.messageList.firstWhereOrNull((msg) => 
+        msg.assetServerName == fileName
+      );
+      
+      print("🔍 [GroupDisplayTextImageGIF] Found message: ${message != null}, isUploading: ${message?.isUploading?.value}, syncStatus: ${message?.syncStatus}");
+      
+      if (message != null && message.isUploading?.value == true) {
+        // File is being processed, show upload progress but mark as "available" for display
+        controller.isDownloaded[fileName] = true;
+        print("🔄 [GroupDisplayTextImageGIF] File is being uploaded, marked as available: $fileName");
+        return;
+      }
+      
+      // For sent messages that are pending (not yet processed), also mark as available
+      if (message != null && message.syncStatus == SyncStatus.pending && message.isAsset == true) {
+        controller.isDownloaded[fileName] = true;
+        print("🔄 [GroupDisplayTextImageGIF] Sent message pending processing, marked as available: $fileName");
+        return;
+      }
+
+      final path = controller.getFilePath(type, fileName);
+      final file = File(path);
+      final exists = await file.exists();
+      final size = exists ? await file.length() : 0;
+
+      print("🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size");
+
+      if (exists && size > 0) {
+        // File exists locally, mark as downloaded immediately
+        controller.isDownloaded[fileName] = true;
+        print("✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName");
+        return;
+      } else {
+        // File doesn't exist locally, clean up any corrupt file
+        if (exists) await file.delete();
+        controller.isDownloaded[fileName] = false;
+        print("❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName");
+      }
+    } else {
+      // For received messages, use the standard check
+      print("📥 [GroupDisplayTextImageGIF] Using standard check for received message");
+      await controller.checkIfFileExists(type, fileName);
+    }
   }
 }

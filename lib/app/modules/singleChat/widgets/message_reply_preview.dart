@@ -74,6 +74,7 @@ class MessageReplyPreview extends StatelessWidget {
                     type: singleChatController.messageReply.messageType!,
                     isReply: true,
                     assetThumbnail: singleChatController.messageReply.assetsThumbnail,
+                    isSentByMe: false, // Reply previews should not use sent message logic
                   )
                 : const SizedBox.shrink(),
           ),

@@ -177,6 +177,7 @@ class GroupMyMessageCard extends StatelessWidget {
                                   isReply: true,
                                   url: url,
                                   assetThumbnail: repliedThumbnail,
+                                  isSentByMe: false, // Reply previews should not use sent message logic
                                 ),
                               ],
                             ),
@@ -193,6 +194,7 @@ class GroupMyMessageCard extends StatelessWidget {
                               type: type,
                               url: url,
                               assetThumbnail: assetThumbnail,
+                              isSentByMe: true, // This is always true for GroupMyMessageCard
                             ),
                             if (isAsset &&
                                 (type == MessageType.image ||

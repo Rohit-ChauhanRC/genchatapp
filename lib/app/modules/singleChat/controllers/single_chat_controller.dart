@@ -1307,6 +1307,9 @@ class SingleChatController extends GetxController
 
       print("📹 Video thumbnail generated: $assetThumnail");
 
+      // Mark file as downloaded since it exists locally now
+      isDownloaded[fileWithExtensions] = true;
+
       // Update message with thumbnail immediately after generation
       if (assetThumnail != null && assetThumnail.isNotEmpty) {
         final messageIndex = messageList.indexWhere(
@@ -1346,6 +1349,9 @@ class SingleChatController extends GetxController
             syncStatus: SyncStatus.synced,
           );
           messageList[messageIndex] = updatedMessage;
+
+          // Mark file as downloaded since it exists locally
+          isDownloaded[fileWithExtensions] = true;
 
           // Update in database
           await MessageTable().updateMessageByClientId(updatedMessage);

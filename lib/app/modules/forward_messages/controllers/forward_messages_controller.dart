@@ -22,7 +22,6 @@ class ForwardMessagesController extends GetxController {
   final ChatConectTable chatConectTable = ChatConectTable();
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
-
   final RxList<UserList> recentChats = <UserList>[].obs;
   final RxList<UserList> contacts = <UserList>[].obs;
   final RxList<int> selectedUserIds = <int>[].obs;

@@ -38,6 +38,8 @@ class NewMessageModel extends Equatable {
   final GlobalKey? keys;
   final bool? showForwarded;
   RxBool? isRetrying = false.obs;
+  RxDouble? uploadProgress = 0.0.obs;
+  RxBool? isUploading = false.obs;
 
   NewMessageModel({
     this.messageId,
@@ -69,6 +71,8 @@ class NewMessageModel extends Equatable {
     this.messageRepliedUserId,
     this.showForwarded,
     this.isRetrying,
+    this.uploadProgress,
+    this.isUploading,
   })  : context = Get.context,
         keys = GlobalKey();
 
@@ -110,12 +114,14 @@ class NewMessageModel extends Equatable {
       messageRepliedOnAssetServerName: map['messageRepliedOnAssetServerName'],
       messageRepliedOnAssetThumbnail: map['messageRepliedOnAssetThumbnail'],
       isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
-      assetThumbnail: map['assetThumbnail'] ?? '',
+      assetThumbnail: map['assetThumbnail'] ??'',
       assetOriginalName: map['assetOriginalName'] ?? '',
       assetServerName: map['assetServerName'] ?? '',
       assetUrl: map['assetUrl'] ?? '',
       messageRepliedUserId: map['messageRepliedUserId'],
       isRetrying: false.obs,
+      uploadProgress: 0.0.obs,
+      isUploading: false.obs,
     );
   }
 
@@ -182,6 +188,8 @@ class NewMessageModel extends Equatable {
     int? messageRepliedUserId,
     bool? showForwarded,
     RxBool? isRetrying,
+    RxDouble? uploadProgress,
+    RxBool? isUploading,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -215,6 +223,8 @@ class NewMessageModel extends Equatable {
       messageRepliedUserId: messageRepliedUserId ?? this.messageRepliedUserId,
       showForwarded: showForwarded ?? this.showForwarded,
       isRetrying: isRetrying ?? this.isRetrying,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
+      isUploading: isUploading ?? this.isUploading,
     );
   }
 

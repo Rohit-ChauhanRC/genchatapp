@@ -193,7 +193,6 @@ class ChatsController extends GetxController {
       filteredContacts.assignAll(
         contactsList.where((contact) {
           final name = contact.name?.toLowerCase() ?? '';
-
           return name.contains(searchText);
         }).toList(),
       );

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -24,7 +23,12 @@ class BottomChatField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(child:
+        Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom
+          ),
+            child:  Column(
       children: [
         Obx(
           () =>
@@ -103,6 +107,7 @@ class BottomChatField extends StatelessWidget {
               Obx(
                 () => !singleChatController.isRecording.value
                     ? Expanded(
+
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 200),
                           child: TextFormField(
@@ -206,6 +211,7 @@ class BottomChatField extends StatelessWidget {
                                           // Get.to(() => AttachmentPopupDemo());
                                           singleChatController.selectFile(
                                             MessageType.document.value,
+
                                           );
                                         },
                                         icon: const Icon(
@@ -329,6 +335,6 @@ class BottomChatField extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
       ],
-    );
+    )));
   }
 }

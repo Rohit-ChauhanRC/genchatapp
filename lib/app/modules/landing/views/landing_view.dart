@@ -12,7 +12,16 @@ class LandingView extends GetView<LandingController> {
   const LandingView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final size=MediaQuery.of(context).size;
+    return SafeArea(child:Padding(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom
+        ),
+
+
+
+
+      child:Scaffold(
       appBar: AppBar(
         backgroundColor: appBarColor,
         title: Text(
@@ -68,6 +77,7 @@ class LandingView extends GetView<LandingController> {
               ],
             ))
       ]),
-    );
+    )
+    ));
   }
 }

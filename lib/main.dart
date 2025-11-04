@@ -90,11 +90,11 @@ void main() async {
   );
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('✅ Notification permission granted');
+    print('Notification permission granted');
   } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
-    print('❌ Notification permission denied');
+    print(' Notification permission denied');
   } else {
-    print('⚠️ Notification permission not determined');
+    print('Notification permission not determined');
   }
 
   AppConfig.setEnvironment(AppEnvironment.dev);

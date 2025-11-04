@@ -239,12 +239,26 @@ class SingleChatView extends GetView<SingleChatController> {
       ),
       body: Column(
         children: [
+          // Expanded(
+          //   child: ChatList(
+          //     singleChatController: controller,
+          //     // firebaseController: controller.firebaseController,
+          //   ),
+          // ),
+
+          ///Abhishek's
           Expanded(
-            child: ChatList(
-              singleChatController: controller,
-              // firebaseController: controller.firebaseController,
+            child: Stack(
+              children: [
+                ChatList(
+                  singleChatController: controller,
+                ),
+
+                // Upload progress overlay removed - files now show directly in chat list
+              ],
             ),
           ),
+
           Obx(
             () =>
                 (controller.blocked.value && controller.blockedByMe.value == 1)

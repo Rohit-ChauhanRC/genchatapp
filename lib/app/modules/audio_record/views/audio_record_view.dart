@@ -10,13 +10,11 @@ import '../controllers/audio_record_controller.dart';
 class AudioRecordView extends StatelessWidget {
   AudioRecordView({super.key});
   final audioCtrl = Get.put(AudioRecordController());
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         const SizedBox(height: 20),
-
         Obx(() {
           if (audioCtrl.isRecording.value) {
             return AudioWaveforms(

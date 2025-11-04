@@ -31,6 +31,7 @@ class OtpController extends GetxController {
   set countryCode(String countryCode) => _countryCode.value = countryCode;
 
   final RxString _otp = ''.obs;
+
   String get otp => _otp.value;
   set otp(String op) => _otp.value = op;
 

@@ -35,6 +35,7 @@ class SenderMessageCard extends StatelessWidget {
   final MessageType type;
   final void Function(DragUpdateDetails)? onRightSwipe;
   final RxString repliedText;
+
   // final String username;
   final MessageType repliedMessageType;
   final int? repliedUserId;
@@ -120,13 +121,13 @@ class SenderMessageCard extends StatelessWidget {
 
                         // Reply UI
                         if (hasReply) ...[
-                          Text(
-                            repliedUserName ?? "username",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: blackColor,
-                            ),
-                          ),
+                          // Text(
+                          //   repliedUserName ?? "username",
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: blackColor,
+                          //   ),
+                          // ),
                           const SizedBox(height: 3),
                           Container(
                             padding: const EdgeInsets.all(10),
@@ -142,6 +143,7 @@ class SenderMessageCard extends StatelessWidget {
                               isReply: true,
                               url: url,
                               assetThumbnail: repliedThumbnail,
+                              isSentByMe: false,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -150,7 +152,8 @@ class SenderMessageCard extends StatelessWidget {
                             message: message,
                             type: type,
                             url: url,
-                            assetThumbnail: assetThumbnail),
+                            assetThumbnail: assetThumbnail,
+                            isSentByMe: false), // Received messages
                       ],
                     ),
                   ),

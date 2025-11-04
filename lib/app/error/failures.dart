@@ -9,7 +9,6 @@ abstract class Failure extends Equatable {
 class ServerFailure extends Failure {}
 
 class CacheFailure extends Failure {}
-
 class NetworkFailure extends Failure {}
 
 class ExceptionFailure extends Failure {}
@@ -18,5 +17,6 @@ class CredentialFailure extends Failure {
   final String message;
   CredentialFailure({required this.message});
 }
+
 
 class AuthenticationFailure extends Failure {}

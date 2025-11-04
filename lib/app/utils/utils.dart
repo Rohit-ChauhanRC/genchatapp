@@ -375,7 +375,7 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickFromCamera();
+                      final files = await FilePickerService().pickFromCamera(Get.context as BuildContext);
                       // .pickImage(source: ImageSource.camera);
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {

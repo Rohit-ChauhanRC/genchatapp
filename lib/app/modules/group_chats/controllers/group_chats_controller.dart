@@ -1082,19 +1082,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     required MessageType messageEnum,
     Function(double)? onProgress,
   }) async {
-    print("🚀 [GroupChatsController] sendFileMessage called for: ${file.path}");
-
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+
+    final fileName =
+        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+
     try {
-      // Save file locally
-      final fileName =
-          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
-
       Map<String, File?> f = await compressFiles(file, fileExtension);
-
+      
       final localFilePath = await saveFileLocally(
         f.values.first!,
         fileType,
@@ -1107,7 +1105,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
 
-      final fileData = await uploadFileToServer(f.values.first!);
+      // Create message first and add to list immediately
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.group?.id,
@@ -1137,9 +1135,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetOriginalName: "",
         assetServerName: fileWithExtensions,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
+        assetUrl: "",
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
@@ -1148,9 +1146,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
+
+      // Upload file with progress tracking
+      final fileData = await uploadFileToServer(
+        f.values.first!,
+        onProgress: (progress) {
+          newMessage.uploadProgress?.value = progress;
+          onProgress?.call(progress);
+        },
+      );
 
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         final messageIndex = messageList.indexWhere(
@@ -1168,9 +1174,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
           // Mark file as downloaded since it exists locally
           isDownloaded[fileWithExtensions] = true;
-          print(
-            "✅ [GroupChatsController] File marked as downloaded after upload: $fileWithExtensions",
-          );
 
           // Update in database
           await MessageTable().updateMessageByClientId(updatedMessage);

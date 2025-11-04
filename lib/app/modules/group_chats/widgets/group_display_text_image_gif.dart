@@ -331,7 +331,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     MessageType type,
     String fileName,
   ) async {
-    print("🔍 [GroupDisplayTextImageGIF] NEW VERSION - Checking file availability for: $fileName, isSentByMe: $isSentByMe");
+    print("🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe");
     
     // For sent messages, check if file exists locally first
     if (isSentByMe == true) {

@@ -84,17 +84,20 @@ class UpdatesController extends GetxController
     timer?.cancel();
   }
 
-  void startProgress() {
-    const duration = Duration(milliseconds: 100);
-    int count = 0;
-    const total = 50; // 5 seconds total
+  void startProgress({double durationSeconds = 5, required Function onFinish}) {
+    stopProgress();
+    progress.value = 0;
 
-    timer = Timer.periodic(duration, (timer) {
-      count++;
-      progress.value = count / total;
-      if (count >= total) {
-        timer.cancel();
-        Get.back(); // close after full progress
+    const tick = Duration(milliseconds: 50);
+    final totalTicks = (durationSeconds * 1000 / tick.inMilliseconds).round();
+    int currentTick = 0;
+
+    timer = Timer.periodic(tick, (timer) {
+      currentTick++;
+      progress.value = currentTick / totalTicks;
+      if (currentTick >= totalTicks) {
+        stopProgress();
+        onFinish(); // call when finished
       }
     });
   }
@@ -108,32 +111,49 @@ class UpdatesController extends GetxController
     statusList.assignAll([
       StatusModel(
         name: "Alice",
-        imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
+          media: [
+            {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
+            {'type': 'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
+            {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
+
+
+          ],
         ProfilePic: "https://i.pravatar.cc/150?img=2",
+
         time: "Today, 9:00 AM",
-        type:"Image"
       ),
       StatusModel(
         name: "Bob",
-        imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
-        time: "Today, 10:30 AM",
+          media: [
+          {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
+          {'type': 'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
+          {'type': 'image', 'url': 'https://picsum.photos/801/1400'},
+        ],
+           time: "Today, 10:30 AM",
         ProfilePic: "https://i.pravatar.cc/150?img=2",
-          type:"video"
 
 
       ),
       StatusModel(
         name: "Charlie",
-        imageUrl: ["https://i.pravatar.cc/150?img=3","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
+        media: [
+        {'type': 'image', 'url': 'https://picsum.photos/800/1400'},
+        {'type': 'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
+        {'type': 'image', 'url': 'https://picsum.photos/801/1400'}],
         time: "Yesterday, 8:15 PM",
         ProfilePic: "https://i.pravatar.cc/150?img=2",
         viewed: true,
-          type:"Text",
 
       ),
     ]);
   }
-
+  void stopProgress() {
+    timer?.cancel();
+    timer = null;
+  }
+  void setProgress(double p) {
+    progress.value = p.clamp(0.0, 1.0);
+  }
   void markAsViewed(StatusModel status) {
     status.viewed = true;
     statusList.refresh();

@@ -111,12 +111,16 @@ class UpdatesController extends GetxController
         imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
         ProfilePic: "https://i.pravatar.cc/150?img=2",
         time: "Today, 9:00 AM",
+        type:"Image"
       ),
       StatusModel(
         name: "Bob",
         imageUrl: ["https://i.pravatar.cc/150?img=2","https://i.pravatar.cc/150?img=1","https://i.pravatar.cc/150?img=1"],
         time: "Today, 10:30 AM",
         ProfilePic: "https://i.pravatar.cc/150?img=2",
+          type:"video"
+
+
       ),
       StatusModel(
         name: "Charlie",
@@ -124,6 +128,8 @@ class UpdatesController extends GetxController
         time: "Yesterday, 8:15 PM",
         ProfilePic: "https://i.pravatar.cc/150?img=2",
         viewed: true,
+          type:"Text",
+
       ),
     ]);
   }

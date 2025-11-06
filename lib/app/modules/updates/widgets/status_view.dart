@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -22,31 +24,70 @@ class _StatusViewState extends State<StatusView> {
   late UpdatesController controller;
   late StatusModel status;
    int index=0;
-
+    Timer? timer;
   @override
   void initState() {
     super.initState();
     controller = widget.controller;
     status = widget.status;
-    controller.progress.value = 0;
-    controller.startProgress();
+    // controller.progress.value = 0;
+    _startProgress();
   }
-
   @override
   void dispose() {
+    timer?.cancel();
     controller.timer?.cancel();
     super.dispose();
   }
 
+  void _startProgress() {
+    controller.progress.value = 0;
+    timer?.cancel();
+    timer = Timer.periodic(const Duration(milliseconds: 50), (t) {
+      controller.progress.value += 0.02; // 5 seconds total
+      if (controller.progress.value >= 1) {
+        t.cancel();
+        _nextImage();
+      }
+    });
+  }
+  void _nextImage(){
+    if(index<status.imageUrl.length-1){
+      setState(() {
+        index++;
+      });
+      _startProgress();
+
+
+    }
+    else{
+      _nextImage();
+    }
+
+  }
+
+
+  void previousImage(){
+    if(index>0){
+      setState(() {
+        index--;
+      });
+    }
+    _startProgress();
+
+  }
   void _onTapDown(TapDownDetails details, BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final dx = details.globalPosition.dx;
-    if (dx < width / 2) {
+    if (dx < width / 3) {
       // tap left → previous status
-      controller.skip(); // close or move to previous
+      // controller.skip(); // close or move to previous
+      previousImage();
     } else {
       // tap right → next status
-      controller.skip(); // close or move to next
+      // controller.skip(); // close or move to next
+      _nextImage();
+
     }
   }
 
@@ -74,23 +115,42 @@ class _StatusViewState extends State<StatusView> {
               top: 40,
               left: 10,
               right: 10,
-              child: Obx(
-                    () => ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                  value: controller.progress.value,
-                    color: Colors.white,
-                    backgroundColor: Colors.white24,
-                  ),
-                ),
-              ),
+              child: Obx(() {
+                return Row(
+                  children: List.generate(status.imageUrl.length, (i) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: i < index
+                                ? 1
+                                : i == index
+                                ? controller.progress.value
+                                : 0,
+                            color: Colors.white,
+                            backgroundColor: Colors.white24,
+                            minHeight: 3,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                );
+              }),
             ),
+
 
             Positioned(
               top: 55,
               left: 15,
               child: Row(
                 children: [
+                  GestureDetector(
+                    onTap:()=>Navigator.pop(context),
+                    child: Icon(Icons.arrow_back,color: Colors.white,size: 25),
+                  ),
                   CircleAvatar(
                     radius: 20,
                     backgroundImage: NetworkImage(status.ProfilePic),
@@ -99,6 +159,7 @@ class _StatusViewState extends State<StatusView> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       Text(
                         status.name,
                         style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
@@ -127,6 +188,7 @@ class _StatusViewState extends State<StatusView> {
                   child: Row(
                     children: [
                       Expanded(
+
                         child: TextFormField(
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(

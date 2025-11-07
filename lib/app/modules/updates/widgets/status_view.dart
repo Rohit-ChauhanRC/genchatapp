@@ -1,12 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:genchatapp/app/constants/colors.dart';
-import 'package:genchatapp/app/data/models/status_model.dart';
-import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
-
 import 'package:video_player/video_player.dart';
+
+import '../../../data/models/status_model.dart';
+import '../controllers/updates_controller.dart';
+
 class StatusView extends StatefulWidget {
   final UpdatesController controller;
   final StatusModel status;
@@ -44,15 +43,13 @@ class _StatusViewState extends State<StatusView> {
 
     final media = status.media[index];
     final type = media['type'];
-    // final media = status.media[index];
-    isVideo = media['type'] == 'video';
+    isVideo = type == 'video';
 
-    if (type=='video') {
+    if (type == 'video') {
       // Initialize video player
       _videoController = VideoPlayerController.network(media['url']!)
         ..initialize().then((_) {
           setState(() {}); // video initialized
-          // start playing
           _videoController?.play();
           _videoController?.setLooping(false);
 
@@ -61,10 +58,12 @@ class _StatusViewState extends State<StatusView> {
           _videoListener = Stream.periodic(const Duration(milliseconds: 100))
               .listen((_) => _onVideoTick());
         }).catchError((e) {
-          // fallback: skip if video fails
-          _next();
+          _next(); // skip on error
         });
-    } else if(type=='media') {
+    }
+
+
+    else {
       controller.startProgress(durationSeconds: 5, onFinish: _next);
       setState(() {});
     }
@@ -77,6 +76,7 @@ class _StatusViewState extends State<StatusView> {
     if (dur.inMilliseconds == 0) return;
     final p = pos.inMilliseconds / dur.inMilliseconds;
     controller.setProgress(p);
+
     if (p >= 1.0) {
       _next();
     }
@@ -105,7 +105,6 @@ class _StatusViewState extends State<StatusView> {
       setState(() => index--);
       _loadMedia();
     } else {
-      // maybe go to previous user's status
       Get.back();
     }
   }
@@ -126,16 +125,13 @@ class _StatusViewState extends State<StatusView> {
     return GestureDetector(
       onTapDown: (details) => _onTapDown(details, context),
       onLongPress: () {
-        // pause both
         controller.stopProgress();
         _videoController?.pause();
       },
       onLongPressUp: () {
-        // resume
         if (isVideo) {
           _videoController?.play();
         } else {
-          // restart timer for remaining duration (simple approach: restart full 5s).
           controller.startProgress(durationSeconds: 5, onFinish: _next);
         }
       },
@@ -160,7 +156,9 @@ class _StatusViewState extends State<StatusView> {
                       ),
                     )
                         : const Center(child: CircularProgressIndicator(color: Colors.white));
-                  } else if (type == 'image') {
+                  }
+
+                  else if (type == 'image') {
                     return Image.network(
                       media['url']!,
                       fit: BoxFit.cover,
@@ -169,32 +167,48 @@ class _StatusViewState extends State<StatusView> {
                         return const Center(child: CircularProgressIndicator(color: Colors.white));
                       },
                     );
-                  } else if (type == 'text') {
-                    final bgColor = media['bgColor'] ?? '#000000';
-                    return Container(
-                      color: Color(int.parse(bgColor.replaceFirst('#', '0xff'))),
+                  }
+
+                  else if (type == 'text') {
+                    final bgColorHex = media['bgColor'] ?? '#000000';
+                    final textColorHex = media['textColor'] ?? '#FFFFFF';
+                    final text = media['text'] ?? '';
+
+                    Color parseColor(String hex) {
+                      return Color(int.parse(hex.replaceFirst('#', '0xff')));
+                    }
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [parseColor(bgColorHex), Colors.black87],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: Text(
-                            media['text'] ?? '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            text,
                             textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: parseColor(textColorHex),
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                            ),
                           ),
                         ),
                       ),
                     );
                   }
+
                   return const SizedBox();
                 },
               ),
             ),
-
-
 
             // progress bars
             Positioned(
@@ -223,7 +237,7 @@ class _StatusViewState extends State<StatusView> {
               }),
             ),
 
-            // top-left user info & back button (merge with your UI)
+            // user info & back button
             Positioned(
               top: 55,
               left: 15,
@@ -231,18 +245,18 @@ class _StatusViewState extends State<StatusView> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-
-                      child: Icon(Icons.arrow_back, color: Colors.white, size: 20),
-                    ),
-                      const SizedBox(width: 10),
+                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 10),
                   CircleAvatar(radius: 20, backgroundImage: NetworkImage(status.ProfilePic)),
                   const SizedBox(width: 10),
-
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(status.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text(status.time, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(status.name,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(status.time,
+                          style: const TextStyle(color: Colors.white70, fontSize: 12)),
                     ],
                   ),
                 ],

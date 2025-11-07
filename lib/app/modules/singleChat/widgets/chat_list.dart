@@ -9,21 +9,14 @@ import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'my_message_card.dart';
 import 'sender_message_card.dart';
-
-
-
-
-
 class ChatList extends StatelessWidget {
   const ChatList({
     super.key,
     required this.singleChatController,
     // required this.firebaseController,
   });
-
   final SingleChatController singleChatController;
   // final FirebaseController firebaseController;
-
   @override
   Widget build(BuildContext context) {
     return Stack(

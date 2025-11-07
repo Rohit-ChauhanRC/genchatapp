@@ -128,6 +128,7 @@ class UpdatesController extends GetxController
           {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
           {'type': 'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
           {'type': 'image', 'url': 'https://picsum.photos/801/1400'},
+            {'type':'text', 'text':'Hello AbhiJha'}
         ],
            time: "Today, 10:30 AM",
         ProfilePic: "https://i.pravatar.cc/150?img=2",

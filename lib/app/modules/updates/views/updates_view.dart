@@ -109,14 +109,23 @@ class UpdatesView extends GetView<UpdatesController> {
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-              ...controller.statusList.map(
-                    (status) => StatusTile(
+              ...controller.statusList.asMap().entries.map((entry) {
+                int index = entry.key;      // tapped status index
+                var status = entry.value;   // status object
+
+                return StatusTile(
                   status: status,
                   onTap: () {
-                    Get.to(StatusView(controller: controller, status: status));
+                    Get.to(() => StatusView(
+                      controller: controller,
+                      statusList: controller.statusList,
+                      status: status,
+                      startIndex: index,
+                    ));
                   },
-                ),
-              ),
+                );
+              }),
+
             ],
           );
         }),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
 
@@ -6,7 +8,8 @@ class CameraControllerX extends GetxController {
   RxBool isCameraReady = false.obs;
   RxBool isRecording = false.obs;
   RxBool isCapturing = false.obs;
-
+RxInt recordingDuration=0.obs;
+ Timer? _timer;
   @override
   void onInit() {
     super.onInit();
@@ -54,7 +57,10 @@ class CameraControllerX extends GetxController {
 
     try {
       await cameraController!.startVideoRecording();
+
       isRecording.value = true;
+
+      recordingDuration.value = 0;
 
     } catch (e) {
       Get.snackbar("Error", "Failed to start video: $e");
@@ -67,6 +73,8 @@ class CameraControllerX extends GetxController {
     try {
       final file = await cameraController!.stopVideoRecording();
       isRecording.value = false;
+      _timer?.cancel();
+      _timer = null;
       return file.path;
     } catch (e) {
       Get.snackbar("Error", "Failed to stop video: $e");

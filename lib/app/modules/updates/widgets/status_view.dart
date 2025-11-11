@@ -44,6 +44,7 @@ class _StatusViewState extends State<StatusView> {
   bool isVideo = false;
 
   @override
+
   void initState() {
     super.initState();
 
@@ -51,6 +52,7 @@ class _StatusViewState extends State<StatusView> {
     statusList = widget.statusList;
     currentStatusIndex = widget.startIndex;
     status = statusList[currentStatusIndex];
+
 
     _loadMedia();
   }

@@ -5,13 +5,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../data/models/status_model.dart';
 import '../controllers/updates_controller.dart';
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:video_player/video_player.dart';
 
-import '../../../data/models/status_model.dart';
-import '../controllers/updates_controller.dart';
 
 class StatusView extends StatefulWidget {
   final UpdatesController controller;

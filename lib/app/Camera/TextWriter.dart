@@ -11,17 +11,16 @@ class TextStatusScreen extends StatefulWidget {
 class _TextStatusScreenState extends State<TextStatusScreen> {
   final TextEditingController _textController = TextEditingController();
   Color _backgroundColor = Colors.black;
-  final List<Color> _colors = [
-    Colors.black,
-    Colors.blue,
-    Colors.green,
-    Colors.purple,
-    Colors.orange,
-    Colors.red,
-    Colors.teal,
-    Colors.pink,
-  ];
-
+  final Map<int, Color> _colors = {
+    0: Colors.black,
+    1: Colors.blue,
+    2: Colors.green,
+    3: Colors.purple,
+    4: Colors.orange,
+    5: Colors.red,
+    6: Colors.teal,
+    7: Colors.pink,
+  };
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +49,6 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
               ),
             ),
 
-            // Color picker row (bottom)
             Positioned(
               bottom: 100,
               left: 0,
@@ -66,7 +64,7 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          _backgroundColor = color;
+                          _backgroundColor = color!;
                         });
                       },
                       child: Container(

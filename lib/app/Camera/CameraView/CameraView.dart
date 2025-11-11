@@ -61,11 +61,11 @@ class CameraView extends GetView<CameraControllerX> {
                       final path = await controller.capturePhoto();
                       if (path != null) Get.to(() => PreviewScreen(imagePath: path));
                     },
-                    onLongPressStart: (_) async => await controller.startVideoRecording(),
-                    onLongPressEnd: (_) async {
-                      final path = await controller.stopVideoRecording();
-                      if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
-                    },
+                    // onLongPressStart: (_) async => await controller.startVideoRecording(),
+                    // onLongPressEnd: (_) async {
+                    //   final path = await controller.stopVideoRecording();
+                    //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
+                    // },
                     child: Obx(() => AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: controller.isRecording.value ? 80 : 70,
@@ -100,6 +100,7 @@ class CameraView extends GetView<CameraControllerX> {
                             // Navigate to a preview or post screen if you want
                           }
                         },
+
                         child: const Icon(Icons.edit, color: Colors.white, size: 35),
                       ),
                       const SizedBox(height: 5),

@@ -8,7 +8,7 @@ class CameraControllerX extends GetxController {
   RxBool isCameraReady = false.obs;
   RxBool isRecording = false.obs;
   RxBool isCapturing = false.obs;
-RxInt recordingDuration=0.obs;
+  RxInt recordingDuration=0.obs;
  Timer? _timer;
   @override
   void onInit() {
@@ -52,36 +52,36 @@ RxInt recordingDuration=0.obs;
     }
   }
 
-  Future<void> startVideoRecording() async {
-    if (cameraController == null || !cameraController!.value.isInitialized || isRecording.value) return;
-
-    try {
-      await cameraController!.startVideoRecording();
-
-      isRecording.value = true;
-
-      recordingDuration.value = 0;
-
-    } catch (e) {
-      Get.snackbar("Error", "Failed to start video: $e");
-    }
-  }
-
-  Future<String?> stopVideoRecording() async {
-    if (cameraController == null || !cameraController!.value.isRecordingVideo) return null;
-
-    try {
-      final file = await cameraController!.stopVideoRecording();
-      isRecording.value = false;
-      _timer?.cancel();
-      _timer = null;
-      return file.path;
-    } catch (e) {
-      Get.snackbar("Error", "Failed to stop video: $e");
-      return null;
-
-    }
-  }
+  // Future<void> startVideoRecording() async {
+  //   if (cameraController == null || !cameraController!.value.isInitialized || isRecording.value) return;
+  //
+  //   try {
+  //     await cameraController!.startVideoRecording();
+  //
+  //     isRecording.value = true;
+  //
+  //     recordingDuration.value = 0;
+  //
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to start video: $e");
+  //   }
+  // }
+  //
+  // Future<String?> stopVideoRecording() async {
+  //   if (cameraController == null || !cameraController!.value.isRecordingVideo) return null;
+  //
+  //   try {
+  //     final file = await cameraController!.stopVideoRecording();
+  //     isRecording.value = false;
+  //     _timer?.cancel();
+  //     _timer = null;
+  //     return file.path;
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to stop video: $e");
+  //     return null;
+  //
+  //   }
+  // }
 
   @override
   void onClose() {

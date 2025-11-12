@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../data/models/status_model.dart';
@@ -138,7 +140,7 @@ class _StatusViewState extends State<StatusView> {
     }
   }
 
-  void _onTapDown(TapDownDetails details, BuildContext context) {
+  void _onTapTap(TapUpDetails details) {
     final width = MediaQuery.of(context).size.width;
     if (details.globalPosition.dx < width / 3) {
       _previous();
@@ -146,6 +148,7 @@ class _StatusViewState extends State<StatusView> {
       _next();
     }
   }
+
 
   @override
   void dispose() {
@@ -161,7 +164,8 @@ class _StatusViewState extends State<StatusView> {
   Widget build(BuildContext context) {
     final media = status.media[index];
     return GestureDetector(
-      onTapDown: (details) => _onTapDown(details, context),
+      behavior: HitTestBehavior.translucent,
+      onTapUp: (details) => _onTapTap(details),
       onLongPress: () {
         controller.stopProgress();
         _videoController?.pause();
@@ -174,7 +178,7 @@ class _StatusViewState extends State<StatusView> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.teal,
         body: Stack(
           children: [
             Positioned.fill(
@@ -220,26 +224,44 @@ class _StatusViewState extends State<StatusView> {
                       duration: const Duration(milliseconds: 300),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [parseColor(bgColorHex), Colors.black87],
+                          colors: [parseColor(bgColorHex), Colors.tealAccent],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                       ),
                       child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Text(
-                            text,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: parseColor(textColorHex),
-                              fontSize: 28,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent, // don't consume entire screen
+                          onTap: () {}, // stops parent gesture from triggering next()
+                          child: SizedBox(
+                            width: double.infinity, // keeps text centered
+                            child: Linkify(
+                              text: text,
+                              textAlign: TextAlign.center,
+                              onOpen: (link) async {
+                                final uri = Uri.parse(link.url);
+                                await launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              },
+                              style: TextStyle(
+                                color: parseColor(textColorHex),
+                                fontSize: 28,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                              linkStyle: const TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ),
                       ),
+
+
+
                     );
                   }
 

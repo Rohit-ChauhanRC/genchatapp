@@ -39,7 +39,7 @@ class UpdatesView extends GetView<UpdatesController> {
       body: GradientContainer(
         child: Obx(() {
           final grouped = controller.groupedStatusMap;
-          if (grouped.isEmpty) return const Text("No statuses yet");
+          // if (grouped.isEmpty) return const SizedBox.shrink();
 
           return Column(
             children: [
@@ -102,7 +102,7 @@ class UpdatesView extends GetView<UpdatesController> {
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-              controller.groupedStatusMap.isEmpty
+              grouped.isEmpty
                   ? const SizedBox.shrink()
                   : Container(
                       height: Get.height * 0.5,

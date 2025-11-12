@@ -8,14 +8,17 @@ import 'package:genchatapp/app/data/models/new_models/response_model/status_mode
 
 import 'package:genchatapp/app/modules/updates/widgets/status_title.dart';
 import 'package:genchatapp/app/modules/updates/widgets/status_view.dart';
+import 'package:genchatapp/app/utils/profile_image_dialog.dart';
+
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '../../../constants/colors.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/updates_controller.dart';
 
 class UpdatesView extends GetView<UpdatesController> {
   const UpdatesView({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +39,7 @@ class UpdatesView extends GetView<UpdatesController> {
       body: GradientContainer(
         child: Obx(() {
           final grouped = controller.groupedStatusMap;
-          if (grouped.isEmpty) return const Text("No statuses yet");
+          // if (grouped.isEmpty) return const Text("No statuses yet");
 
           return Column(
             children: [
@@ -99,7 +102,7 @@ class UpdatesView extends GetView<UpdatesController> {
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-              controller.groupedStatusMap.isEmpty
+              grouped.isEmpty
                   ? const SizedBox.shrink()
                   : Container(
                       height: Get.height * 0.5,
@@ -112,7 +115,6 @@ class UpdatesView extends GetView<UpdatesController> {
                           UserList? user = controller.contacts.firstWhereOrNull(
                                 (contact) => contact.userId.toString() == userId,
                           );
-
                           return StatusTile(
                             name: user?.localName ?? user?.phoneNumber ?? "Unknown User",
                             statusTime: statuses.last.createdAt ?? "",
@@ -127,7 +129,6 @@ class UpdatesView extends GetView<UpdatesController> {
                               );
                             },
                           );
-
                         }).toList(),
                       ),
                     ),

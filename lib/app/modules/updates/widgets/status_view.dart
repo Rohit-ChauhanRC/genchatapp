@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../constants/colors.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/models/new_models/response_model/status_model.dart';
 import '../../../data/models/status_model.dart';
@@ -182,7 +183,7 @@ class _StatusViewState extends State<StatusView> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.teal,
+        backgroundColor:textBarColor,
         body: Stack(
           children: [
             Positioned.fill(
@@ -195,7 +196,7 @@ class _StatusViewState extends State<StatusView> {
                     return (_videoController != null &&
                             _videoController!.value.isInitialized)
                         ? FittedBox(
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                             child: SizedBox(
                               width: _videoController!.value.size.width,
                               height: _videoController!.value.size.height,
@@ -210,7 +211,7 @@ class _StatusViewState extends State<StatusView> {
                   } else if (type == 'image') {
                     return Image.network(
                       media['url']!,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       loadingBuilder: (context, child, progress) {
                         if (progress == null) return child;
                         return const Center(
@@ -231,17 +232,17 @@ class _StatusViewState extends State<StatusView> {
                       duration: const Duration(milliseconds: 300),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [parseColor(bgColorHex), Colors.tealAccent],
+                          colors: [parseColor(bgColorHex), Colors.white],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                       ),
                       child: Center(
                         child: GestureDetector(
-                          behavior: HitTestBehavior.translucent, // don't consume entire screen
-                          onTap: () {}, // stops parent gesture from triggering next()
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {},
                           child: SizedBox(
-                            width: double.infinity, // keeps text centered
+                            width: double.infinity,
                             child: Linkify(
                               text: text,
                               textAlign: TextAlign.center,

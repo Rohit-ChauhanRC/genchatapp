@@ -27,6 +27,7 @@ class StatusRepository {
     try {
       final param = {'userIds': userIds};
       return await apiClient.post(ApiEndpoints.fetchStatus, param);
+
     } catch (e) {
       if (e == "404_NOT_FOUND") {
         print("Group not found.");

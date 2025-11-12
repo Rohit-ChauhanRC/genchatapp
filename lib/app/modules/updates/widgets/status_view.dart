@@ -7,7 +7,6 @@ import 'package:video_player/video_player.dart';
 import '../../../data/models/status_model.dart';
 import '../controllers/updates_controller.dart';
 
-
 class StatusView extends StatefulWidget {
   final UpdatesController controller;
   final StatusModel status;
@@ -39,7 +38,6 @@ class _StatusViewState extends State<StatusView> {
   bool isVideo = false;
 
   @override
-
   void initState() {
     super.initState();
 
@@ -47,7 +45,6 @@ class _StatusViewState extends State<StatusView> {
     statusList = widget.statusList;
     currentStatusIndex = widget.startIndex;
     status = statusList[currentStatusIndex];
-
 
     _loadMedia();
   }
@@ -73,8 +70,9 @@ class _StatusViewState extends State<StatusView> {
             _videoController?.play();
             _videoController?.setLooping(false);
 
-            _videoListener = Stream.periodic(const Duration(milliseconds: 100))
-                .listen((_) => _onVideoTick());
+            _videoListener = Stream.periodic(
+              const Duration(milliseconds: 100),
+            ).listen((_) => _onVideoTick());
           });
       } catch (e) {
         print("Video caching error: $e");
@@ -86,8 +84,7 @@ class _StatusViewState extends State<StatusView> {
             _videoController?.play();
           });
       }
-    }
-    else {
+    } else {
       try {
         await DefaultCacheManager().getSingleFile(media['url']!);
       } catch (e) {
@@ -100,7 +97,8 @@ class _StatusViewState extends State<StatusView> {
   }
 
   void _onVideoTick() {
-    if (_videoController == null || !_videoController!.value.isInitialized) return;
+    if (_videoController == null || !_videoController!.value.isInitialized)
+      return;
 
     final pos = _videoController!.value.position;
     final dur = _videoController!.value.duration;
@@ -157,7 +155,7 @@ class _StatusViewState extends State<StatusView> {
   }
 
   @override
-//   @override
+  //   @override
   Widget build(BuildContext context) {
     final media = status.media[index];
     return GestureDetector(
@@ -184,30 +182,33 @@ class _StatusViewState extends State<StatusView> {
                   final type = media['type'];
 
                   if (type == 'video') {
-                    return (_videoController != null && _videoController!.value.isInitialized)
+                    return (_videoController != null &&
+                            _videoController!.value.isInitialized)
                         ? FittedBox(
-                      fit: BoxFit.cover,
-                      child: SizedBox(
-                        width: _videoController!.value.size.width,
-                        height: _videoController!.value.size.height,
-                        child: VideoPlayer(_videoController!),
-                      ),
-                    )
-                        : const Center(child: CircularProgressIndicator(color: Colors.white));
-                  }
-
-                  else if (type == 'image') {
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: _videoController!.value.size.width,
+                              height: _videoController!.value.size.height,
+                              child: VideoPlayer(_videoController!),
+                            ),
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          );
+                  } else if (type == 'image') {
                     return Image.network(
                       media['url']!,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, progress) {
                         if (progress == null) return child;
-                        return const Center(child: CircularProgressIndicator(color: Colors.white));
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
                       },
                     );
-                  }
-
-                  else if (type == 'text') {
+                  } else if (type == 'text') {
                     final bgColorHex = media['bgColor'] ?? '#000000';
                     final textColorHex = media['textColor'] ?? '#FFFFFF';
                     final text = media['text'] ?? '';
@@ -262,7 +263,11 @@ class _StatusViewState extends State<StatusView> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: LinearProgressIndicator(
-                            value: i < index ? 1 : i == index ? controller.progress.value : 0,
+                            value: i < index
+                                ? 1
+                                : i == index
+                                ? controller.progress.value
+                                : 0,
                             color: Colors.white,
                             backgroundColor: Colors.white24,
                             minHeight: 3,
@@ -283,18 +288,35 @@ class _StatusViewState extends State<StatusView> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  CircleAvatar(radius: 20, backgroundImage: NetworkImage(status.ProfilePic)),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(status.ProfilePic),
+                  ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(status.name,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text(status.time,
-                          style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(
+                        status.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        status.time,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ],

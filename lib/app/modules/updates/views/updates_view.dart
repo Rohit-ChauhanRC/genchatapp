@@ -116,7 +116,9 @@ class UpdatesView extends GetView<UpdatesController> {
                             (contact) => contact.userId.toString() == userId,
                           )!;
                           return StatusTile(
-                            name: user.name!,
+                            name: user.localName!.isNotEmpty
+                                ? user.localName!
+                                : user.phoneNumber!,
                             statusTime: statuses.last.createdAt!,
                             userPic: user.displayPictureUrl!,
                             onTap: () {

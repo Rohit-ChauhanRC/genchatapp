@@ -6,11 +6,7 @@ import 'package:genchatapp/app/common/widgets/gradient_container.dart';
 
 import 'package:genchatapp/app/modules/updates/widgets/status_title.dart';
 import 'package:genchatapp/app/modules/updates/widgets/status_view.dart';
-import 'package:genchatapp/app/utils/profile_image_dialog.dart';
-
 import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
-
 import '../../../constants/colors.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/updates_controller.dart';

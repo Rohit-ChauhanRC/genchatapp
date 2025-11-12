@@ -65,6 +65,7 @@ class ChatConectTable {
       limit: 1, // Limit to 1 result for efficiency
     );
 
+
     // If a result is found, return the ContactModel, otherwise return null
     if (result.isNotEmpty) {
       return ChatConntactModel.fromMap(result.first);

@@ -4,18 +4,19 @@
 
 import 'dart:convert';
 
-Statusmodel statusmodelFromJson(String str) =>
-    Statusmodel.fromJson(json.decode(str));
+List<Statusmodel> statusmodelFromJson(String str) =>
+    List<Statusmodel>.from(json.decode(str)["data"].map((x) => Statusmodel.fromJson(x)));
 
-String statusmodelToJson(Statusmodel data) => json.encode(data.toJson());
+String statusmodelToJson(List<Statusmodel> data) =>
+    json.encode({"data": List<dynamic>.from(data.map((x) => x.toJson()))});
 
 class Statusmodel {
   int id;
   int userId;
-  int isAsset;
+  bool isAsset;
   String? statusText;
-  String? statusAssetUrl;
-  int isDeleted;
+  String? assetUrl;
+  String? statusAssetType;
   String? createdAt;
 
   Statusmodel({
@@ -23,28 +24,50 @@ class Statusmodel {
     required this.userId,
     required this.isAsset,
     required this.statusText,
-    required this.statusAssetUrl,
-    required this.isDeleted,
+    required this.assetUrl,
+    required this.statusAssetType,
     required this.createdAt,
   });
 
   factory Statusmodel.fromJson(Map<String, dynamic> json) => Statusmodel(
     id: json["id"],
     userId: json["userId"],
-    isAsset: json["isAsset"] == true ? 1 : 0,
+    isAsset: json["isAsset"],
     statusText: json["statusText"],
-    statusAssetUrl: json["statusAssetUrl"],
-    isDeleted: json["isDeleted"] == true ? 1 : 0,
+    assetUrl: json["assetUrl"],
+    statusAssetType: json["statusAssetType"],
     createdAt: json["createdAt"],
   );
+
+  List<Map<String, dynamic>> get media {
+    // TEXT STATUS
+    if (!isAsset) {
+      return [
+        {
+          "type": "text",
+          "text": statusText ?? "",
+          "bgColor": "#000000",
+          "textColor": "#FFFFFF"
+        }
+      ];
+    }
+
+    // IMAGE OR VIDEO STATUS
+    return [
+      {
+        "type": (statusAssetType == "video") ? "video" : "image",
+        "url": assetUrl ?? "",
+      }
+    ];
+  }
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "userId": userId,
     "isAsset": isAsset,
     "statusText": statusText,
-    "statusAssetUrl": statusAssetUrl,
-    "isDeleted": isDeleted,
+    "assetUrl": assetUrl,
+    "statusAssetType": statusAssetType,
     "createdAt": createdAt,
   };
 }

@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 
 import 'app/config/services/notification_service.dart';
 import 'app/config/theme/app_theme.dart';
+import 'app/data/repositories/status/status_repository.dart';
 import 'app/network/app_config.dart';
 import 'app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -67,7 +68,6 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
-
   await di.init();
 
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;

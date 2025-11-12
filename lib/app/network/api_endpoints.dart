@@ -32,7 +32,7 @@ class ApiEndpoints {
   static const String userBlock = "user/block-contact";
 
   // status
-  static const String fetchStatus = "status";
+  static const String fetchStatus = "status/";
   static const String createStatus = "status/create";
   static const String deleteStatus = "status/delete";
 }

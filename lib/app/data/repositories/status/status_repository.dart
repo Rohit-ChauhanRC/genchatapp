@@ -23,9 +23,10 @@ class StatusRepository {
     }
   }
 
-  Future<Response?> fetchStatus() async {
+  Future<Response?> fetchStatus({required List<int> userIds}) async {
     try {
-      return await apiClient.get(ApiEndpoints.fetchStatus);
+      final param = {'userIds': userIds};
+      return await apiClient.post(ApiEndpoints.fetchStatus, param);
     } catch (e) {
       if (e == "404_NOT_FOUND") {
         print("Group not found.");

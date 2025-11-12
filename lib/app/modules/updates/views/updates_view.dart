@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/status_model.dart';
 
 import 'package:genchatapp/app/modules/updates/widgets/status_title.dart';
 import 'package:genchatapp/app/modules/updates/widgets/status_view.dart';
@@ -13,6 +15,7 @@ import '../controllers/updates_controller.dart';
 
 class UpdatesView extends GetView<UpdatesController> {
   const UpdatesView({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +35,15 @@ class UpdatesView extends GetView<UpdatesController> {
       ),
       body: GradientContainer(
         child: Obx(() {
-          return
+          final grouped = controller.groupedStatusMap;
+          if (grouped.isEmpty) return const Text("No statuses yet");
 
-
-            ListView(
+          return Column(
             children: [
-              GestureDetector(
-            onTap: (){
-              Get.toNamed(Routes.CAMERA);
-            },
-              child:ListTile(
+              ListTile(
+                onTap: () {
+                  Get.toNamed(Routes.CAMERA);
+                },
                 leading: Stack(
                   children: [
                     CircleAvatar(
@@ -57,10 +59,11 @@ class UpdatesView extends GetView<UpdatesController> {
                           radius: 25,
                           child: CircularProgressIndicator(),
                         ),
-                        errorWidget: (context, url, error) => const CircleAvatar(
-                          radius: 25,
-                          child: Icon(Icons.error),
-                        ),
+                        errorWidget: (context, url, error) =>
+                            const CircleAvatar(
+                              radius: 25,
+                              child: Icon(Icons.error),
+                            ),
                       ),
                     ),
                     Positioned(
@@ -89,39 +92,45 @@ class UpdatesView extends GetView<UpdatesController> {
                 title: const Text("My Status"),
                 subtitle: const Text("Tap to add status update"),
               ),
-
-              //  Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              //   child: Text(
-              //     "Recent updates",
-              //     style: TextStyle(color: Colors.grey),
-              //   ),
-              // ),
-              ),
-               Padding(
+              const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   "Recent updates",
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-              ...controller.statusList.asMap().entries.map((entry) {
-                int index = entry.key;      // tapped status index
-                var status = entry.value;   // status object
+              controller.groupedStatusMap.isEmpty
+                  ? const SizedBox.shrink()
+                  : Container(
+                      height: Get.height * 0.5,
+                      child: ListView(
+                        children: grouped.entries.map((entry) {
+                          final userId = entry.key;
+                          final statuses = entry.value;
+                          // Statusmodel data = controller.groupedStatusMap[index];
 
-                return StatusTile(
-                  status: status,
-                  onTap: () {
-                    Get.to(() => StatusView(
-                      controller: controller,
-                      statusList: controller.statusList,
-                      status: status,
-                      startIndex: index,
-                    ));
-                  },
-                );
-              }),
+                          UserList? user = controller.contacts.firstWhereOrNull(
+                                (contact) => contact.userId.toString() == userId,
+                          );
 
+                          return StatusTile(
+                            name: user?.localName ?? user?.phoneNumber ?? "Unknown User",
+                            statusTime: statuses.last.createdAt ?? "",
+                            userPic: user?.displayPictureUrl ?? "",
+                            onTap: () {
+                              Get.to(
+                                    () => StatusView(
+                                  controller: controller,
+                                  statusList: statuses,
+                                  startIndex: 0,
+                                ),
+                              );
+                            },
+                          );
+
+                        }).toList(),
+                      ),
+                    ),
             ],
           );
         }),

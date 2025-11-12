@@ -30,4 +30,9 @@ class ApiEndpoints {
   static const String deleteGroup = "group/delete";
   static const String uploadMessageFiles = "message/file";
   static const String userBlock = "user/block-contact";
+
+  // status
+  static const String fetchStatus = "status";
+  static const String createStatus = "status/create";
+  static const String deleteStatus = "status/delete";
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
@@ -63,18 +64,36 @@ class _StatusViewState extends State<StatusView> {
     isVideo = media['type'] == 'video';
 
     if (isVideo) {
-      _videoController = VideoPlayerController.network(media['url']!)
-        ..initialize().then((_) {
-          setState(() {});
-          _videoController?.play();
-          _videoController?.setLooping(false);
+      try {
+        final file = await DefaultCacheManager().getSingleFile(media['url']!);
 
-          _videoListener =
-              Stream.periodic(const Duration(milliseconds: 100)).listen((_) {
-                _onVideoTick();
-              });
-        }).catchError((_) => _next());
-    } else {
+        _videoController = VideoPlayerController.file(file)
+          ..initialize().then((_) {
+            setState(() {});
+            _videoController?.play();
+            _videoController?.setLooping(false);
+
+            _videoListener = Stream.periodic(const Duration(milliseconds: 100))
+                .listen((_) => _onVideoTick());
+          });
+      } catch (e) {
+        print("Video caching error: $e");
+
+        // fallback if caching fails
+        _videoController = VideoPlayerController.network(media['url']!)
+          ..initialize().then((_) {
+            setState(() {});
+            _videoController?.play();
+          });
+      }
+    }
+    else {
+      try {
+        await DefaultCacheManager().getSingleFile(media['url']!);
+      } catch (e) {
+        print("Image cache error: $e");
+      }
+
       controller.startProgress(durationSeconds: 5, onFinish: _next);
       setState(() {});
     }

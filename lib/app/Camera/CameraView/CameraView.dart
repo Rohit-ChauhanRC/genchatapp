@@ -1,7 +1,8 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
 import '../Controllers/CameraUpdateController.dart';
 import '../TextWriter.dart';
 import 'PreviewScreen.dart';
@@ -15,11 +16,34 @@ class CameraView extends GetView<CameraControllerX> {
     final ImagePicker picker = ImagePicker();
 
     Future<void> openGallery() async {
-      final image = await picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        Get.to(() => PreviewScreen(imagePath: image.path));
+      final XFile? media = await picker.pickMedia();
+
+      if (media != null) {
+        final file = File(media.path);
+        final int fileSizeInBytes = file.lengthSync();
+        final double fileSizeInMB = fileSizeInBytes / (1024 * 1024); // convert to MB
+
+        if (media.path.toLowerCase().endsWith(".mp4") ||
+            media.path.toLowerCase().endsWith(".mov")) {
+
+          if (fileSizeInMB > 50) {
+            Get.snackbar(
+              "Video too large",
+              "Maximum allowed size is 50 MB",
+              snackPosition: SnackPosition.BOTTOM,
+              colorText: Colors.white,
+              backgroundColor: Colors.red,
+            );
+            return;
+          }
+
+          Get.to(() => VideoPlayerScreen(videoPath: media.path));
+        } else {
+          Get.to(() => PreviewScreen(imagePath: media.path));
+        }
       }
     }
+
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -31,7 +55,6 @@ class CameraView extends GetView<CameraControllerX> {
         return Stack(
           children: [
             Positioned.fill(child: CameraPreview(controller.cameraController!)),
-
             // Bottom bar
             Positioned(
               bottom: 40,
@@ -43,9 +66,9 @@ class CameraView extends GetView<CameraControllerX> {
                   // Gallery
                   GestureDetector(
                     onTap: openGallery,
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.photo_library_outlined,
                             color: Colors.white, size: 35),
                         SizedBox(height: 5),

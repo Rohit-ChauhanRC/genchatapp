@@ -20,6 +20,7 @@ class ApiEndpoints {
   static const String fetchUser = "user/fetch-users-existed";
   static const String createGroup = "group/create";
   // group/fetch
+
   static const String groupFetch = "group/fetch";
   static const String uploadGroupIcon = "group/update-display-picture";
   static const String updateGroup = "group/update";
@@ -30,4 +31,8 @@ class ApiEndpoints {
   static const String deleteGroup = "group/delete";
   static const String uploadMessageFiles = "message/file";
   static const String userBlock = "user/block-contact";
+
+
+
+
 }

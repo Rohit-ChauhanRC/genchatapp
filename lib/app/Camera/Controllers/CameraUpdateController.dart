@@ -23,6 +23,7 @@ class CameraControllerX extends GetxController {
             (camera) => camera.lensDirection == CameraLensDirection.back,
       );
 
+
       cameraController = CameraController(
         backCamera,
         ResolutionPreset.high,

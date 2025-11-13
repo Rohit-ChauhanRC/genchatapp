@@ -2,12 +2,22 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
+import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:video_player/video_player.dart';
 import 'package:get/get.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoPath;
-  const VideoPlayerScreen({super.key, required this.videoPath});
+  VideoPlayerScreen({
+    super.key,
+    required this.videoPath,
+    required this.statusRepository,
+  });
+
+  final StatusRepository statusRepository;
+
+  final UpdatesController updatesController = Get.find();
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -71,19 +81,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          isLoading || _videoController == null || !_videoController!.value.isInitialized
+          isLoading ||
+                  _videoController == null ||
+                  !_videoController!.value.isInitialized
               ? const Center(child: CircularProgressIndicator())
               : SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: _videoController!.value.size.width,
-                height: _videoController!.value.size.height,
-                child: VideoPlayer(_videoController!),
-              ),
-            ),
-          ),
-
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoController!.value.size.width,
+                      height: _videoController!.value.size.height,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                  ),
+                ),
 
           GestureDetector(
             onTap: _togglePlayPause,
@@ -100,7 +111,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             child: FloatingActionButton(
               heroTag: "sendBtnVideo",
               backgroundColor: Colors.green,
-              onPressed: () => Get.back(result: widget.videoPath),
+              onPressed: () async {
+                final uploadResponse = await widget.statusRepository
+                    .uploadStatus(
+                      imageFile: File(widget.videoPath!),
+                      isAssets: true,
+                      onProgress: (int i, int j) {},
+                      text: "",
+                    );
+                print(uploadResponse);
+
+                if (uploadResponse != null &&
+                    uploadResponse.statusCode == 200) {
+                  await widget.updatesController.getStatus();
+                } else {
+                  return;
+                }
+                Get.close(2);
+              },
               child: const Icon(Icons.send),
             ),
           ),

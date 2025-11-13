@@ -302,6 +302,37 @@ String getFileMimeType(File file) {
   }
 }
 
+String getFileMimeTypeStatus(File file) {
+  final extension = file.path.split('.').last.toLowerCase();
+
+  switch (extension) {
+    // Images
+    case 'png':
+      return 'image';
+    case 'jpg':
+    case 'jpeg':
+      return 'image';
+
+    case 'bmp':
+      return 'image';
+    case 'webp':
+      return 'image';
+
+    // Videos
+    case 'mp4':
+      return 'video';
+    case 'mov':
+      return 'video';
+    case 'avi':
+      return 'video';
+    case 'mkv':
+      return 'video';
+    default:
+      return 'application/octet-stream';
+    // fallback for unknown types
+  }
+}
+
 extension StringCasingExtension on String {
   String get toCapitalized =>
       length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
@@ -375,7 +406,9 @@ Future<void> showMediaPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickFromCamera(Get.context as BuildContext);
+                      final files = await FilePickerService().pickFromCamera(
+                        Get.context as BuildContext,
+                      );
                       // .pickImage(source: ImageSource.camera);
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {

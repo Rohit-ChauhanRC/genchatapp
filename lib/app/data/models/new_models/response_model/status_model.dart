@@ -4,8 +4,9 @@
 
 import 'dart:convert';
 
-List<Statusmodel> statusmodelFromJson(String str) =>
-    List<Statusmodel>.from(json.decode(str)["data"].map((x) => Statusmodel.fromJson(x)));
+List<Statusmodel> statusmodelFromJson(String str) => List<Statusmodel>.from(
+  json.decode(str)["data"].map((x) => Statusmodel.fromJson(x)),
+);
 
 String statusmodelToJson(List<Statusmodel> data) =>
     json.encode({"data": List<dynamic>.from(data.map((x) => x.toJson()))});
@@ -18,6 +19,7 @@ class Statusmodel {
   String? assetUrl;
   String? statusAssetType;
   String? createdAt;
+  int? isDeleted;
 
   Statusmodel({
     required this.id,
@@ -27,6 +29,7 @@ class Statusmodel {
     required this.assetUrl,
     required this.statusAssetType,
     required this.createdAt,
+    required this.isDeleted,
   });
 
   factory Statusmodel.fromJson(Map<String, dynamic> json) => Statusmodel(
@@ -37,6 +40,7 @@ class Statusmodel {
     assetUrl: json["assetUrl"],
     statusAssetType: json["statusAssetType"],
     createdAt: json["createdAt"],
+    isDeleted: json["isDeleted"] == true ? 1 : 0,
   );
 
   List<Map<String, dynamic>> get media {
@@ -46,8 +50,8 @@ class Statusmodel {
           "type": "text",
           "text": statusText ?? "",
           "bgColor": "#000000",
-          "textColor": "#FFFFFF"
-        }
+          "textColor": "#FFFFFF",
+        },
       ];
     }
 
@@ -55,7 +59,7 @@ class Statusmodel {
       {
         "type": (statusAssetType == "video") ? "video" : "image",
         "url": assetUrl ?? "",
-      }
+      },
     ];
   }
 
@@ -67,5 +71,6 @@ class Statusmodel {
     "assetUrl": assetUrl,
     "statusAssetType": statusAssetType,
     "createdAt": createdAt,
+    "isDeleted": isDeleted,
   };
 }

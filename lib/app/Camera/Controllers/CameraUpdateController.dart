@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
 import 'package:get/get.dart';
 
 class CameraControllerX extends GetxController {
@@ -8,8 +9,11 @@ class CameraControllerX extends GetxController {
   RxBool isCameraReady = false.obs;
   RxBool isRecording = false.obs;
   RxBool isCapturing = false.obs;
-  RxInt recordingDuration=0.obs;
- Timer? _timer;
+  RxInt recordingDuration = 0.obs;
+  Timer? _timer;
+
+  final StatusRepository statusRepository = Get.find();
+
   @override
   void onInit() {
     super.onInit();
@@ -20,9 +24,8 @@ class CameraControllerX extends GetxController {
     try {
       final cameras = await availableCameras();
       final backCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
+        (camera) => camera.lensDirection == CameraLensDirection.back,
       );
-
 
       cameraController = CameraController(
         backCamera,
@@ -38,7 +41,8 @@ class CameraControllerX extends GetxController {
   }
 
   Future<String?> capturePhoto() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) return null;
+    if (cameraController == null || !cameraController!.value.isInitialized)
+      return null;
     if (isCapturing.value) return null;
 
     isCapturing.value = true;

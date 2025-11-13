@@ -178,6 +178,7 @@ class UpdatesController extends GetxController
     for (var i = 0; i < contacts.length; i++) {
       userIdList.add(contacts[i].userId!);
     }
+    userIdList.add(senderuserData!.userId!);
   }
 
   Future<void> getStatus() async {

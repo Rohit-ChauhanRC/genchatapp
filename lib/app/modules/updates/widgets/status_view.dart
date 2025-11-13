@@ -17,13 +17,15 @@ class StatusView extends StatefulWidget {
   final Statusmodel? status;
   final List<Statusmodel> statusList;
   final int? startIndex;
+  final bool isSelf;
 
   const StatusView({
     super.key,
     required this.controller,
     required this.statusList,
     this.status,
-     this.startIndex,
+    this.startIndex,
+    this.isSelf = false,
   });
 
   @override
@@ -34,6 +36,7 @@ class _StatusViewState extends State<StatusView> {
   late UpdatesController controller;
   late Statusmodel status;
   late List<Statusmodel> statusList;
+  late bool isSelf;
 
   int currentStatusIndex = 0;
   int index = 0;
@@ -50,6 +53,7 @@ class _StatusViewState extends State<StatusView> {
     statusList = widget.statusList;
     currentStatusIndex = widget.startIndex!;
     status = statusList[currentStatusIndex];
+    isSelf = widget.isSelf;
 
     _loadMedia();
   }
@@ -150,7 +154,6 @@ class _StatusViewState extends State<StatusView> {
     }
   }
 
-
   @override
   void dispose() {
     _videoListener?.cancel();
@@ -163,10 +166,24 @@ class _StatusViewState extends State<StatusView> {
   @override
   //   @override
   Widget build(BuildContext context) {
-    final media = status.media[index];
-    UserList? user = controller.contacts.firstWhereOrNull(
-          (contact) => contact.userId == status.userId,
+    final userData = UserList(
+      displayPictureUrl: controller.senderuserData!.displayPictureUrl,
+
+      countryCode: controller.senderuserData!.countryCode,
+      displayPicture: controller.senderuserData!.displayPicture,
+      email: controller.senderuserData!.email,
+
+      localName: controller.senderuserData!.name,
+      name: controller.senderuserData!.name,
+      phoneNumber: controller.senderuserData!.phoneNumber,
+      userId: controller.senderuserData!.userId,
     );
+    final media = status.media[index];
+    UserList? user = isSelf
+        ? userData
+        : controller.contacts.firstWhereOrNull(
+            (contact) => contact.userId == status.userId,
+          );
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -183,7 +200,7 @@ class _StatusViewState extends State<StatusView> {
         }
       },
       child: Scaffold(
-        backgroundColor:textBarColor,
+        backgroundColor: textBarColor,
         body: Stack(
           children: [
             Positioned.fill(
@@ -267,9 +284,6 @@ class _StatusViewState extends State<StatusView> {
                           ),
                         ),
                       ),
-
-
-
                     );
                   }
 
@@ -326,9 +340,12 @@ class _StatusViewState extends State<StatusView> {
                   const SizedBox(width: 10),
                   CircleAvatar(
                     radius: 20,
-                      backgroundImage: (user?.displayPictureUrl != null && user!.displayPictureUrl!.isNotEmpty)
-                          ? NetworkImage(user!.displayPictureUrl!)
-                          : const AssetImage("assets/images/default_dp.png") as ImageProvider,
+                    backgroundImage:
+                        (user?.displayPictureUrl != null &&
+                            user!.displayPictureUrl!.isNotEmpty)
+                        ? NetworkImage(user!.displayPictureUrl!)
+                        : const AssetImage("assets/images/default_dp.png")
+                              as ImageProvider,
                   ),
                   const SizedBox(width: 10),
                   Column(

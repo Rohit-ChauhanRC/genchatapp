@@ -40,7 +40,6 @@ class Statusmodel {
   );
 
   List<Map<String, dynamic>> get media {
-    // TEXT STATUS
     if (!isAsset) {
       return [
         {
@@ -52,7 +51,6 @@ class Statusmodel {
       ];
     }
 
-    // IMAGE OR VIDEO STATUS
     return [
       {
         "type": (statusAssetType == "video") ? "video" : "image",

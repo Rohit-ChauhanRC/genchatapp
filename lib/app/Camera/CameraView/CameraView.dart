@@ -142,7 +142,9 @@ class CameraView extends GetView<CameraControllerX> {
                       GestureDetector(
                         onTap: () async {
                           final result = await Get.to(
-                            () => const TextStatusScreen(),
+                            () => TextStatusScreen(
+                              statusRepository: controller.statusRepository,
+                            ),
                           );
                           if (result != null) {
                             // You can handle the text & color here

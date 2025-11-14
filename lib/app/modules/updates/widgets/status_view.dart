@@ -46,6 +46,17 @@ class _StatusViewState extends State<StatusView> {
   StreamSubscription? _videoListener;
   bool isVideo = false;
 
+  final Map<int, Color> colors = {
+    0: Colors.black,
+    1: Colors.blue,
+    2: Colors.green,
+    3: Colors.purple,
+    4: Colors.orange,
+    5: Colors.red,
+    6: Colors.teal,
+    7: Colors.pink,
+  };
+
   @override
   void initState() async{
     super.initState();
@@ -59,7 +70,6 @@ class _StatusViewState extends State<StatusView> {
     _loadMedia();
 
   }
-
 
   Future<void> _loadMedia() async {
     _videoListener?.cancel();
@@ -136,7 +146,6 @@ class _StatusViewState extends State<StatusView> {
     }
     _loadMedia();
     setState(() {});
-
   }
 
   void _previous() {
@@ -189,6 +198,25 @@ class _StatusViewState extends State<StatusView> {
             (contact) => contact.userId == status.userId,
           );
 
+    // final media = status.media[index];
+    final type = media['type'];
+
+    final text = media['text'] ?? '';
+    List<String> parts = [];
+    String number = "";
+    String text1 = "";
+    Color bgColor = textBarColor;
+
+    // Color parseColor(String hex) {
+    //   return Color(int.parse(hex.replaceFirst('#', '0xff')));
+    // }
+    if (text.toString().isNotEmpty) {
+      parts = text.split('-');
+      number = parts[0]; // "0"
+      text1 = parts[1];
+      bgColor = colors[int.parse(number)]!;
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapUp: (details) => _onTapTap(details),
@@ -204,15 +232,14 @@ class _StatusViewState extends State<StatusView> {
         }
       },
       child: Scaffold(
-        backgroundColor: textBarColor,
+        backgroundColor: type == 'video' || type == 'image'
+            ? textBarColor
+            : bgColor,
         body: Stack(
           children: [
             Positioned.fill(
               child: Builder(
                 builder: (_) {
-                  final media = status.media[index];
-                  final type = media['type'];
-
                   if (type == 'video') {
                     return (_videoController != null &&
                             _videoController!.value.isInitialized)
@@ -241,13 +268,6 @@ class _StatusViewState extends State<StatusView> {
                       },
                     );
                   } else if (type == 'text') {
-
-                    final text = media['text'] ?? '';
-
-                    // Color parseColor(String hex) {
-                    //   return Color(int.parse(hex.replaceFirst('#', '0xff')));
-                    // }
-
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
 
@@ -258,7 +278,7 @@ class _StatusViewState extends State<StatusView> {
                           child: SizedBox(
                             width: double.infinity,
                             child: Linkify(
-                              text: text,
+                              text: text1,
                               textAlign: TextAlign.center,
                               onOpen: (link) async {
                                 final uri = Uri.parse(link.url);
@@ -267,8 +287,8 @@ class _StatusViewState extends State<StatusView> {
                                   mode: LaunchMode.externalApplication,
                                 );
                               },
-                              style: TextStyle(
-                                // color: parseColor(textColorHex),
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 28,
                                 fontWeight: FontWeight.w600,
                                 height: 1.4,
@@ -307,12 +327,12 @@ class _StatusViewState extends State<StatusView> {
                   }
                   totalStatusCount += statusList[i].media.length;
                 }
-                
+
                 return Row(
                   children: List.generate(totalStatusCount, (i) {
                     bool isCurrent = i == currentStatusGlobalIndex;
                     bool isCompleted = i < currentStatusGlobalIndex;
-                    
+
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 1.5),
@@ -321,12 +341,16 @@ class _StatusViewState extends State<StatusView> {
                           child: SizedBox(
                             height: 2.5,
                             child: LinearProgressIndicator(
-                              value: isCurrent 
-                                  ? controller.progress.value 
-                                  : isCompleted ? 1.0 : 0.0,
+                              value: isCurrent
+                                  ? controller.progress.value
+                                  : isCompleted
+                                  ? 1.0
+                                  : 0.0,
                               backgroundColor: Colors.white.withOpacity(0.3),
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                isCurrent ? Colors.white : Colors.white.withOpacity(0.7),
+                                isCurrent
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.7),
                               ),
                             ),
                           ),
@@ -367,21 +391,18 @@ class _StatusViewState extends State<StatusView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                      (user?.localName?.isNotEmpty ?? false) ? user!.localName! : (user?.phoneNumber ?? ''),
+                        (user?.localName?.isNotEmpty ?? false)
+                            ? user!.localName!
+                            : (user?.phoneNumber ?? ''),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
+                      const Text(
                         "time",
 
-
-
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),

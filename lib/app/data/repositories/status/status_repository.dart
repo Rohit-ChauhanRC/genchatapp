@@ -64,6 +64,13 @@ class StatusRepository {
           contentType: DioMediaType.parse(mimeType),
         ),
       };
+    } else {
+      body = {
+        "text": text,
+        "assetType": "",
+        "isAsset": isAssets,
+        "status-asset": null,
+      };
     }
 
     FormData buildFormData() {

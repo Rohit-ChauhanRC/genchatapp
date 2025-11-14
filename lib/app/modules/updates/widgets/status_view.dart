@@ -45,14 +45,15 @@ class _StatusViewState extends State<StatusView> {
   @override
   void initState() {
     super.initState();
-
     controller = widget.controller;
     statusList = widget.statusList;
-    currentStatusIndex = widget.startIndex!;
+
+    currentStatusIndex = widget.startIndex ?? 0;
     status = statusList[currentStatusIndex];
 
     _loadMedia();
   }
+
 
   Future<void> _loadMedia() async {
     _videoListener?.cancel();
@@ -97,7 +98,8 @@ class _StatusViewState extends State<StatusView> {
       }
 
       controller.startProgress(durationSeconds: 5, onFinish: _next);
-      setState(() {});
+      // setState(() {});
+      // _next();
     }
   }
 
@@ -126,9 +128,9 @@ class _StatusViewState extends State<StatusView> {
       Get.back();
       return;
     }
-
-    setState(() {});
     _loadMedia();
+    setState(() {});
+
   }
 
   void _previous() {
@@ -220,23 +222,16 @@ class _StatusViewState extends State<StatusView> {
                       },
                     );
                   } else if (type == 'text') {
-                    final bgColorHex = media['bgColor'] ?? '#000000';
-                    final textColorHex = media['textColor'] ?? '#FFFFFF';
+
                     final text = media['text'] ?? '';
 
-                    Color parseColor(String hex) {
-                      return Color(int.parse(hex.replaceFirst('#', '0xff')));
-                    }
+                    // Color parseColor(String hex) {
+                    //   return Color(int.parse(hex.replaceFirst('#', '0xff')));
+                    // }
 
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [parseColor(bgColorHex), Colors.white],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
+
                       child: Center(
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
@@ -254,7 +249,7 @@ class _StatusViewState extends State<StatusView> {
                                 );
                               },
                               style: TextStyle(
-                                color: parseColor(textColorHex),
+                                // color: parseColor(textColorHex),
                                 fontSize: 28,
                                 fontWeight: FontWeight.w600,
                                 height: 1.4,
@@ -278,28 +273,46 @@ class _StatusViewState extends State<StatusView> {
               ),
             ),
 
-            // progress bars
+            // Progress bars for all statuses
             Positioned(
               top: 40,
               left: 10,
               right: 10,
               child: Obx(() {
+                int totalStatusCount = 0;
+                int currentStatusGlobalIndex = 0;
+
+                // Find the current user's index and calculate total statuses
+                for (var i = 0; i < statusList.length; i++) {
+                  if (i < currentStatusIndex) {
+                    currentStatusGlobalIndex += statusList[i].media.length;
+                  } else if (i == currentStatusIndex) {
+                    currentStatusGlobalIndex += index;
+                  }
+                  totalStatusCount += statusList[i].media.length;
+                }
+                
                 return Row(
-                  children: List.generate(status.media.length, (i) {
+                  children: List.generate(totalStatusCount, (i) {
+                    bool isCurrent = i == currentStatusGlobalIndex;
+                    bool isCompleted = i < currentStatusGlobalIndex;
+                    
                     return Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 1.5),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                            value: i < index
-                                ? 1
-                                : i == index
-                                ? controller.progress.value
-                                : 0,
-                            color: Colors.white,
-                            backgroundColor: Colors.white24,
-                            minHeight: 3,
+                          borderRadius: BorderRadius.circular(2),
+                          child: SizedBox(
+                            height: 2.5,
+                            child: LinearProgressIndicator(
+                              value: isCurrent 
+                                  ? controller.progress.value 
+                                  : isCompleted ? 1.0 : 0.0,
+                              backgroundColor: Colors.white.withOpacity(0.3),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isCurrent ? Colors.white : Colors.white.withOpacity(0.7),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -335,7 +348,7 @@ class _StatusViewState extends State<StatusView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user?.localName ?? user?.phoneNumber ?? "Unknown User",
+                      (user?.localName?.isNotEmpty ?? false) ? user!.localName! : (user?.phoneNumber ?? ''),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -343,7 +356,9 @@ class _StatusViewState extends State<StatusView> {
                       ),
                       Text(
                         "time",
-                        // statusTime: statuses.last.createdAt!,
+
+
+
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,

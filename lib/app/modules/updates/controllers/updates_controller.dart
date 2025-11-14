@@ -24,7 +24,7 @@ class UpdatesController extends GetxController
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
 
   FocusNode focusNode = FocusNode();
-
+  var currentMediaCount = 0.obs;
   // CreateGroupModel
   final RxList<Statusmodel> statusList = <Statusmodel>[].obs;
 
@@ -49,7 +49,6 @@ class UpdatesController extends GetxController
   final RxList<ChatConntactModel> filteredContacts = <ChatConntactModel>[].obs;
 
   // var statusList = <StatusModel>[].obs;
-
   RxDouble progress = 0.0.obs;
   Timer? timer;
 

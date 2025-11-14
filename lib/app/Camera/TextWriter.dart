@@ -24,6 +24,7 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       backgroundColor: _backgroundColor,
       body: SafeArea(
         child: Stack(
@@ -50,6 +51,7 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
             ),
 
             Positioned(
+
               bottom: 100,
               left: 0,
               right: 0,

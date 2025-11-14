@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../constants/colors.dart';
 import '../../../routes/app_pages.dart';
+import '../../../utils/TImeFormat.dart';
 import '../controllers/updates_controller.dart';
 
 class UpdatesView extends GetView<UpdatesController> {
@@ -115,13 +116,20 @@ class UpdatesView extends GetView<UpdatesController> {
                           UserList? user = controller.contacts.firstWhereOrNull(
                                 (contact) => contact.userId.toString() == userId,
                           );
+
+
+
                           return StatusTile(
-                            name: user?.localName ?? user?.phoneNumber ?? "Unknown User",
-                            statusTime: statuses.last.createdAt ?? "",
+                            name: (user?.localName?.isNotEmpty ?? false)
+                                ? user!.localName!
+                                : (user?.phoneNumber ?? ''),
+                            statusTime: formatStatusTime(context, statuses.last.createdAt),
+
                             userPic: user?.displayPictureUrl ?? "",
                             onTap: () {
                               Get.to(
                                     () => StatusView(
+
                                   controller: controller,
                                   statusList: statuses,
                                   startIndex: 0,

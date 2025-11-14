@@ -8,6 +8,7 @@ import '../TextWriter.dart';
 import 'PreviewScreen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'VIdeoPlayerScreen.dart';
+
 class CameraView extends GetView<CameraControllerX> {
   const CameraView({super.key});
 
@@ -21,11 +22,11 @@ class CameraView extends GetView<CameraControllerX> {
       if (media != null) {
         final file = File(media.path);
         final int fileSizeInBytes = file.lengthSync();
-        final double fileSizeInMB = fileSizeInBytes / (1024 * 1024); // convert to MB
+        final double fileSizeInMB =
+            fileSizeInBytes / (1024 * 1024); // convert to MB
 
         if (media.path.toLowerCase().endsWith(".mp4") ||
             media.path.toLowerCase().endsWith(".mov")) {
-
           if (fileSizeInMB > 50) {
             Get.snackbar(
               "Video too large",
@@ -37,19 +38,30 @@ class CameraView extends GetView<CameraControllerX> {
             return;
           }
 
-          Get.to(() => VideoPlayerScreen(videoPath: media.path));
+          Get.to(
+            () => VideoPlayerScreen(
+              videoPath: media.path,
+              statusRepository: controller.statusRepository,
+            ),
+          );
         } else {
-          Get.to(() => PreviewScreen(imagePath: media.path));
+          Get.to(
+            () => PreviewScreen(
+              imagePath: media.path,
+              statusRepository: controller.statusRepository,
+            ),
+          );
         }
       }
     }
-
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Obx(() {
         if (!controller.isCameraReady.value) {
-          return const Center(child: CircularProgressIndicator(color: Colors.green));
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.green),
+          );
         }
 
         return Stack(
@@ -69,11 +81,16 @@ class CameraView extends GetView<CameraControllerX> {
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.photo_library_outlined,
-                            color: Colors.white, size: 35),
+                        Icon(
+                          Icons.photo_library_outlined,
+                          color: Colors.white,
+                          size: 35,
+                        ),
                         SizedBox(height: 5),
-                        Text("Gallery",
-                            style: TextStyle(color: Colors.white70, fontSize: 12))
+                        Text(
+                          "Gallery",
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -82,30 +99,39 @@ class CameraView extends GetView<CameraControllerX> {
                   GestureDetector(
                     onTap: () async {
                       final path = await controller.capturePhoto();
-                      if (path != null) Get.to(() => PreviewScreen(imagePath: path));
+                      if (path != null)
+                        Get.to(
+                          () => PreviewScreen(
+                            imagePath: path,
+                            statusRepository: controller.statusRepository,
+                          ),
+                        );
                     },
                     // onLongPressStart: (_) async => await controller.startVideoRecording(),
                     // onLongPressEnd: (_) async {
                     //   final path = await controller.stopVideoRecording();
                     //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
                     // },
-                    child: Obx(() => AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: controller.isRecording.value ? 80 : 70,
-                      height: controller.isRecording.value ? 80 : 70,
-                      decoration: BoxDecoration(
-                        color: controller.isRecording.value ? Colors.red : Colors.white,
-                        shape: BoxShape.circle,
-
-                        border: Border.all(
+                    child: Obx(
+                      () => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: controller.isRecording.value ? 80 : 70,
+                        height: controller.isRecording.value ? 80 : 70,
+                        decoration: BoxDecoration(
                           color: controller.isRecording.value
-                              ? Colors.redAccent
-                              : Colors.green,
-                          width: 4,
+                              ? Colors.red
+                              : Colors.white,
+                          shape: BoxShape.circle,
+
+                          border: Border.all(
+                            color: controller.isRecording.value
+                                ? Colors.redAccent
+                                : Colors.green,
+                            width: 4,
+                          ),
                         ),
                       ),
-                    )
-                      ),
+                    ),
                   ),
 
                   // Text Status
@@ -115,7 +141,9 @@ class CameraView extends GetView<CameraControllerX> {
                     children: [
                       GestureDetector(
                         onTap: () async {
-                          final result = await Get.to(() => const TextStatusScreen());
+                          final result = await Get.to(
+                            () => const TextStatusScreen(),
+                          );
                           if (result != null) {
                             // You can handle the text & color here
                             print("Text: ${result['text']}");
@@ -124,13 +152,19 @@ class CameraView extends GetView<CameraControllerX> {
                           }
                         },
 
-                        child: const Icon(Icons.edit, color: Colors.white, size: 35),
+                        child: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 35,
+                        ),
                       ),
                       const SizedBox(height: 5),
-                      const Text("Text", style: TextStyle(color: Colors.white70, fontSize: 12))
+                      const Text(
+                        "Text",
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
                     ],
                   ),
-
                 ],
               ),
             ),
@@ -140,5 +174,3 @@ class CameraView extends GetView<CameraControllerX> {
     );
   }
 }
-
-

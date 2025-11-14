@@ -35,4 +35,5 @@ class ApiEndpoints {
   static const String fetchStatus = "status/";
   static const String createStatus = "status/create";
   static const String deleteStatus = "status/delete";
+  // static const String uploadStatus = "group/update-display-picture";
 }

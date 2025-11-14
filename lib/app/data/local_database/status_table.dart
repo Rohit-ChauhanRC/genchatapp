@@ -14,8 +14,10 @@ class StatusTable {
         isAsset INTEGER,
         statusText TEXT,
         statusAssetUrl TEXT,
+        statusAssetType TEXT,
         isDeleted INTEGER,
         createdAt TEXT,
+        assetUrl TEXT
       );
     """);
   }

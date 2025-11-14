@@ -1,4 +1,5 @@
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
+import 'package:genchatapp/app/data/local_database/status_table.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -59,7 +60,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,
@@ -73,12 +74,14 @@ class DataBaseService {
     await ChatConectTable().createTable(database);
     await MessageTable().createDeletionQueueTable(database);
     await GroupsTable().createTable(database);
+    await StatusTable().createTable(database);
   }
 
   void onUpgrade(Database database, int oldVersion, int newVersion) async {
     MessageTable().onUpgrade(database, oldVersion, newVersion);
     ContactsTable().onUpgrade(database, oldVersion, newVersion);
     ChatConectTable().onUpgrade(database, oldVersion, newVersion);
+    StatusTable().onUpgrade(database, oldVersion, newVersion);
   }
 
   Future<void> closeDb() async {

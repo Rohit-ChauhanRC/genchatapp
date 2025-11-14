@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TextStatusScreen extends StatefulWidget {
+
   const TextStatusScreen({super.key});
 
   @override

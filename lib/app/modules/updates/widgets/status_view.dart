@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../constants/colors.dart';
+import '../../../data/local_database/status_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/models/new_models/response_model/status_model.dart';
 import '../../../data/models/status_model.dart';
@@ -46,7 +47,7 @@ class _StatusViewState extends State<StatusView> {
   bool isVideo = false;
 
   @override
-  void initState() {
+  void initState() async{
     super.initState();
     controller = widget.controller;
     statusList = widget.statusList;
@@ -56,6 +57,7 @@ class _StatusViewState extends State<StatusView> {
     isSelf = widget.isSelf;
 
     _loadMedia();
+
   }
 
 

@@ -14,7 +14,7 @@ String statusmodelToJson(List<Statusmodel> data) =>
 class Statusmodel {
   int id;
   int userId;
-  bool isAsset;
+  int? isAsset;
   String? statusText;
   String? assetUrl;
   String? statusAssetType;
@@ -35,7 +35,7 @@ class Statusmodel {
   factory Statusmodel.fromJson(Map<String, dynamic> json) => Statusmodel(
     id: json["id"],
     userId: json["userId"],
-    isAsset: json["isAsset"],
+    isAsset: json["isAsset"]==true?1:0,
     statusText: json["statusText"],
     assetUrl: json["assetUrl"],
     statusAssetType: json["statusAssetType"],
@@ -44,7 +44,7 @@ class Statusmodel {
   );
 
   List<Map<String, dynamic>> get media {
-    if (!isAsset) {
+    if (isAsset != null) {
       return [
         {
           "type": "text",

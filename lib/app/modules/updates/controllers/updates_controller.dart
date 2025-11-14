@@ -6,6 +6,7 @@ import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 // import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
+import 'package:genchatapp/app/data/local_database/status_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/status_model.dart';
@@ -181,30 +182,55 @@ class UpdatesController extends GetxController
   }
 
   Future<void> getStatus() async {
+    print("🔵 getStatus() CALLED");
+
     try {
-      // Step 1: Create group
+      print("👥 Contacts count: ${contacts.length}");
+
       if (contacts.isNotEmpty) {
+        print("📡 Calling API with userIdList: $userIdList");
+
         final response = await statusRepository.fetchStatus(
           userIds: userIdList,
         );
 
-        if (response != null && response.statusCode == 200) {
-          final Map<String, List<Statusmodel>> grouped = {};
+        print("📨 API response received");
 
-          List<Statusmodel> modelList = (response.data['data'] as List)
-              .map((e) => Statusmodel.fromJson(e))
-              .toList();
+        if (response != null && response.statusCode == 200) {
+          print("✅ API status 200 OK");
+
+          List<dynamic> raw = response.data['data'];
+          print("🟩 Raw response count: ${raw.length}");
+
+          List<Statusmodel> modelList =
+          raw.map((e) => Statusmodel.fromJson(e)).toList();
+
+          print("🟦 Parsed modelList count: ${modelList.length}");
+
+          print("💾 Saving to SQLite...");
+          await StatusTable().saveAllStatuses(modelList);
+          print("💾 Saved to SQLite OK");
+
+          final Map<String, List<Statusmodel>> grouped = {};
 
           for (var status in modelList) {
             grouped.putIfAbsent(status.userId.toString(), () => []);
             grouped[status.userId.toString()]!.add(status);
           }
 
+          print("🟪 Grouped count: ${grouped.length}");
+
           groupedStatusMap.value = grouped;
+
+        } else {
+          print("❌ API Error: Response null or not 200");
         }
+      } else {
+        print("❗ contacts list EMPTY — SKIPPING API CALL");
       }
-    } catch (e) {
-      // showAlertMessage("Something went wrong: $e");
-    } finally {}
+    } catch (e, st) {
+      print("🔥 ERROR in getStatus(): $e");
+      print(st);
+    }
   }
 }

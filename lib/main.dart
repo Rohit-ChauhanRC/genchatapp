@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 
 import 'app/config/services/notification_service.dart';
 import 'app/config/theme/app_theme.dart';
+import 'app/data/local_database/status_table.dart';
 import 'app/data/repositories/status/status_repository.dart';
 import 'app/network/app_config.dart';
 import 'app/routes/app_pages.dart';
@@ -64,6 +65,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await dotenv.load(fileName: ".env");

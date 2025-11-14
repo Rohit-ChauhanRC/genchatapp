@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
+import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:get/get.dart';
 
 class TextStatusScreen extends StatefulWidget {
-  const TextStatusScreen({super.key});
+  TextStatusScreen({super.key, required this.statusRepository});
+
+  final StatusRepository statusRepository;
+
+  final UpdatesController updatesController = Get.find();
 
   @override
   State<TextStatusScreen> createState() => _TextStatusScreenState();
@@ -24,12 +30,11 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       backgroundColor: _backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
-        Center(
+            Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
@@ -51,7 +56,6 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
             ),
 
             Positioned(
-
               bottom: 100,
               left: 0,
               right: 0,
@@ -90,12 +94,34 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
               top: 16,
               right: 16,
               child: GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  int? key = _colors.entries
+                      .firstWhere(
+                        (entry) => entry.value == _backgroundColor,
+                        orElse: () => const MapEntry(-1, Colors.transparent),
+                      )
+                      .key;
                   if (_textController.text.trim().isNotEmpty) {
-                    Get.back(result: {
-                      "text": _textController.text.trim(),
-                      "color": _backgroundColor,
-                    });
+                    final uploadResponse = await widget.statusRepository
+                        .uploadStatus(
+                          imageFile: null,
+                          isAssets: false,
+                          onProgress: (int i, int j) {},
+                          text: "$key-${_textController.text.trim()}",
+                        );
+                    print(uploadResponse);
+
+                    if (uploadResponse != null &&
+                        uploadResponse.statusCode == 200) {
+                      await widget.updatesController.getStatus();
+                    } else {
+                      return;
+                    }
+                    Get.close(2);
+                    // Get.back(result: {
+                    //   "text": _textController.text.trim(),
+                    //   "color": _backgroundColor,
+                    // });
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Please type something")),

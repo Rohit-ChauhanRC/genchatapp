@@ -391,30 +391,32 @@ class SingleChatController extends GetxController
     final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
       receiverUserData!.userId!,
     ));
-    blocked.value = blockedI!;
-    blockedByMe.value = blockedByMeI!;
-    if (blocked.value == true) {
-      final user = await chatConectTable.fetchById(
-        uid: receiverUserData!.userId!.toString(),
-        isGroup: false,
-      );
+    if (blockedByMeI != null) {
+      blocked.value = blockedI!;
+      blockedByMe.value = blockedByMeI!;
+      if (blocked.value == true) {
+        final user = await chatConectTable.fetchById(
+          uid: receiverUserData!.userId!.toString(),
+          isGroup: false,
+        );
 
-      final c = await chatConectTable.updateUserBlockUnblock(
-        receiverUserData!.userId!.toString(),
-        blocked.value ? 1 : 0,
-      );
-      print(c);
+        final c = await chatConectTable.updateUserBlockUnblock(
+          receiverUserData!.userId!.toString(),
+          blocked.value ? 1 : 0,
+        );
+        print(c);
 
-      print(user);
-      // await chatConectTable.updateUserBlockUnblock(
-      //   receiverUserData!.userId!.toString(),
-      //   blocked ? 0 : 1,
-      // );
-      // await contactsTable.updateUserBlockUnblock(
-      //   receiverUserData!.userId!,
-      //   blocked ? 0 : 1,
-      // );
-      print("🚫 User is blocked");
+        print(user);
+        // await chatConectTable.updateUserBlockUnblock(
+        //   receiverUserData!.userId!.toString(),
+        //   blocked ? 0 : 1,
+        // );
+        // await contactsTable.updateUserBlockUnblock(
+        //   receiverUserData!.userId!,
+        //   blocked ? 0 : 1,
+        // );
+        print("🚫 User is blocked");
+      }
       // }
     } else if (blocked == false) {
       print("✅ User is not blocked");

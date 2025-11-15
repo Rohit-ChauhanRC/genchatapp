@@ -13,7 +13,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => Scaffold(
+      () => Scaffold(
         bottomNavigationBar: Theme(
           data: Theme.of(context).copyWith(
             navigationBarTheme: NavigationBarThemeData(
@@ -35,18 +35,36 @@ class HomeView extends GetView<HomeController> {
             selectedIndex: controller.currentPageIndex,
             destinations: const <Widget>[
               NavigationDestination(
-                selectedIcon: ImageIcon(AssetImage("assets/images/chatsIcon.png"), color: highLightColor,),
-                icon: ImageIcon(AssetImage("assets/images/chatsIcon.png",),color: whiteColor,),
+                selectedIcon: ImageIcon(
+                  AssetImage("assets/images/chatsIcon.png"),
+                  color: highLightColor,
+                ),
+                icon: ImageIcon(
+                  AssetImage("assets/images/chatsIcon.png"),
+                  color: whiteColor,
+                ),
                 label: 'Chats',
               ),
               NavigationDestination(
-                selectedIcon: ImageIcon(AssetImage("assets/images/statusIcon.png"), color: highLightColor,),
-                icon: ImageIcon(AssetImage("assets/images/statusIcon.png",),color: whiteColor,),
+                selectedIcon: ImageIcon(
+                  AssetImage("assets/images/statusIcon.png"),
+                  color: highLightColor,
+                ),
+                icon: ImageIcon(
+                  AssetImage("assets/images/statusIcon.png"),
+                  color: whiteColor,
+                ),
                 label: 'Updates',
               ),
               NavigationDestination(
-                selectedIcon: ImageIcon(AssetImage("assets/images/callIcon.png"), color: highLightColor,),
-                icon: ImageIcon(AssetImage("assets/images/callIcon.png",),color: whiteColor,),
+                selectedIcon: ImageIcon(
+                  AssetImage("assets/images/callIcon.png"),
+                  color: highLightColor,
+                ),
+                icon: ImageIcon(
+                  AssetImage("assets/images/callIcon.png"),
+                  color: whiteColor,
+                ),
                 label: 'Call',
               ),
             ],
@@ -61,4 +79,3 @@ class HomeView extends GetView<HomeController> {
     );
   }
 }
-

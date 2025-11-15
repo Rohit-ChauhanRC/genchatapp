@@ -7,19 +7,22 @@ class StatusTable {
   final tableName = statusDb;
 
   Future<void> createTable(Database database) async {
+    print("Creating Status Table...");
+
     await database.execute("""
-      CREATE TABLE IF NOT EXISTS $tableName (
-        id INTEGER PRIMARY KEY,
-        userId INTEGER ,
-        isAsset INTEGER,
-        statusText TEXT,
-        statusAssetUrl TEXT,
-        statusAssetType TEXT,
-        isDeleted INTEGER,
-        createdAt TEXT,
-        assetUrl TEXT
-      );
-    """);
+    CREATE TABLE IF NOT EXISTS $tableName (
+      id INTEGER PRIMARY KEY,
+      userId INTEGER,
+      isAsset INTEGER,
+      statusText TEXT,
+      statusAssetType TEXT,
+      isDeleted INTEGER,
+      createdAt TEXT,
+      assetUrl TEXT
+    );
+  """);
+
+    print("✅ Status table created (or already exists)");
   }
 
   Future<int> create(Statusmodel status) async {
@@ -46,7 +49,10 @@ class StatusTable {
       limit: 1,
     );
 
-    if (result.isNotEmpty) {
+ 
+
+     if (result.isNotEmpty) {
+
       return Statusmodel.fromJson(result.first);
     } else {
       return null;
@@ -178,7 +184,7 @@ class StatusTable {
     final batch = db.batch();
 
     for (var s in list) {
-      print("⬇️ Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}");
+      print(" Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}");
 
       batch.insert(
         tableName,
@@ -197,7 +203,17 @@ class StatusTable {
     }
 
     await batch.commit(noResult: true);
-    print("✅ All statuses inserted successfully!");
+    print("All statuses inserted successfully!");
+  }
+  Future<List<Statusmodel>> getAllStatuses() async {
+    final db = await DataBaseService().database;
+
+    final List<Map<String, dynamic>> maps =
+    await db.query(tableName, orderBy: "createdAt ASC");
+
+    return List.generate(maps.length, (i) {
+      return Statusmodel.fromJson(maps[i]);
+    });
   }
 
 }

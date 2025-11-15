@@ -353,7 +353,6 @@ class DisplayTextImageGIF extends StatelessWidget {
     }
   }
 
-  // ✂️ Shorten file name if too long
   String _truncate(String name) {
     return name.length > 25 ? '${name.substring(0, 22)}...' : name;
   }

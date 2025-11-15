@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
@@ -182,52 +183,89 @@ class UpdatesController extends GetxController
   }
 
   Future<void> getStatus() async {
-    print("🔵 getStatus() CALLED");
 
     try {
-      print("👥 Contacts count: ${contacts.length}");
+      if (contacts.isEmpty) {
+        print(" No contacts → Skipping");
+        return;
+      }
 
-      if (contacts.isNotEmpty) {
-        print("📡 Calling API with userIdList: $userIdList");
+      print("Fetching statuses for User IDs: $userIdList");
 
-        final response = await statusRepository.fetchStatus(
-          userIds: userIdList,
-        );
+      final response = await statusRepository.fetchStatus(userIds: userIdList);
 
-        print("📨 API response received");
+      if (response == null || response.statusCode != 200) {
+        print(" API error → response invalid");
+        return;
+      }
 
-        if (response != null && response.statusCode == 200) {
-          print("✅ API status 200 OK");
+      print(" API response OK");
+      print("Raw response: ${response.data}");
 
-          List<dynamic> raw = response.data['data'];
-          print("🟩 Raw response count: ${raw.length}");
+      // ---------- PARSE MODEL ----------
+      List<dynamic> raw = response.data['data'];
+      print("Total records from API: ${raw.length}");
 
-          List<Statusmodel> modelList =
-          raw.map((e) => Statusmodel.fromJson(e)).toList();
+      List<Statusmodel> modelList =
+      raw.map((e) => Statusmodel.fromJson(e)).toList();
 
-          print("🟦 Parsed modelList count: ${modelList.length}");
+      print("Parsed into modelList: ${modelList.length}");
 
-          print("💾 Saving to SQLite...");
-          await StatusTable().saveAllStatuses(modelList);
-          print("💾 Saved to SQLite OK");
+      for (var s in modelList) {
+        print("Parsed Status => id:${s.id}, userId:${s.userId}, type:${s.statusAssetType}, isAsset:${s.isAsset}, text:${s.statusText}, url:${s.assetUrl}");
+      }
 
-          final Map<String, List<Statusmodel>> grouped = {};
+      // ---------- ATTACH LOCAL PATH ----------
+      print(" Downloading and attaching localPath...");
+      for (var status in modelList) {
+        print("Processing userId=${status.userId}, statusId=${status.id}");
 
-          for (var status in modelList) {
-            grouped.putIfAbsent(status.userId.toString(), () => []);
-            grouped[status.userId.toString()]!.add(status);
+        for (var i = 0; i < status.media.length; i++) {
+          final m = status.media[i];
+          print("   ➤ Media item: $m");
+
+          if (m["type"] == "text") {
+            print("Text status → no download needed");
+            continue;
           }
 
-          print("🟪 Grouped count: ${grouped.length}");
-
-          groupedStatusMap.value = grouped;
-
-        } else {
-          print("❌ API Error: Response null or not 200");
+          try {
+            final f = await DefaultCacheManager().getSingleFile(m['url']);
+            m['localPath'] = f.path;
+            print("   Download OK → localPath=${f.path}");
+          } catch (e) {
+            print("    Download failed: $e");
+          }
         }
-      } else {
-        print("❗ contacts list EMPTY — SKIPPING API CALL");
       }
+
+      // ---------- SAVE TO DB ----------
+      print("Saving ${modelList.length} statuses into SQLite...");
+
+      await StatusTable().saveAllStatuses(modelList);
+
+      print(" SQLite save completed!");
+
+      // ---------- VERIFY SAVED DATA ----------
+      print(" Fetching saved records from SQLite for verification...");
+      final saved = await StatusTable().getAllStatuses();
+
+      for (var s in saved) {
+        print(" DB Record => id:${s.id}, userId:${s.userId}, text:${s.statusText}, url:${s.assetUrl}, type:${s.statusAssetType}, media:${s.media}");
+      }
+
+      // ---------- GROUP DATA ----------
+      final Map<String, List<Statusmodel>> grouped = {};
+      for (var status in modelList) {
+        grouped.putIfAbsent(status.userId.toString(), () => []);
+        grouped[status.userId.toString()]!.add(status);
+      }
+
+      print("📊 Grouped users count: ${grouped.length}");
+      groupedStatusMap.value = grouped;
+
+      print("🏁 getStatus() finished successfully!");
+
     } catch (e, st) {
       print("🔥 ERROR in getStatus(): $e");
       print(st);

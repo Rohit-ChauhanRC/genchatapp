@@ -95,9 +95,16 @@ class ChatList extends StatelessWidget {
                             ? AppColors.mySideBgColor.withOpacity(0.3)
                             : Colors.transparent;
 
-                        return Container(
-                          color: bgColor,
-                          child: messages.senderId ==
+                        return GestureDetector(
+                          onLongPress: () {
+                            singleChatController.toggleMessageSelection(messages);
+                          },
+                          onTap: singleChatController.selectedMessages.isNotEmpty
+                              ? () => singleChatController.toggleMessageSelection(messages)
+                              : null,
+                          child: Container(
+                            color: bgColor,
+                            child: messages.senderId ==
                               singleChatController.senderuserData?.userId
                               ?
                           MyMessageCard(
@@ -295,7 +302,7 @@ class ChatList extends StatelessWidget {
                             url: messages.assetUrl,
                             assetThumbnail: messages.assetThumbnail,
                           ),
-                        );
+                          ));
                       },
                     );
                   },

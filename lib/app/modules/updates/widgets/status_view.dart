@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
@@ -71,51 +72,88 @@ class _StatusViewState extends State<StatusView> {
   }
 
   Future<void> _loadMedia() async {
+    print("Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index");
+
+    // Reset previous controller
     _videoListener?.cancel();
     _videoController?.removeListener(_onVideoTick);
     _videoController?.pause();
     await _videoController?.dispose();
     _videoController = null;
+
     controller.stopProgress();
 
+    // SAFETY
+    if (status.media.isEmpty) {
+      print(" ERROR: media list empty for this status");
+      return;
+    }
+
     final media = status.media[index];
-    isVideo = media['type'] == 'video';
+    final type = media["type"];
+    final localPath = media["localPath"];
+    final url = media["url"];
 
-    if (isVideo) {
+    if (type == "text") {
+      controller.startProgress(durationSeconds: 5, onFinish: _next);
+      setState(() {});
+      return;
+    }
+
+    //--------------------------------------------------
+    //                IMAGE STATUS
+    //--------------------------------------------------
+    if (type == "image") {
       try {
-        final file = await DefaultCacheManager().getSingleFile(media['url']!);
+        if (localPath != null && localPath.toString().isNotEmpty) {
+          media["_displayImage"] = localPath;
+        } else {
+          final file = await DefaultCacheManager().getSingleFile(url);
+          media["_displayImage"] = file.path;
+        }
+      } catch (e) {
+        media["_displayImage"] = url; // fallback network
+      }
 
-        _videoController = VideoPlayerController.file(file)
+      controller.startProgress(durationSeconds: 5, onFinish: _next);
+      setState(() {});
+      return;
+    }
+
+    //--------------------------------------------------
+    //                VIDEO STATUS
+    //--------------------------------------------------
+    if (type == "video") {
+
+      File? videoFile;
+
+      try {
+        if (localPath != null && localPath.toString().isNotEmpty) {
+          videoFile = File(localPath);
+        } else {
+          videoFile = await DefaultCacheManager().getSingleFile(url);
+        }
+      } catch (e) {
+        return;
+      }
+
+      try {
+        _videoController = VideoPlayerController.file(videoFile!)
           ..initialize().then((_) {
             setState(() {});
-            _videoController?.play();
-            _videoController?.setLooping(false);
+            _videoController!.play();
 
             _videoListener = Stream.periodic(
               const Duration(milliseconds: 100),
             ).listen((_) => _onVideoTick());
           });
       } catch (e) {
-        print("Video caching error: $e");
-
-        // fallback if caching fails
-        _videoController = VideoPlayerController.network(media['url']!)
-          ..initialize().then((_) {
-            setState(() {});
-            _videoController?.play();
-          });
-      }
-    } else {
-      try {
-        await DefaultCacheManager().getSingleFile(media['url']!);
-      } catch (e) {
-        print("Image cache error: $e");
       }
 
-      controller.startProgress(durationSeconds: 5, onFinish: _next);
-      // setState(() {});
-      // _next();
+      return;
     }
+
+    print("Unknown media type: $type");
   }
 
   void _onVideoTick() {
@@ -194,8 +232,8 @@ class _StatusViewState extends State<StatusView> {
     UserList? user = isSelf
         ? userData
         : controller.contacts.firstWhereOrNull(
-            (contact) => contact.userId == status.userId,
-          );
+          (contact) => contact.userId == status.userId,
+    );
 
     // final media = status.media[index];
     final type = media['type'];
@@ -241,32 +279,51 @@ class _StatusViewState extends State<StatusView> {
                 builder: (_) {
                   if (type == 'video') {
                     return (_videoController != null &&
-                            _videoController!.value.isInitialized)
+                        _videoController!.value.isInitialized)
                         ? FittedBox(
-                            fit: BoxFit.contain,
-                            child: SizedBox(
-                              width: _videoController!.value.size.width,
-                              height: _videoController!.value.size.height,
-                              child: VideoPlayer(_videoController!),
-                            ),
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          );
-                  } else if (type == 'image') {
-                    return Image.network(
-                      media['url']!,
                       fit: BoxFit.contain,
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        );
+                      child: SizedBox(
+                        width: _videoController!.value.size.width,
+                        height: _videoController!.value.size.height,
+                        child: VideoPlayer(_videoController!),
+                      ),
+                    )
+                        : const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    );
+                  }
+                  else if (type == 'image') {
+                    final path = media["_displayImage"] ?? media["localPath"] ?? media["url"];
+
+                    if (path == null || path.toString().isEmpty) {
+                      print(" ERROR: No valid image path found: $media");
+                      return const Center(child: Text("Image unavailable"));
+                    }
+
+                    if (path.toString().startsWith("/")) {
+                      return Image.file(
+                        File(path),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, e, __) {
+                          print("Image.file error: $e");
+                          return const Center(child: Text("Failed to load image"));
+                        },
+                      );
+                    }
+
+                    return Image.network(
+                      path,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, e, __) {
+                        print("Image.network error: $e");
+                        return const Center(child: Text("Failed to load image"));
                       },
                     );
-                  } else if (type == 'text') {
+                  }
+
+                  else if (type == 'text') {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
 
@@ -379,11 +436,11 @@ class _StatusViewState extends State<StatusView> {
                   CircleAvatar(
                     radius: 20,
                     backgroundImage:
-                        (user?.displayPictureUrl != null &&
-                            user!.displayPictureUrl!.isNotEmpty)
+                    (user?.displayPictureUrl != null &&
+                        user!.displayPictureUrl!.isNotEmpty)
                         ? NetworkImage(user!.displayPictureUrl!)
                         : const AssetImage("assets/images/default_dp.png")
-                              as ImageProvider,
+                    as ImageProvider,
                   ),
                   const SizedBox(width: 10),
                   Column(

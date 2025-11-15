@@ -1,23 +1,10 @@
-// To parse this JSON data, do
-//
-//     final statusmodel = statusmodelFromJson(jsonString);
-
-import 'dart:convert';
-
-List<Statusmodel> statusmodelFromJson(String str) => List<Statusmodel>.from(
-  json.decode(str)["data"].map((x) => Statusmodel.fromJson(x)),
-);
-
-String statusmodelToJson(List<Statusmodel> data) =>
-    json.encode({"data": List<dynamic>.from(data.map((x) => x.toJson()))});
-
 class Statusmodel {
   int id;
   int userId;
-  int? isAsset;
+  int isAsset; // 0=text, 1=media
   String? statusText;
   String? assetUrl;
-  String? statusAssetType;
+  String? statusAssetType; // image | video | text
   String? createdAt;
   int? isDeleted;
 
@@ -32,45 +19,57 @@ class Statusmodel {
     required this.isDeleted,
   });
 
-  factory Statusmodel.fromJson(Map<String, dynamic> json) => Statusmodel(
-    id: json["id"],
-    userId: json["userId"],
-    isAsset: json["isAsset"]==true?1:0,
-    statusText: json["statusText"],
-    assetUrl: json["assetUrl"],
-    statusAssetType: json["statusAssetType"],
-    createdAt: json["createdAt"],
-    isDeleted: json["isDeleted"] == true ? 1 : 0,
-  );
+  factory Statusmodel.fromJson(Map<String, dynamic> json) {
+    final type = json["statusAssetType"]?.toString().toLowerCase() ?? "";
+
+    final isTextStatus = type.isEmpty || json["assetUrl"] == null || (json["assetUrl"] as String).trim().isEmpty;
+
+    return Statusmodel(
+      id: json["id"],
+      userId: json["userId"],
+      isAsset: isTextStatus ? 0 : 1,
+      statusText: json["statusText"],
+      assetUrl: json["assetUrl"],
+      statusAssetType: type,
+      createdAt: json["createdAt"],
+      isDeleted: json["isDeleted"] == true ? 1 : 0,
+    );
+  }
 
   List<Map<String, dynamic>> get media {
-    if (isAsset != null) {
+    // TEXT STATUS
+    if (isAsset == 0) {
+      if ((statusText ?? '').trim().isEmpty) return [];
       return [
         {
           "type": "text",
-          "text": statusText ?? "",
+          "text": statusText!,
           "bgColor": "#000000",
           "textColor": "#FFFFFF",
         },
       ];
     }
 
+    if (assetUrl == null || assetUrl!.trim().isEmpty) return [];
+
     return [
       {
-        "type": (statusAssetType == "video") ? "video" : "image",
-        "url": assetUrl ?? "",
+        "type": statusAssetType == "video" ? "video" : "image",
+        "url": assetUrl!,
       },
     ];
   }
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "userId": userId,
-    "isAsset": isAsset,
-    "statusText": statusText,
-    "assetUrl": assetUrl,
-    "statusAssetType": statusAssetType,
-    "createdAt": createdAt,
-    "isDeleted": isDeleted,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "userId": userId,
+      "isAsset": isAsset,
+      "statusText": statusText,
+      "assetUrl": assetUrl,
+      "statusAssetType": statusAssetType,
+      "createdAt": createdAt,
+      "isDeleted": isDeleted,
+    };
+  }
 }

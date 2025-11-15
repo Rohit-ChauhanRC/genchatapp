@@ -384,33 +384,38 @@ class SingleChatController extends GetxController
   }
 
   Future<void> findUserBlock() async {
-    final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
+    final userExist = await contactsTable.getUserById(
       receiverUserData!.userId!,
-    ));
-    blocked = blockedI!;
-    blockedByMe = blockedByMeI!;
-    if (blocked == true) {
-      final user = await chatConectTable.fetchById(
-        uid: receiverUserData!.userId!.toString(),
-        isGroup: false,
-      );
+    );
+    if (userExist != null) {
+      final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
+        receiverUserData!.userId!,
+      ));
+      blocked = blockedI!;
+      blockedByMe = blockedByMeI!;
+      if (blocked == true) {
+        final user = await chatConectTable.fetchById(
+          uid: receiverUserData!.userId!.toString(),
+          isGroup: false,
+        );
 
-      final c = await chatConectTable.updateUserBlockUnblock(
-        receiverUserData!.userId!.toString(),
-        blocked ? 1 : 0,
-      );
-      print(c);
+        final c = await chatConectTable.updateUserBlockUnblock(
+          receiverUserData!.userId!.toString(),
+          blocked ? 1 : 0,
+        );
+        print(c);
 
-      print(user);
-      // await chatConectTable.updateUserBlockUnblock(
-      //   receiverUserData!.userId!.toString(),
-      //   blocked ? 0 : 1,
-      // );
-      // await contactsTable.updateUserBlockUnblock(
-      //   receiverUserData!.userId!,
-      //   blocked ? 0 : 1,
-      // );
-      print("🚫 User is blocked");
+        print(user);
+        // await chatConectTable.updateUserBlockUnblock(
+        //   receiverUserData!.userId!.toString(),
+        //   blocked ? 0 : 1,
+        // );
+        // await contactsTable.updateUserBlockUnblock(
+        //   receiverUserData!.userId!,
+        //   blocked ? 0 : 1,
+        // );
+        print("🚫 User is blocked");
+      }
     } else if (blocked == false) {
       print("✅ User is not blocked");
     } else {
@@ -1225,7 +1230,11 @@ class SingleChatController extends GetxController
         f.keys.first,
         fileName,
       );
-      final String? assetThumnail = f.keys.first == "mp4"
+      final String? assetThumnail =
+          f.keys.first == "mp4" ||
+              f.keys.first == "mov" ||
+              f.keys.first == 'avi' ||
+              f.keys.first == "mkv"
           ? await getThumbnail(File(localFilePath))
           : "";
 

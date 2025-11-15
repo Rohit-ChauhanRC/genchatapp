@@ -202,8 +202,9 @@ class UpdatesController extends GetxController
           List<dynamic> raw = response.data['data'];
           print("🟩 Raw response count: ${raw.length}");
 
-          List<Statusmodel> modelList =
-          raw.map((e) => Statusmodel.fromJson(e)).toList();
+          List<Statusmodel> modelList = raw
+              .map((e) => Statusmodel.fromJson(e))
+              .toList();
 
           print("🟦 Parsed modelList count: ${modelList.length}");
 
@@ -221,7 +222,6 @@ class UpdatesController extends GetxController
           print("🟪 Grouped count: ${grouped.length}");
 
           groupedStatusMap.value = grouped;
-
         } else {
           print("❌ API Error: Response null or not 200");
         }

@@ -92,7 +92,6 @@ class StatusTable {
     await createTable(db);
   }
 
-
   // Future<void> createBulk(List<Statusmodel> users) async {
   //   final db = await DataBaseService().database;
 
@@ -178,26 +177,23 @@ class StatusTable {
     final batch = db.batch();
 
     for (var s in list) {
-      print("⬇️ Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}");
-
-      batch.insert(
-        tableName,
-        {
-          "id": s.id,
-          "userId": s.userId,
-          "isAsset": s.isAsset,
-          "statusText": s.statusText!.isEmpty ? null:s.statusText!,
-          "assetUrl": s.assetUrl,
-          "statusAssetType": s.statusAssetType,
-          "createdAt": s.createdAt,
-          "isDeleted": s.isDeleted ?? 0,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
+      print(
+        "⬇️ Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}",
       );
+
+      batch.insert(tableName, {
+        "id": s.id,
+        "userId": s.userId,
+        "isAsset": s.isAsset,
+        "statusText": s.statusText!.isEmpty ? null : s.statusText!,
+        "assetUrl": s.assetUrl,
+        "statusAssetType": s.statusAssetType,
+        "createdAt": s.createdAt,
+        "isDeleted": s.isDeleted ?? 0,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
     await batch.commit(noResult: true);
     print("✅ All statuses inserted successfully!");
   }
-
 }

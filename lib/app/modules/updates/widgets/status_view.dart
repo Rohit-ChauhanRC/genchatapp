@@ -58,7 +58,7 @@ class _StatusViewState extends State<StatusView> {
   };
 
   @override
-  void initState() async{
+  void initState() {
     super.initState();
     controller = widget.controller;
     statusList = widget.statusList;
@@ -68,7 +68,6 @@ class _StatusViewState extends State<StatusView> {
     isSelf = widget.isSelf;
 
     _loadMedia();
-
   }
 
   Future<void> _loadMedia() async {

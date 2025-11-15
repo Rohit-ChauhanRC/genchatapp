@@ -10,6 +10,6 @@ class SingleChatBinding extends Bindings {
     Get.lazyPut<ApiClient>(() => ApiClient());
     Get.lazyPut<ProfileRepository>(
         () => ProfileRepository(apiClient: Get.find<ApiClient>()));
-    Get.put<SingleChatController>(SingleChatController(),permanent: true);
+    Get.put<SingleChatController>(SingleChatController());
   }
 }

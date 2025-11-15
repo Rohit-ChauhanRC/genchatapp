@@ -629,16 +629,6 @@ Future<Map<String, File?>> compressFiles(
       processedFile = compressedFile;
       newExtension = 'jpeg';
     }
-  } else if (videoExtensions.contains(extension.toLowerCase())) {
-    final compressed = await compressVideoFfmpeg(file);
-
-    if (compressed != null) {
-      processedFile = File(compressed.path);
-      newExtension = 'mp4'; // force final format
-      print(
-        "Compressed video size: ${await getReadableFileSize(processedFile)}",
-      );
-    }
   }
 
   //  final fileName =

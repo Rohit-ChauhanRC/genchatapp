@@ -224,21 +224,22 @@ class UpdatesController extends GetxController
 
         for (var i = 0; i < status.media.length; i++) {
           final m = status.media[i];
-          print("   ➤ Media item: $m");
 
-          if (m["type"] == "text") {
-            print("Text status → no download needed");
-            continue;
-          }
+          if (m["type"] == "text") continue;
 
           try {
             final f = await DefaultCacheManager().getSingleFile(m['url']);
             m['localPath'] = f.path;
-            print("   Download OK → localPath=${f.path}");
+
+            // ⭐ IMPORTANT — SAVE TO MODEL
+            status.localPath = f.path;
+
+            print("Downloaded → localPath=${f.path}");
           } catch (e) {
-            print("    Download failed: $e");
+            print("Download failed: $e");
           }
         }
+
       }
 
       // ---------- SAVE TO DB ----------
@@ -248,7 +249,6 @@ class UpdatesController extends GetxController
 
       print(" SQLite save completed!");
 
-      // ---------- VERIFY SAVED DATA ----------
       print(" Fetching saved records from SQLite for verification...");
       final saved = await StatusTable().getAllStatuses();
 
@@ -265,7 +265,7 @@ class UpdatesController extends GetxController
         grouped[status.userId.toString()]!.add(status);
       }
 
-      print("📊 Grouped users count: ${grouped.length}");
+      print(" Grouped users count: ${grouped.length}");
       groupedStatusMap.value = grouped;
 
       print("🏁 getStatus() finished successfully!");

@@ -42,18 +42,38 @@ class StatusRepository {
       return null;
     }
   }
-
   Future<Response?> uploadStatus({
     File? imageFile,
     String text = "",
     ProgressCallback? onProgress,
     bool isAssets = false,
   }) async {
+    print("🟦 uploadStatus() called");
+    print("📝 Text: $text");
+    print("📌 isAssets: $isAssets");
+
     Map<String, dynamic> body = {};
+
     if (imageFile != null) {
+      print("📸 Image file found: ${imageFile.path}");
+
       String fileName = imageFile.path.split('/').last;
       String mimeType = getFileMimeType(imageFile);
       String? assetType = getFileMimeTypeStatus(imageFile);
+
+      print("📁 File Name: $fileName");
+      print("📄 MIME Type: $mimeType");
+      print("🔖 Asset Type: $assetType");
+
+      // Check file exists and size
+      final exists = await imageFile.exists();
+      final size = exists ? await imageFile.length() : 0;
+      print("📦 File Exists: $exists | Size: $size bytes");
+
+      if (!exists || size == 0) {
+        print("❌ ERROR: File does NOT exist or is EMPTY!");
+      }
+
       body = {
         "text": text,
         "assetType": assetType,
@@ -64,7 +84,9 @@ class StatusRepository {
           contentType: DioMediaType.parse(mimeType),
         ),
       };
+
     } else {
+      print("⚠️ No file attached. Sending only text status.");
       body = {
         "text": text,
         "assetType": "",
@@ -74,18 +96,95 @@ class StatusRepository {
     }
 
     FormData buildFormData() {
-      return FormData.fromMap(body);
+      print("🧱 Building FormData...");
+      final form = FormData.fromMap(body);
+
+      // Print all form fields
+      form.fields.forEach((f) {
+        print("🔍 FIELD: ${f.key} = ${f.value}");
+      });
+
+      if (form.files.isNotEmpty) {
+        print("📎 FILE ATTACHED: ${form.files.first.value.filename}");
+      } else {
+        print("📎 No file in FormData.");
+      }
+
+      return form;
     }
+
+    print("🚀 Calling retryFormDataUpload()...");
 
     return await retryFormDataUpload(
       url: ApiEndpoints.createStatus,
-      onProgress: onProgress,
+      onProgress: (count, total) {
+        if (onProgress != null) onProgress(count, total);
+        final percent = (total > 0) ? (count / total * 100).toStringAsFixed(1) : "0";
+        print("📤 Upload Progress: $percent% ($count / $total)");
+      },
 
       formDataBuilder: buildFormData,
-      uploadCall: (formData, {onProgress}) =>
-          apiClient.uploadFile(ApiEndpoints.createStatus, formData),
+
+      uploadCall: (formData, {onProgress}) async {
+        print("📨 Final upload call -> ${ApiEndpoints.createStatus}");
+        try {
+          final response = await apiClient.uploadFile(
+            ApiEndpoints.createStatus,
+            formData,
+          );
+          print("✅ Upload SUCCESS: ${response.statusCode}");
+          return response;
+        } catch (e) {
+          print("❌ Upload FAILED: $e");
+          rethrow;
+        }
+      },
     );
   }
+
+// Future<Response?> uploadStatus({
+  //   File? imageFile,
+  //   String text = "",
+  //   ProgressCallback? onProgress,
+  //   bool isAssets = false,
+  // }) async {
+  //   Map<String, dynamic> body = {};
+  //   if (imageFile != null) {
+  //     String fileName = imageFile.path.split('/').last;
+  //     String mimeType = getFileMimeType(imageFile);
+  //     String? assetType = getFileMimeTypeStatus(imageFile);
+  //     body = {
+  //       "text": text,
+  //       "assetType": assetType,
+  //       "isAsset": isAssets,
+  //       "status-asset": MultipartFile.fromFileSync(
+  //         imageFile.path,
+  //         filename: fileName,
+  //         contentType: DioMediaType.parse(mimeType),
+  //       ),
+  //     };
+  //   } else {
+  //     body = {
+  //       "text": text,
+  //       "assetType": "",
+  //       "isAsset": isAssets,
+  //       "status-asset": null,
+  //     };
+  //   }
+  //
+  //   FormData buildFormData() {
+  //     return FormData.fromMap(body);
+  //   }
+  //
+  //   return await retryFormDataUpload(
+  //     url: ApiEndpoints.createStatus,
+  //     onProgress: onProgress,
+  //
+  //     formDataBuilder: buildFormData,
+  //     uploadCall: (formData, {onProgress}) =>
+  //         apiClient.uploadFile(ApiEndpoints.createStatus, formData),
+  //   );
+  // }
 
   // Future<Response?> updateGroupNameAndDescription({
   //   required bool isEditingGroupName,

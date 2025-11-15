@@ -66,7 +66,7 @@ class UpdatesController extends GetxController
     await getContacts();
 
     // loadStatuses();
-
+    await getLocalSaveSatus();
     await getStatus();
     super.onInit();
   }
@@ -260,7 +260,7 @@ class UpdatesController extends GetxController
 
       // ---------- GROUP DATA ----------
       final Map<String, List<Statusmodel>> grouped = {};
-      for (var status in modelList) {
+      for (var status in saved) {
         grouped.putIfAbsent(status.userId.toString(), () => []);
         grouped[status.userId.toString()]!.add(status);
       }
@@ -273,5 +273,17 @@ class UpdatesController extends GetxController
       print("🔥 ERROR in getStatus(): $e");
       print(st);
     }
+  }
+
+  Future<void> getLocalSaveSatus() async {
+    final saved = await StatusTable().getAllStatuses();
+    final Map<String, List<Statusmodel>> grouped = {};
+    for (var status in saved) {
+      grouped.putIfAbsent(status.userId.toString(), () => []);
+      grouped[status.userId.toString()]!.add(status);
+    }
+
+    print("📊 Grouped users count: ${grouped.length}");
+    groupedStatusMap.value = grouped;
   }
 }

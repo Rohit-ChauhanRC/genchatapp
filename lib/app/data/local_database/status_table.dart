@@ -49,10 +49,7 @@ class StatusTable {
       limit: 1,
     );
 
- 
-
-     if (result.isNotEmpty) {
-
+    if (result.isNotEmpty) {
       return Statusmodel.fromJson(result.first);
     } else {
       return null;
@@ -97,7 +94,6 @@ class StatusTable {
     await db.execute('DROP TABLE IF EXISTS $tableName');
     await createTable(db);
   }
-
 
   // Future<void> createBulk(List<Statusmodel> users) async {
   //   final db = await DataBaseService().database;
@@ -184,36 +180,36 @@ class StatusTable {
     final batch = db.batch();
 
     for (var s in list) {
-      print(" Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}");
-
-      batch.insert(
-        tableName,
-        {
-          "id": s.id,
-          "userId": s.userId,
-          "isAsset": s.isAsset,
-          "statusText": s.statusText!.isEmpty ? null:s.statusText!,
-          "assetUrl": s.assetUrl,
-          "statusAssetType": s.statusAssetType,
-          "createdAt": s.createdAt,
-          "isDeleted": s.isDeleted ?? 0,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
+      print(
+        " Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}",
       );
+
+      batch.insert(tableName, {
+        "id": s.id,
+        "userId": s.userId,
+        "isAsset": s.isAsset,
+        "statusText": s.statusText!.isEmpty ? null : s.statusText!,
+        "assetUrl": s.assetUrl,
+        "statusAssetType": s.statusAssetType,
+        "createdAt": s.createdAt,
+        "isDeleted": s.isDeleted ?? 0,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
     await batch.commit(noResult: true);
     print("All statuses inserted successfully!");
   }
+
   Future<List<Statusmodel>> getAllStatuses() async {
     final db = await DataBaseService().database;
 
-    final List<Map<String, dynamic>> maps =
-    await db.query(tableName, orderBy: "createdAt ASC");
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableName,
+      orderBy: "createdAt ASC",
+    );
 
     return List.generate(maps.length, (i) {
       return Statusmodel.fromJson(maps[i]);
     });
   }
-
 }

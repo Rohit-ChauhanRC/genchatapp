@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
@@ -23,7 +22,6 @@ class DisplayTextImageGIF extends StatelessWidget {
   final MessageType type;
   final bool? isReply;
   final String? url;
-  final bool? isSentByMe;
 
   final String? assetThumbnail;
   final String? audioMessage;
@@ -34,7 +32,6 @@ class DisplayTextImageGIF extends StatelessWidget {
     required this.type,
     this.url,
     this.isReply = false,
-    this.isSentByMe = false,
     this.assetThumbnail,
     this.audioMessage,
   }) : super(key: key);
@@ -49,7 +46,7 @@ class DisplayTextImageGIF extends StatelessWidget {
 
     if (type == MessageType.text || type == MessageType.deleted) {
       return SelectableText(
-        type == MessageType.text && isReply != true
+        type == MessageType.text
             ? controller.encryptionService.decryptText(message)
             : message,
         autofocus: true,
@@ -65,7 +62,7 @@ class DisplayTextImageGIF extends StatelessWidget {
     }
 
     return FutureBuilder(
-      future: _checkFileAvailability(controller, type, message),
+      future: controller.checkIfFileExists(type, message),
       builder: (context, snapshot) {
         return Obx(() {
           final isDownloaded = controller.isDownloaded[message] ?? false;
@@ -157,7 +154,6 @@ class DisplayTextImageGIF extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-
                               if (controller.totalBytes[message]! > 0)
                                 Text(
                                   "${(controller.downloadedBytes[message]! / (1024 * 1024)).toStringAsFixed(1)} MB"
@@ -226,62 +222,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply ?? false,
               );
             case MessageType.video:
-              // Simple video display without reactive wrapper since assetThumbnail is passed as parameter
-              final thumb = assetThumbnail ?? '';
-              final controller = Get.find<SingleChatController>();
-
-              // No thumbnail yet → placeholder
-              if (thumb.isEmpty) {
-                return _videoPlaceholder();
-              }
-
-              // Thumbnails are stored in Thumbnail folder, not Video folder
-              final thumbPath = "${controller.rootPath}Thumbnail/$thumb";
-              final thumbFile = File(thumbPath);
-
-              return InkWell(
-                onTap: () {
-                  // Play the **full video** (the one that was downloaded)
-                  Get.to(
-                    () => VideoPlayerItem(
-                      videoUrl: path,
-                      localFilePath: thumbPath,
-                      url: url ?? '',
-                      isReply: isReply ?? false,
-                    ),
-                  );
-                },
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: thumbFile.existsSync()
-                          ? Image.file(
-                              thumbFile,
-                              key: ValueKey(thumb),
-                              width: 220,
-                              height: 140,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _videoPlaceholder(),
-                            )
-                          : _videoPlaceholder(),
-                    ),
-                    // Play icon
-                    const Positioned(
-                      bottom: 8,
-                      right: 8,
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.black54,
-                        child: Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              return VideoPlayerItem(
+                videoUrl: path,
+                localFilePath: thumbnailPath,
+                url: url ?? '',
+                isReply: isReply ?? false,
               );
             case MessageType.image:
               return ImageWidget(
@@ -290,15 +235,11 @@ class DisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply,
               );
             case MessageType.audio:
-              return SizedBox(
-                // height: 150,
-                // width: 200,
-                child: AudioPlayerScreen(
-                  audioPath: path,
-                  audioUrl: url,
-                  isReply: isReply,
-                  // message: audioMessage,
-                ),
+              return AudioPlayerScreen(
+                audioPath: path,
+                audioUrl: url,
+                isReply: isReply,
+                // message: audioMessage,
               ); // if using
             case MessageType.gif:
               return DisplayGifImage(
@@ -378,89 +319,5 @@ class DisplayTextImageGIF extends StatelessWidget {
     const suffixes = ["B", "KB", "MB", "GB"];
     final i = (bytes != 0) ? (log(bytes) / log(1024)).floor() : 0;
     return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
-  }
-
-  Widget _videoPlaceholder() {
-    return Container(
-      width: 220,
-      height: 140,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Center(
-        child: Icon(Icons.video_library, color: Colors.grey, size: 40),
-      ),
-    );
-  }
-
-  /// Check file availability with special handling for sent messages
-  Future<void> _checkFileAvailability(
-    SingleChatController controller,
-    MessageType type,
-    String fileName,
-  ) async {
-    print(
-      "🔍 [DisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
-    );
-
-    // For sent messages, check if file exists locally first
-    if (isSentByMe == true) {
-      // First check if this message is currently being uploaded
-      final message = controller.messageList.firstWhereOrNull(
-        (msg) => msg.assetServerName == fileName,
-      );
-
-      print(
-        "🔍 [DisplayTextImageGIF] Found message: ${message != null}, isUploading: ${message?.isUploading?.value}, syncStatus: ${message?.syncStatus}",
-      );
-
-      if (message != null && message.isUploading?.value == true) {
-        // File is being processed, show upload progress but mark as "available" for display
-        controller.isDownloaded[fileName] = true;
-        print(
-          "🔄 [DisplayTextImageGIF] File is being uploaded, marked as available: $fileName",
-        );
-        return;
-      }
-
-      // For sent messages that are pending (not yet processed), also mark as available
-      if (message != null &&
-          message.syncStatus == SyncStatus.pending &&
-          message.isAsset == true) {
-        controller.isDownloaded[fileName] = true;
-        print(
-          "🔄 [DisplayTextImageGIF] Sent message pending processing, marked as available: $fileName",
-        );
-        return;
-      }
-
-      final path = controller.getFilePath(type, fileName);
-      final file = File(path);
-      final exists = await file.exists();
-      final size = exists ? await file.length() : 0;
-
-      print(
-        "🔍 [DisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
-      );
-
-      if (exists && size > 0) {
-        // File exists locally, mark as downloaded immediately
-        controller.isDownloaded[fileName] = true;
-        print("✅ [DisplayTextImageGIF] File marked as downloaded: $fileName");
-        return;
-      } else {
-        // File doesn't exist locally, clean up any corrupt file
-        if (exists) await file.delete();
-        controller.isDownloaded[fileName] = false;
-        print("❌ [DisplayTextImageGIF] File not found or empty: $fileName");
-      }
-    } else {
-      // For received messages, use the standard check
-      print(
-        "📥 [DisplayTextImageGIF] Using standard check for received message",
-      );
-      await controller.checkIfFileExists(type, fileName);
-    }
   }
 }

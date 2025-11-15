@@ -183,7 +183,6 @@ class UpdatesController extends GetxController
   }
 
   Future<void> getStatus() async {
-
     try {
       if (contacts.isEmpty) {
         print(" No contacts → Skipping");
@@ -206,13 +205,16 @@ class UpdatesController extends GetxController
       List<dynamic> raw = response.data['data'];
       print("Total records from API: ${raw.length}");
 
-      List<Statusmodel> modelList =
-      raw.map((e) => Statusmodel.fromJson(e)).toList();
+      List<Statusmodel> modelList = raw
+          .map((e) => Statusmodel.fromJson(e))
+          .toList();
 
       print("Parsed into modelList: ${modelList.length}");
 
       for (var s in modelList) {
-        print("Parsed Status => id:${s.id}, userId:${s.userId}, type:${s.statusAssetType}, isAsset:${s.isAsset}, text:${s.statusText}, url:${s.assetUrl}");
+        print(
+          "Parsed Status => id:${s.id}, userId:${s.userId}, type:${s.statusAssetType}, isAsset:${s.isAsset}, text:${s.statusText}, url:${s.assetUrl}",
+        );
       }
 
       // ---------- ATTACH LOCAL PATH ----------
@@ -251,7 +253,9 @@ class UpdatesController extends GetxController
       final saved = await StatusTable().getAllStatuses();
 
       for (var s in saved) {
-        print(" DB Record => id:${s.id}, userId:${s.userId}, text:${s.statusText}, url:${s.assetUrl}, type:${s.statusAssetType}, media:${s.media}");
+        print(
+          " DB Record => id:${s.id}, userId:${s.userId}, text:${s.statusText}, url:${s.assetUrl}, type:${s.statusAssetType}, media:${s.media}",
+        );
       }
 
       // ---------- GROUP DATA ----------
@@ -265,7 +269,6 @@ class UpdatesController extends GetxController
       groupedStatusMap.value = grouped;
 
       print("🏁 getStatus() finished successfully!");
-
     } catch (e, st) {
       print("🔥 ERROR in getStatus(): $e");
       print(st);

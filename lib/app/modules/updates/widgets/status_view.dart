@@ -69,7 +69,6 @@ class _StatusViewState extends State<StatusView> {
     isSelf = widget.isSelf;
 
     _loadMedia();
-
   }
 
   Future<void> _loadMedia() async {

@@ -56,7 +56,7 @@ class SingleChatView extends GetView<SingleChatController> {
               : Row(
                   children: [
                     ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
-                            !controller.blocked.value)
+                            !controller.blocked)
                         ? CachedNetworkImage(
                             imageUrl: user!.displayPictureUrl.toString(),
                             imageBuilder: (context, image) {
@@ -206,13 +206,11 @@ class SingleChatView extends GetView<SingleChatController> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(
-                value:
-                    controller.blocked.value &&
-                        controller.blockedByMe.value == 1
+                value: controller.blocked && controller.blockedByMe != 0
                     ? unBlock
                     : block,
                 child: Text(
-                  controller.blocked.value && controller.blockedByMe.value == 1
+                  controller.blocked && controller.blockedByMe != 0
                       ? unBlock
                       : block,
                   style: const TextStyle(
@@ -239,30 +237,22 @@ class SingleChatView extends GetView<SingleChatController> {
       ),
       body: Column(
         children: [
-          // Expanded(
-          //   child: ChatList(
-          //     singleChatController: controller,
-          //     // firebaseController: controller.firebaseController,
-          //   ),
-          // ),
-
-          ///Abhishek's
           Expanded(
-            child: Stack(
-              children: [
-                ChatList(
-                  singleChatController: controller,
-                ),
-
-                // Upload progress overlay removed - files now show directly in chat list
-              ],
+            child: ChatList(
+              singleChatController: controller,
+              // firebaseController: controller.firebaseController,
             ),
           ),
-
           Obx(
-            () =>
-                (controller.blocked.value && controller.blockedByMe.value == 1)
-                ? Container(
+            () => (controller.blockedByMe == 0)
+                ? BottomChatField(
+                    singleChatController: controller,
+                    onTap: () {
+                      controller.sendTextMessage();
+                      controller.cancelReply();
+                    },
+                  )
+                : Container(
                     color: textBarColor,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -288,13 +278,6 @@ class SingleChatView extends GetView<SingleChatController> {
                         )),
                       ],
                     ),
-                  )
-                : BottomChatField(
-                    singleChatController: controller,
-                    onTap: () {
-                      controller.sendTextMessage();
-                      controller.cancelReply();
-                    },
                   ),
           ),
         ],

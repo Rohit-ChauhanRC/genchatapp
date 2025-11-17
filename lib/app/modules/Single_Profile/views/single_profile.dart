@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import '../../../common/widgets/gradient_container.dart';
+import '../../../config/theme/app_colors.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../singleChat/controllers/single_chat_controller.dart';
@@ -14,18 +16,25 @@ class SingleUserProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
 final  SingleChatController controller=Get.find<SingleChatController>();
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
-      body: CustomScrollView(
+         backgroundColor: Colors.teal.shade700,
+
+      body:GradientContainer(
+        child: CustomScrollView(
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             iconTheme: const IconThemeData(color: Colors.white),
+
             expandedHeight: 300,
             pinned: true,
-            backgroundColor: Colors.teal.shade700,
+
+            backgroundColor: AppColors.textBarColor,
+
+            leading: const BackButton(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 60, bottom: 16),
+              titlePadding: const EdgeInsets.only(left: 10, bottom: 16),
               title: Text(
-                user.localName ?? user.phoneNumber ?? "User",
+                controller.getDisplayName(),
                 style: const TextStyle(color: Colors.white),
               ),
               background: Stack(
@@ -33,13 +42,15 @@ final  SingleChatController controller=Get.find<SingleChatController>();
                   Container(
                     width: double.infinity,
                     height: double.infinity,
-                    color: Colors.black,
+                    // color: AppColors.greyColor
+                    //     .withOpacity(0.4),
+
                     child: user.displayPictureUrl?.isNotEmpty == true
                         ? Image.network(
                       user.displayPictureUrl!,
                       fit: BoxFit.cover,
                     )
-                        : const Center(
+                        : Center(
 
 
                       child: Icon(Icons.person,
@@ -83,10 +94,13 @@ final  SingleChatController controller=Get.find<SingleChatController>();
                 _sectionCard(
                   children: [
                     _tile(
-                      title: user.localName ?? "Unknown User",
+                      title: (user.localName != null && user.localName!.isNotEmpty)
+                          ? user.localName!
+                          : "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
                       subtitle: "Name",
                       icon: Icons.person,
                     ),
+
                     _tile(
                       title: "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
                       subtitle: "Phone Number",
@@ -162,6 +176,7 @@ final  SingleChatController controller=Get.find<SingleChatController>();
             ),
           ),
         ],
+      )
       ),
     );
   }
@@ -174,21 +189,24 @@ final  SingleChatController controller=Get.find<SingleChatController>();
       child: Icon(icon, color: Colors.white),
     );
   }
-
-  // 🔹 Shared section card wrapper
   Widget _sectionCard({required List<Widget> children}) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
   }
 
-  // 🔹 Reusable list tile
   Widget _tile({
     required String title,
     String? subtitle,

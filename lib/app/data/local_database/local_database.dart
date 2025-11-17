@@ -60,7 +60,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,
@@ -78,9 +78,9 @@ class DataBaseService {
   }
 
   void onUpgrade(Database database, int oldVersion, int newVersion) async {
-    MessageTable().onUpgrade(database, oldVersion, newVersion);
-    ContactsTable().onUpgrade(database, oldVersion, newVersion);
-    ChatConectTable().onUpgrade(database, oldVersion, newVersion);
+    // MessageTable().onUpgrade(database, oldVersion, newVersion);
+    // ContactsTable().onUpgrade(database, oldVersion, newVersion);
+    // ChatConectTable().onUpgrade(database, oldVersion, newVersion);
     StatusTable().onUpgrade(database, oldVersion, newVersion);
   }
 

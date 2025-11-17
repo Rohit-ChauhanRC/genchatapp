@@ -29,6 +29,9 @@ class UpdatesView extends GetView<UpdatesController> {
             fontWeight: FontWeight.w500,
           ),
         ),
+        actions: [
+          // self = true
+        ],
       ),
       body: GradientContainer(
         child: Obx(() {
@@ -151,7 +154,10 @@ class UpdatesView extends GetView<UpdatesController> {
                     name: (user?.localName?.isNotEmpty ?? false)
                         ? user!.localName!
                         : (user?.phoneNumber ?? ''),
-                    statusTime: formatStatusTime(context, statuses.last.createdAt),
+                    statusTime: formatStatusTime(
+                      context,
+                      statuses.last.createdAt,
+                    ),
                     userPic: user?.displayPictureUrl ?? "",
                     onTap: () {
                       Get.to(

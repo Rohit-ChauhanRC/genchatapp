@@ -107,56 +107,6 @@ class UpdatesController extends GetxController
     Get.back();
   }
 
-  // void loadStatuses() {
-  //   statusList.assignAll([
-  //     StatusModel(
-  //       name: "Alice",
-  //       media: [
-  //         {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
-  //         {
-  //           'type': 'video',
-  //           'url':
-  //               'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-  //         },
-  //         {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
-  //       ],
-  //       ProfilePic: "https://i.pravatar.cc/150?img=2",
-
-  //       time: "Today, 9:00 AM",
-  //     ),
-  //     StatusModel(
-  //       name: "Bob",
-  //       media: [
-  //         {'type': 'image', 'url': 'https://i.pravatar.cc/150?img=2'},
-  //         {
-  //           'type': 'video',
-  //           'url':
-  //               'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-  //         },
-  //         {'type': 'image', 'url': 'https://picsum.photos/801/1400'},
-  //         {'type': 'text', 'text': 'Hello AbhiJha'},
-  //       ],
-  //       time: "Today, 10:30 AM",
-  //       ProfilePic: "https://i.pravatar.cc/150?img=2",
-  //     ),
-  //     StatusModel(
-  //       name: "Charlie",
-  //       media: [
-  //         {'type': 'image', 'url': 'https://picsum.photos/800/1400'},
-  //         {
-  //           'type': 'video',
-  //           'url':
-  //               'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-  //         },
-  //         {'type': 'image', 'url': 'https://picsum.photos/801/1400'},
-  //       ],
-  //       time: "Yesterday, 8:15 PM",
-  //       ProfilePic: "https://i.pravatar.cc/150?img=2",
-  //       viewed: true,
-  //     ),
-  //   ]);
-  // }
-
   void stopProgress() {
     timer?.cancel();
     timer = null;
@@ -183,7 +133,6 @@ class UpdatesController extends GetxController
     userIdList.add(senderuserData!.userId!);
   }
 
-
   Future<void> getStatus() async {
     try {
       // CHECK INTERNET
@@ -192,7 +141,7 @@ class UpdatesController extends GetxController
 
       if (!hasInternet) {
         print("📛 No internet → Loading local saved statuses only...");
-        await getLocalSaveSatus();   // ⭐ LOAD ONLY FROM DB
+        await getLocalSaveSatus(); // ⭐ LOAD ONLY FROM DB
         return;
       }
 
@@ -209,7 +158,7 @@ class UpdatesController extends GetxController
 
       if (response == null || response.statusCode != 200) {
         print(" API error → loading local DB instead");
-        await getLocalSaveSatus();   // ⭐ FALLBACK
+        await getLocalSaveSatus(); // ⭐ FALLBACK
         return;
       }
 
@@ -218,7 +167,9 @@ class UpdatesController extends GetxController
 
       // ---------- PARSE MODEL ----------
       List<dynamic> raw = response.data['data'];
-      List<Statusmodel> modelList = raw.map((e) => Statusmodel.fromJson(e)).toList();
+      List<Statusmodel> modelList = raw
+          .map((e) => Statusmodel.fromJson(e))
+          .toList();
 
       // ---------- ATTACH LOCAL PATH ----------
       for (var status in modelList) {
@@ -234,19 +185,18 @@ class UpdatesController extends GetxController
       }
 
       // ---------- SAVE TO DB ----------
-      await StatusTable().saveAllStatuses(modelList);
+      await StatusTable().syncStatuses(modelList);
 
       // ---------- LOAD FROM DB ----------
       await getLocalSaveSatus();
 
       print("✅ getStatus() finished with ONLINE mode");
-
     } catch (e, st) {
       print("🔥 ERROR in getStatus(): $e");
       print(st);
 
       print(" Falling back to local DB...");
-      await getLocalSaveSatus();   // ALWAYS fallback in errors
+      await getLocalSaveSatus(); // ALWAYS fallback in errors
     }
   }
 
@@ -262,4 +212,13 @@ class UpdatesController extends GetxController
     groupedStatusMap.value = grouped;
   }
 
+  Future<void> deletStatus(int statusId) async {
+    final response = await statusRepository.deleteStatus(statusId: statusId);
+
+    if (response != null || response!.statusCode == 200) {
+      // await getLocalSaveSatus(); // ⭐ FALLBACK
+      await StatusTable().deleteStatusById(statusId);
+      await getLocalSaveSatus();
+    }
+  }
 }

@@ -8,6 +8,7 @@ import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/document_message_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
@@ -67,7 +68,9 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
           final isDownloaded = controller.isDownloaded[message] ?? false;
           final isDownloading = controller.isDownloading[message] ?? false;
 
-          print("🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe");
+          print(
+            "🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe",
+          );
 
           if (!isDownloaded) {
             return GestureDetector(
@@ -208,7 +211,6 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                           ),
                         ),
                       ),
-                    
                   ],
                 ),
               ),
@@ -237,11 +239,11 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                 isReply: isReply,
               );
             case MessageType.audio:
-              return AudioPreview(
-                audioPath: path,
+              return AudioPlayerScreen(
+                audioPath: audioPath,
                 audioUrl: url,
                 isReply: isReply,
-                message: audioMessage,
+                // message: audioMessage,
               ); // if using
             case MessageType.gif:
               return DisplayGifImage(
@@ -330,8 +332,10 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     MessageType type,
     String fileName,
   ) async {
-    print("🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe");
-    
+    print(
+      "🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
+    );
+
     // For sent messages, check if file exists locally first
     if (isSentByMe == true) {
       final path = controller.getFilePath(type, fileName);
@@ -339,22 +343,30 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
 
-      print("🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size");
+      print(
+        "🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
+      );
 
       if (exists && size > 0) {
         // File exists locally, mark as downloaded immediately
         controller.isDownloaded[fileName] = true;
-        print("✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName");
+        print(
+          "✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName",
+        );
         return;
       } else {
         // File doesn't exist locally, clean up any corrupt file
         if (exists) await file.delete();
         controller.isDownloaded[fileName] = false;
-        print("❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName");
+        print(
+          "❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName",
+        );
       }
     } else {
       // For received messages, use the standard check
-      print("📥 [GroupDisplayTextImageGIF] Using standard check for received message");
+      print(
+        "📥 [GroupDisplayTextImageGIF] Using standard check for received message",
+      );
       await controller.checkIfFileExists(type, fileName);
     }
   }

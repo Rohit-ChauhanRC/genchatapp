@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
+import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
@@ -27,6 +29,8 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -79,10 +83,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   final RxBool _isShowEmojiContainer = false.obs;
   bool get isShowEmojiContainer => _isShowEmojiContainer.value;
   set isShowEmojiContainer(bool b) => _isShowEmojiContainer.value = b;
-
-  final RxBool _isRecording = false.obs;
-  bool get isRecording => _isRecording.value;
-  set isRecording(bool b) => _isRecording.value = b;
 
   final RxBool _isRecorderInit = false.obs;
   bool get isRecorderInit => _isRecorderInit.value;
@@ -194,6 +194,24 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
 
+  final RecorderController recorderController = RecorderController();
+
+  final PlayerController playerController = PlayerController();
+
+  RxDouble audioDuration = 0.0.obs; // Store the audio duration in seconds
+
+  RxBool isRecording = false.obs;
+
+  RxBool isPreviewing = false.obs;
+  RxString recordedPath = ''.obs;
+  RxBool playAudio = false.obs;
+  Rx<String> audioTime = "".obs;
+  RxDouble percent = 0.0.obs;
+
+  final RxBool _isPause = false.obs;
+  bool get isPause => _isPause.value;
+  set isPause(bool b) => _isPause.value = b;
+
   @override
   void onInit() async {
     super.onInit();
@@ -214,7 +232,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       checkIfCurrentUserRemoved(groupDetails);
       groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
     }
-    if(isCurrentUserRemoved == false){
+    if (isCurrentUserRemoved == false) {
       socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
         if (typingUsers.isNotEmpty) {
           _typingDisplayText.value = '${typingUsers.join(', ')} is typing...';
@@ -232,6 +250,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     monitorScrollPosition();
     isInCurrentChat = true;
     hasScrolledInitially.value = false;
+
+    await initRecorder();
   }
 
   @override
@@ -443,8 +463,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         .map((u) => u.userInfo?.userId)
         .whereType<int>()
         .toList();
-    final activePhoneNumbers = users.where((u)=> u.userGroupInfo?.isRemoved != true)
-        .map((u) => u.userInfo?.phoneNumber).whereType<String>().toList();
+    final activePhoneNumbers = users
+        .where((u) => u.userGroupInfo?.isRemoved != true)
+        .map((u) => u.userInfo?.phoneNumber)
+        .whereType<String>()
+        .toList();
 
     // Step 2: Separate saved and unsaved contacts
     final savedNames = <String>[];
@@ -452,18 +475,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     for (final userId in activeUserIds) {
       final contact = await contactsTable.getUserById(userId);
-      if(contact != null) {
+      if (contact != null) {
         final localName = contact.localName?.trim();
         final phone = contact.phoneNumber?.trim();
 
         if (localName != null && localName.isNotEmpty) {
           savedNames.add(localName);
         }
-          // else if (phone != null && phone.isNotEmpty) {
+        // else if (phone != null && phone.isNotEmpty) {
         //   unsavedNumbers.add(phone);
         // }
-      }else{
-
+      } else {
         if (activePhoneNumbers.isNotEmpty) {
           unsavedNumbers.addAll(activePhoneNumbers);
         }
@@ -508,13 +530,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
           var userList = await contactsTable.getUserById(id);
-          if(userList != null){
+          if (userList != null) {
             final name = userList.localName ?? userList.name;
             senderNamesCache[id] = name!;
-          }else{
+          } else {
             senderNamesCache[id] = senderNumber;
           }
-
         }
         // Acknowledge seen if message is incoming and not already seen
         if (message.recipientId == receiverUserData?.group?.id &&
@@ -649,13 +670,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         if (!senderNamesCache.containsKey(id)) {
           var user = await contactsTable.getUserById(id);
 
-          if(user != null){
+          if (user != null) {
             final name = user.localName ?? user.name;
             senderNamesCache[id] = name!;
-          }else{
+          } else {
             senderNamesCache[id] = senderNumber;
           }
-
         }
       }
 
@@ -1044,18 +1064,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     return completer.future;
   }
 
-  Future<UploadFileModel?> uploadFileToServer(
-    File imageFile, {
-    Function(double)? onProgress,
-  }) async {
+  Future<UploadFileModel?> uploadFileToServer(File imageFile) async {
     try {
       final response = await profileRepository.uploadMessageFiles(
         imageFile,
         onProgress: (sent, total) {
           final percent = (sent / total) * 100;
-          final progress = sent / total;
           print("📤 Upload progress: ${percent.toStringAsFixed(0)}%");
-          onProgress?.call(progress);
         },
       );
 
@@ -1080,21 +1095,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   Future<void> sendFileMessage({
     required File file,
     required MessageType messageEnum,
-    Function(double)? onProgress,
   }) async {
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
     final fileType = messageEnum.value.split('.').last;
     final fileExtension = file.toString().split('.').last.replaceAll("'", "");
-    
-    // Create and show message immediately
-    final fileName =
-        "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
-    final fileWithExtensions = "$fileName.$fileExtension";
-
     try {
-      // Do file processing first so file is available immediately
-      Map<String, File?> f = await compressFiles(file, fileExtension);
+      // Save file locally
+      final fileName =
+          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+
+      Map<String, File?> f = messageEnum == MessageType.video
+          ? {fileExtension: file}
+          : await compressFiles(file, fileExtension);
 
       final localFilePath = await saveFileLocally(
         f.values.first!,
@@ -1102,17 +1115,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         f.keys.first,
         fileName,
       );
-      final String? assetThumnail = messageEnum == MessageType.video
+      final String? assetThumnail =
+          f.keys.first == "mp4" ||
+              f.keys.first == "mov" ||
+              f.keys.first == 'avi' ||
+              f.keys.first == "mkv"
           ? await getThumbnail(File(localFilePath))
           : "";
 
-      print("📹 Video thumbnail generated: $assetThumnail");
+      final fileWithExtensions = "$fileName.${f.keys.first}";
 
-      // Mark file as downloaded since it exists locally now
-      isDownloaded[fileWithExtensions] = true;
-      print("✅ [GroupChatsController] File marked as downloaded during processing: $fileWithExtensions");
-
-      // Create message after file is saved locally
+      final fileData = await uploadFileToServer(f.values.first!);
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.group?.id,
@@ -1142,87 +1155,29 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: "",
+        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
         assetServerName: fileWithExtensions,
-        assetUrl: "",
+        assetUrl: fileData == null ? "" : fileData.data?.url,
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
             ? senderuserData?.userId
             : receiverUserData?.group?.id,
-        isUploading: true.obs,
-        uploadProgress: 0.0.obs,
       );
-
-      // Add message to list and database after file is ready
+      print("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      // Upload file with progress tracking
-      final fileData = await uploadFileToServer(
-        f.values.first!,
-        onProgress: (progress) {
-          newMessage.uploadProgress?.value = progress;
-          onProgress?.call(progress);
-        },
-      );
-
-      // Update message after successful upload
       if (fileData?.statusCode == 200 && fileData?.status == true) {
-        final messageIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-        );
-        if (messageIndex != -1) {
-          final updatedMessage = messageList[messageIndex].copyWith(
-            assetOriginalName: fileData!.data?.originalName ?? "",
-            assetUrl: fileData.data?.url ?? "",
-            isUploading: false.obs,
-            uploadProgress: 1.0.obs,
-            syncStatus: SyncStatus.synced,
-          );
-          messageList[messageIndex] = updatedMessage;
-          
-          // Mark file as downloaded since it exists locally
-          isDownloaded[fileWithExtensions] = true;
-          print("✅ [GroupChatsController] File marked as downloaded after upload: $fileWithExtensions");
-          
-          // Update in database
-          await MessageTable().updateMessageByClientId(updatedMessage);
-        }
-
         if (socketService.isConnected) {
-          socketService.sendMessage(messageList[messageIndex]);
+          socketService.sendMessage(newMessage);
         }
       } else {
-        // Handle upload failure
-        final messageIndex = messageList.indexWhere(
-          (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-        );
-        if (messageIndex != -1) {
-          final failedMessage = messageList[messageIndex].copyWith(
-            isUploading: false.obs,
-            syncStatus: SyncStatus.pending
-          );
-          messageList[messageIndex] = failedMessage;
-          await MessageTable().updateMessageByClientId(failedMessage);
-        }
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
         print("Error sending file message: $e");
-      }
-      // Handle error - mark upload as failed
-      final messageIndex = messageList.indexWhere(
-        (msg) => msg.clientSystemMessageId == clientSystemMessageId,
-      );
-      if (messageIndex != -1) {
-        final failedMessage = messageList[messageIndex].copyWith(
-          isUploading: false.obs,
-          syncStatus: SyncStatus.pending,
-        );
-        messageList[messageIndex] = failedMessage;
-        await MessageTable().updateMessageByClientId(failedMessage);
       }
     }
   }
@@ -1450,16 +1405,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> deleteTextMessage() async {
     MessageTable().deleteMessageText(
-
       messageType: "text",
       receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
-    // print("receiverId:$receiverId");
-    //     print("  messageType: text");
-    //     print("  receiverId: ${receiverUserData?.group?.id}");
-    // print("  senderId: ${senderuserData?.userId}");
     );
-      messageList.clear();
+
     //  'deleted'
     MessageTable().deleteMessageText(
       messageType: 'deleted',
@@ -1577,5 +1527,248 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       file.deleteSync(); // delete partial/corrupt file
     }
     activeDownloads.remove(fileName);
+  }
+
+  Future<void> initRecorder() async {
+    recorderController
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100;
+  }
+
+  Future<void> startRecordingAudioWaveform() async {
+    try {
+      isRecording.value = true;
+      final fileName =
+          "genchat_audio_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+
+      final Directory thumDir;
+      if (Platform.isAndroid) {
+        thumDir = Directory("/storage/emulated/0/Android/media");
+      } else {
+        thumDir = await getApplicationDocumentsDirectory();
+      }
+
+      final String rootFolderPath =
+          '${thumDir.path}/$appPackageName/GenChat/Audio';
+
+      final Directory dirThum = Directory(rootFolderPath);
+      if (!await dirThum.exists()) {
+        await dirThum.create(recursive: true);
+      } else {
+        if (kDebugMode) {
+          print(dirThum.path);
+        }
+      }
+      final thumbnailPath = dirThum.path;
+
+      final hasPermission = await Permission.microphone.request();
+      if (!hasPermission.isGranted) {
+        await Permission.microphone.request();
+        return;
+      }
+      recordedPath.value = '$thumbnailPath/$fileName.m4a';
+      await recorderController.record(path: recordedPath.value);
+
+      isPreviewing.value = true;
+    } catch (e) {
+      print("Error starting recorder: $e");
+    }
+  }
+
+  Future<void> stopRecordingAudioWaveform() async {
+    try {
+      // recorderController.reset();
+      await recorderController.stop();
+      isRecording.value = false;
+    } catch (e) {
+      print("Error stopping recorder: $e");
+    }
+  }
+
+  Future<void> pauseRecordingAudioWaveform() async {
+    try {
+      recorderController.refresh();
+      await recorderController.record(path: recordedPath.value);
+
+      isPause = false;
+
+      isPreviewing.value = true;
+    } catch (e) {
+      print("Error stopping recorder: $e");
+    }
+  }
+
+  Future<void> restartRecordingAudioWaveform() async {
+    try {
+      await recorderController.stop(false);
+
+      isPause = true;
+
+      isPreviewing.value = true;
+    } catch (e) {
+      print("Error stopping recorder: $e");
+    }
+  }
+
+  Future<void> cancelRecordingAudioWaveform() async {
+    try {
+      isRecording.value = false;
+      isPreviewing.value = false;
+      isPause = false;
+      isRecording.value = false;
+      recorderController.reset();
+      recorderController.stop();
+
+      File(recordedPath.value).delete();
+      recordedPath.value = '';
+
+      stopPlayback();
+    } catch (e) {
+      print("Error canceling recorder: $e");
+    }
+  }
+
+  Future<void> playRecordingAudioWaveform() async {
+    if (recordedPath.value.isNotEmpty) {
+      playAudio.value = true;
+      await Permission.audio.request();
+      final req = await Permission.microphone.request();
+
+      if (req.isGranted) {
+        final file = File(recordedPath.value);
+        if (!file.existsSync() || file.lengthSync() < 1000) {
+          print("Audio file too short or corrupted");
+          return;
+        }
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        try {
+          await playerController.preparePlayer(path: recordedPath.value);
+          await playerController.startPlayer();
+
+          playerController.onCompletion.listen((_) {
+            playAudio.value = false;
+            print("Playback completed");
+          });
+        } catch (e) {
+          print("Playback error: $e");
+        }
+
+        // });
+      }
+
+      // await playerController.startPlayer();
+    }
+  }
+
+  Future<void> stopPlayback() async {
+    await playerController.stopPlayer();
+    playAudio.value = true;
+  }
+
+  // pause playing audio
+  Future<void> pausePlayback() async {
+    await playerController.pausePlayer();
+
+    playAudio.value = false;
+
+    // await soundPlayer.value.pausePlayer();
+    // await player.pause();
+  }
+
+  Future<void> formatDuration() async {
+    final durationMillis = await playerController.getDuration();
+    Duration duration = Duration(milliseconds: durationMillis);
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    audioTime.value = "$minutes:$seconds";
+  }
+
+  Future<void> sendAudioMessage() async {
+    final clientSystemMessageId = const Uuid().v1();
+    final timeSent = DateTime.now();
+    final fileType = MessageType.audio.value.split('.').last;
+    try {
+      await stopRecordingAudioWaveform();
+      // stopPlayback();
+
+      isPreviewing.value = false;
+      isRecording.value = false;
+      playAudio.value = false;
+      isPause = false;
+      final serverName = recordedPath.value.toString().split(
+        "/",
+      )[recordedPath.value.toString().split("/").length - 1];
+
+      print(serverName);
+
+      final fileData = await uploadFileToServer(
+        File(recordedPath.value.toString()),
+      );
+      final newMessage = NewMessageModel(
+        senderId: senderuserData?.userId,
+        recipientId: receiverUserData?.group!.id,
+        message: recorderController.recordedDuration.toHHMMSS(),
+        messageSentFromDeviceTime: timeSent.toString(),
+        clientSystemMessageId: clientSystemMessageId,
+        state: MessageState.unsent,
+        syncStatus: SyncStatus.pending,
+        createdAt: timeSent.toString(),
+        senderPhoneNumber: senderuserData?.phoneNumber,
+        messageType: MessageType.audio,
+        isForwarded: false,
+        isGroupMessage: true,
+        forwardedMessageId: 0,
+        showForwarded: false,
+        isRepliedMessage: messageReply == null ? false : messageReply.isReplied,
+        messageRepliedOnId: messageReply == null ? 0 : messageReply.messageId,
+        messageRepliedOn: messageReply == null ? '' : messageReply.message,
+        messageRepliedOnType: messageReply == null
+            ? MessageType.text
+            : messageReply.messageType,
+        messageRepliedOnAssetServerName: messageReply == null
+            ? ''
+            : messageReply.message,
+        messageRepliedOnAssetThumbnail: messageReply == null
+            ? ''
+            : messageReply.assetsThumbnail,
+        isAsset: true,
+        assetThumbnail: serverName,
+        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetServerName: serverName,
+        assetUrl: fileData == null ? "" : fileData.data?.url,
+        messageRepliedUserId: messageReply.message == null
+            ? 0
+            : messageReply.isMe == true
+            ? senderuserData?.userId
+            : receiverUserData?.group!.id,
+      );
+      print("Message All details Request: ${newMessage.toMap()}");
+      await MessageTable().insertMessage(newMessage);
+      messageList.add(newMessage);
+      recordedPath.value = "";
+
+      final getmes = await MessageTable().fetchMessages(
+        receiverId: receiverUserData!.group!.id!,
+        senderId: senderuserData!.userId!,
+      );
+      print(getmes);
+      if (fileData?.statusCode == 200 && fileData?.status == true) {
+        if (socketService.isConnected) {
+          socketService.sendMessage(newMessage);
+          isPreviewing.value = false;
+        }
+      } else {
+        socketService.saveChatContacts(newMessage);
+        isPreviewing.value = false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error sending file message: $e");
+      }
+    }
   }
 }

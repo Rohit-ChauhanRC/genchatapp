@@ -239,8 +239,8 @@ class GroupChatList extends StatelessWidget {
                                     assetThumbnail: messages.assetThumbnail,
                                     repliedAssetServerName: messages
                                         .messageRepliedOnAssetServerName,
-                                    isUploading: messages.isUploading,
-                                    uploadProgress: messages.uploadProgress,
+                                    // isUploading: messages.isUploading,
+                                    // uploadProgress: messages.uploadProgress,
                                   )
                                 : GroupSenderMessageCard(
                                     message:

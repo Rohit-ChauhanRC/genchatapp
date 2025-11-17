@@ -1894,5 +1894,24 @@ class SingleChatController extends GetxController
     }
   }
 
+  String getDisplayName() {
+    if (receiverUserData == null) return "";
+
+    // 1. localName (if exists & not empty)
+    if (receiverUserData!.localName != null &&
+        receiverUserData!.localName!.trim().isNotEmpty) {
+      return receiverUserData!.localName!.trim();
+    }
+
+    // 2. phoneNumber (if exists & not empty)
+    if (receiverUserData!.phoneNumber != null &&
+        receiverUserData!.phoneNumber!.trim().isNotEmpty) {
+      return receiverUserData!.phoneNumber!.trim();
+    }
+
+    // 3. name as fallback (never null usually)
+    return receiverUserData!.name ?? "";
+  }
+
   // record
 }

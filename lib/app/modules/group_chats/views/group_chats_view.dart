@@ -34,7 +34,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
             );
           } else {
             return IconButton(
-              icon: const Icon(Symbols.arrow_back, color: whiteColor),
+              icon: const Icon(Symbols.arrow_back_ios, color: whiteColor),
               onPressed: () {
                 Get.back(); // Or Navigator.pop(context)
               },
@@ -56,10 +56,10 @@ class GroupChatsView extends GetView<GroupChatsController> {
               : InkWell(
                   onTap: controller.isCurrentUserRemoved
                       ? null
-                      :  () => Get.toNamed(
-                    Routes.GROUP_PROFILE,
-                    arguments: controller.groupId,
-                  ),
+                      : () => Get.toNamed(
+                          Routes.GROUP_PROFILE,
+                          arguments: controller.groupId,
+                        ),
                   child: Row(
                     children: [
                       (user?.group?.displayPictureUrl?.isNotEmpty ?? false)
@@ -190,7 +190,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
               switch (value) {
                 case clearText:
                   print("clear text in group:$clearText");
-                   await controller.deleteTextMessage();
+                  await controller.deleteTextMessage();
                   break;
                 default:
               }
@@ -248,16 +248,18 @@ class GroupChatsView extends GetView<GroupChatsController> {
             if (controller.isCurrentUserRemoved) {
               return Container(
                 padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.textBarColor,
-
-                ),
+                decoration: BoxDecoration(color: AppColors.textBarColor),
                 child: Text(
-                  "You can't send messages to this group because you're no longer a member.", textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.whiteColor, fontSize: 16, fontWeight: FontWeight.w600),
+                  "You can't send messages to this group because you're no longer a member.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.whiteColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               );
-            }else {
+            } else {
               return GroupBottomChatField(
                 groupChatsController: controller,
                 onTap: () {
@@ -290,7 +292,8 @@ class GroupChatsView extends GetView<GroupChatsController> {
                 controller.deleteMessages(deleteForEveryone: false);
               },
             ),
-            if (controller.canDeleteForEveryone &&  !controller.isCurrentUserRemoved)
+            if (controller.canDeleteForEveryone &&
+                !controller.isCurrentUserRemoved)
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text("Delete for Everyone"),

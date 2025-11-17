@@ -1,0 +1,252 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import '../../../data/models/new_models/response_model/contact_response_model.dart';
+import '../../../routes/app_pages.dart';
+import '../../singleChat/controllers/single_chat_controller.dart';
+import '../../singleChat/views/single_chat_view.dart';
+
+class SingleUserProfileView extends StatelessWidget {
+  final UserList user;
+  const SingleUserProfileView({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+final  SingleChatController controller=Get.find<SingleChatController>();
+    return Scaffold(
+      backgroundColor: Colors.grey.shade200,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            iconTheme: const IconThemeData(color: Colors.white),
+            expandedHeight: 300,
+            pinned: true,
+            backgroundColor: Colors.teal.shade700,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 60, bottom: 16),
+              title: Text(
+                user.localName ?? user.phoneNumber ?? "User",
+                style: const TextStyle(color: Colors.white),
+              ),
+              background: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.black,
+                    child: user.displayPictureUrl?.isNotEmpty == true
+                        ? Image.network(
+                      user.displayPictureUrl!,
+                      fit: BoxFit.cover,
+                    )
+                        : const Center(
+
+
+                      child: Icon(Icons.person,
+                          size: 120, color: Colors.white),
+                    ),
+                  ),
+
+                  Container(
+                    color: Colors.black26,
+                  ),
+
+                  Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: Row(
+                      children: [
+
+                        GestureDetector(
+                          onTap:()=>showComingSoon(context),
+                        child:_headerAction(Icons.videocam_rounded)),
+                        const SizedBox(width: 14),
+
+                        GestureDetector(
+                          onTap: ()=>showComingSoon(context),
+                       child: _headerAction(Icons.call_rounded)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+
+          // CONTENT
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+
+                // Card: User info
+                _sectionCard(
+                  children: [
+                    _tile(
+                      title: user.localName ?? "Unknown User",
+                      subtitle: "Name",
+                      icon: Icons.person,
+                    ),
+                    _tile(
+                      title: "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
+                      subtitle: "Phone Number",
+                      icon: Icons.phone,
+                      trailing:
+
+                      GestureDetector(
+                          onTap: () =>Get.back(),
+
+                     child: Icon(Icons.message)),
+                    ),
+                    if (user.userDescription != null &&
+                        user.userDescription!.isNotEmpty)
+                      _tile(
+                        title: user.userDescription!,
+                        subtitle: "About",
+                        icon: Icons.info_outline,
+                      ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+
+                const SizedBox(height: 12),
+
+                // Settings: Mute, Wall
+                // /aper, Block
+                _sectionCard(
+                  children: [
+                    // _tile(
+                    //   title: "Mute notifications",
+                    //   icon: Icons.notifications_off,
+                    //   trailing: Switch(
+                    //     value: false,
+                    //     onChanged: (v) {},
+                    //   ),
+                    // ),
+                    // _tile(
+                    //   title: "Wallpaper",
+                    //   icon: Icons.wallpaper,
+                    //   onTap: () {},
+                    // ),
+                    _sectionCard(
+                      children: [
+                        Obx(() {
+                          final isBlocked = controller.blocked.value;
+
+                          return _tile(
+                            title: isBlocked
+                                ? "Unblock ${user.localName ?? ''}"
+                                : "Block ${user.localName ?? ''}",
+                            icon: isBlocked ? Icons.lock_open : Icons.block,
+                            titleColor: isBlocked ? Colors.green : Colors.red,
+                            iconColor: isBlocked ? Colors.green : Colors.red,
+                            onTap: () {
+                              if (isBlocked) {
+                                controller.unblockUser();
+                              } else {
+                                controller.blockUser();
+                              }
+                            },
+                          );
+                        }),
+                      ],
+                    ),
+
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Header action button
+  Widget _headerAction(IconData icon) {
+    return CircleAvatar(
+      radius: 22,
+      backgroundColor: Colors.black54,
+      child: Icon(icon, color: Colors.white),
+    );
+  }
+
+  // 🔹 Shared section card wrapper
+  Widget _sectionCard({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  // 🔹 Reusable list tile
+  Widget _tile({
+    required String title,
+    String? subtitle,
+    required IconData icon,
+    Color? titleColor,
+    Color? iconColor,
+    Widget? trailing,
+    Function()? onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: Icon(icon, color: iconColor ?? Colors.teal),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: titleColor ?? Colors.black,
+        ),
+      ),
+      subtitle: subtitle != null ? Text(subtitle) : null,
+      trailing: trailing,
+    );
+  }
+
+  Widget _mediaShortcut(IconData icon, String label, Color color,BuildContext context) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: ()=>showComingSoon(context),
+       child:
+       CircleAvatar(
+          radius: 26,
+          backgroundColor: color.withOpacity(0.2),
+          child: Icon(icon, color: color),
+        ),
+        ),
+        const SizedBox(height: 6),
+        Text(label),
+      ],
+    );
+  }
+  void showComingSoon(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          "Coming Soon",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text("This feature will be available soon."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+}

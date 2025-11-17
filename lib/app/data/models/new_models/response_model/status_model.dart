@@ -1,12 +1,14 @@
 class Statusmodel {
   int id;
   int userId;
-  int isAsset; // 0=text, 1=media
+  int isAsset;
   String? statusText;
   String? assetUrl;
-  String? statusAssetType; // image | video | text
+  String? statusAssetType;
   String? createdAt;
   int? isDeleted;
+
+  String? localPath;
 
   Statusmodel({
     required this.id,
@@ -17,12 +19,15 @@ class Statusmodel {
     required this.statusAssetType,
     required this.createdAt,
     required this.isDeleted,
+    this.localPath,
   });
 
   factory Statusmodel.fromJson(Map<String, dynamic> json) {
-    final type = json["statusAssetType"]?.toString().toLowerCase() ?? "";
+    final type = (json["statusAssetType"] ?? "").toString().toLowerCase();
 
-    final isTextStatus = type.isEmpty || json["assetUrl"] == null || (json["assetUrl"] as String).trim().isEmpty;
+    final isTextStatus = type.isEmpty ||
+        json["assetUrl"] == null ||
+        (json["assetUrl"] as String).trim().isEmpty;
 
     return Statusmodel(
       id: json["id"],
@@ -32,12 +37,16 @@ class Statusmodel {
       assetUrl: json["assetUrl"],
       statusAssetType: type,
       createdAt: json["createdAt"],
-      isDeleted: json["isDeleted"] == true ? 1 : 0,
+      isDeleted: json["isDeleted"] is bool
+          ? (json["isDeleted"] == true ? 1 : 0)
+          : json["isDeleted"],
+      localPath: json["localPath"], // ⭐ Load localPath from DB
     );
   }
 
+  // ⭐ Build media list with localPath
   List<Map<String, dynamic>> get media {
-    // TEXT STATUS
+    // ---- TEXT STATUS ----
     if (isAsset == 0) {
       if ((statusText ?? '').trim().isEmpty) return [];
       return [
@@ -50,16 +59,19 @@ class Statusmodel {
       ];
     }
 
+    // ---- IMAGE / VIDEO STATUS ----
     if (assetUrl == null || assetUrl!.trim().isEmpty) return [];
 
     return [
       {
         "type": statusAssetType == "video" ? "video" : "image",
-        "url": assetUrl!,
+        "url": assetUrl,
+        "localPath": localPath, // ⭐ Important for offline view
       },
     ];
   }
 
+  // ⭐ Save localPath also
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -70,6 +82,7 @@ class Statusmodel {
       "statusAssetType": statusAssetType,
       "createdAt": createdAt,
       "isDeleted": isDeleted,
+      "localPath": localPath, // ⭐ Save for offline access
     };
   }
 }

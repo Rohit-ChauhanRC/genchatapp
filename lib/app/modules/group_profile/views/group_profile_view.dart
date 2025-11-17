@@ -298,7 +298,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
-                      left: 8.0,
+                      left: 8,
+
+
                       right: 8,
                       top: 10,
                     ),

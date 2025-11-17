@@ -69,6 +69,8 @@ class ChatsController extends GetxController {
   void onInit() {
     senderuserData = sharedPreferenceService.getUserData();
 
+    getUser();
+
     ever<List<ChatConntactModel>>(contactsList, (_) => filterContacts());
     ever<String>(_searchText, (_) => filterContacts());
     // bindChatUsersStream();
@@ -263,6 +265,15 @@ class ChatsController extends GetxController {
 
     return "";
   }
+
+  void getUser() async {
+    contacts.value = await contactsTable.fetchAll();
+  }
+
+  // Future<String?> getUser1(int userId) async {
+  //   final UserList? user = await getUser(userId);
+  //   return user!.phoneNumber.toString();
+  // }
 
   // Future<void> getGroups() async {
   //   try {

@@ -65,7 +65,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await dotenv.load(fileName: ".env");
@@ -100,7 +99,7 @@ void main() async {
     print('Notification permission not determined');
   }
 
-  AppConfig.setEnvironment(AppEnvironment.dev);
+  AppConfig.setEnvironment(AppEnvironment.prod);
 
   runApp(const App());
 }

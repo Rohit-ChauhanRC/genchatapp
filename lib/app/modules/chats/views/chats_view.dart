@@ -178,6 +178,7 @@ class ChatsView extends GetView<ChatsController> {
               init: Get.find<ChatsController>(),
               builder: (ctc) {
                 final contactsToDisplay = ctc.filteredContacts;
+
                 return contactsToDisplay.isNotEmpty
                     ? Expanded(
                         child: ListView.builder(
@@ -186,9 +187,15 @@ class ChatsView extends GetView<ChatsController> {
                           itemBuilder: (context, i) {
                             ChatConntactModel chatConntactModel =
                                 contactsToDisplay[i];
-                            // final isTyping = controller.socketService
-                            //         .typingStatusMap[chatConntactModel.uid] ==
-                            //     true && chatConntactModel.isGroup == 0;
+
+                            UserList? user = ctc.contacts.firstWhere(
+                              (e) =>
+                                  e.userId.toString() == chatConntactModel.uid,
+                              orElse: () =>
+                                  UserList(), // or return a dummy/empty model
+                            );
+
+                            print(user);
 
                             final typingStatusText = controller
                                 .getTypingStatusText(
@@ -259,7 +266,12 @@ class ChatsView extends GetView<ChatsController> {
                                             imagePath: filePath,
                                             imageUrl:
                                                 chatConntactModel.profilePic!,
-                                            userName: chatConntactModel.name,
+                                            userName:
+                                                chatConntactModel
+                                                    .name!
+                                                    .isNotEmpty
+                                                ? chatConntactModel.name!
+                                                : user.name!,
                                             isGroup:
                                                 chatConntactModel.isGroup == 1,
                                           ),
@@ -339,12 +351,18 @@ class ChatsView extends GetView<ChatsController> {
                                                   userId: int.parse(
                                                     chatConntactModel.uid!,
                                                   ),
-                                                  name: chatConntactModel.name,
+                                                  name:
+                                                      chatConntactModel
+                                                          .name!
+                                                          .isNotEmpty
+                                                      ? chatConntactModel.name!
+                                                      : user.name!,
                                                   displayPictureUrl:
                                                       chatConntactModel
                                                           .profilePic,
                                                   localName:
-                                                      chatConntactModel.name,
+                                                      chatConntactModel.name ??
+                                                      user.name,
                                                 ),
                                               );
                                             } else if (chatConntactModel
@@ -379,7 +397,9 @@ class ChatsView extends GetView<ChatsController> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              chatConntactModel.name ?? "",
+                                              chatConntactModel.name!.isNotEmpty
+                                                  ? chatConntactModel.name!
+                                                  : user.name!,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,

@@ -20,7 +20,7 @@ class StatusTable {
       isDeleted INTEGER,
       createdAt TEXT,
       assetUrl TEXT,
-      localPath TEXT         -- ⭐ IMPORTANT FOR OFFLINE MODE
+      localPath TEXT        
     );
     """);
 

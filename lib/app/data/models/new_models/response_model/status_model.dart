@@ -1,14 +1,13 @@
 class Statusmodel {
   int id;
   int userId;
-  int isAsset; // 0 = text, 1 = media
+  int isAsset;
   String? statusText;
   String? assetUrl;
-  String? statusAssetType; // image | video | text
+  String? statusAssetType;
   String? createdAt;
   int? isDeleted;
 
-  // ⭐ Local file path for offline status (image/video)
   String? localPath;
 
   Statusmodel({

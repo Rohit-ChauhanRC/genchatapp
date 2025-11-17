@@ -44,94 +44,102 @@ class SingleChatView extends GetView<SingleChatController> {
         title: Obx(() {
           final user = controller.receiverUserData;
           final selectedCount = controller.selectedMessages.length;
-          return selectedCount > 0
-              ? Text(
-                  "$selectedCount selected",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: whiteColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+          if (selectedCount > 0) {
+            return Text(
+              "$selectedCount selected",
+              style: const TextStyle(
+                fontSize: 20,
+                color: whiteColor,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }
+
+          // 👇 Add navigation here
+          return InkWell(
+            onTap: () {
+              controller.openUserProfile();
+            },
+            child: Row(
+              children: [
+                ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
+                    !controller.blocked.value)
+                    ? CachedNetworkImage(
+                  imageUrl: user!.displayPictureUrl.toString(),
+                  imageBuilder: (context, image) {
+                    return CircleAvatar(
+                      backgroundColor: greyColor.withOpacity(0.4),
+                      radius: 20,
+                      backgroundImage: image,
+                    );
+                  },
+                  placeholder: (context, url) =>
+                  const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) =>
+                  const Icon(Icons.error),
                 )
-              : Row(
-                  children: [
-                    ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
-                            !controller.blocked.value)
-                        ? CachedNetworkImage(
-                            imageUrl: user!.displayPictureUrl.toString(),
-                            imageBuilder: (context, image) {
-                              return CircleAvatar(
-                                backgroundColor: greyColor.withOpacity(0.4),
-                                radius: 20,
-                                backgroundImage: image,
-                              );
-                            },
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
-                          )
-                        : const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: Get.width * 0.32,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${user?.localName == "" || user?.localName == null ? user?.phoneNumber : user?.localName}',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: whiteColor,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                    : const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey,
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
 
-                          // 👇 Wrap with Obx to reactively update UI
-                          Obx(() {
-                            if (!controller
-                                    .connectivityService
-                                    .isConnected
-                                    .value ||
-                                controller.blocked == true) {
-                              return const SizedBox.shrink();
-                            }
+                const SizedBox(width: 10),
 
-                            if (controller.isReceiverTyping) {
-                              return const Text(
-                                "Typing...",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w200,
-                                  color: whiteColor,
-                                  fontSize: 12,
-                                ),
-                              );
-                            }
-
-                            return Text(
-                              user?.isOnline == true
-                                  ? "Online"
-                                  : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
-                              maxLines: 2,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w200,
-                                color: whiteColor,
-                                fontSize: 12,
-                              ),
-                            );
-                          }),
-                        ],
+                SizedBox(
+                  width: Get.width * 0.32,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${user?.localName == "" || user?.localName == null ? user?.phoneNumber : user?.localName}',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: whiteColor,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
-                );
+
+                      Obx(() {
+                        if (!controller.connectivityService.isConnected.value ||
+                            controller.blocked == true) {
+                          return const SizedBox.shrink();
+                        }
+
+                        if (controller.isReceiverTyping) {
+                          return const Text(
+                            "Typing...",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w200,
+                              color: whiteColor,
+                              fontSize: 12,
+                            ),
+                          );
+                        }
+
+                        return Text(
+                          user?.isOnline == true
+                              ? "Online"
+                              : "last seen ${lastSeenFormatted(user?.lastSeenTime ?? "").toLowerCase()}",
+                          maxLines: 2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w200,
+                            color: whiteColor,
+                            fontSize: 12,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
         }),
+
         actions: [
           Obx(
             () => controller.selectedMessages.isNotEmpty

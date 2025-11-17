@@ -15,6 +15,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/upload_file
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
+import 'package:genchatapp/app/modules/Single_Profile/views/single_profile.dart';
 import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -301,7 +302,9 @@ class SingleChatController extends GetxController
     recorderController.dispose();
 
     // animationController.dispose();
+
   }
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
@@ -329,7 +332,14 @@ class SingleChatController extends GetxController
   //     "blockContactUserId": 2,
   //     "isBlock":false
   // }
-
+  // void openUserProfile() {
+  //   if (receiverUserData == null) return;
+  //   Get.to(() => SingleUserProfileView(user: receiverUserData!));
+  // }
+void openUserProfile(){
+    if(receiverUserData==null) return;
+    Get.to(()=>SingleUserProfileView(user: receiverUserData!));
+}
   Future<void> blockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,

@@ -12,6 +12,7 @@ import '../../../data/local_database/status_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../data/models/new_models/response_model/status_model.dart';
 import '../../../data/models/status_model.dart';
+import '../../../utils/TImeFormat.dart';
 import '../controllers/updates_controller.dart';
 
 class StatusView extends StatefulWidget {
@@ -303,24 +304,30 @@ class _StatusViewState extends State<StatusView> {
                     }
 
                     if (path.toString().startsWith("/")) {
-                      return Image.file(
-                        File(path),
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, e, __) {
-                          print("Image.file error: $e");
-                          return const Center(child: Text("Failed to load image"));
-                        },
+                      return
+                     Padding(
+                        padding: const EdgeInsets.only(top: 100), // keep space for name & time
+                        child: Center(
+                          child: Image.file(
+                            File(path),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       );
+
                     }
 
-                    return Image.network(
-                      path,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, e, __) {
-                        print("Image.network error: $e");
-                        return const Center(child: Text("Failed to load image"));
-                      },
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 100),
+                      child: Center(
+                        child: Image.network(
+                          path,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     );
+
                   }
 
                   else if (type == 'text') {
@@ -455,10 +462,9 @@ class _StatusViewState extends State<StatusView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Text(
-                        "time",
-
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      Text(
+                        formatStatusTime(context, status.createdAt),
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),

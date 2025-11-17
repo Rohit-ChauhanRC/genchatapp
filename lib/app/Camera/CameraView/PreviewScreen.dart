@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/status_model.dart';
 import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
@@ -43,7 +44,7 @@ class PreviewScreen extends StatelessWidget {
             bottom: 30,
             right: 30,
             child: FloatingActionButton(
-              backgroundColor: Colors.green,
+              backgroundColor: textBarColor,
               onPressed: () async {
                 final uploadResponse = await statusRepository.uploadStatus(
                   imageFile: imagePath != null
@@ -63,7 +64,7 @@ class PreviewScreen extends StatelessWidget {
                 }
                 Get.close(2);
               },
-              child: const Icon(Icons.send),
+              child: const Icon(Icons.send, color: Colors.white),
             ),
           ),
         ],

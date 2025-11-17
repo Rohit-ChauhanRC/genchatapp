@@ -73,7 +73,9 @@ class _StatusViewState extends State<StatusView> {
   }
 
   Future<void> _loadMedia() async {
-    print("Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index");
+    print(
+      "Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index",
+    );
 
     // Reset previous controller
     _videoListener?.cancel();
@@ -125,7 +127,6 @@ class _StatusViewState extends State<StatusView> {
     //                VIDEO STATUS
     //--------------------------------------------------
     if (type == "video") {
-
       File? videoFile;
 
       try {
@@ -148,8 +149,7 @@ class _StatusViewState extends State<StatusView> {
               const Duration(milliseconds: 100),
             ).listen((_) => _onVideoTick());
           });
-      } catch (e) {
-      }
+      } catch (e) {}
 
       return;
     }
@@ -233,8 +233,8 @@ class _StatusViewState extends State<StatusView> {
     UserList? user = isSelf
         ? userData
         : controller.contacts.firstWhereOrNull(
-          (contact) => contact.userId == status.userId,
-    );
+            (contact) => contact.userId == status.userId,
+          );
 
     // final media = status.media[index];
     final type = media['type'];
@@ -273,6 +273,7 @@ class _StatusViewState extends State<StatusView> {
         backgroundColor: type == 'video' || type == 'image'
             ? textBarColor
             : bgColor,
+
         body: Stack(
           children: [
             Positioned.fill(
@@ -280,23 +281,25 @@ class _StatusViewState extends State<StatusView> {
                 builder: (_) {
                   if (type == 'video') {
                     return (_videoController != null &&
-                        _videoController!.value.isInitialized)
+                            _videoController!.value.isInitialized)
                         ? FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        width: _videoController!.value.size.width,
-                        height: _videoController!.value.size.height,
-                        child: VideoPlayer(_videoController!),
-                      ),
-                    )
+                            fit: BoxFit.contain,
+                            child: SizedBox(
+                              width: _videoController!.value.size.width,
+                              height: _videoController!.value.size.height,
+                              child: VideoPlayer(_videoController!),
+                            ),
+                          )
                         : const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
-                    );
-                  }
-                  else if (type == 'image') {
-                    final path = media["_displayImage"] ?? media["localPath"] ?? media["url"];
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          );
+                  } else if (type == 'image') {
+                    final path =
+                        media["_displayImage"] ??
+                        media["localPath"] ??
+                        media["url"];
 
                     if (path == null || path.toString().isEmpty) {
                       print(" ERROR: No valid image path found: $media");
@@ -304,33 +307,23 @@ class _StatusViewState extends State<StatusView> {
                     }
 
                     if (path.toString().startsWith("/")) {
-                      return
-                     Padding(
-                        padding: const EdgeInsets.only(top: 100), // keep space for name & time
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          top: 100,
+                        ), // keep space for name & time
                         child: Center(
-                          child: Image.file(
-                            File(path),
-                            fit: BoxFit.contain,
-                          ),
+                          child: Image.file(File(path), fit: BoxFit.contain),
                         ),
                       );
-
                     }
-
 
                     return Padding(
                       padding: const EdgeInsets.only(top: 100),
                       child: Center(
-                        child: Image.network(
-                          path,
-                          fit: BoxFit.contain,
-                        ),
+                        child: Image.network(path, fit: BoxFit.contain),
                       ),
                     );
-
-                  }
-
-                  else if (type == 'text') {
+                  } else if (type == 'text') {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
 
@@ -428,6 +421,41 @@ class _StatusViewState extends State<StatusView> {
             // user info & back button
             Positioned(
               top: 55,
+              right: 15,
+
+              child: Row(
+                children: [
+                  if (widget.isSelf == true)
+                    PopupMenuButton(
+                      icon: const Icon(Icons.more_vert, color: whiteColor),
+                      offset: const Offset(0, 40),
+                      color: whiteColor,
+                      onSelected: (value) async {
+                        // Handle menu item selection
+                        if (value == 1) {
+                          await controller.deletStatus(status.id);
+                          Get.back();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 1,
+                          child: Text(
+                            "Delete",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: blackColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 55,
               left: 15,
               child: Row(
                 children: [
@@ -443,11 +471,11 @@ class _StatusViewState extends State<StatusView> {
                   CircleAvatar(
                     radius: 20,
                     backgroundImage:
-                    (user?.displayPictureUrl != null &&
-                        user!.displayPictureUrl!.isNotEmpty)
+                        (user?.displayPictureUrl != null &&
+                            user!.displayPictureUrl!.isNotEmpty)
                         ? NetworkImage(user!.displayPictureUrl!)
                         : const AssetImage("assets/images/default_dp.png")
-                    as ImageProvider,
+                              as ImageProvider,
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -464,7 +492,10 @@ class _StatusViewState extends State<StatusView> {
                       ),
                       Text(
                         formatStatusTime(context, status.createdAt),
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

@@ -51,6 +51,7 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
+
   static const INITIAL = Routes.SPLASH;
   static final routes = [
     GetPage(
@@ -58,6 +59,7 @@ class AppPages {
       page: () => const HomeView(),
       binding: HomeBinding(),
     ),
+
     GetPage(
       name: _Paths.SPLASH,
       page: () => const SplashView(),
@@ -164,7 +166,7 @@ class AppPages {
       binding: CameraBindings(),
     ),
     
-    
+
     
   ];
 }

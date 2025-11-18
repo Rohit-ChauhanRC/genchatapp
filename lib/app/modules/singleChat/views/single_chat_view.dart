@@ -20,6 +20,7 @@ class SingleChatView extends GetView<SingleChatController> {
       resizeToAvoidBottomInset: true,
       backgroundColor: bgColor,
 
+
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -36,7 +37,7 @@ class SingleChatView extends GetView<SingleChatController> {
             return IconButton(
               icon: const Icon(Symbols.arrow_back, color: whiteColor),
               onPressed: () {
-                Get.back(); // Or Navigator.pop(context)
+                Get.back();
               },
             );
           }

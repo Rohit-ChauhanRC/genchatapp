@@ -26,10 +26,10 @@ class FilePickerService {
             onPressed: () => Navigator.pop(context, 'image'),
             child: const Text('Photo'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'video'),
-            child: const Text('Video'),
-          ),
+          // TextButton(
+          //   onPressed: () => Navigator.pop(context, 'video'),
+          //   child: const Text('Video'),
+          // ),
         ],
       ),
     );
@@ -45,7 +45,6 @@ class FilePickerService {
         final croppedFile = await ImageCropper().cropImage(
           sourcePath: image.path,
           uiSettings: [
-
             AndroidUiSettings(
               toolbarTitle: 'Cropper',
               toolbarColor: Colors.deepOrange,
@@ -62,6 +61,33 @@ class FilePickerService {
         if (croppedFile != null) _files.add(File(croppedFile.path));
       }
     } else if (choice == 'video') {
+      final video = await _picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(minutes: 5),
+      );
+      if (video != null) _files.add(File(video.path));
+    }
+
+    return _files;
+  }
+
+  Future<List<File>> pickFromVideoCamera(BuildContext context) async {
+    List<File> _files = [];
+
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select media type'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'video'),
+            child: const Text('Video'),
+          ),
+        ],
+      ),
+    );
+
+    if (choice == 'video') {
       final video = await _picker.pickVideo(
         source: ImageSource.camera,
         maxDuration: const Duration(minutes: 5),

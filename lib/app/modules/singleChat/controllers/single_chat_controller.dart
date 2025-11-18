@@ -1143,9 +1143,15 @@ class SingleChatController extends GetxController
   }
 
   void selectFile(String fileType) async {
-    if (fileType == MessageType.image.value ||
-        fileType == MessageType.video.value) {
+    if (fileType == MessageType.image.value) {
       final selectedFiles = await pickImageAndVideo();
+      for (File file in selectedFiles) {
+        print("Yes Getting back all files:---> $file");
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        cancelReply();
+      }
+    } else if (fileType == MessageType.video.value) {
+      final selectedFiles = await pickVideos();
       for (File file in selectedFiles) {
         print("Yes Getting back all files:---> $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
@@ -1175,6 +1181,17 @@ class SingleChatController extends GetxController
   Future<List<File>> pickImageAndVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
     await showMediaPickerBottomSheet(
+      onSendFiles: (img, fileType) {
+        completer.complete(img);
+      },
+    );
+
+    return completer.future;
+  }
+
+  Future<List<File>> pickVideos() async {
+    Completer<List<File>> completer = Completer<List<File>>();
+    await showVideoPickerBottomSheet(
       onSendFiles: (img, fileType) {
         completer.complete(img);
       },

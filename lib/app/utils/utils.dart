@@ -402,13 +402,111 @@ Future<void> showMediaPickerBottomSheet({
                     ),
                   ),
                 ),
+                // Expanded(
+                //   child: InkWell(
+                //     onTap: () async {
+                //       Get.back();
+                //       final files = await FilePickerService().pickFromCamera(
+                //         Get.context as BuildContext,
+                //       );
+                //       // .pickImage(source: ImageSource.camera);
+                //       // final files = [File(xfiles!.path)];
+                //       if (files.isNotEmpty) {
+                //         Get.to(
+                //           () => MediaPreviewScreen(
+                //             files: files,
+                //             fileType: getMessageType(files.first).value,
+                //             onSend: (selectedFiles) {
+                //               onSendFiles(
+                //                 selectedFiles,
+                //                 getMessageType(files.first).value,
+                //               );
+                //             },
+                //           ),
+                //         );
+                //       }
+                //     },
+                //     child: const Column(
+                //       mainAxisSize: MainAxisSize.min,
+                //       children: [
+                //         Icon(Icons.camera, size: 60, color: textBarColor),
+                //         SizedBox(height: 10),
+                //         Text(
+                //           "Camera",
+                //           textAlign: TextAlign.center,
+                //           style: TextStyle(color: greyColor, fontSize: 16),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> showVideoPickerBottomSheet({
+  required Function(List<File> files, String type) onSendFiles,
+}) {
+  return showModalBottomSheet(
+    context: Get.context!,
+    builder: (_) {
+      return SafeArea(
+        minimum: const EdgeInsets.all(10),
+        child: Wrap(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Expanded(
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickFromCamera(
-                        Get.context as BuildContext,
-                      );
+
+                      final files = await FilePickerService()
+                          .pickFromGalleryVideo();
+                      if (files.isNotEmpty) {
+                        // type
+
+                        Get.to(
+                          () => MediaPreviewScreen(
+                            files: files,
+                            fileType: getMessageType(files.first).value,
+                            onSend: (selectedFiles) {
+                              onSendFiles(
+                                selectedFiles,
+                                getMessageType(files.first).value,
+                              );
+                            },
+                          ),
+                        );
+                      }
+                    },
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.image, size: 60, color: textBarColor),
+                        SizedBox(height: 10),
+                        Text(
+                          "Gallery",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: greyColor, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      Get.back();
+                      final files = await FilePickerService()
+                          .pickFromVideoCamera(Get.context as BuildContext);
                       // .pickImage(source: ImageSource.camera);
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {

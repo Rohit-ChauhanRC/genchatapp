@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
+import 'package:v_video_compressor/v_video_compressor.dart';
 
 class FilePickerService {
   final ImagePicker _picker = ImagePicker();
@@ -23,11 +24,13 @@ class FilePickerService {
         title: const Text('Select media type'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, 'image'),
-              child: const Text('Photo')),
+            onPressed: () => Navigator.pop(context, 'image'),
+            child: const Text('Photo'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, 'video'),
-              child: const Text('Video')),
+            onPressed: () => Navigator.pop(context, 'video'),
+            child: const Text('Video'),
+          ),
         ],
       ),
     );
@@ -70,69 +73,176 @@ class FilePickerService {
   }
 
   /// Pick multiple images/videos from gallery
+  // Future<List<File>> pickFromGallery() async {
+  //   List<File> _imageFiles = [];
+
+  //   final result = await FilePicker.platform.pickFiles(
+  //     type: FileType.media, // This allows images & videos both
+  //     allowMultiple: true,
+  //   );
+  //   if (result == null || result.files.isEmpty) return [];
+  //   final f = result.paths
+  //       .whereType<String>()
+  //       .map((path) => File(path))
+  //       .toList();
+  //   for (var file in f) {
+  //     if (getMessageType(file) == MessageType.image) {
+  //       final croppedFile = await ImageCropper().cropImage(
+  //         compressQuality: 70,
+  //         sourcePath: file.path,
+  //         uiSettings: [
+  //           AndroidUiSettings(
+  //             toolbarTitle: 'Cropper',
+  //             toolbarColor: Colors.deepOrange,
+  //             toolbarWidgetColor: Colors.white,
+  //             aspectRatioPresets: [
+  //               CropAspectRatioPreset.original,
+  //               CropAspectRatioPreset.square,
+  //               CropAspectRatioPreset.ratio16x9,
+  //               CropAspectRatioPreset.ratio3x2,
+  //               CropAspectRatioPreset.ratio4x3,
+  //               CropAspectRatioPreset.ratio5x3,
+  //               CropAspectRatioPreset.ratio5x4,
+  //               CropAspectRatioPreset.ratio7x5,
+  //             ],
+  //           ),
+  //           IOSUiSettings(
+  //             title: 'Cropper',
+  //             aspectRatioPresets: [
+  //               CropAspectRatioPreset.original,
+  //               CropAspectRatioPreset.square,
+  //             ],
+  //           ),
+  //         ],
+  //       );
+  //       if (croppedFile != null) {
+  //         _imageFiles.add(File(croppedFile.path));
+  //       }
+  //     } else if (getMessageType(file) == MessageType.video) {
+  //       final sizeInBytes = await file.length();
+  //       final sizeInMB = sizeInBytes / (1024 * 1024);
+
+  //       if (sizeInMB >= 50) {
+  //         showSnackBar(
+  //           context: Get.context!,
+  //           content:
+  //               "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+  //         );
+  //       } else {
+  //         _imageFiles.add(file);
+  //       }
+  //     } else {
+  //       _imageFiles.add(file);
+  //     }
+  //   }
+  //   return _imageFiles;
+  //   // return result.paths.whereType<String>().map((path) => File(path)).toList();
+  // }
+
   Future<List<File>> pickFromGallery() async {
     List<File> _imageFiles = [];
 
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.media, // This allows images & videos both
+      type: FileType.media,
       allowMultiple: true,
     );
+
     if (result == null || result.files.isEmpty) return [];
-    final f = result.paths
+
+    final pickedFiles = result.paths
         .whereType<String>()
         .map((path) => File(path))
         .toList();
-    for (var file in f) {
-      if (getMessageType(file) == MessageType.image) {
+
+    for (var file in pickedFiles) {
+      final type = getMessageType(file);
+
+      // -----------------------------
+      // IMAGE PROCESSING
+      // -----------------------------
+      if (type == MessageType.image) {
         final croppedFile = await ImageCropper().cropImage(
+          compressQuality: 70,
           sourcePath: file.path,
           uiSettings: [
             AndroidUiSettings(
               toolbarTitle: 'Cropper',
               toolbarColor: Colors.deepOrange,
               toolbarWidgetColor: Colors.white,
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio16x9,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio5x3,
-                CropAspectRatioPreset.ratio5x4,
-                CropAspectRatioPreset.ratio7x5,
-              ],
             ),
-            IOSUiSettings(
-              title: 'Cropper',
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-              ],
-            ),
+            IOSUiSettings(title: 'Cropper'),
           ],
         );
+
         if (croppedFile != null) {
           _imageFiles.add(File(croppedFile.path));
         }
-      } else if (getMessageType(file) == MessageType.video) {
+      }
+      // -----------------------------
+      // VIDEO PROCESSING
+      // -----------------------------
+      else if (type == MessageType.video) {
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
 
+        // if (sizeInMB >= 50) {
+        //   showSnackBar(
+        //     context: Get.context!,
+        //     content:
+        //         "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+        //   );
+        //   continue;
+        // }
+
         if (sizeInMB >= 50) {
-          showSnackBar(
-            context: Get.context!,
-            content:
-                "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
-          );
+          try {
+            final compressed = await VVideoCompressor().compressVideo(
+              file.path,
+              const VVideoCompressionConfig(
+                quality: VVideoCompressQuality.low,
+                deleteOriginal: false,
+              ),
+            );
+
+            final sizeInBytes1 = await File(
+              compressed!.compressedFilePath,
+            ).length();
+            final sizeInMB1 = sizeInBytes1 / (1024 * 1024);
+            print(sizeInMB1);
+
+            if (sizeInMB1 >= 50) {
+              showSnackBar(
+                context: Get.context!,
+                content:
+                    "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+              );
+              continue;
+            }
+
+            if (compressed != null &&
+                compressed.compressedFilePath != null &&
+                sizeInMB1 <= 50) {
+              _imageFiles.add(File(compressed.compressedFilePath));
+            } else {
+              _imageFiles.add(file);
+            }
+          } catch (e) {
+            debugPrint("Compression failed: $e");
+            _imageFiles.add(file);
+          }
         } else {
-          _imageFiles.add(file);
+          _imageFiles.add(file); // small → no compression
         }
-      } else {
+      }
+      // -----------------------------
+      // OTHER FILE TYPES
+      // -----------------------------
+      else {
         _imageFiles.add(file);
       }
     }
+
     return _imageFiles;
-    // return result.paths.whereType<String>().map((path) => File(path)).toList();
   }
 
   /// Pick multiple documents (pdf, docx, etc.)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/modules/call/views/call_view.dart';
 import 'package:genchatapp/app/modules/chats/views/chats_view.dart';
+import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:genchatapp/app/modules/updates/views/updates_view.dart';
 
 import 'package:get/get.dart';
@@ -33,8 +34,8 @@ class HomeView extends GetView<HomeController> {
               controller.currentPageIndex = index;
             },
             selectedIndex: controller.currentPageIndex,
-            destinations: const <Widget>[
-              NavigationDestination(
+            destinations: <Widget>[
+              const NavigationDestination(
                 selectedIcon: ImageIcon(
                   AssetImage("assets/images/chatsIcon.png"),
                   color: highLightColor,
@@ -46,17 +47,28 @@ class HomeView extends GetView<HomeController> {
                 label: 'Chats',
               ),
               NavigationDestination(
-                selectedIcon: ImageIcon(
+                selectedIcon: const ImageIcon(
                   AssetImage("assets/images/statusIcon.png"),
                   color: highLightColor,
                 ),
-                icon: ImageIcon(
-                  AssetImage("assets/images/statusIcon.png"),
-                  color: whiteColor,
+                icon: InkWell(
+                  onTap: () async {
+                    final UpdatesController update = Get.put<UpdatesController>(
+                      UpdatesController(),
+                    );
+                    if (controller.connectivityService.isConnected.value) {
+                      await update.getContacts();
+                      await update.getStatus();
+                    }
+                  },
+                  child: const ImageIcon(
+                    AssetImage("assets/images/statusIcon.png"),
+                    color: whiteColor,
+                  ),
                 ),
                 label: 'Updates',
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 selectedIcon: ImageIcon(
                   AssetImage("assets/images/callIcon.png"),
                   color: highLightColor,
@@ -71,9 +83,9 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
         body: [
-          ChatsView(),
-          UpdatesView(),
-          CallView(),
+          const ChatsView(),
+          const UpdatesView(),
+          const CallView(),
         ][controller.currentPageIndex],
       ),
     );

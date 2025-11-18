@@ -176,7 +176,7 @@ class BottomChatField extends StatelessWidget {
                               suffixIcon: Obx(
                                 () => SizedBox(
                                   width: !singleChatController.isShowSendButton
-                                      ? 100
+                                      ? 150
                                       : 50,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
@@ -195,6 +195,7 @@ class BottomChatField extends StatelessWidget {
                                               ),
                                             )
                                           : const SizedBox.shrink(),
+
                                       IconButton(
                                         onPressed: () {
                                           // singleChatController.selectVideo();

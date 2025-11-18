@@ -44,7 +44,7 @@ dependencies:
   video_player: ^2.10.0
   flutter_image_compress: ^2.4.0
   image_cropper: ^9.1.0
-  ffmpeg_kit_flutter_new: ^3.0.1
+  # ffmpeg_kit_flutter_new: ^3.0.1
   get_storage: ^2.1.1
   gif: ^2.3.0
   audio_waveforms: ^1.3.0

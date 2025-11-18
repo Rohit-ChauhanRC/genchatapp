@@ -302,9 +302,7 @@ class SingleChatController extends GetxController
     recorderController.dispose();
 
     // animationController.dispose();
-
   }
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
@@ -327,6 +325,7 @@ class SingleChatController extends GetxController
       default:
     }
   }
+
   // user/block-contact
   //   {
   //     "blockContactUserId": 2,
@@ -336,10 +335,11 @@ class SingleChatController extends GetxController
   //   if (receiverUserData == null) return;
   //   Get.to(() => SingleUserProfileView(user: receiverUserData!));
   // }
-void openUserProfile(){
-    if(receiverUserData==null) return;
-    Get.to(()=>SingleUserProfileView(user: receiverUserData!));
-}
+  void openUserProfile() {
+    if (receiverUserData == null) return;
+    Get.to(() => SingleUserProfileView(user: receiverUserData!));
+  }
+
   Future<void> blockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,
@@ -1153,6 +1153,14 @@ void openUserProfile(){
       }
     } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
+      // pickAndSendAudios
+      await pickAndSendAudios((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
     } else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {

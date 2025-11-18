@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 // import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
-import 'package:ffmpeg_kit_flutter_new/return_code.dart';
+// import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -21,7 +21,7 @@ import 'alert_popup_utils.dart';
 
 import 'package:path/path.dart' as p;
 
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+// import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 
 void showSnackBar({required BuildContext context, required String content}) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
@@ -482,6 +482,39 @@ Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
   }
 }
 
+Future<void> pickAndSendAudios(Function(List<File>) onConfirmedSend) async {
+  List<File> files = await FilePickerService().pickAudios();
+  if (files.isEmpty) return;
+
+  // Create a completer to wait for the result manually
+  final completer = Completer<bool>();
+
+  // Show the dialog (even if it returns void)
+  showAlertMessageWithAction(
+    message: "Do you want to send ${files.length} audio(s)?",
+    confirmText: "Send",
+    cancelText: "Cancel",
+    onCancel: () {
+      // Get.back(); // close dialog
+      completer.complete(false); // complete with false
+    },
+    onConfirm: () {
+      // Get.back(); // close dialog
+      completer.complete(true); // complete with true
+    },
+    showCancel: true,
+    title: 'Genchat',
+    context: Get.context!,
+  );
+
+  // Wait for the user's decision
+  bool shouldSend = await completer.future;
+
+  if (shouldSend) {
+    onConfirmedSend(files);
+  }
+}
+
 MessageType getMessageType(File file) {
   final ext = file.path.toLowerCase();
 
@@ -497,6 +530,10 @@ MessageType getMessageType(File file) {
     return MessageType.video;
   } else if (ext.endsWith('.gif')) {
     return MessageType.gif;
+  } else if (ext.endsWith('.m4a')) {
+    return MessageType.audio;
+  } else if (ext.endsWith('.aac')) {
+    return MessageType.audio;
   }
 
   return MessageType.document; // Fallback
@@ -568,50 +605,50 @@ Future<String?> getThumbnail(File videoFile) async {
   return fileName;
 }
 
-Future<File?> compressVideoFfmpeg(File file) async {
-  try {
-    Directory appDir = await getApplicationDocumentsDirectory();
+// Future<File?> compressVideoFfmpeg(File file) async {
+//   try {
+//     Directory appDir = await getApplicationDocumentsDirectory();
 
-    final dir = Platform.isAndroid
-        ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
-        : Directory('${appDir.path}/picked_images');
+//     final dir = Platform.isAndroid
+//         ? Directory("/data/user/0/com.genmak.genchat/cache/file_picker/")
+//         : Directory('${appDir.path}/picked_images');
 
-    if (!await dir.exists()) {
-      await dir.create(
-        recursive: true,
-      ); // Create the directory if it doesn't exist
-    }
+//     if (!await dir.exists()) {
+//       await dir.create(
+//         recursive: true,
+//       ); // Create the directory if it doesn't exist
+//     }
 
-    getReadableFileSize(file);
+//     getReadableFileSize(file);
 
-    // "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+//     // "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
 
-    final outputPath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
+//     final outputPath = '${dir.path}/rotated_${file.uri.pathSegments.last}';
 
-    final command =
-        '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k $outputPath';
-    // final command =
-    //     '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
+//     final command =
+//         '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k $outputPath';
+//     // final command =
+//     //     '-i ${file.path} -vf scale=960:540 -preset ultrafast -c:v libx264 -crf 28 -c:a aac -b:a 16k -ss 00:00:01 -vframes 1 $thumbnailPath $outputPath';
 
-    final session = await FFmpegKit.execute(command);
-    final returnCode = await session.getReturnCode();
+//     final session = await FFmpegKit.execute(command);
+//     final returnCode = await session.getReturnCode();
 
-    if (ReturnCode.isSuccess(returnCode)) {
-      print("Video compressed successfully!");
-      getReadableFileSize(File(outputPath));
+//     if (ReturnCode.isSuccess(returnCode)) {
+//       print("Video compressed successfully!");
+//       getReadableFileSize(File(outputPath));
 
-      // File(thumbnailPath);
+//       // File(thumbnailPath);
 
-      return File(outputPath);
-    } else {
-      print("Compression failed: $returnCode");
-      return null;
-    }
-  } catch (e) {
-    print("Video compression error: $e");
-    return null;
-  }
-}
+//       return File(outputPath);
+//     } else {
+//       print("Compression failed: $returnCode");
+//       return null;
+//     }
+//   } catch (e) {
+//     print("Video compression error: $e");
+//     return null;
+//   }
+// }
 
 Future<Map<String, File?>> compressFiles(
   File file,

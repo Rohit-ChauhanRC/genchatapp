@@ -149,6 +149,9 @@ class FilePickerService {
 
     if (result == null || result.files.isEmpty) return [];
 
+    final startTime = DateTime.now();
+    print("Compression started at: $startTime");
+
     final pickedFiles = result.paths
         .whereType<String>()
         .map((path) => File(path))
@@ -182,6 +185,13 @@ class FilePickerService {
       // VIDEO PROCESSING
       // -----------------------------
       else if (type == MessageType.video) {
+        final endTime = DateTime.now();
+        print("Compression ended at: $endTime");
+
+        final totalSeconds = endTime.difference(startTime).inSeconds;
+        print("Compression duration: $totalSeconds seconds");
+        // -------------------------------
+
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
 
@@ -203,6 +213,13 @@ class FilePickerService {
                 deleteOriginal: false,
               ),
             );
+
+            final endTime = DateTime.now();
+            print("Compression ended at: $endTime");
+
+            final totalSeconds = endTime.difference(startTime).inSeconds;
+            print("Compression duration: $totalSeconds seconds");
+            // -------------------------------
 
             final sizeInBytes1 = await File(
               compressed!.compressedFilePath,
@@ -245,12 +262,117 @@ class FilePickerService {
     return _imageFiles;
   }
 
+  Future<List<File>> pickFromGalleryVideo() async {
+    List<File> _imageFiles = [];
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+      allowMultiple: true,
+      compressionQuality: 70,
+    );
+
+    if (result == null || result.files.isEmpty) return [];
+
+    final startTime = DateTime.now();
+    print("Compression started at: $startTime");
+
+    final pickedFiles = result.paths
+        .whereType<String>()
+        .map((path) => File(path))
+        .toList();
+
+    for (var file in pickedFiles) {
+      final endTime = DateTime.now();
+      print("Compression ended at: $endTime");
+
+      final totalSeconds = endTime.difference(startTime).inSeconds;
+      print("Compression duration: $totalSeconds seconds");
+      // -------------------------------
+
+      final sizeInBytes = await file.length();
+      final sizeInMB = sizeInBytes / (1024 * 1024);
+
+      // if (sizeInMB >= 50) {
+      //   showSnackBar(
+      //     context: Get.context!,
+      //     content:
+      //         "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+      //   );
+      //   continue;
+      // }
+
+      if (sizeInMB >= 50) {
+        try {
+          final compressed = await VVideoCompressor().compressVideo(
+            file.path,
+            const VVideoCompressionConfig(
+              quality: VVideoCompressQuality.low,
+              deleteOriginal: false,
+            ),
+          );
+
+          final endTime = DateTime.now();
+          print("Compression ended at: $endTime");
+
+          final totalSeconds = endTime.difference(startTime).inSeconds;
+          print("Compression duration: $totalSeconds seconds");
+          // -------------------------------
+
+          final sizeInBytes1 = await File(
+            compressed!.compressedFilePath,
+          ).length();
+          final sizeInMB1 = sizeInBytes1 / (1024 * 1024);
+          print(sizeInMB1);
+
+          if (sizeInMB1 >= 50) {
+            showSnackBar(
+              context: Get.context!,
+              content:
+                  "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+            );
+            continue;
+          }
+
+          if (compressed != null &&
+              compressed.compressedFilePath != null &&
+              sizeInMB1 <= 50) {
+            _imageFiles.add(File(compressed.compressedFilePath));
+          } else {
+            _imageFiles.add(file);
+          }
+        } catch (e) {
+          debugPrint("Compression failed: $e");
+          _imageFiles.add(file);
+        }
+      } else {
+        _imageFiles.add(file); // small → no compression
+      }
+    }
+    // -----------------------------
+    // OTHER FILE TYPES
+    // -----------------------------
+
+    return _imageFiles;
+  }
+
   /// Pick multiple documents (pdf, docx, etc.)
   Future<List<File>> pickDocuments() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: true,
       allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
+    );
+
+    if (result == null || result.files.isEmpty) return [];
+
+    return result.paths.whereType<String>().map((path) => File(path)).toList();
+  }
+
+  Future<List<File>> pickAudios() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowMultiple: true,
+      allowedExtensions: ['m4a', 'aac'],
     );
 
     if (result == null || result.files.isEmpty) return [];

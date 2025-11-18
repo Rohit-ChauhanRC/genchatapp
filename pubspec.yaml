@@ -58,6 +58,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_linkify: ^6.0.0
   flutter_cache_manager: ^3.4.1
+  v_video_compressor: ^1.2.1
 
 
 dev_dependencies:

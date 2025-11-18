@@ -130,4 +130,23 @@ class StatusTable {
 
     print("🔄 Status sync completed!");
   }
+
+  Future<void> deleteExpiredStatuses() async {
+    final db = await DataBaseService().database;
+
+    // Get current timestamp minus 24 hours
+    final DateTime now = DateTime.now();
+    final DateTime cutoff = now.subtract(const Duration(hours: 24));
+
+    final cutoffString = cutoff.toIso8601String();
+
+    // Delete statuses older than 24 hours
+    final count = await db.delete(
+      tableName,
+      where: "createdAt < ?",
+      whereArgs: [cutoffString],
+    );
+
+    print("🗑 Deleted $count expired statuses (older than 24 hours)");
+  }
 }

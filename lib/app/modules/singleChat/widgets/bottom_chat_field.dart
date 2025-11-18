@@ -177,7 +177,7 @@ class BottomChatField extends StatelessWidget {
                               suffixIcon: Obx(
                                 () => SizedBox(
                                   width: !singleChatController.isShowSendButton
-                                      ? 100
+                                      ? 150
                                       : 50,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
@@ -197,6 +197,7 @@ class BottomChatField extends StatelessWidget {
                                             )
 
                                           : const SizedBox.shrink(),
+
                                       IconButton(
                                         onPressed: () => showAttachmentSheet(context, singleChatController),
                                         icon: const Icon(Icons.attach_file, color: Colors.grey),

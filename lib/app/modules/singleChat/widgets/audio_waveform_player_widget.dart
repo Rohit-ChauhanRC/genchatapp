@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
-import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:get/get.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';

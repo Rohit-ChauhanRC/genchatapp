@@ -68,18 +68,18 @@ class CameraView extends GetView<CameraControllerX> {
           children: [
             Positioned.fill(child: CameraPreview(controller.cameraController!)),
             // Bottom bar
-            // Positioned(
-            //   top: 50,
-            //   right: 20,
-            //   child: GestureDetector(
-            //     onTap: controller.switchCamera,
-            //     child: const Icon(
-            //       Icons.cameraswitch_rounded,
-            //       size: 40,
-            //       color: Colors.white,
-            //     ),
-            //   ),
-            // ),
+            Positioned(
+              top: 50,
+              right: 20,
+              child: GestureDetector(
+                onTap: controller.switchCamera,
+                child: const Icon(
+                  Icons.cameraswitch_rounded,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+            ),
 
             Positioned(
               bottom: 40,

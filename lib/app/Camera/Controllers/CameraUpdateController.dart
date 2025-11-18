@@ -4,13 +4,21 @@ import 'package:camera/camera.dart';
 import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
 import 'package:get/get.dart';
 
+import 'dart:async';
+import 'package:camera/camera.dart';
+import 'package:get/get.dart';
+import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
+
 class CameraControllerX extends GetxController {
   CameraController? cameraController;
   RxBool isCameraReady = false.obs;
   RxBool isRecording = false.obs;
   RxBool isCapturing = false.obs;
   RxInt recordingDuration = 0.obs;
-  Timer? _timer;
+
+  late List<CameraDescription> deviceCameras;  // FIXED NAME
+
+  int selectedCameraIndex = 0;
 
   final StatusRepository statusRepository = Get.find();
 
@@ -22,13 +30,18 @@ class CameraControllerX extends GetxController {
 
   Future<void> initCamera() async {
     try {
-      final cameras = await availableCameras();
-      final backCamera = cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.back,
+      /// CALL THE REAL FUNCTION FROM CAMERA PACKAGE
+      deviceCameras = await availableCameras();
+
+      // Choose back camera
+      selectedCameraIndex = deviceCameras.indexWhere(
+            (c) => c.lensDirection == CameraLensDirection.back,
       );
 
+      if (selectedCameraIndex == -1) selectedCameraIndex = 0;
+
       cameraController = CameraController(
-        backCamera,
+        deviceCameras[selectedCameraIndex],
         ResolutionPreset.high,
         enableAudio: true,
       );
@@ -40,15 +53,38 @@ class CameraControllerX extends GetxController {
     }
   }
 
+  Future<void> switchCamera() async {
+    if (deviceCameras.length < 2) {
+      Get.snackbar("No Camera", "Only one camera on this device");
+      return;
+    }
+
+    isCameraReady.value = false;
+
+    selectedCameraIndex = selectedCameraIndex == 0 ? 1 : 0;
+
+    await cameraController?.dispose();
+
+    cameraController = CameraController(
+      deviceCameras[selectedCameraIndex],
+      ResolutionPreset.high,
+      enableAudio: true,
+    );
+
+    await cameraController!.initialize();
+    isCameraReady.value = true;
+  }
+
   Future<String?> capturePhoto() async {
-    if (cameraController == null || !cameraController!.value.isInitialized)
-      return null;
-    if (isCapturing.value) return null;
+    if (cameraController == null ||
+        !cameraController!.value.isInitialized ||
+        isCapturing.value) return null;
 
     isCapturing.value = true;
+
     try {
-      final picture = await cameraController!.takePicture();
-      return picture.path;
+      final pic = await cameraController!.takePicture();
+      return pic.path;
     } catch (e) {
       Get.snackbar("Error", "Failed to capture photo: $e");
       return null;
@@ -57,40 +93,10 @@ class CameraControllerX extends GetxController {
     }
   }
 
-  // Future<void> startVideoRecording() async {
-  //   if (cameraController == null || !cameraController!.value.isInitialized || isRecording.value) return;
-  //
-  //   try {
-  //     await cameraController!.startVideoRecording();
-  //
-  //     isRecording.value = true;
-  //
-  //     recordingDuration.value = 0;
-  //
-  //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to start video: $e");
-  //   }
-  // }
-  //
-  // Future<String?> stopVideoRecording() async {
-  //   if (cameraController == null || !cameraController!.value.isRecordingVideo) return null;
-  //
-  //   try {
-  //     final file = await cameraController!.stopVideoRecording();
-  //     isRecording.value = false;
-  //     _timer?.cancel();
-  //     _timer = null;
-  //     return file.path;
-  //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to stop video: $e");
-  //     return null;
-  //
-  //   }
-  // }
-
   @override
   void onClose() {
     cameraController?.dispose();
     super.onClose();
   }
 }
+

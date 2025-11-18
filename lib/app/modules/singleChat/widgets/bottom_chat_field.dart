@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../utils/alert_popup_utils.dart';
+import 'Attachments_box.dart';
 import 'message_reply_preview.dart';
 
 class BottomChatField extends StatelessWidget {
@@ -194,21 +195,27 @@ class BottomChatField extends StatelessWidget {
                                                 color: greyMsgColor,
                                               ),
                                             )
+
                                           : const SizedBox.shrink(),
                                       IconButton(
-                                        onPressed: () {
-                                          // singleChatController.selectVideo();
-                                          singleChatController.cancelReply();
-                                          // Get.to(() => AttachmentPopupDemo());
-                                          singleChatController.selectFile(
-                                            MessageType.document.value,
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.attach_file,
-                                          color: greyMsgColor,
-                                        ),
-                                      ),
+                                        onPressed: () => showAttachmentSheet(context, singleChatController),
+                                        icon: const Icon(Icons.attach_file, color: Colors.grey),
+                                      )
+
+                                      // IconButton(
+                                      //   onPressed: () {
+                                      //     // singleChatController.selectVideo();
+                                      //     singleChatController.cancelReply();
+                                      //     // Get.to(() => AttachmentPopupDemo());
+                                      //     singleChatController.selectFile(
+                                      //       MessageType.document.value,
+                                      //     );
+                                      //   },
+                                      //   icon: const Icon(
+                                      //     Icons.attach_file,
+                                      //     color: greyMsgColor,
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),

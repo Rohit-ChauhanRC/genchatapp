@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../utils/alert_popup_utils.dart';
+import 'Attachments_groups.dart';
 import 'group_message_reply_preview.dart';
 
 class GroupBottomChatField extends StatelessWidget {
@@ -322,7 +323,8 @@ class GroupBottomChatField extends StatelessWidget {
                                             MainAxisAlignment.end,
                                         children: [
                                           !groupChatsController.isShowSendButton
-                                              ? IconButton(
+                                              ?
+                                          IconButton(
                                                   onPressed: () {
                                                     groupChatsController
                                                         .selectFile(
@@ -339,20 +341,25 @@ class GroupBottomChatField extends StatelessWidget {
                                                 )
                                               : const SizedBox.shrink(),
                                           IconButton(
-                                            onPressed: () {
-                                              // singleChatController.selectVideo();
-                                              groupChatsController
-                                                  .cancelReply();
-                                              // Get.to(() => AttachmentPopupDemo());
-                                              groupChatsController.selectFile(
-                                                MessageType.document.value,
-                                              );
-                                            },
-                                            icon: const Icon(
-                                              Icons.attach_file,
-                                              color: greyMsgColor,
-                                            ),
-                                          ),
+                                            onPressed: () => showAttachmentSheetGroup(context, groupChatsController),
+                                            icon: const Icon(Icons.attach_file, color: Colors.grey),
+                                          )
+
+                                          // IconButton(
+                                          //   onPressed: () {
+                                          //     // singleChatController.selectVideo();
+                                          //     groupChatsController
+                                          //         .cancelReply();
+                                          //     // Get.to(() => AttachmentPopupDemo());
+                                          //     groupChatsController.selectFile(
+                                          //       MessageType.document.value,
+                                          //     );
+                                          //   },
+                                          //   icon: const Icon(
+                                          //     Icons.attach_file,
+                                          //     color: greyMsgColor,
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                     ),

@@ -231,6 +231,7 @@ class ChatsController extends GetxController {
 
       selectedChatUids.clear();
 
+
       update();
 
       // Get.snackbar("Deleted", "Selected chats were deleted from your side only");

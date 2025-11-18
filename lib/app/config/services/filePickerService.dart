@@ -7,7 +7,6 @@ import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart';
 import 'package:v_video_compressor/v_video_compressor.dart';
 
 class FilePickerService {
@@ -46,6 +45,7 @@ class FilePickerService {
         final croppedFile = await ImageCropper().cropImage(
           sourcePath: image.path,
           uiSettings: [
+
             AndroidUiSettings(
               toolbarTitle: 'Cropper',
               toolbarColor: Colors.deepOrange,

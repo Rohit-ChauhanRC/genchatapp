@@ -143,7 +143,7 @@ class FilePickerService {
     List<File> _imageFiles = [];
 
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.media,
+      type: FileType.image,
       allowMultiple: true,
     );
 

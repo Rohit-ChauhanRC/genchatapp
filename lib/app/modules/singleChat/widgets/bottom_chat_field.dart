@@ -195,13 +195,18 @@ class BottomChatField extends StatelessWidget {
                                                 color: greyMsgColor,
                                               ),
                                             )
-
                                           : const SizedBox.shrink(),
 
                                       IconButton(
-                                        onPressed: () => showAttachmentSheet(context, singleChatController),
-                                        icon: const Icon(Icons.attach_file, color: Colors.grey),
-                                      )
+                                        onPressed: () => showAttachmentSheet(
+                                          context,
+                                          singleChatController,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.attach_file,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
 
                                       // IconButton(
                                       //   onPressed: () {
@@ -221,7 +226,7 @@ class BottomChatField extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              hintText: 'Type a message!',
+                              hintText: 'message ...',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
                                 borderSide: BorderSide.none,

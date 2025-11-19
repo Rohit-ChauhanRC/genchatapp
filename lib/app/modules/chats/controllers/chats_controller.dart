@@ -160,7 +160,7 @@ class ChatsController extends GetxController {
               )
               .length;
         }
-        print(messages.first.senderPhoneNumber);
+        // print(messages.first.senderPhoneNumber);
         return ChatConntactModel(
           uid: contact.uid,
           name: contact.name,
@@ -230,7 +230,6 @@ class ChatsController extends GetxController {
       }
 
       selectedChatUids.clear();
-
 
       update();
 

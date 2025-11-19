@@ -35,7 +35,9 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../config/services/filePickerService.dart';
 import '../../../data/models/new_models/response_model/create_group_model.dart';
+import '../../singleChat/mediaPickerFiles/media_preview_screen.dart';
 
 class GroupChatsController extends GetxController with WidgetsBindingObserver {
   //
@@ -1183,15 +1185,34 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   void selectFile(String fileType) async {
-    if (fileType == MessageType.image.value ||
-        fileType == MessageType.video.value) {
-      final selectedFiles = await pickImageAndVideo();
-      for (File file in selectedFiles) {
-        print("Yes Getting back all files:---> $file");
-        await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        cancelReply();
-      }
-    } else if (fileType == MessageType.audio.value) {
+    if (fileType == MessageType.image.value)   {
+      final files = await FilePickerService().pickImagesFromGalleryWithCrop();
+
+      if (files.isEmpty) return;
+
+      final fileTypeValue = getMessageType(files.first).value;
+
+      Get.to(() => MediaPreviewScreen(
+        files: files,
+        fileType: fileTypeValue,
+        onSend: (List<File> selectedFiles) async {
+          for (final f in selectedFiles) {
+            await sendFileMessage(
+              file: f,
+              messageEnum: getMessageType(f),
+            );
+          }
+          cancelReply();
+        },
+      ));
+    }
+    else if(fileType==MessageType.video.value){
+      final selectedFIle=await pickVideo();
+
+    }
+
+
+    else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       await pickAndSendAudios((selectedFiles) async {
         for (File file in selectedFiles) {
@@ -1200,7 +1221,28 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
       cancelReply();
-    } else if (fileType == MessageType.document.value) {
+    }
+    else if (fileType == MessageType.camera.value) {
+      // pickFromCamera returns List<File> (may be single file)
+      final files = await FilePickerService().pickFromCamera(Get.context!);
+      if (files.isEmpty) return;
+
+      final fileTypeValue = getMessageType(files.first).value;
+
+      Get.to(() => MediaPreviewScreen(
+        files: files,
+        fileType: fileTypeValue,
+        onSend: (List<File> selectedFiles) async {
+          for (final f in selectedFiles) {
+            await sendFileMessage(file: f, messageEnum: getMessageType(f));
+          }
+          cancelReply();
+        },
+      ));
+    }
+
+
+    else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1210,7 +1252,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       cancelReply();
     }
   }
+  Future<List<File>> pickVideo() async {
+    Completer<List<File>> completer = Completer<List<File>>();
+    await showVideoPickerBottomSheet(
+      onSendFiles: (img, fileType) {
+        completer.complete(img);
+      },
+    );
 
+    return completer.future;
+  }
   Future<String> saveFileLocally(
     File file,
     String fileType,

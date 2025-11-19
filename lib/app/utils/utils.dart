@@ -505,9 +505,8 @@ Future<void> showVideoPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService()
-                          .pickFromVideoCamera(Get.context as BuildContext);
-                      // .pickImage(source: ImageSource.camera);
+                      final files = await FilePickerService().pickVideoFromCamera();
+
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
                         Get.to(
@@ -546,6 +545,7 @@ Future<void> showVideoPickerBottomSheet({
     },
   );
 }
+
 
 Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
   List<File> files = await FilePickerService().pickDocuments();

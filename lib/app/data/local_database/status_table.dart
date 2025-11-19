@@ -75,6 +75,8 @@ class StatusTable {
   Future<List<Statusmodel>> getAllStatuses() async {
     final db = await DataBaseService().database;
 
+    await deleteExpiredStatuses();
+
     final List<Map<String, dynamic>> maps = await db.query(
       tableName,
       orderBy: "createdAt ASC",

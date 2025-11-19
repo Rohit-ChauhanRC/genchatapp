@@ -14,169 +14,156 @@ class SingleUserProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-final  SingleChatController controller=Get.find<SingleChatController>();
+    final SingleChatController controller = Get.find<SingleChatController>();
     return Scaffold(
-         backgroundColor: Colors.teal.shade700,
+      backgroundColor: Colors.teal.shade700,
 
-      body:GradientContainer(
+      body: GradientContainer(
         child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            iconTheme: const IconThemeData(color: Colors.white),
+          slivers: [
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              iconTheme: const IconThemeData(color: Colors.white),
 
-            expandedHeight: 300,
-            pinned: true,
+              expandedHeight: 300,
+              pinned: true,
 
-            backgroundColor: AppColors.textBarColor,
+              backgroundColor: AppColors.textBarColor,
 
-            leading: const BackButton(color: Colors.white),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 10, bottom: 16),
-              title: Text(
-                controller.getDisplayName(),
-                style: const TextStyle(color: Colors.white),
+              leading: const BackButton(color: Colors.white),
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.only(left: 10, bottom: 16),
+                title: Text(
+                  controller.getDisplayName(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                background: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+
+                      // color: AppColors.greyColor
+                      //     .withOpacity(0.4),
+                      child: user.displayPictureUrl?.isNotEmpty == true
+                          ? Image.network(
+                              user.displayPictureUrl!,
+                              fit: BoxFit.cover,
+                            )
+                          : Center(
+                              child: Icon(
+                                Icons.person,
+                                size: 120,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+
+                    Container(color: Colors.black26),
+
+                    Positioned(
+                      bottom: 20,
+                      right: 20,
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => showComingSoon(context),
+                            child: _headerAction(Icons.videocam_rounded),
+                          ),
+                          const SizedBox(width: 14),
+
+                          GestureDetector(
+                            onTap: () => showComingSoon(context),
+                            child: _headerAction(Icons.call_rounded),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              background: Stack(
+            ),
+
+            // CONTENT
+            SliverToBoxAdapter(
+              child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    // color: AppColors.greyColor
-                    //     .withOpacity(0.4),
+                  const SizedBox(height: 10),
 
-                    child: user.displayPictureUrl?.isNotEmpty == true
-                        ? Image.network(
-                      user.displayPictureUrl!,
-                      fit: BoxFit.cover,
-                    )
-                        : Center(
+                  // Card: User info
+                  _sectionCard(
+                    children: [
+                      _tile(
+                        title:
+                            (user.localName != null &&
+                                user.localName!.isNotEmpty)
+                            ? user.localName!
+                            : "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
+                        subtitle: "Name",
+                        icon: Icons.person,
+                      ),
 
+                      _tile(
+                        title:
+                            "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
+                        subtitle: "Phone Number",
+                        icon: Icons.phone,
+                        trailing: GestureDetector(
+                          onTap: () => Get.back(),
 
-                      child: Icon(Icons.person,
-                          size: 120, color: Colors.white),
-                    ),
+                          child: Icon(Icons.message),
+                        ),
+                      ),
+                      if (user.userDescription != null &&
+                          user.userDescription!.isNotEmpty)
+                        _tile(
+                          title: user.userDescription!,
+                          subtitle: "About",
+                          icon: Icons.info_outline,
+                        ),
+                    ],
                   ),
 
-                  Container(
-                    color: Colors.black26,
+                  const SizedBox(height: 12),
+
+                  const SizedBox(height: 12),
+
+                  // Settings: Mute, Wall
+                  // /aper, Block
+                  _sectionCard(
+                    children: [
+                      Obx(() {
+                        final isBlocked =
+                            controller.blocked.value &&
+                                controller.blockedByMe.value == 1
+                            ? true
+                            : false;
+
+                        return _tile(
+                          title: isBlocked
+                              ? "Unblock ${user.localName ?? ''}"
+                              : "Block ${user.localName ?? ''}",
+                          icon: isBlocked ? Icons.lock_open : Icons.block,
+                          titleColor: isBlocked ? Colors.green : Colors.red,
+                          iconColor: isBlocked ? Colors.green : Colors.red,
+                          onTap: () {
+                            if (isBlocked) {
+                              controller.unblockUser();
+                            } else {
+                              controller.blockUser();
+                            }
+                          },
+                        );
+                      }),
+                    ],
                   ),
 
-                  Positioned(
-                    bottom: 20,
-                    right: 20,
-                    child: Row(
-                      children: [
-
-                        GestureDetector(
-                          onTap:()=>showComingSoon(context),
-                        child:_headerAction(Icons.videocam_rounded)),
-                        const SizedBox(width: 14),
-
-                        GestureDetector(
-                          onTap: ()=>showComingSoon(context),
-                       child: _headerAction(Icons.call_rounded)),
-                      ],
-                    ),
-                  )
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-          ),
-
-          // CONTENT
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-
-                // Card: User info
-                _sectionCard(
-                  children: [
-                    _tile(
-                      title: (user.localName != null && user.localName!.isNotEmpty)
-                          ? user.localName!
-                          : "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
-                      subtitle: "Name",
-                      icon: Icons.person,
-                    ),
-
-                    _tile(
-                      title: "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
-                      subtitle: "Phone Number",
-                      icon: Icons.phone,
-                      trailing:
-
-                      GestureDetector(
-                          onTap: () =>Get.back(),
-
-                     child: Icon(Icons.message)),
-                    ),
-                    if (user.userDescription != null &&
-                        user.userDescription!.isNotEmpty)
-                      _tile(
-                        title: user.userDescription!,
-                        subtitle: "About",
-                        icon: Icons.info_outline,
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-
-                const SizedBox(height: 12),
-
-                // Settings: Mute, Wall
-                // /aper, Block
-                _sectionCard(
-                  children: [
-                    // _tile(
-                    //   title: "Mute notifications",
-                    //   icon: Icons.notifications_off,
-                    //   trailing: Switch(
-                    //     value: false,
-                    //     onChanged: (v) {},
-                    //   ),
-                    // ),
-                    // _tile(
-                    //   title: "Wallpaper",
-                    //   icon: Icons.wallpaper,
-                    //   onTap: () {},
-                    // ),
-                    _sectionCard(
-                      children: [
-                        Obx(() {
-                          final isBlocked = controller.blocked.value;
-
-                          return _tile(
-                            title: isBlocked
-                                ? "Unblock ${user.localName ?? ''}"
-                                : "Block ${user.localName ?? ''}",
-                            icon: isBlocked ? Icons.lock_open : Icons.block,
-                            titleColor: isBlocked ? Colors.green : Colors.red,
-                            iconColor: isBlocked ? Colors.green : Colors.red,
-                            onTap: () {
-                              if (isBlocked) {
-                                controller.unblockUser();
-                              } else {
-                                controller.blockUser();
-                              }
-                            },
-                          );
-                        }),
-                      ],
-                    ),
-
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ],
-      )
+          ],
+        ),
       ),
     );
   }
@@ -189,6 +176,7 @@ final  SingleChatController controller=Get.find<SingleChatController>();
       child: Icon(icon, color: Colors.white),
     );
   }
+
   Widget _sectionCard({required List<Widget> children}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -196,11 +184,7 @@ final  SingleChatController controller=Get.find<SingleChatController>();
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Column(children: children),
@@ -231,23 +215,28 @@ final  SingleChatController controller=Get.find<SingleChatController>();
     );
   }
 
-  Widget _mediaShortcut(IconData icon, String label, Color color,BuildContext context) {
+  Widget _mediaShortcut(
+    IconData icon,
+    String label,
+    Color color,
+    BuildContext context,
+  ) {
     return Column(
       children: [
         GestureDetector(
-          onTap: ()=>showComingSoon(context),
-       child:
-       CircleAvatar(
-          radius: 26,
-          backgroundColor: color.withOpacity(0.2),
-          child: Icon(icon, color: color),
-        ),
+          onTap: () => showComingSoon(context),
+          child: CircleAvatar(
+            radius: 26,
+            backgroundColor: color.withOpacity(0.2),
+            child: Icon(icon, color: color),
+          ),
         ),
         const SizedBox(height: 6),
         Text(label),
       ],
     );
   }
+
   void showComingSoon(BuildContext context) {
     showDialog(
       context: context,

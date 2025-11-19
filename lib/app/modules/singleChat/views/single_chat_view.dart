@@ -20,7 +20,6 @@ class SingleChatView extends GetView<SingleChatController> {
       resizeToAvoidBottomInset: true,
       backgroundColor: bgColor,
 
-
       appBar: AppBar(
         backgroundColor: textBarColor,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -104,7 +103,7 @@ class SingleChatView extends GetView<SingleChatController> {
                                       .connectivityService
                                       .isConnected
                                       .value ||
-                                  controller.blocked == true) {
+                                  controller.blocked.value == true) {
                                 return const SizedBox.shrink();
                               }
 

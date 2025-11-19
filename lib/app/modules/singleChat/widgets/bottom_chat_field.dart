@@ -25,10 +25,8 @@ class BottomChatField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child:
-
-
-
+    return
+      SafeArea(child:
       Column(
       children: [
         Obx(
@@ -108,7 +106,6 @@ class BottomChatField extends StatelessWidget {
               Obx(
                 () => !singleChatController.isRecording.value
                     ? Expanded(
-
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 200),
                           child: TextFormField(
@@ -200,13 +197,18 @@ class BottomChatField extends StatelessWidget {
                                                 color: greyMsgColor,
                                               ),
                                             )
-
                                           : const SizedBox.shrink(),
 
                                       IconButton(
-                                        onPressed: () => showAttachmentSheet(context, singleChatController),
-                                        icon: const Icon(Icons.attach_file, color: Colors.grey),
-                                      )
+                                        onPressed: () => showAttachmentSheet(
+                                          context,
+                                          singleChatController,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.attach_file,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
 
                                       // IconButton(
                                       //   onPressed: () {
@@ -226,7 +228,7 @@ class BottomChatField extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              hintText: 'Message!',
+                              hintText: 'message ...',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
                                 borderSide: BorderSide.none,
@@ -256,22 +258,24 @@ class BottomChatField extends StatelessWidget {
                               IconButton(
                                 icon: singleChatController.isPause
                                     ? const Icon(
-                                        Icons.refresh,
+                                        Icons.play_arrow,
                                         color: textBarColor,
                                         size: 30,
                                       )
                                     : const Icon(
-                                        Icons.stop,
+                                        Icons.pause,
                                         color: textBarColor,
                                         size: 30,
                                       ),
                                 onPressed: () {
                                   if (singleChatController.isPause) {
-                                    singleChatController
-                                        .pauseRecordingAudioWaveform();
-                                  } else {
+                                    // isPause = true → show Play → USER WANTS TO RESUME
                                     singleChatController
                                         .restartRecordingAudioWaveform();
+                                  } else {
+                                    // isPause = false → show Pause → USER WANTS TO PAUSE
+                                    singleChatController
+                                        .pauseRecordingAudioWaveform();
                                   }
                                 },
                               ),

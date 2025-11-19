@@ -256,22 +256,24 @@ class BottomChatField extends StatelessWidget {
                               IconButton(
                                 icon: singleChatController.isPause
                                     ? const Icon(
-                                        Icons.refresh,
+                                        Icons.play_arrow,
                                         color: textBarColor,
                                         size: 30,
                                       )
                                     : const Icon(
-                                        Icons.stop,
+                                        Icons.pause,
                                         color: textBarColor,
                                         size: 30,
                                       ),
                                 onPressed: () {
                                   if (singleChatController.isPause) {
-                                    singleChatController
-                                        .pauseRecordingAudioWaveform();
-                                  } else {
+                                    // isPause = true → show Play → USER WANTS TO RESUME
                                     singleChatController
                                         .restartRecordingAudioWaveform();
+                                  } else {
+                                    // isPause = false → show Pause → USER WANTS TO PAUSE
+                                    singleChatController
+                                        .pauseRecordingAudioWaveform();
                                   }
                                 },
                               ),

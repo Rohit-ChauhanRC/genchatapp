@@ -299,8 +299,9 @@ class SingleChatController extends GetxController
     //   vsync: this,
     //   duration: const Duration(seconds: 1),
     // );
-    socketService.monitorReceiverTyping(
-        receiverUserData!.userId.toString(), (isTyping,) {
+    socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
+      isTyping,
+    ) {
       if (blocked.value == false) {
         _isReceiverTyping.value = isTyping;
       }
@@ -451,7 +452,7 @@ class SingleChatController extends GetxController
     ));
     if (blockedByMeI != null) {
       blocked.value = blockedI!;
-      blockedByMe.value = blockedByMeI!;
+      blockedByMe.value = senderuserData!.userId! == blockedByMeI ? 1 : 2;
       if (blocked.value == true) {
         final user = await chatConectTable.fetchById(
           uid: receiverUserData!.userId!.toString(),
@@ -675,7 +676,7 @@ class SingleChatController extends GetxController
       if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
         return (msg.senderId == receiverUserData?.userId &&
-            msg.recipientId == senderuserData?.userId) ||
+                msg.recipientId == senderuserData?.userId) ||
             (msg.senderId == receiverUserData?.userId &&
                 msg.recipientId == senderuserData?.userId);
       }
@@ -720,8 +721,8 @@ class SingleChatController extends GetxController
       if (ack == null) return;
 
       int index = messageList.indexWhere(
-            (msg) =>
-        msg.clientSystemMessageId == ack.clientSystemMessageId ||
+        (msg) =>
+            msg.clientSystemMessageId == ack.clientSystemMessageId ||
             msg.messageId == ack.messageId,
       );
 
@@ -804,8 +805,8 @@ class SingleChatController extends GetxController
 
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
-            i.state == MessageState.unsent ||
-            i.state == MessageState.delivered) &&
+                i.state == MessageState.unsent ||
+                i.state == MessageState.delivered) &&
             i.messageId != null) {
           if (receiverUserData!.userId == i.senderId &&
               socketService.isConnected) {
@@ -1014,10 +1015,10 @@ class SingleChatController extends GetxController
 
       final isLast = hasMessageId
           ? await MessageTable().isLastMessage(
-        messageId: message.messageId!,
-        senderId: message.senderId!,
-        receiverId: message.recipientId!,
-      )
+              messageId: message.messageId!,
+              senderId: message.senderId!,
+              receiverId: message.recipientId!,
+            )
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
@@ -1026,7 +1027,7 @@ class SingleChatController extends GetxController
         );
         // 🟢 Remove from message list (offline messages)
         messageList.removeWhere(
-              (m) => m.clientSystemMessageId == message.clientSystemMessageId,
+          (m) => m.clientSystemMessageId == message.clientSystemMessageId,
         );
         continue;
       }
@@ -1055,7 +1056,7 @@ class SingleChatController extends GetxController
 
           // 🟢 Update messageList manually
           final index = messageList.indexWhere(
-                (m) => m.messageId == message.messageId,
+            (m) => m.messageId == message.messageId,
           );
           if (index != -1) {
             messageList[index] = messageList[index].copyWith(
@@ -1153,7 +1154,7 @@ class SingleChatController extends GetxController
 
     // ❗ If even one selected message is deleted, disable forward
     final hasDeleted = selected.any(
-          (msg) => msg.messageType == MessageType.deleted,
+      (msg) => msg.messageType == MessageType.deleted,
     );
 
     if (hasDeleted) {
@@ -1169,8 +1170,8 @@ class SingleChatController extends GetxController
 
     // Optional: limit media messages
     final mediaMessages = selected.where(
-          (msg) =>
-      msg.messageType == MessageType.image ||
+      (msg) =>
+          msg.messageType == MessageType.image ||
           msg.messageType == MessageType.video ||
           msg.messageType == MessageType.audio ||
           msg.messageType == MessageType.document ||
@@ -1193,60 +1194,51 @@ class SingleChatController extends GetxController
   }
 
   void selectFile(String fileType) async {
+    if (fileType == MessageType.image.value) {
+      final files = await FilePickerService().pickImagesFromGalleryWithCrop();
 
+      if (files.isEmpty) return;
 
-      if (fileType == MessageType.image.value)
-      {
-        final files = await FilePickerService().pickImagesFromGalleryWithCrop();
+      final fileTypeValue = getMessageType(files.first).value;
 
-        if (files.isEmpty) return;
-
-        final fileTypeValue = getMessageType(files.first).value;
-
-        Get.to(() => MediaPreviewScreen(
+      Get.to(
+        () => MediaPreviewScreen(
           files: files,
           fileType: fileTypeValue,
           onSend: (List<File> selectedFiles) async {
             for (final f in selectedFiles) {
-              await sendFileMessage(
-                file: f,
-                messageEnum: getMessageType(f),
-              );
+              await sendFileMessage(file: f, messageEnum: getMessageType(f));
             }
             cancelReply();
           },
-        ));
-      }
-
-    else if (fileType == MessageType.video.value) {
+        ),
+      );
+    } else if (fileType == MessageType.video.value) {
       final selectedFiles = await pickVideos();
       for (File file in selectedFiles) {
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
         cancelReply();
       }
-
-    }
-    else if (fileType == MessageType.camera.value) {
+    } else if (fileType == MessageType.camera.value) {
       // pickFromCamera returns List<File> (may be single file)
       final files = await FilePickerService().pickFromCamera(Get.context!);
       if (files.isEmpty) return;
 
       final fileTypeValue = getMessageType(files.first).value;
 
-      Get.to(() => MediaPreviewScreen(
-        files: files,
-        fileType: fileTypeValue,
-        onSend: (List<File> selectedFiles) async {
-          for (final f in selectedFiles) {
-            await sendFileMessage(file: f, messageEnum: getMessageType(f));
-          }
-          cancelReply();
-        },
-      ));
-    }
-
-
-    else if (fileType == MessageType.audio.value) {
+      Get.to(
+        () => MediaPreviewScreen(
+          files: files,
+          fileType: fileTypeValue,
+          onSend: (List<File> selectedFiles) async {
+            for (final f in selectedFiles) {
+              await sendFileMessage(file: f, messageEnum: getMessageType(f));
+            }
+            cancelReply();
+          },
+        ),
+      );
+    } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       // pickAndSendAudios
       await pickAndSendAudios((selectedFiles) async {
@@ -1839,10 +1831,11 @@ class SingleChatController extends GetxController
 
   Future<void> pauseRecordingAudioWaveform() async {
     try {
-      recorderController.refresh();
-      await recorderController.record(path: recordedPath.value);
+      isPause = true;
 
-      isPause = false;
+      // recorderController.refresh();
+      // await recorderController.record(path: recordedPath.value);
+      await recorderController.pause();
 
       isPreviewing.value = true;
     } catch (e) {
@@ -1852,9 +1845,10 @@ class SingleChatController extends GetxController
 
   Future<void> restartRecordingAudioWaveform() async {
     try {
-      await recorderController.stop(false);
+      // await recorderController.stop(false);
+      await recorderController.record(path: recordedPath.value);
 
-      isPause = true;
+      isPause = false;
 
       isPreviewing.value = true;
     } catch (e) {

@@ -17,55 +17,33 @@ class FilePickerService {
   Future<List<File>> pickFromCamera(BuildContext context) async {
     List<File> _files = [];
 
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select media type'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'image'),
-            child: const Text('Photo'),
-          ),
-          // TextButton(
-          //   onPressed: () => Navigator.pop(context, 'video'),
-          //   child: const Text('Video'),
-          // ),
-        ],
-      ),
+    // Directly open CAMERA for IMAGE
+    final image = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+      preferredCameraDevice: CameraDevice.rear,
     );
 
-    if (choice == 'image') {
-      final image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-        preferredCameraDevice: CameraDevice.rear,
+    if (image != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
+          ),
+          IOSUiSettings(title: 'Cropper'),
+        ],
       );
 
-      if (image != null) {
-        final croppedFile = await ImageCropper().cropImage(
-          sourcePath: image.path,
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: 'Cropper',
-              toolbarColor: Colors.deepOrange,
-              toolbarWidgetColor: Colors.white,
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-              ],
-            ),
-            IOSUiSettings(title: 'Cropper'),
-          ],
-        );
-
-        if (croppedFile != null) _files.add(File(croppedFile.path));
+      if (croppedFile != null) {
+        _files.add(File(croppedFile.path));
       }
-    } else if (choice == 'video') {
-      final video = await _picker.pickVideo(
-        source: ImageSource.camera,
-        maxDuration: const Duration(minutes: 5),
-      );
-      if (video != null) _files.add(File(video.path));
     }
 
     return _files;
@@ -186,7 +164,9 @@ class FilePickerService {
     for (var file in pickedFiles) {
       final type = getMessageType(file);
 
+
       // -----------------------------
+
       // IMAGE PROCESSING
       // -----------------------------
       if (type == MessageType.image) {
@@ -287,7 +267,17 @@ class FilePickerService {
 
     return _imageFiles;
   }
+  Future<List<File>> pickVideoFromCamera() async {
+    final pickedVideo = await ImagePicker().pickVideo(
+      source: ImageSource.camera,
+      maxDuration: const Duration(minutes: 5),
+      preferredCameraDevice: CameraDevice.rear,
+    );
 
+    if (pickedVideo == null) return [];
+
+    return [File(pickedVideo.path)];
+  }
   Future<List<File>> pickFromGalleryVideo() async {
     List<File> _imageFiles = [];
 
@@ -379,6 +369,43 @@ class FilePickerService {
     // -----------------------------
 
     return _imageFiles;
+  }
+  Future<List<File>> pickImagesFromGalleryWithCrop() async {
+    List<File> resultFiles = [];
+
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+    );
+
+    if (picked == null || picked.files.isEmpty) return [];
+
+    final paths = picked.paths.whereType<String>().toList();
+
+    for (final path in paths) {
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: path,
+        compressQuality: 80,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
+          ),
+          IOSUiSettings(title: 'Cropper'),
+        ],
+      );
+
+      if (cropped != null) {
+        resultFiles.add(File(cropped.path));
+      }
+    }
+
+    return resultFiles;
   }
 
   /// Pick multiple documents (pdf, docx, etc.)

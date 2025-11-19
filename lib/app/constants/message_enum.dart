@@ -128,6 +128,7 @@ enum MessageType {
   video,
   gif,
   deleted,
+  camera,
   document
 }
 
@@ -148,6 +149,8 @@ extension MessageTypeExtension on MessageType{
         return 'deleted';
       case MessageType.document:
         return 'document';
+      case MessageType.camera:
+        return 'camera';
     }
   }
 

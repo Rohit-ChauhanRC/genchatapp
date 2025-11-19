@@ -329,7 +329,7 @@ class GroupBottomChatField extends StatelessWidget {
                                                     groupChatsController
                                                         .selectFile(
                                                           MessageType
-                                                              .image
+                                                              .camera
                                                               .value,
                                                         );
                                                   },

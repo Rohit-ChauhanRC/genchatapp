@@ -22,21 +22,29 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:gif/gif.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../Camera/CameraView/PreviewScreen.dart';
+import '../../../config/services/filePickerService.dart';
 import '../../../config/services/folder_creation.dart';
 import '../../../config/services/socket_service.dart';
 import '../../../constants/constants.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
 import '../../../data/models/new_models/response_model/message_ack_model.dart';
+import '../../../data/repositories/status/status_repository.dart';
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
+
+import '../mediaPickerFiles/media_preview_screen.dart';
+import '../widgets/image_preview.dart';
 
 class SingleChatController extends GetxController
     with WidgetsBindingObserver, GetSingleTickerProviderStateMixin {
@@ -61,6 +69,7 @@ class SingleChatController extends GetxController
   final selectedContactController = Get.find<SelectContactsController>();
 
   var hasScrolledInitially = false.obs;
+
   // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
 
@@ -71,23 +80,33 @@ class SingleChatController extends GetxController
   final ScrollController scrollController = ScrollController();
 
   final Rx<MessageReply> _messageReply = MessageReply().obs;
+
   MessageReply get messageReply => _messageReply.value;
+
   set messageReply(MessageReply msg) => _messageReply.value = msg;
 
   final RxBool _isShowSendButton = false.obs;
+
   bool get isShowSendButton => _isShowSendButton.value;
+
   set isShowSendButton(bool b) => _isShowSendButton.value = b;
 
   final RxBool _isRepUpdate = false.obs;
+
   bool get isRepUpdate => _isRepUpdate.value;
+
   set isRepUpdate(bool b) => _isRepUpdate.value = b;
 
   final RxBool _isReply = false.obs;
+
   bool get isReply => _isReply.value;
+
   set isReply(bool b) => _isReply.value = b;
 
   final RxBool _isShowEmojiContainer = false.obs;
+
   bool get isShowEmojiContainer => _isShowEmojiContainer.value;
+
   set isShowEmojiContainer(bool b) => _isShowEmojiContainer.value = b;
 
   // final RxBool _isRecording = false.obs;
@@ -95,29 +114,39 @@ class SingleChatController extends GetxController
   // set isRecording(bool b) => _isRecording.value = b;
 
   final RxBool _isPause = false.obs;
+
   bool get isPause => _isPause.value;
+
   set isPause(bool b) => _isPause.value = b;
 
   final RxBool _isRecorderInit = false.obs;
+
   bool get isRecorderInit => _isRecorderInit.value;
+
   set isRecorderInit(bool b) => _isRecorderInit.value = b;
 
   final RxBool _isReceiverTyping = false.obs;
+
   bool get isReceiverTyping => _isReceiverTyping.value;
+
   set isReceiverTyping(bool b) => _isReceiverTyping.value = b;
 
   final RxBool _isLoading = true.obs;
+
   bool get isLoading => _isLoading.value;
+
   set isLoading(bool b) => _isLoading.value = b;
 
   // blocked
   final RxBool blocked = true.obs;
+
   // bool get blocked => _blocked.value;
   // set blocked(bool b) => _blocked.value = b;
 
   // blockedByMe
 
   final RxInt blockedByMe = 0.obs;
+
   // int get blockedByMe => _blockedByMe.value;
   // set blockedByMe(int b) => _blockedByMe.value = b;
 
@@ -126,26 +155,36 @@ class SingleChatController extends GetxController
   FocusNode focusNode = FocusNode();
 
   final Rx<UserData?> _senderuserData = UserData().obs;
+
   UserData? get senderuserData => _senderuserData.value;
+
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
   final Rx<UserList?> _receiverUserData = Rx<UserList?>(null);
+
   UserList? get receiverUserData => _receiverUserData.value;
+
   set receiverUserData(UserList? userData) {
     // print("receiverUserData updated: ${userData?.isOnline}");
     _receiverUserData.value = (userData);
   }
 
   final RxString _id = "".obs;
+
   String get id => _id.value;
+
   set id(String str) => _id.value = str;
 
   final RxString _fullname = "".obs;
+
   String get fullname => _fullname.value;
+
   set fullname(String str) => _fullname.value = str;
 
   final RxString _rootPath = "".obs;
+
   String get rootPath => _rootPath.value;
+
   set rootPath(String str) => _rootPath.value = str;
 
   final RxList<NewMessageModel> selectedMessages = <NewMessageModel>[].obs;
@@ -182,23 +221,33 @@ class SingleChatController extends GetxController
   final ValueNotifier<String?> highlightedMessageId = ValueNotifier(null);
 
   final RxBool _isInCurrentChat = true.obs;
+
   bool get isInCurrentChat => _isInCurrentChat.value;
+
   set isInCurrentChat(bool b) => _isInCurrentChat.value = b;
 
   final RxInt _currentOffset = 0.obs;
+
   int get currentOffset => _currentOffset.value;
+
   set currentOffset(int a) => _currentOffset.value = a;
 
   final RxInt _pageSize = 10.obs;
+
   int get pageSize => _pageSize.value;
+
   set pageSize(int a) => _pageSize.value = a;
 
   final RxBool _isPaginating = false.obs;
+
   bool get isPaginating => _isPaginating.value;
+
   set isPaginating(bool b) => _isPaginating.value = b;
 
   final RxBool _hasMoreMessages = true.obs;
+
   bool get hasMoreMessages => _hasMoreMessages.value;
+
   set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
 
   // late AnimationController animationController;
@@ -250,9 +299,8 @@ class SingleChatController extends GetxController
     //   vsync: this,
     //   duration: const Duration(seconds: 1),
     // );
-    socketService.monitorReceiverTyping(receiverUserData!.userId.toString(), (
-      isTyping,
-    ) {
+    socketService.monitorReceiverTyping(
+        receiverUserData!.userId.toString(), (isTyping,) {
       if (blocked.value == false) {
         _isReceiverTyping.value = isTyping;
       }
@@ -627,7 +675,7 @@ class SingleChatController extends GetxController
       if (!isInCurrentChat) return;
       bool isFromCurrentChat(NewMessageModel msg) {
         return (msg.senderId == receiverUserData?.userId &&
-                msg.recipientId == senderuserData?.userId) ||
+            msg.recipientId == senderuserData?.userId) ||
             (msg.senderId == receiverUserData?.userId &&
                 msg.recipientId == senderuserData?.userId);
       }
@@ -672,8 +720,8 @@ class SingleChatController extends GetxController
       if (ack == null) return;
 
       int index = messageList.indexWhere(
-        (msg) =>
-            msg.clientSystemMessageId == ack.clientSystemMessageId ||
+            (msg) =>
+        msg.clientSystemMessageId == ack.clientSystemMessageId ||
             msg.messageId == ack.messageId,
       );
 
@@ -756,8 +804,8 @@ class SingleChatController extends GetxController
 
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
-                i.state == MessageState.unsent ||
-                i.state == MessageState.delivered) &&
+            i.state == MessageState.unsent ||
+            i.state == MessageState.delivered) &&
             i.messageId != null) {
           if (receiverUserData!.userId == i.senderId &&
               socketService.isConnected) {
@@ -966,10 +1014,10 @@ class SingleChatController extends GetxController
 
       final isLast = hasMessageId
           ? await MessageTable().isLastMessage(
-              messageId: message.messageId!,
-              senderId: message.senderId!,
-              receiverId: message.recipientId!,
-            )
+        messageId: message.messageId!,
+        senderId: message.senderId!,
+        receiverId: message.recipientId!,
+      )
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
@@ -978,7 +1026,7 @@ class SingleChatController extends GetxController
         );
         // 🟢 Remove from message list (offline messages)
         messageList.removeWhere(
-          (m) => m.clientSystemMessageId == message.clientSystemMessageId,
+              (m) => m.clientSystemMessageId == message.clientSystemMessageId,
         );
         continue;
       }
@@ -1007,7 +1055,7 @@ class SingleChatController extends GetxController
 
           // 🟢 Update messageList manually
           final index = messageList.indexWhere(
-            (m) => m.messageId == message.messageId,
+                (m) => m.messageId == message.messageId,
           );
           if (index != -1) {
             messageList[index] = messageList[index].copyWith(
@@ -1090,7 +1138,9 @@ class SingleChatController extends GetxController
   }
 
   final RxBool _canForward = false.obs;
+
   bool get canForward => _canForward.value;
+
   set canForward(bool b) => _canForward.value = b;
 
   void updateForwardAvailability() {
@@ -1103,7 +1153,7 @@ class SingleChatController extends GetxController
 
     // ❗ If even one selected message is deleted, disable forward
     final hasDeleted = selected.any(
-      (msg) => msg.messageType == MessageType.deleted,
+          (msg) => msg.messageType == MessageType.deleted,
     );
 
     if (hasDeleted) {
@@ -1119,8 +1169,8 @@ class SingleChatController extends GetxController
 
     // Optional: limit media messages
     final mediaMessages = selected.where(
-      (msg) =>
-          msg.messageType == MessageType.image ||
+          (msg) =>
+      msg.messageType == MessageType.image ||
           msg.messageType == MessageType.video ||
           msg.messageType == MessageType.audio ||
           msg.messageType == MessageType.document ||
@@ -1143,21 +1193,60 @@ class SingleChatController extends GetxController
   }
 
   void selectFile(String fileType) async {
-    if (fileType == MessageType.image.value) {
-      final selectedFiles = await pickImageAndVideo();
-      for (File file in selectedFiles) {
-        print("Yes Getting back all files:---> $file");
-        await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        cancelReply();
+
+
+      if (fileType == MessageType.image.value)
+      {
+        final files = await FilePickerService().pickImagesFromGalleryWithCrop();
+
+        if (files.isEmpty) return;
+
+        final fileTypeValue = getMessageType(files.first).value;
+
+        Get.to(() => MediaPreviewScreen(
+          files: files,
+          fileType: fileTypeValue,
+          onSend: (List<File> selectedFiles) async {
+            for (final f in selectedFiles) {
+              await sendFileMessage(
+                file: f,
+                messageEnum: getMessageType(f),
+              );
+            }
+            cancelReply();
+          },
+        ));
       }
-    } else if (fileType == MessageType.video.value) {
+
+    else if (fileType == MessageType.video.value) {
       final selectedFiles = await pickVideos();
       for (File file in selectedFiles) {
-        print("Yes Getting back all files:---> $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
         cancelReply();
       }
-    } else if (fileType == MessageType.audio.value) {
+
+    }
+    else if (fileType == MessageType.camera.value) {
+      // pickFromCamera returns List<File> (may be single file)
+      final files = await FilePickerService().pickFromCamera(Get.context!);
+      if (files.isEmpty) return;
+
+      final fileTypeValue = getMessageType(files.first).value;
+
+      Get.to(() => MediaPreviewScreen(
+        files: files,
+        fileType: fileTypeValue,
+        onSend: (List<File> selectedFiles) async {
+          for (final f in selectedFiles) {
+            await sendFileMessage(file: f, messageEnum: getMessageType(f));
+          }
+          cancelReply();
+        },
+      ));
+    }
+
+
+    else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       // pickAndSendAudios
       await pickAndSendAudios((selectedFiles) async {

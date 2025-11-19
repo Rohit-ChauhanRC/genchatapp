@@ -11,7 +11,10 @@ void showAttachmentSheetGroup(BuildContext context,GroupChatsController GroupCha
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (_) {
-      return Padding(
+      return SafeArea(child:
+
+
+        Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,10 +63,11 @@ void showAttachmentSheetGroup(BuildContext context,GroupChatsController GroupCha
             const SizedBox(height: 10),
           ],
         ),
-      );
+        ) );
     },
   );
 }
+
 
 Widget _buildAttachmentItemGroup({
   required IconData icon,

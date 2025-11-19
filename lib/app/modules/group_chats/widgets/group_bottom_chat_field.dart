@@ -364,7 +364,7 @@ class GroupBottomChatField extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  hintText: 'Type a message!',
+                                  hintText: 'Message!',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(20.0),
                                     borderSide: BorderSide.none,

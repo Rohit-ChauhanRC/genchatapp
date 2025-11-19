@@ -143,6 +143,7 @@ class SingleChatController extends GetxController
   // bool get blocked => _blocked.value;
   // set blocked(bool b) => _blocked.value = b;
 
+
   // blockedByMe
 
   final RxInt blockedByMe = 0.obs;
@@ -409,8 +410,9 @@ class SingleChatController extends GetxController
         1,
       );
 
-      await selectedContactController.syncContactsWithServer();
 
+      await selectedContactController.syncContactsWithServer();
+     Get.back();
       // "contact blocked successfully"
     }
   }
@@ -436,7 +438,7 @@ class SingleChatController extends GetxController
       );
 
       await selectedContactController.syncContactsWithServer();
-
+Get.back();
       // "contact blocked successfully"
     }
   }
@@ -507,6 +509,7 @@ class SingleChatController extends GetxController
       print('Original message not currently visible');
       checkMessageInList(repliedId);
     }
+
   }
 
   //  Future<void> checkMessageInList(int repliedId) async {
@@ -1074,9 +1077,8 @@ class SingleChatController extends GetxController
             );
           }
         } else {
-          // 🟣 Delete for me only
           await MessageTable().deleteMessage(message.messageId!);
-          // 🟣 Remove from messageList
+          // Remove from messageList
           messageList.removeWhere((m) => m.messageId == message.messageId);
           if (isOnline) {
             if (message.senderId != receiverUserData?.userId) {

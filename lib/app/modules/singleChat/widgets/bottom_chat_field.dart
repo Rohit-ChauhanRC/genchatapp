@@ -25,7 +25,11 @@ class BottomChatField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(child:
+
+
+
+      Column(
       children: [
         Obx(
           () =>
@@ -104,6 +108,7 @@ class BottomChatField extends StatelessWidget {
               Obx(
                 () => !singleChatController.isRecording.value
                     ? Expanded(
+
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 200),
                           child: TextFormField(
@@ -221,7 +226,7 @@ class BottomChatField extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              hintText: 'Type a message!',
+                              hintText: 'Message!',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
                                 borderSide: BorderSide.none,
@@ -333,6 +338,6 @@ class BottomChatField extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
       ],
-    );
+      ));
   }
 }

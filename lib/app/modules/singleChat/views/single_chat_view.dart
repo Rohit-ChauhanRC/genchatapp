@@ -243,7 +243,9 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
         ],
       ),
-      body: Column(
+      body:
+      SafeArea(child:
+      Column(
         children: [
           Expanded(
             child: ChatList(
@@ -291,7 +293,7 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
         ],
       ),
-    );
+      ) );
   }
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {

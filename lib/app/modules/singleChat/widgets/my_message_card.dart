@@ -17,6 +17,7 @@ class MyMessageCard extends StatelessWidget {
     required this.status,
     required this.syncStatus,
     required this.onLeftSwipe,
+
     required this.repliedText,
     required this.repliedMessageType,
     this.repliedUserId,

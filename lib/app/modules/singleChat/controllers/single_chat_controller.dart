@@ -643,7 +643,6 @@ class SingleChatController extends GetxController
       }
     });
   }
-
   void scrollToBottom({bool animated = false}) {
     if (itemScrollController.isAttached) {
       final lastIndex = messageList.length - 1;

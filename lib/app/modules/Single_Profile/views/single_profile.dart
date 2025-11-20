@@ -129,7 +129,6 @@ class SingleUserProfileView extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Settings: Mute, Wall
-                  // /aper, Block
                   _sectionCard(
                     children: [
                       Obx(() {

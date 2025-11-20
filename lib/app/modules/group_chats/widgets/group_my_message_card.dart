@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_display_text_image_gif.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -62,6 +63,7 @@ class GroupMyMessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<GroupChatsController>();
     final replyText1 = repliedText.value.trim();
     final hasReply1 =
         replyText1.isNotEmpty &&
@@ -196,7 +198,48 @@ class GroupMyMessageCard extends StatelessWidget {
                                     type == MessageType.document ||
                                     type == MessageType.audio)) ...[
                               Obx(() {
-                                if (isRetryUploadFile.value) {
+                                final percent = controller.percent.value;
+
+                                // Show live upload progress (0–100%) over the media while uploading
+                                if (syncStatus == SyncStatus.pending &&
+                                    percent > 0.0 &&
+                                    percent < 100.0) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black54,
+                                    ),
+                                    padding: const EdgeInsets.all(10),
+                                    child: SizedBox(
+                                      height: 32,
+                                      width: 32,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            value: percent / 100,
+                                            strokeWidth: 3,
+                                            valueColor:
+                                                const AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                            backgroundColor:
+                                                Colors.white.withOpacity(0.2),
+                                          ),
+                                          Text(
+                                            "${percent.toStringAsFixed(0)}%",
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else if (isRetryUploadFile.value &&
+                                    syncStatus == SyncStatus.pending) {
                                   return Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,

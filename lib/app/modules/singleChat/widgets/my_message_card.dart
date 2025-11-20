@@ -222,8 +222,45 @@ class MyMessageCard extends StatelessWidget {
                               //       : const SizedBox.shrink(),
                               // ),
                               Obx(() {
-                                if (isRetryUploadFile.value &&
-                                    percent.value < 1.0 &&
+                                // Show live upload progress (0–100%) over the media while uploading
+                                if (syncStatus == SyncStatus.pending &&
+                                    percent.value > 0.0 &&
+                                    percent.value < 100.0) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black54,
+                                    ),
+                                    padding: const EdgeInsets.all(10),
+                                    child: SizedBox(
+                                      height: 32,
+                                      width: 32,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            value: percent.value / 100,
+                                            strokeWidth: 3,
+                                            valueColor:
+                                                const AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                            backgroundColor:
+                                                Colors.white.withOpacity(0.2),
+                                          ),
+                                          Text(
+                                            "${percent.value.toStringAsFixed(0)}%",
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else if (isRetryUploadFile.value &&
                                     syncStatus == SyncStatus.pending) {
                                   return Container(
                                     decoration: const BoxDecoration(
@@ -241,7 +278,7 @@ class MyMessageCard extends StatelessWidget {
                                     ),
                                   );
                                 } else if (syncStatus == SyncStatus.pending &&
-                                    percent.value < 1.0) {
+                                    percent.value == 0.0) {
                                   return InkWell(
                                     onTap: () {
                                       if (!isRetryUploadFile.value) {

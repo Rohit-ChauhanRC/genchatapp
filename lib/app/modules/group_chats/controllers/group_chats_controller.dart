@@ -1071,8 +1071,14 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final response = await profileRepository.uploadMessageFiles(
         imageFile,
         onProgress: (sent, total) {
-          final percent = (sent / total) * 100;
-          print("📤 Upload progress: ${percent.toStringAsFixed(0)}%");
+          if (total > 0) {
+            percent.value = (sent / total) * 100;
+            print("📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(0)}%");
+            if (percent.value >= 100) {
+              // reset after completion to avoid stale value on next upload
+              percent.value = 0.0;
+            }
+          }
         },
       );
 
@@ -1677,10 +1683,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> pauseRecordingAudioWaveform() async {
     try {
-      recorderController.refresh();
-      await recorderController.record(path: recordedPath.value);
+      isPause = true;
 
-      isPause = false;
+      // recorderController.refresh();
+      // await recorderController.record(path: recordedPath.value);
+      await recorderController.pause();
 
       isPreviewing.value = true;
     } catch (e) {
@@ -1690,9 +1697,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> restartRecordingAudioWaveform() async {
     try {
-      await recorderController.stop(false);
+      // await recorderController.stop(false);
+      await recorderController.record(path: recordedPath.value);
 
-      isPause = true;
+      isPause = false;
 
       isPreviewing.value = true;
     } catch (e) {

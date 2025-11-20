@@ -242,7 +242,7 @@ class FilePickerService {
               continue;
             }
 
-            if (compressed != null &&
+            if (compressed   != null &&
                 compressed.compressedFilePath != null &&
                 sizeInMB1 <= 50) {
               _imageFiles.add(File(compressed.compressedFilePath));

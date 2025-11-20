@@ -395,22 +395,22 @@ class GroupBottomChatField extends StatelessWidget {
                                   IconButton(
                                     icon: groupChatsController.isPause
                                         ? const Icon(
-                                            Icons.refresh,
+                                            Icons.play_arrow,
                                             color: textBarColor,
                                             size: 30,
                                           )
                                         : const Icon(
-                                            Icons.stop,
+                                            Icons.pause,
                                             color: textBarColor,
                                             size: 30,
                                           ),
                                     onPressed: () {
                                       if (groupChatsController.isPause) {
                                         groupChatsController
-                                            .pauseRecordingAudioWaveform();
+                                            .restartRecordingAudioWaveform();
                                       } else {
                                         groupChatsController
-                                            .restartRecordingAudioWaveform();
+                                            .pauseRecordingAudioWaveform();
                                       }
                                     },
                                   ),
@@ -450,7 +450,7 @@ class GroupBottomChatField extends StatelessWidget {
                             groupChatsController.isShowSendButton
                                 ? Icons.send
                                 : groupChatsController.isRecording.value
-                                ? Icons.close
+                                ? Icons.send
                                 : Icons.mic,
                           ),
                         ),

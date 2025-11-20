@@ -189,7 +189,9 @@ class SingleChatView extends GetView<SingleChatController> {
                 await controller.deleteTextMessage();
               } else if (value == block) {
                 await controller.blockUser();
+                // await controller.unblockUser();
               } else if (value == unBlock) {
+
                 await controller.unblockUser();
               }
               // switch (value) {
@@ -213,11 +215,14 @@ class SingleChatView extends GetView<SingleChatController> {
               PopupMenuItem(
                 value:
                     controller.blocked.value &&
-                        controller.blockedByMe.value == 1
+                        (controller.blockedByMe.value == 1 ||
+                            controller.blockedByMe.value == 3)
                     ? unBlock
                     : block,
                 child: Text(
-                  controller.blocked.value && controller.blockedByMe.value == 1
+                  controller.blocked.value &&
+                          (controller.blockedByMe.value == 1 ||
+                              controller.blockedByMe.value == 3)
                       ? unBlock
                       : block,
                   style: const TextStyle(
@@ -254,7 +259,9 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
           Obx(
             () =>
-                (controller.blocked.value && controller.blockedByMe.value == 1)
+                (controller.blocked.value &&
+                    (controller.blockedByMe.value == 1 ||
+                        controller.blockedByMe.value == 3))
                 ? Container(
                     color: textBarColor,
                     child: Row(

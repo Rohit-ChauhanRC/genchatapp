@@ -134,7 +134,8 @@ class SingleUserProfileView extends StatelessWidget {
                       Obx(() {
                         final isBlocked =
                             controller.blocked.value &&
-                                controller.blockedByMe.value == 1
+                                (controller.blockedByMe.value == 1 ||
+                                    controller.blockedByMe.value == 3)
                             ? true
                             : false;
 

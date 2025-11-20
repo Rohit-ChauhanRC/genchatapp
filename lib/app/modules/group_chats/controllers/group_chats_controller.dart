@@ -1126,8 +1126,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
+      print(
+          "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}");
 
-      final fileData = await uploadFileToServer(f.values.first!);
+      // Create message immediately so it appears in UI with local media
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.group?.id,
@@ -1157,29 +1159,50 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetOriginalName: "",
         assetServerName: fileWithExtensions,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
+        assetUrl: "",
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
             ? senderuserData?.userId
             : receiverUserData?.group?.id,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      print("[GroupChat] sendFileMessage -> created local message: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      if (fileData?.statusCode == 200 && fileData?.status == true) {
+      print("[GroupChat] sendFileMessage -> starting upload to server");
+      final fileData = await uploadFileToServer(f.values.first!);
+
+      if (fileData != null && fileData.statusCode == 200 && fileData.status == true) {
+        print("[GroupChat] sendFileMessage -> upload success: ${fileData.data?.url}");
+        final updatedMessage = newMessage.copyWith(
+          assetOriginalName: fileData.data?.originalName,
+          assetUrl: fileData.data?.url,
+          syncStatus: SyncStatus.synced,
+        );
+        await MessageTable().updateMessageByClientId(updatedMessage);
+        final index = messageList.indexWhere(
+          (m) => m.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (index != -1) {
+          messageList[index] = updatedMessage;
+          messageList.refresh();
+        }
         if (socketService.isConnected) {
-          socketService.sendMessage(newMessage);
+          socketService.sendMessage(updatedMessage);
+        } else {
+          socketService.saveChatContacts(updatedMessage);
         }
       } else {
+        print("[GroupChat] sendFileMessage -> upload failed or null response");
+        // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
+        print("[GroupChat] Error sending file message: $e");
       }
     }
   }
@@ -1206,9 +1229,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         },
       ));
     }
-    else if(fileType==MessageType.video.value){
-      final selectedFIle=await pickVideo();
-
+    else if (fileType == MessageType.video.value) {
+      final selectedFiles = await pickVideo();
+      for (final file in selectedFiles) {
+        print("[GroupChat] selectFile -> sending picked video: $file");
+        await sendFileMessage(
+          file: file,
+          messageEnum: getMessageType(file),
+        );
+      }
+      cancelReply();
     }
 
 

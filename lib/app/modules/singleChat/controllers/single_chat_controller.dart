@@ -398,18 +398,37 @@ class SingleChatController extends GetxController
 
     if (response != null && response.statusCode == 200) {
       blocked.value = true;
-      blockedByMe.value = 1;
 
-      await contactsTable.updateUserBlockUnblock(
+      final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
         receiverUserData!.userId!,
-        1,
-        senderuserData!.userId!,
-      );
-      await findUserBlock();
+      ));
+
+      if (blockedByMeI == null || blockedByMeI == 0) {
+        blockedByMe.value = 1;
+        await contactsTable.updateUserBlockUnblock(
+          receiverUserData!.userId!,
+          1,
+          1,
+        );
+        await chatConectTable.updateUserBlockUnblock(
+          receiverUserData!.userId!.toString(),
+          1,
+        );
+      } else if (blockedByMeI == 2) {
+        blockedByMe.value = 3;
+        await contactsTable.updateUserBlockUnblock(
+          receiverUserData!.userId!,
+          1,
+          3,
+        );
+      }
       await chatConectTable.updateUserBlockUnblock(
         receiverUserData!.userId!.toString(),
         1,
       );
+      // blockedByMe.value = 1;
+
+      await findUserBlock();
 
 
       await selectedContactController.syncContactsWithServer();
@@ -425,12 +444,32 @@ class SingleChatController extends GetxController
 
     if (response != null && response.statusCode == 200) {
       blocked.value = false;
-      blockedByMe.value = 0;
-      await contactsTable.updateUserBlockUnblock(
+      // blockedByMe.value = 0;
+
+      final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
         receiverUserData!.userId!,
-        0,
-        senderuserData!.userId!,
-      );
+      ));
+
+      if (blockedByMeI == 1) {
+        blockedByMe.value = 0;
+        await contactsTable.updateUserBlockUnblock(
+          receiverUserData!.userId!,
+          0,
+          0,
+        );
+        await chatConectTable.updateUserBlockUnblock(
+          receiverUserData!.userId!.toString(),
+          0,
+        );
+      } else if (blockedByMeI == 3) {
+        blockedByMe.value = 0;
+        await contactsTable.updateUserBlockUnblock(
+          receiverUserData!.userId!,
+          0,
+          2,
+        );
+      }
+
       // await findUserBlock();
       await chatConectTable.updateUserBlockUnblock(
         receiverUserData!.userId!.toString(),
@@ -444,44 +483,16 @@ class SingleChatController extends GetxController
   }
 
   Future<void> findUserBlock() async {
-    final userExist = await contactsTable.getUserById(
-      receiverUserData!.userId!,
-    );
-    // if (userExist != null) {
     final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
       receiverUserData!.userId!,
     ));
     if (blockedByMeI != null) {
       blocked.value = blockedI!;
-      blockedByMe.value = senderuserData!.userId! == blockedByMeI ? 1 : 2;
-      if (blocked.value == true) {
-        final user = await chatConectTable.fetchById(
-          uid: receiverUserData!.userId!.toString(),
-          isGroup: false,
-        );
-
-        final c = await chatConectTable.updateUserBlockUnblock(
-          receiverUserData!.userId!.toString(),
-          blocked.value ? 1 : 0,
-        );
-        print(c);
-
-        print(user);
-        // await chatConectTable.updateUserBlockUnblock(
-        //   receiverUserData!.userId!.toString(),
-        //   blocked ? 0 : 1,
-        // );
-        // await contactsTable.updateUserBlockUnblock(
-        //   receiverUserData!.userId!,
-        //   blocked ? 0 : 1,
-        // );
-        print("🚫 User is blocked");
-      }
-      // }
-    } else if (blocked == false) {
-      print("✅ User is not blocked");
+      blockedByMe.value = blockedByMeI;
     } else {
-      print("ℹ️ User not found in DB");
+      if (kDebugMode) {
+        print("ℹ️ User not found in DB");
+      }
     }
   }
 
@@ -1357,9 +1368,10 @@ class SingleChatController extends GetxController
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
+      print(
+          "[SingleChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}");
 
-      final fileData = await uploadFileToServer(f.values.first!);
-
+      // Create message immediately so it appears in UI with local media
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1389,9 +1401,9 @@ class SingleChatController extends GetxController
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetOriginalName: "",
         assetServerName: fileWithExtensions,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
+        assetUrl: "",
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
@@ -1400,20 +1412,41 @@ class SingleChatController extends GetxController
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      print("[SingleChat] sendFileMessage -> created local message: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      if (fileData?.statusCode == 200 && fileData?.status == true) {
+      print("[SingleChat] sendFileMessage -> starting upload to server");
+      final fileData = await uploadFileToServer(f.values.first!);
+
+      if (fileData != null && fileData.statusCode == 200 && fileData.status == true) {
+        print("[SingleChat] sendFileMessage -> upload success: ${fileData.data?.url}");
+        final updatedMessage = newMessage.copyWith(
+          assetOriginalName: fileData.data?.originalName,
+          assetUrl: fileData.data?.url,
+          syncStatus: SyncStatus.synced,
+        );
+        await MessageTable().updateMessageByClientId(updatedMessage);
+        final index = messageList.indexWhere(
+          (m) => m.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (index != -1) {
+          messageList[index] = updatedMessage;
+          messageList.refresh();
+        }
         if (socketService.isConnected) {
-          socketService.sendMessage(newMessage);
+          socketService.sendMessage(updatedMessage);
+        } else {
+          socketService.saveChatContacts(updatedMessage);
         }
       } else {
+        print("[SingleChat] sendFileMessage -> upload failed or null response");
+        // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
+        print("[SingleChat] Error sending file message: $e");
       }
     }
   }

@@ -163,12 +163,6 @@ class FilePickerService {
 
     for (var file in pickedFiles) {
       final type = getMessageType(file);
-
-
-      // -----------------------------
-
-      // IMAGE PROCESSING
-      // -----------------------------
       if (type == MessageType.image) {
         final croppedFile = await ImageCropper().cropImage(
           compressQuality: 70,
@@ -193,8 +187,6 @@ class FilePickerService {
 
         final totalSeconds = endTime.difference(startTime).inSeconds;
         print("Compression duration: $totalSeconds seconds");
-        // -------------------------------
-
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
 

@@ -195,25 +195,8 @@ class SingleChatView extends GetView<SingleChatController> {
                 await controller.blockUser();
                 // await controller.unblockUser();
               } else if (value == unBlock) {
-
                 await controller.unblockUser();
               }
-              // switch (value) {
-              //   case clearText:
-              //     print(clearText);
-              //     await controller.deleteTextMessage();
-              //     break;
-              //   case  controller.blocked? unBlock: block:
-              //     print(block);
-              //     await controller.blockUser();
-              //     break;
-              //      case controller.blocked? unBlock:
-              //     block:
-              //     print(block);
-              //     await controller.blockUser();
-              //     break;
-              //   default:
-              // }
             },
             itemBuilder: (context) => [
               PopupMenuItem(
@@ -251,59 +234,59 @@ class SingleChatView extends GetView<SingleChatController> {
           ),
         ],
       ),
-      body:
-      SafeArea(child:
-      Column(
-        children: [
-          Expanded(
-            child: ChatList(
-              singleChatController: controller,
-              // firebaseController: controller.firebaseController,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ChatList(
+                singleChatController: controller,
+                // firebaseController: controller.firebaseController,
+              ),
             ),
-          ),
-          Obx(
-            () =>
-                (controller.blocked.value &&
-                    (controller.blockedByMe.value == 1 ||
-                        controller.blockedByMe.value == 3))
-                ? Container(
-                    color: textBarColor,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        TextButton(
-                          onPressed: () async {
-                            await controller.deleteTextMessage();
-                          },
-                          child: const Text(
-                            "Delete Chats",
-                            style: TextStyle(color: Colors.red, fontSize: 16),
+            Obx(
+              () =>
+                  (controller.blocked.value &&
+                      (controller.blockedByMe.value == 1 ||
+                          controller.blockedByMe.value == 3))
+                  ? Container(
+                      color: textBarColor,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          TextButton(
+                            onPressed: () async {
+                              await controller.deleteTextMessage();
+                            },
+                            child: const Text(
+                              "Delete Chats",
+                              style: TextStyle(color: Colors.red, fontSize: 16),
+                            ),
                           ),
-                        ),
 
-                        (TextButton(
-                          onPressed: () async {
-                            await controller.unblockUser();
-                          },
-                          child: const Text(
-                            "Unblock User",
-                            style: TextStyle(color: whiteColor, fontSize: 16),
-                          ),
-                        )),
-                      ],
+                          (TextButton(
+                            onPressed: () async {
+                              await controller.unblockUser();
+                            },
+                            child: const Text(
+                              "Unblock User",
+                              style: TextStyle(color: whiteColor, fontSize: 16),
+                            ),
+                          )),
+                        ],
+                      ),
+                    )
+                  : BottomChatField(
+                      singleChatController: controller,
+                      onTap: () {
+                        controller.sendTextMessage();
+                        controller.cancelReply();
+                      },
                     ),
-                  )
-                : BottomChatField(
-                    singleChatController: controller,
-                    onTap: () {
-                      controller.sendTextMessage();
-                      controller.cancelReply();
-                    },
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
-      ) );
+    );
   }
 
   void _showDeletePopup(BuildContext context, SingleChatController controller) {
@@ -313,35 +296,35 @@ class SingleChatView extends GetView<SingleChatController> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-
-        return
-          SafeArea(child:
-          Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text("Delete for Me"),
-              onTap: () {
-                Navigator.pop(context);
-                controller.deleteMessages(deleteForEveryone: false);
-              },
-            ),
-            if (controller.canDeleteForEveryone && controller.blocked == false)
-
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text("Delete for Everyone"),
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text("Delete for Me"),
                 onTap: () {
                   Navigator.pop(context);
-                  controller.deleteMessages(deleteForEveryone: true);
+                  controller.deleteMessages(deleteForEveryone: false);
                 },
               ),
-          ],
-          )  );
+              if (controller.canDeleteForEveryone &&
+                  controller.blocked == false)
+                ListTile(
+                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  title: const Text("Delete for Everyone"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    controller.deleteMessages(deleteForEveryone: true);
+                  },
+                ),
+            ],
+          ),
+        );
       },
     );
   }
+
   void showComingSoon(BuildContext context) {
     showDialog(
       context: context,
@@ -361,5 +344,4 @@ class SingleChatView extends GetView<SingleChatController> {
       ),
     );
   }
-
 }

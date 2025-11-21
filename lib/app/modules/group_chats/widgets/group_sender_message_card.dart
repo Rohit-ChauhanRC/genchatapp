@@ -137,11 +137,12 @@ class GroupSenderMessageCard extends StatelessWidget {
                                   ]
                                 : [],
                           ),
-                        type != MessageType.deleted &&
-                                repliedText.value.isNotEmpty &&
-                                repliedText.value != "null"
-                            ? Obx(
-                                () => Container(
+                        Obx(
+                          () =>
+                              type != MessageType.deleted &&
+                                  repliedText.value.isNotEmpty &&
+                                  repliedText.value != "null"
+                              ? Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     color: replyColor.withOpacity(0.67),
@@ -172,13 +173,14 @@ class GroupSenderMessageCard extends StatelessWidget {
                                         isReply: true,
                                         url: url,
                                         assetThumbnail: repliedThumbnail,
-                                        isSentByMe: false, // Reply previews should not use sent message logic
+                                        isSentByMe:
+                                            false, // Reply previews should not use sent message logic
                                       ),
                                     ],
                                   ),
-                                ),
-                              )
-                            : const SizedBox(),
+                                )
+                              : const SizedBox(),
+                        ),
                         GroupDisplayTextImageGIF(
                           message: message,
                           type: type,

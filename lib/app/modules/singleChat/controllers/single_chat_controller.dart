@@ -143,6 +143,7 @@ class SingleChatController extends GetxController
   // bool get blocked => _blocked.value;
   // set blocked(bool b) => _blocked.value = b;
 
+
   // blockedByMe
 
   final RxInt blockedByMe = 0.obs;
@@ -429,8 +430,8 @@ class SingleChatController extends GetxController
 
       await findUserBlock();
 
-      await selectedContactController.syncContactsWithServer();
 
+      await selectedContactController.syncContactsWithServer();
       // "contact blocked successfully"
     }
   }
@@ -519,6 +520,7 @@ class SingleChatController extends GetxController
       print('Original message not currently visible');
       checkMessageInList(repliedId);
     }
+
   }
 
   //  Future<void> checkMessageInList(int repliedId) async {
@@ -652,7 +654,6 @@ class SingleChatController extends GetxController
       }
     });
   }
-
   void scrollToBottom({bool animated = false}) {
     if (itemScrollController.isAttached) {
       final lastIndex = messageList.length - 1;
@@ -1086,9 +1087,8 @@ class SingleChatController extends GetxController
             );
           }
         } else {
-          // 🟣 Delete for me only
           await MessageTable().deleteMessage(message.messageId!);
-          // 🟣 Remove from messageList
+          // Remove from messageList
           messageList.removeWhere((m) => m.messageId == message.messageId);
           if (isOnline) {
             if (message.senderId != receiverUserData?.userId) {
@@ -1368,9 +1368,10 @@ class SingleChatController extends GetxController
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
+      print(
+          "[SingleChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}");
 
-      final fileData = await uploadFileToServer(f.values.first!);
-
+      // Create message immediately so it appears in UI with local media
       final newMessage = NewMessageModel(
         senderId: senderuserData?.userId,
         recipientId: receiverUserData?.userId,
@@ -1400,9 +1401,9 @@ class SingleChatController extends GetxController
             : messageReply.assetsThumbnail,
         isAsset: true,
         assetThumbnail: assetThumnail ?? "",
-        assetOriginalName: fileData == null ? "" : fileData.data?.originalName,
+        assetOriginalName: "",
         assetServerName: fileWithExtensions,
-        assetUrl: fileData == null ? "" : fileData.data?.url,
+        assetUrl: "",
         messageRepliedUserId: messageReply.message == null
             ? 0
             : messageReply.isMe == true
@@ -1411,20 +1412,41 @@ class SingleChatController extends GetxController
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      print("[SingleChat] sendFileMessage -> created local message: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      if (fileData?.statusCode == 200 && fileData?.status == true) {
+      print("[SingleChat] sendFileMessage -> starting upload to server");
+      final fileData = await uploadFileToServer(f.values.first!);
+
+      if (fileData != null && fileData.statusCode == 200 && fileData.status == true) {
+        print("[SingleChat] sendFileMessage -> upload success: ${fileData.data?.url}");
+        final updatedMessage = newMessage.copyWith(
+          assetOriginalName: fileData.data?.originalName,
+          assetUrl: fileData.data?.url,
+          syncStatus: SyncStatus.synced,
+        );
+        await MessageTable().updateMessageByClientId(updatedMessage);
+        final index = messageList.indexWhere(
+          (m) => m.clientSystemMessageId == clientSystemMessageId,
+        );
+        if (index != -1) {
+          messageList[index] = updatedMessage;
+          messageList.refresh();
+        }
         if (socketService.isConnected) {
-          socketService.sendMessage(newMessage);
+          socketService.sendMessage(updatedMessage);
+        } else {
+          socketService.saveChatContacts(updatedMessage);
         }
       } else {
+        print("[SingleChat] sendFileMessage -> upload failed or null response");
+        // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
+        print("[SingleChat] Error sending file message: $e");
       }
     }
   }

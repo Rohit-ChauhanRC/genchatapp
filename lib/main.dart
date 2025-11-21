@@ -36,17 +36,12 @@ import 'app/services/shared_preference_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("🔔 [BG] Background FCM Received");
-  print("🔔 [BG] Title: ${message.notification?.title}");
-  print("🔔 [BG] Body: ${message.notification?.body}");
-  print("🔔 [BG] Raw Data: ${message.data}");
 
   await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
   await di.init();
   // Extract messageId for logging
   final rawData = message.data['data'];
-  print("🔍 [BG] rawData field: $rawData");
 
   if (rawData != null) {
     try {

@@ -17,6 +17,7 @@ class ChatRepository {
       return await apiClient.post(ApiEndpoints.userBlock, param);
     } catch (e) {
       // print('Error in verifyOTPAPI: $e');
+
       showAlertMessage("Error: $e");
       return null;
     }

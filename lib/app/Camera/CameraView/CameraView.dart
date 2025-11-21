@@ -64,7 +64,10 @@ class CameraView extends GetView<CameraControllerX> {
           );
         }
 
-        return Stack(
+        return
+          SafeArea(child:
+
+          Stack(
           children: [
             Positioned.fill(child: CameraPreview(controller.cameraController!)),
             // Bottom bar
@@ -184,7 +187,7 @@ class CameraView extends GetView<CameraControllerX> {
               ),
             ),
           ],
-        );
+          ) );
       }),
     );
   }

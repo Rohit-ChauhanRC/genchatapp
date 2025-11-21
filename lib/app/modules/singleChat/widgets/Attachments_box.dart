@@ -11,7 +11,10 @@ void showAttachmentSheet(BuildContext context, SingleChatController singleChatCo
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (_) {
-      return Padding(
+      return
+        SafeArea(child:
+
+        Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,9 +63,10 @@ void showAttachmentSheet(BuildContext context, SingleChatController singleChatCo
             const SizedBox(height: 10),
           ],
         ),
-      );
+        ));
     },
   );
+
 }
 
 Widget _buildAttachmentItem({

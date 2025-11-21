@@ -246,7 +246,8 @@ class GroupChatsView extends GetView<GroupChatsController> {
           ),
           Obx(() {
             if (controller.isCurrentUserRemoved) {
-              return Container(
+              return SafeArea(
+                child:Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(color: AppColors.textBarColor),
                 child: Text(
@@ -258,7 +259,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
+                ) );
             } else {
               return GroupBottomChatField(
                 groupChatsController: controller,
@@ -281,7 +282,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return Column(
+        return SafeArea(
+
+          child:Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
@@ -303,7 +306,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                 },
               ),
           ],
-        );
+          )  );
       },
     );
   }

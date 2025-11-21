@@ -187,13 +187,28 @@ class _StatusViewState extends State<StatusView> {
   }
 
   void _previous() {
+    controller.stopProgress();
+    _videoController?.pause();
+
+    // Case 1: Move to previous media in same status
     if (index > 0) {
       index--;
-      setState(() {});
-      _loadMedia();
-    } else {
-      Get.back();
     }
+
+    // Case 2: Move to previous status
+    else if (currentStatusIndex > 0) {
+      currentStatusIndex--;
+      status = statusList[currentStatusIndex];
+      index = status.media.length - 1; // last media of previous status
+    }
+
+    else {
+      Get.back();
+      return;
+    }
+
+    setState(() {});
+    _loadMedia();
   }
 
   void _onTapTap(TapUpDetails details) {

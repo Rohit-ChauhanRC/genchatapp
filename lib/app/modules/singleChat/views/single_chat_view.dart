@@ -331,7 +331,11 @@ class SingleChatView extends GetView<SingleChatController> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return Column(
+
+        return
+
+        SafeArea(child:
+          Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
@@ -353,7 +357,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 },
               ),
           ],
-        );
+        ));
       },
     );
   }

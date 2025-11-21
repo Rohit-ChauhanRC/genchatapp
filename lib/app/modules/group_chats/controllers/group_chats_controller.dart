@@ -1510,7 +1510,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       receiverId: receiverUserData!.group?.id,
       senderId: senderuserData?.userId,
     );
-
+    messageList.clear();
     await chatConectTable.updateContact(
       uid: receiverUserData!.group!.id.toString(),
       isGroup: 1,

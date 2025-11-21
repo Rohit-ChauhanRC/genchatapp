@@ -41,18 +41,24 @@ String getChatHeaderLabel(DateTime date) {
 
 String _monthName(int m) {
   const months = [
-    "Jan","Feb","Mar","Apr","May","Jun",
-    "Jul","Aug","Sep","Oct","Nov","Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
   return months[m - 1];
 }
 
-
 class GroupChatList extends StatelessWidget {
-  const GroupChatList({
-    super.key,
-    required this.groupChatsController,
-  });
+  const GroupChatList({super.key, required this.groupChatsController});
 
   final GroupChatsController groupChatsController;
 
@@ -80,8 +86,7 @@ class GroupChatList extends StatelessWidget {
             },
             child: ScrollablePositionedList.builder(
               itemScrollController: groupChatsController.itemScrollController,
-              itemPositionsListener:
-              groupChatsController.itemPositionsListener,
+              itemPositionsListener: groupChatsController.itemPositionsListener,
               itemCount: messageCount + (isTyping ? 1 : 0),
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
@@ -95,15 +100,19 @@ class GroupChatList extends StatelessWidget {
                 var messages = groupChatsController.messageList[index];
 
                 final id =
-                (messages.messageId ?? messages.clientSystemMessageId)
-                    .toString();
+                    (messages.messageId ?? messages.clientSystemMessageId)
+                        .toString();
 
                 groupChatsController.messageIdToIndex[id] = index;
-///FOR DATE AT TOP
+
+                ///FOR DATE AT TOP
 
                 bool showHeader = false;
 
-                final msgDate = DateTime.tryParse(messages.messageSentFromDeviceTime ?? "") ??
+                final msgDate =
+                    DateTime.tryParse(
+                      messages.messageSentFromDeviceTime ?? "",
+                    ) ??
                     DateTime.fromMillisecondsSinceEpoch(0);
 
                 if (index == 0) {
@@ -111,9 +120,10 @@ class GroupChatList extends StatelessWidget {
                 } else {
                   final prevMsg = groupChatsController.messageList[index - 1];
 
-                  final prevDate = DateTime.tryParse(
-                    prevMsg.messageSentFromDeviceTime ?? "",
-                  ) ??
+                  final prevDate =
+                      DateTime.tryParse(
+                        prevMsg.messageSentFromDeviceTime ?? "",
+                      ) ??
                       DateTime.fromMillisecondsSinceEpoch(0);
 
                   if (msgDate.year != prevDate.year ||
@@ -149,22 +159,23 @@ class GroupChatList extends StatelessWidget {
                       ),
                     ValueListenableBuilder<String?>(
                       valueListenable:
-                      groupChatsController.highlightedMessageId,
+                          groupChatsController.highlightedMessageId,
                       builder: (context, highlightId, _) {
                         final isHighlighted =
                             highlightId == messages.messageId.toString();
 
                         return InkWell(
                           key: UniqueKey(),
-                          onLongPress: () =>
-                              groupChatsController.toggleMessageSelection(
-                                  messages),
+                          onLongPress: () => groupChatsController
+                              .toggleMessageSelection(messages),
                           onTap: () {
                             groupChatsController.hideKeyboard();
                             if (groupChatsController
-                                .selectedMessages.isNotEmpty) {
+                                .selectedMessages
+                                .isNotEmpty) {
                               groupChatsController.toggleMessageSelection(
-                                  messages);
+                                messages,
+                              );
                             }
                           },
                           child: Obx(() {
@@ -176,189 +187,205 @@ class GroupChatList extends StatelessWidget {
                                 ? AppColors.mySideBgColor.withOpacity(0.3)
                                 : Colors.transparent;
 
-                            final isMine = messages.senderId ==
+                            final isMine =
+                                messages.senderId ==
                                 groupChatsController.senderuserData?.userId;
 
                             final messageSenderName =
-                                groupChatsController.senderNamesCache[
-                                messages.senderId ?? 0] ??
-                                    "";
+                                groupChatsController
+                                    .senderNamesCache[messages.senderId ?? 0] ??
+                                "";
 
                             final replyMessageSenderName =
-                                groupChatsController.senderNamesCache[
-                                messages.messageRepliedUserId ?? 0] ??
-                                    "";
+                                groupChatsController.senderNamesCache[messages
+                                        .messageRepliedUserId ??
+                                    0] ??
+                                "";
 
                             return Container(
                               color: bgColor,
                               child: isMine
                                   ? GroupMyMessageCard(
-                                audioMessage: messages.message ?? "",
-                                message:
-                                messages.messageType ==
-                                    MessageType.text ||
-                                    messages.messageType ==
-                                        MessageType.deleted
-                                    ? (messages.message ?? '')
-                                    : (messages.assetServerName ?? ''),
-                                date: DateFormat('hh:mm a').format(
-                                  DateTime.parse(
-                                    messages.messageSentFromDeviceTime ??
-                                        '',
-                                  ),
-                                ),
-                                type: messages.messageType ??
-                                    MessageType.text,
-                                status: messages.state ??
-                                    MessageState.unsent,
-                                syncStatus: messages.syncStatus ??
-                                    SyncStatus.pending,
-                                onLeftSwipe:
-                                messages.messageType ==
-                                    MessageType.deleted
-                                    ? null
-                                    : (v) {
-                                  groupChatsController
-                                      .onMessageSwipe(
-                                    recipientUserId:
-                                    groupChatsController
-                                        .receiverUserData!
-                                        .group!
-                                        .id!,
-                                    senderName: "",
-                                    isMe: true,
-                                    message: messages.message ??
-                                        '',
-                                    messageType:
-                                    messages.messageType ??
-                                        MessageType.text,
-                                    isReplied: true,
-                                    messageId:
-                                    messages.messageId ?? 0,
-                                    assetsThumbnail:
-                                    messages.assetThumbnail ??
-                                        "",
-                                  );
-                                },
-                                repliedMessageType:
-                                messages.messageRepliedOnType ??
-                                    MessageType.text,
-                                repliedText:
-                                (messages.messageRepliedOn ?? '')
-                                    .obs,
-                                repliedUserId:
-                                messages.messageRepliedUserId,
-                                repliedUserName:
-                                messages.messageRepliedUserId != 0
-                                    ? messages.messageRepliedUserId ==
-                                    groupChatsController
-                                        .senderuserData!
-                                        .userId
-                                    ? "You"
-                                    : replyMessageSenderName
-                                    : "username",
-                                repliedThumbnail: messages
-                                    .messageRepliedOnAssetThumbnail,
-                                repliedAssetServerName: messages
-                                    .messageRepliedOnAssetServerName,
-                                isAsset: messages.isAsset ?? false,
-                                onReplyTap: () => groupChatsController
-                                    .scrollToOriginalMessage(
-                                  messages.messageRepliedOnId!,
-                                ),
-                                onRetryTap: () async {
-                                  await groupChatsController
-                                      .retryPendingMediaFile(messages);
-                                },
-                                isRetryUploadFile:
-                                messages.isRetrying ?? false.obs,
-                                isHighlighted: isHighlighted,
-                                isForwarded: messages.isForwarded ?? false,
-                                showForwarded:
-                                messages.showForwarded ?? false,
-                                url: messages.assetUrl,
-                                assetThumbnail:
-                                messages.assetThumbnail,
-                              )
+                                      audioMessage: messages.message ?? "",
+                                      message:
+                                          messages.messageType ==
+                                                  MessageType.text ||
+                                              messages.messageType ==
+                                                  MessageType.deleted
+                                          ? (messages.message ?? '')
+                                          : (messages.assetServerName ?? ''),
+                                      date: DateFormat('hh:mm a').format(
+                                        DateTime.parse(
+                                          messages.messageSentFromDeviceTime ??
+                                              '',
+                                        ),
+                                      ),
+                                      type:
+                                          messages.messageType ??
+                                          MessageType.text,
+                                      status:
+                                          messages.state ?? MessageState.unsent,
+                                      syncStatus:
+                                          messages.syncStatus ??
+                                          SyncStatus.pending,
+                                      onLeftSwipe:
+                                          messages.messageType ==
+                                              MessageType.deleted
+                                          ? null
+                                          : (v) {
+                                              groupChatsController
+                                                  .onMessageSwipe(
+                                                    recipientUserId:
+                                                        groupChatsController
+                                                            .receiverUserData!
+                                                            .group!
+                                                            .id!,
+                                                    senderName: "",
+                                                    isMe: true,
+
+                                                    messageType:
+                                                        messages.messageType ??
+                                                        MessageType.text,
+                                                    isReplied: true,
+                                                    messageId:
+                                                        messages.messageId ?? 0,
+                                                    assetsThumbnail:
+                                                        messages
+                                                            .assetThumbnail ??
+                                                        "",
+                                                    message:
+                                                        messages.messageType !=
+                                                            MessageType.text
+                                                        ? messages
+                                                              .assetServerName
+                                                              .toString()
+                                                        : messages.message
+                                                              .toString(),
+                                                  );
+                                            },
+                                      repliedMessageType:
+                                          messages.messageRepliedOnType ??
+                                          MessageType.text,
+                                      repliedText:
+                                          (messages.messageRepliedOn ?? '').obs,
+                                      repliedUserId:
+                                          messages.messageRepliedUserId,
+                                      repliedUserName:
+                                          messages.messageRepliedUserId != 0
+                                          ? messages.messageRepliedUserId ==
+                                                    groupChatsController
+                                                        .senderuserData!
+                                                        .userId
+                                                ? "You"
+                                                : replyMessageSenderName
+                                          : "username",
+                                      repliedThumbnail: messages
+                                          .messageRepliedOnAssetThumbnail,
+                                      repliedAssetServerName: messages
+                                          .messageRepliedOnAssetServerName,
+                                      isAsset: messages.isAsset ?? false,
+                                      onReplyTap: () => groupChatsController
+                                          .scrollToOriginalMessage(
+                                            messages.messageRepliedOnId!,
+                                          ),
+                                      onRetryTap: () async {
+                                        await groupChatsController
+                                            .retryPendingMediaFile(messages);
+                                      },
+                                      isRetryUploadFile:
+                                          messages.isRetrying ?? false.obs,
+                                      isHighlighted: isHighlighted,
+                                      isForwarded:
+                                          messages.isForwarded ?? false,
+                                      showForwarded:
+                                          messages.showForwarded ?? false,
+                                      url: messages.assetUrl,
+                                      assetThumbnail: messages.assetThumbnail,
+                                    )
                                   : GroupSenderMessageCard(
-                                message:
-                                messages.messageType ==
-                                    MessageType.text ||
-                                    messages.messageType ==
-                                        MessageType.deleted
-                                    ? (messages.message ?? '')
-                                    : (messages.assetServerName ?? ''),
-                                date: DateFormat('hh:mm a').format(
-                                  DateTime.parse(
-                                    messages.messageSentFromDeviceTime ??
-                                        '',
-                                  ),
-                                ),
-                                type: messages.messageType ??
-                                    MessageType.text,
-                                onRightSwipe:
-                                messages.messageType ==
-                                    MessageType.deleted
-                                    ? null
-                                    : (v) {
-                                  groupChatsController
-                                      .onMessageSwipe(
-                                    isMe: false,
-                                    message:
-                                    messages.message ?? '',
-                                    messageType:
-                                    messages.messageType ??
-                                        MessageType.text,
-                                    isReplied: true,
-                                    messageId:
-                                    messages.messageId ?? 0,
-                                    senderName:
-                                    messageSenderName,
-                                    recipientUserId:
-                                    messages.senderId ?? 0,
-                                    assetsThumbnail:
-                                    messages.assetThumbnail ??
-                                        "",
-                                  );
-                                },
-                                repliedMessageType:
-                                messages.messageRepliedOnType ??
-                                    MessageType.text,
-                                repliedText:
-                                (messages.messageRepliedOn ?? '')
-                                    .obs,
-                                repliedUserId:
-                                messages.messageRepliedUserId,
-                                repliedUserName:
-                                messages.messageRepliedUserId != 0 &&
-                                    messages.messageRepliedUserId !=
-                                        null
-                                    ? messages.messageRepliedUserId ==
-                                    groupChatsController
-                                        .senderuserData!
-                                        .userId
-                                    ? "You"
-                                    : replyMessageSenderName
-                                    : "username",
-                                onReplyTap: () =>
-                                    groupChatsController
-                                        .scrollToOriginalMessage(
-                                      messages.messageRepliedOnId!,
+                                      message:
+                                          messages.messageType ==
+                                                  MessageType.text ||
+                                              messages.messageType ==
+                                                  MessageType.deleted
+                                          ? (messages.message ?? '')
+                                          : (messages.assetServerName ?? ''),
+                                      date: DateFormat('hh:mm a').format(
+                                        DateTime.parse(
+                                          messages.messageSentFromDeviceTime ??
+                                              '',
+                                        ),
+                                      ),
+                                      type:
+                                          messages.messageType ??
+                                          MessageType.text,
+                                      onRightSwipe:
+                                          messages.messageType ==
+                                              MessageType.deleted
+                                          ? null
+                                          : (v) {
+                                              groupChatsController
+                                                  .onMessageSwipe(
+                                                    isMe: false,
+                                                    message:
+                                                        messages.messageType !=
+                                                            MessageType.text
+                                                        ? messages
+                                                              .assetServerName
+                                                              .toString()
+                                                        : messages.message
+                                                              .toString(),
+                                                    messageType:
+                                                        messages.messageType ??
+                                                        MessageType.text,
+                                                    isReplied: true,
+                                                    messageId:
+                                                        messages.messageId ?? 0,
+                                                    senderName:
+                                                        messageSenderName,
+                                                    recipientUserId:
+                                                        messages.senderId ?? 0,
+                                                    assetsThumbnail:
+                                                        messages
+                                                            .assetThumbnail ??
+                                                        "",
+                                                  );
+                                            },
+                                      repliedMessageType:
+                                          messages.messageRepliedOnType ??
+                                          MessageType.text,
+                                      repliedText:
+                                          (messages.messageRepliedOn ?? '').obs,
+                                      repliedUserId:
+                                          messages.messageRepliedUserId,
+                                      repliedUserName:
+                                          messages.messageRepliedUserId != 0 &&
+                                              messages.messageRepliedUserId !=
+                                                  null
+                                          ? messages.messageRepliedUserId ==
+                                                    groupChatsController
+                                                        .senderuserData!
+                                                        .userId
+                                                ? "You"
+                                                : replyMessageSenderName
+                                          : "username",
+                                      onReplyTap: () => groupChatsController
+                                          .scrollToOriginalMessage(
+                                            messages.messageRepliedOnId!,
+                                          ),
+                                      assetThumbnail: messages.assetThumbnail,
+                                      repliedThumbnail: messages
+                                          .messageRepliedOnAssetThumbnail,
+                                      repliedAssetServerName: messages
+                                          .messageRepliedOnAssetServerName,
+                                      isHighlighted: isHighlighted,
+                                      isForwarded:
+                                          messages.isForwarded ?? false,
+                                      showForwarded:
+                                          messages.showForwarded ?? false,
+                                      senderName: messageSenderName,
+                                      url: messages.assetUrl,
                                     ),
-                                assetThumbnail:
-                                messages.assetThumbnail,
-                                repliedThumbnail: messages
-                                    .messageRepliedOnAssetThumbnail,
-                                repliedAssetServerName: messages
-                                    .messageRepliedOnAssetServerName,
-                                isHighlighted: isHighlighted,
-                                isForwarded:
-                                messages.isForwarded ?? false,
-                                showForwarded:
-                                messages.showForwarded ?? false,
-                                senderName: messageSenderName,
-                                url: messages.assetUrl,
-                              ),
                             );
                           }),
                         );
@@ -375,14 +402,14 @@ class GroupChatList extends StatelessWidget {
         Obx(() {
           return groupChatsController.showScrollToBottom.value
               ? Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              mini: true,
-              onPressed: () => groupChatsController.scrollToBottom(),
-              child: const Icon(Icons.arrow_downward),
-            ),
-          )
+                  bottom: 20,
+                  right: 20,
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: () => groupChatsController.scrollToBottom(),
+                    child: const Icon(Icons.arrow_downward),
+                  ),
+                )
               : const SizedBox.shrink();
         }),
       ],

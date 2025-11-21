@@ -143,7 +143,6 @@ class SingleChatController extends GetxController
   // bool get blocked => _blocked.value;
   // set blocked(bool b) => _blocked.value = b;
 
-
   // blockedByMe
 
   final RxInt blockedByMe = 0.obs;
@@ -430,7 +429,6 @@ class SingleChatController extends GetxController
 
       await findUserBlock();
 
-
       await selectedContactController.syncContactsWithServer();
       // "contact blocked successfully"
     }
@@ -462,7 +460,7 @@ class SingleChatController extends GetxController
           0,
         );
       } else if (blockedByMeI == 3) {
-        blockedByMe.value = 0;
+        blockedByMe.value = 2;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           0,
@@ -520,7 +518,6 @@ class SingleChatController extends GetxController
       print('Original message not currently visible');
       checkMessageInList(repliedId);
     }
-
   }
 
   //  Future<void> checkMessageInList(int repliedId) async {
@@ -654,6 +651,7 @@ class SingleChatController extends GetxController
       }
     });
   }
+
   void scrollToBottom({bool animated = false}) {
     if (itemScrollController.isAttached) {
       final lastIndex = messageList.length - 1;
@@ -1369,7 +1367,8 @@ class SingleChatController extends GetxController
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
       print(
-          "[SingleChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}");
+        "[SingleChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}",
+      );
 
       // Create message immediately so it appears in UI with local media
       final newMessage = NewMessageModel(
@@ -1412,15 +1411,21 @@ class SingleChatController extends GetxController
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
-      print("[SingleChat] sendFileMessage -> created local message: ${newMessage.toMap()}");
+      print(
+        "[SingleChat] sendFileMessage -> created local message: ${newMessage.toMap()}",
+      );
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
       print("[SingleChat] sendFileMessage -> starting upload to server");
       final fileData = await uploadFileToServer(f.values.first!);
 
-      if (fileData != null && fileData.statusCode == 200 && fileData.status == true) {
-        print("[SingleChat] sendFileMessage -> upload success: ${fileData.data?.url}");
+      if (fileData != null &&
+          fileData.statusCode == 200 &&
+          fileData.status == true) {
+        print(
+          "[SingleChat] sendFileMessage -> upload success: ${fileData.data?.url}",
+        );
         final updatedMessage = newMessage.copyWith(
           assetOriginalName: fileData.data?.originalName,
           assetUrl: fileData.data?.url,
@@ -2043,6 +2048,7 @@ class SingleChatController extends GetxController
         print("Error sending file message: $e");
       }
     }
+    cancelReply();
   }
 
   String getDisplayName() {

@@ -243,7 +243,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
     }
-
     getRootFolder();
 
     closeKeyboard();
@@ -274,6 +273,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     _sendingMessageIds.clear();
     replyId.dispose();
     isInCurrentChat = false;
+
   }
 
   @override
@@ -363,7 +363,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       );
 
       if (messages.isEmpty) {
-        // All pages scanned, message not found. Check if it existed and is deleted
+        // All pages scanned, messae not found. Check if it existed and is deleted
         final deletedMsg = await MessageTable().fetchMessageById(repliedId);
         if (deletedMsg != null) {
           print("Message existed but was deleted.");
@@ -1684,6 +1684,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   Future<void> pauseRecordingAudioWaveform() async {
     try {
       isPause = true;
+
 
       // recorderController.refresh();
       // await recorderController.record(path: recordedPath.value);

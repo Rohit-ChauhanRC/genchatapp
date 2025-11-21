@@ -161,7 +161,9 @@ class SingleChatView extends GetView<SingleChatController> {
                 : Row(
                     children: [
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          showComingSoon(context);
+                        },
                         child: Icon(
                           Symbols.videocam_rounded,
                           color: AppColors.whiteColor,
@@ -169,7 +171,9 @@ class SingleChatView extends GetView<SingleChatController> {
                       ),
                       const SizedBox(width: 10),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          showComingSoon(context);
+                        },
                         child: Icon(
                           Symbols.call_rounded,
                           color: AppColors.whiteColor,
@@ -309,7 +313,10 @@ class SingleChatView extends GetView<SingleChatController> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return Column(
+
+        return
+          SafeArea(child:
+          Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
@@ -321,6 +328,7 @@ class SingleChatView extends GetView<SingleChatController> {
               },
             ),
             if (controller.canDeleteForEveryone && controller.blocked == false)
+
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text("Delete for Everyone"),
@@ -330,8 +338,28 @@ class SingleChatView extends GetView<SingleChatController> {
                 },
               ),
           ],
-        );
+          )  );
       },
     );
   }
+  void showComingSoon(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          "Coming Soon",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text("This feature will be available soon."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

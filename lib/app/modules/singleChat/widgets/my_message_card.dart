@@ -17,7 +17,6 @@ class MyMessageCard extends StatelessWidget {
     required this.status,
     required this.syncStatus,
     required this.onLeftSwipe,
-
     required this.repliedText,
     required this.repliedMessageType,
     this.repliedUserId,
@@ -28,6 +27,7 @@ class MyMessageCard extends StatelessWidget {
     this.isHighlighted = false,
     this.isForwarded = false,
     this.showForwarded = false,
+
     this.onRetryTap,
     this.isAsset = false,
     required this.isRetryUploadFile,

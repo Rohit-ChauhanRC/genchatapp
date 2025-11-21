@@ -187,9 +187,6 @@ class FilePickerService {
           _imageFiles.add(File(croppedFile.path));
         }
       }
-      // -----------------------------
-      // VIDEO PROCESSING
-      // -----------------------------
       else if (type == MessageType.video) {
         final endTime = DateTime.now();
         print("Compression ended at: $endTime");
@@ -225,8 +222,6 @@ class FilePickerService {
 
             final totalSeconds = endTime.difference(startTime).inSeconds;
             print("Compression duration: $totalSeconds seconds");
-            // -------------------------------
-
             final sizeInBytes1 = await File(
               compressed!.compressedFilePath,
             ).length();

@@ -443,7 +443,7 @@ class SingleChatController extends GetxController
 
     if (response != null && response.statusCode == 200) {
       blocked.value = false;
-      blockedByMe.value = 0;
+      // blockedByMe.value = 0;
 
       final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
         receiverUserData!.userId!,
@@ -461,11 +461,11 @@ class SingleChatController extends GetxController
           0,
         );
       } else if (blockedByMeI == 3) {
-        blockedByMe.value = 0;
+        blockedByMe.value = 2;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           0,
-          0,
+          2,
         );
       }
 

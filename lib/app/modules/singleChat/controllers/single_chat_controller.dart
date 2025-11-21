@@ -15,6 +15,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/upload_file
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
+import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository.dart';
 import 'package:genchatapp/app/modules/Single_Profile/views/single_profile.dart';
 import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -272,6 +273,8 @@ class SingleChatController extends GetxController
   Rx<String> audioTime = "".obs;
   RxDouble percent = 0.0.obs;
 
+  final IContactRepository contactRepository = Get.find<IContactRepository>();
+
   @override
   void onInit() async {
     super.onInit();
@@ -397,6 +400,12 @@ class SingleChatController extends GetxController
 
     if (response != null && response.statusCode == 200) {
       blocked.value = true;
+
+      final serverUsers = await contactRepository.fetchAppUsersFromContacts([
+        receiverUserData!.phoneNumber.toString(),
+      ]);
+
+      print(serverUsers);
 
       final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
         receiverUserData!.userId!,

@@ -273,7 +273,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     _sendingMessageIds.clear();
     replyId.dispose();
     isInCurrentChat = false;
-
   }
 
   @override
@@ -1073,7 +1072,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         onProgress: (sent, total) {
           if (total > 0) {
             percent.value = (sent / total) * 100;
-            print("📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(0)}%");
+            print(
+              "📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(0)}%",
+            );
             if (percent.value >= 100) {
               // reset after completion to avoid stale value on next upload
               percent.value = 0.0;
@@ -1133,7 +1134,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
       print(
-          "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}");
+        "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}",
+      );
 
       // Create message immediately so it appears in UI with local media
       final newMessage = NewMessageModel(
@@ -1174,15 +1176,21 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             ? senderuserData?.userId
             : receiverUserData?.group?.id,
       );
-      print("[GroupChat] sendFileMessage -> created local message: ${newMessage.toMap()}");
+      print(
+        "[GroupChat] sendFileMessage -> created local message: ${newMessage.toMap()}",
+      );
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
       print("[GroupChat] sendFileMessage -> starting upload to server");
       final fileData = await uploadFileToServer(f.values.first!);
 
-      if (fileData != null && fileData.statusCode == 200 && fileData.status == true) {
-        print("[GroupChat] sendFileMessage -> upload success: ${fileData.data?.url}");
+      if (fileData != null &&
+          fileData.statusCode == 200 &&
+          fileData.status == true) {
+        print(
+          "[GroupChat] sendFileMessage -> upload success: ${fileData.data?.url}",
+        );
         final updatedMessage = newMessage.copyWith(
           assetOriginalName: fileData.data?.originalName,
           assetUrl: fileData.data?.url,
@@ -1214,41 +1222,33 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   void selectFile(String fileType) async {
-    if (fileType == MessageType.image.value)   {
+    if (fileType == MessageType.image.value) {
       final files = await FilePickerService().pickImagesFromGalleryWithCrop();
 
       if (files.isEmpty) return;
 
       final fileTypeValue = getMessageType(files.first).value;
 
-      Get.to(() => MediaPreviewScreen(
-        files: files,
-        fileType: fileTypeValue,
-        onSend: (List<File> selectedFiles) async {
-          for (final f in selectedFiles) {
-            await sendFileMessage(
-              file: f,
-              messageEnum: getMessageType(f),
-            );
-          }
-          cancelReply();
-        },
-      ));
-    }
-    else if (fileType == MessageType.video.value) {
+      Get.to(
+        () => MediaPreviewScreen(
+          files: files,
+          fileType: fileTypeValue,
+          onSend: (List<File> selectedFiles) async {
+            for (final f in selectedFiles) {
+              await sendFileMessage(file: f, messageEnum: getMessageType(f));
+            }
+            cancelReply();
+          },
+        ),
+      );
+    } else if (fileType == MessageType.video.value) {
       final selectedFiles = await pickVideo();
       for (final file in selectedFiles) {
         print("[GroupChat] selectFile -> sending picked video: $file");
-        await sendFileMessage(
-          file: file,
-          messageEnum: getMessageType(file),
-        );
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
       }
       cancelReply();
-    }
-
-
-    else if (fileType == MessageType.audio.value) {
+    } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       await pickAndSendAudios((selectedFiles) async {
         for (File file in selectedFiles) {
@@ -1257,28 +1257,26 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
       cancelReply();
-    }
-    else if (fileType == MessageType.camera.value) {
+    } else if (fileType == MessageType.camera.value) {
       // pickFromCamera returns List<File> (may be single file)
       final files = await FilePickerService().pickFromCamera(Get.context!);
       if (files.isEmpty) return;
 
       final fileTypeValue = getMessageType(files.first).value;
 
-      Get.to(() => MediaPreviewScreen(
-        files: files,
-        fileType: fileTypeValue,
-        onSend: (List<File> selectedFiles) async {
-          for (final f in selectedFiles) {
-            await sendFileMessage(file: f, messageEnum: getMessageType(f));
-          }
-          cancelReply();
-        },
-      ));
-    }
-
-
-    else if (fileType == MessageType.document.value) {
+      Get.to(
+        () => MediaPreviewScreen(
+          files: files,
+          fileType: fileTypeValue,
+          onSend: (List<File> selectedFiles) async {
+            for (final f in selectedFiles) {
+              await sendFileMessage(file: f, messageEnum: getMessageType(f));
+            }
+            cancelReply();
+          },
+        ),
+      );
+    } else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1288,6 +1286,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       cancelReply();
     }
   }
+
   Future<List<File>> pickVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
     await showVideoPickerBottomSheet(
@@ -1298,6 +1297,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     return completer.future;
   }
+
   Future<String> saveFileLocally(
     File file,
     String fileType,
@@ -1511,6 +1511,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       senderId: senderuserData?.userId,
     );
 
+    messageList.clear();
+
     await chatConectTable.updateContact(
       uid: receiverUserData!.group!.id.toString(),
       isGroup: 1,
@@ -1684,7 +1686,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   Future<void> pauseRecordingAudioWaveform() async {
     try {
       isPause = true;
-
 
       // recorderController.refresh();
       // await recorderController.record(path: recordedPath.value);

@@ -80,7 +80,7 @@ class MyMessageCard extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minWidth: 130,
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
           ),
           child: InkWell(
             onTap: hasReply ? onReplyTap : null,
@@ -242,11 +242,11 @@ class MyMessageCard extends StatelessWidget {
                                             value: percent.value / 100,
                                             strokeWidth: 3,
                                             valueColor:
-                                                const AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                            backgroundColor:
-                                                Colors.white.withOpacity(0.2),
+                                                const AlwaysStoppedAnimation<
+                                                  Color
+                                                >(Colors.white),
+                                            backgroundColor: Colors.white
+                                                .withOpacity(0.2),
                                           ),
                                           Text(
                                             "${percent.value.toStringAsFixed(0)}%",

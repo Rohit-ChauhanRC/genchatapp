@@ -15,7 +15,7 @@ class CallView extends GetView<CallController> {
         backgroundColor: textBarColor,
         automaticallyImplyLeading: false,
         centerTitle: false,
-        title: Text(
+        title: const Text(
           'Calls',
           style: TextStyle(
             fontSize: 20,
@@ -24,10 +24,10 @@ class CallView extends GetView<CallController> {
           ),
         ),
       ),
-      body: GradientContainer(
-        child: const Center(
+      body: const GradientContainer(
+        child: Center(
           child: Text(
-            'CallView is working',
+            'This section is comming soon...',
             style: TextStyle(fontSize: 20),
           ),
         ),

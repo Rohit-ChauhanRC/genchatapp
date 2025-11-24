@@ -144,6 +144,7 @@ class SettingsView extends GetView<SettingsController> {
                     ],
                   ),
                 ),
+
                 Positioned(
                   bottom: 0,
                   child: Padding(

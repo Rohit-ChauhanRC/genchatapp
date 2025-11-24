@@ -12,6 +12,7 @@ import 'app/config/services/notification_service.dart';
 import 'app/config/theme/app_theme.dart';
 import 'app/data/local_database/status_table.dart';
 import 'app/data/repositories/status/status_repository.dart';
+import 'app/modules/chats/controllers/chats_controller.dart';
 import 'app/network/app_config.dart';
 import 'app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -66,10 +67,11 @@ void main() async {
   await Firebase.initializeApp();
   await di.init();
   // await StatusTable().deleteTable();
-  print("Status Table reset successfully");
+  // print("Status Table reset successfully");
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
+  Get.put(ChatsController());
   NotificationSettings settings = await FirebaseMessaging.instance
       .requestPermission(
         alert: true,

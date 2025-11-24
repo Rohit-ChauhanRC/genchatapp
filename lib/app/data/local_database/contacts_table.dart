@@ -21,7 +21,7 @@ class ContactsTable {
         displayPictureUrl TEXT,
         lastSeen TEXT,
         isBlocked INTEGER,
-        blockedByMe INTEGER
+        blockedByMe INTEGER DEFAULT NULL
       );
     """);
   }

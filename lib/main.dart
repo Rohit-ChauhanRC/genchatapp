@@ -37,7 +37,6 @@ import 'app/services/shared_preference_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-
   await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
   await di.init();
@@ -71,7 +70,7 @@ void main() async {
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
-  Get.put(ChatsController());
+  // Get.put(ChatsController());
   NotificationSettings settings = await FirebaseMessaging.instance
       .requestPermission(
         alert: true,

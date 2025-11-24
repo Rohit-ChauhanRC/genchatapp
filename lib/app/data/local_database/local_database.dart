@@ -288,4 +288,38 @@ extension BackupRestore on DataBaseService {
     final basePath = '/storage/emulated/0/GenChatBackup/$_userId';
     return File('$basePath/genchat_$_userId.db').exists();
   }
+
+  Future<void> clearUserData() async {
+    await MessageTable().deleteMessageTable();
+    await ContactsTable().deleteTable();
+    await ChatConectTable().deleteTable();
+    await MessageTable().deleteQueueMessageTable();
+    await GroupsTable().deleteGroupsTable();
+  }
+
+  Future<void> deleteDatabaseFile() async {
+    final path = await fullPath;
+
+    // Close DB before removing it
+    await closeDb();
+
+    final file = File(path);
+    if (await file.exists()) {
+      await file.delete();
+      print("🗑️ Database file deleted: $path");
+    } else {
+      print("⚠️ No database file found to delete.");
+    }
+  }
+
+  Future<void> resetDatabase() async {
+    print("🔄 Resetting database...");
+
+    await clearUserData(); // Drop all tables
+    await deleteDatabaseFile(); // Remove DB file
+
+    _database = null; // Ensure it reinitializes on next access
+
+    print("✅ Database fully reset.");
+  }
 }

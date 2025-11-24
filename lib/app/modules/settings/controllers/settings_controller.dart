@@ -1,4 +1,3 @@
-
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/modules/home/controllers/home_controller.dart';
@@ -9,7 +8,8 @@ import '../../../data/local_database/local_database.dart';
 
 class SettingsController extends GetxController {
   //
-  final SharedPreferenceService sharedPreferenceService = Get.find<SharedPreferenceService>();
+  final SharedPreferenceService sharedPreferenceService =
+      Get.find<SharedPreferenceService>();
   final homeController = Get.find<HomeController>();
   final DataBaseService db = Get.find<DataBaseService>();
   final socketService = Get.find<SocketService>();
@@ -34,19 +34,17 @@ class SettingsController extends GetxController {
     super.onClose();
   }
 
-  void isRefreshed(){
+  void isRefreshed() {
     UserData? userDetails = sharedPreferenceService.getUserData();
     if (userDetails != null) {
       _userData.value = userDetails;
     }
   }
 
-  Future<void> logout(Function()? onSuccess) async{
-    await db.closeDb();
+  Future<void> logout(Function()? onSuccess) async {
+    await db.resetDatabase();
     await socketService.disposeSocket();
     await sharedPreferenceService.clear();
     onSuccess?.call();
   }
-
-
 }

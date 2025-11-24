@@ -51,9 +51,10 @@ class SenderMessageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Check if message has reply
-    final hasReply = type != MessageType.deleted &&
+    final hasReply =
+        type != MessageType.deleted &&
         ((repliedMessageType != MessageType.text &&
-            (repliedAssetServerName?.isNotEmpty ?? false)) ||
+                (repliedAssetServerName?.isNotEmpty ?? false)) ||
             (repliedMessageType == MessageType.text &&
                 repliedText.value.trim().isNotEmpty &&
                 repliedText.value.trim().toLowerCase() != "null"));
@@ -63,18 +64,20 @@ class SenderMessageCard extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
           ),
           child: InkWell(
             onTap: hasReply ? onReplyTap : null,
             child: Card(
               elevation: 1,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.zero,
-                      topRight: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8))),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.zero,
+                  topRight: Radius.circular(8),
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
               color:
                   // isHighlighted! ? Colors.pinkAccent.shade100 :
                   AppColors.bgColor.withOpacity(0.80),
@@ -99,12 +102,17 @@ class SenderMessageCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Forwarded
-                        if (type != MessageType.deleted && isForwarded && showForwarded)
+                        if (type != MessageType.deleted &&
+                            isForwarded &&
+                            showForwarded)
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Symbols.forward_sharp,
-                                  color: AppColors.greyMsgColor, size: 18),
+                              Icon(
+                                Symbols.forward_sharp,
+                                color: AppColors.greyMsgColor,
+                                size: 18,
+                              ),
                               const SizedBox(width: 10),
                               Text(
                                 "Forwarded",
@@ -147,10 +155,11 @@ class SenderMessageCard extends StatelessWidget {
                           const SizedBox(height: 8),
                         ],
                         DisplayTextImageGIF(
-                            message: message,
-                            type: type,
-                            url: url,
-                            assetThumbnail: assetThumbnail),
+                          message: message,
+                          type: type,
+                          url: url,
+                          assetThumbnail: assetThumbnail,
+                        ),
                       ],
                     ),
                   ),
@@ -159,10 +168,7 @@ class SenderMessageCard extends StatelessWidget {
                     right: 10,
                     child: Text(
                       date,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: greyMsgColor,
-                      ),
+                      style: const TextStyle(fontSize: 13, color: greyMsgColor),
                     ),
                   ),
                 ],

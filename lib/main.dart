@@ -71,7 +71,7 @@ void main() async {
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
-  Get.put(ChatsController());
+  // Get.put(ChatsController());
   NotificationSettings settings = await FirebaseMessaging.instance
       .requestPermission(
         alert: true,

@@ -39,24 +39,30 @@ class SingleUserProfileView extends StatelessWidget {
                 ),
                 background: Stack(
                   children: [
-                    Container(
-                      width: double.infinity,
-                      height: double.infinity,
+                    Obx(
+                      () => Container(
+                        width: double.infinity,
+                        height: double.infinity,
 
-                      // color: AppColors.greyColor
-                      //     .withOpacity(0.4),
-                      child: user.displayPictureUrl?.isNotEmpty == true
-                          ? Image.network(
-                              user.displayPictureUrl!,
-                              fit: BoxFit.cover,
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.person,
-                                size: 120,
-                                color: Colors.white,
+                        // color: AppColors.greyColor
+                        //     .withOpacity(0.4),
+                        child:
+                            user.displayPictureUrl?.isNotEmpty == true &&
+                                !controller.blocked.value &&
+                                (controller.blockedByMe.value != 1 ||
+                                    controller.blockedByMe.value != 2)
+                            ? Image.network(
+                                user.displayPictureUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Center(
+                                child: Icon(
+                                  Icons.person,
+                                  size: 120,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
 
                     Container(color: Colors.black26),
@@ -135,7 +141,7 @@ class SingleUserProfileView extends StatelessWidget {
                         final isBlocked =
                             controller.blocked.value &&
                                 (controller.blockedByMe.value == 1 ||
-                                    controller.blockedByMe.value == 3)
+                                    controller.blockedByMe.value == 2)
                             ? true
                             : false;
 

@@ -65,13 +65,13 @@ class GroupSenderMessageCard extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
           ),
           child: InkWell(
             onTap: hasReply1 ? onReplyTap : null,
             child: Card(
               elevation: 1,
-              shape: RoundedRectangleBorder(
+              shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.zero,
                   topRight: Radius.circular(8),
@@ -122,7 +122,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                                       color: AppColors.greyMsgColor,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 10),
+                                    const SizedBox(width: 10),
                                     showForwarded
                                         ? Text(
                                             "Forwarded",
@@ -146,7 +146,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     color: replyColor.withOpacity(0.67),
-                                    borderRadius: BorderRadius.all(
+                                    borderRadius: const BorderRadius.all(
                                       Radius.circular(5),
                                     ),
                                   ),
@@ -162,7 +162,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                                           color: blackColor,
                                         ),
                                       ),
-                                      SizedBox(height: 3),
+                                      const SizedBox(height: 3),
                                       GroupDisplayTextImageGIF(
                                         message:
                                             repliedMessageType !=
@@ -196,7 +196,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                     right: 10,
                     child: Text(
                       date,
-                      style: TextStyle(fontSize: 13, color: greyMsgColor),
+                      style: const TextStyle(fontSize: 13, color: greyMsgColor),
                     ),
                   ),
                 ],

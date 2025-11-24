@@ -560,48 +560,12 @@ class SocketService extends GetxService {
 
     _socket?.on('user-blocked', (data) async {
       print(data);
-      // {blockedBy: 3, isBlock: true}
-      // blockUserModel.value = BlockUserModel(
-      //   blockedBy: data["blockedBy"],
-      //   isBlock: data["isBlock"],
-      // );
 
       final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
         data["blockedBy"],
       ));
 
-      if (data["isBlock"] == true &&
-          (blockedByMeI == null || blockedByMeI == 0)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          2,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == true && (blockedByMeI == 1)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          3,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == false && (blockedByMeI == 1)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          1,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == false && (blockedByMeI == 2)) {
+      if (data["isBlock"] == true && (blockedByMeI == null)) {
         await contactsTable.updateUserBlockUnblock(
           data["blockedBy"],
           data["isBlock"] == true ? 1 : 0,
@@ -611,11 +575,31 @@ class SocketService extends GetxService {
           data["blockedBy"].toString(),
           data["isBlock"] == true ? 1 : 0,
         );
-      } else if (data["isBlock"] == false && (blockedByMeI == 3)) {
+      } else if (data["isBlock"] == true && (blockedByMeI == 1)) {
         await contactsTable.updateUserBlockUnblock(
           data["blockedBy"],
           data["isBlock"] == true ? 1 : 0,
-          1,
+          2,
+        );
+        await chatConectTable.updateUserBlockUnblock(
+          data["blockedBy"].toString(),
+          data["isBlock"] == true ? 1 : 0,
+        );
+      } else if (data["isBlock"] == false && (blockedByMeI == 0)) {
+        await contactsTable.updateUserBlockUnblock(
+          data["blockedBy"],
+          data["isBlock"] == true ? 1 : 0,
+          null,
+        );
+        await chatConectTable.updateUserBlockUnblock(
+          data["blockedBy"].toString(),
+          data["isBlock"] == true ? 1 : 0,
+        );
+      } else if (data["isBlock"] == false && (blockedByMeI == 2)) {
+        await contactsTable.updateUserBlockUnblock(
+          data["blockedBy"],
+          data["isBlock"] == true ? 1 : 0,
+          null,
         );
         await chatConectTable.updateUserBlockUnblock(
           data["blockedBy"].toString(),

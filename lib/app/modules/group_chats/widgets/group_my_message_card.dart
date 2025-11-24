@@ -78,7 +78,7 @@ class GroupMyMessageCard extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minWidth: 130,
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
           ),
           child: InkWell(
             onTap: hasReply1 ? onReplyTap : null,
@@ -220,11 +220,11 @@ class GroupMyMessageCard extends StatelessWidget {
                                             value: percent / 100,
                                             strokeWidth: 3,
                                             valueColor:
-                                                const AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                            backgroundColor:
-                                                Colors.white.withOpacity(0.2),
+                                                const AlwaysStoppedAnimation<
+                                                  Color
+                                                >(Colors.white),
+                                            backgroundColor: Colors.white
+                                                .withOpacity(0.2),
                                           ),
                                           Text(
                                             "${percent.toStringAsFixed(0)}%",

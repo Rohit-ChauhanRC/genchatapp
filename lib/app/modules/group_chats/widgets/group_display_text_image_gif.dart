@@ -78,9 +78,9 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
                   ? null
                   : controller.downloadFile(type, message, url ?? ''),
               child: Container(
-                width: isReply == true ? 80 : 200,
+                width: isReply == true ? 100 : 200,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                height: isReply == true ? 80 : 200,
+                height: isReply == true ? 100 : 200,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),

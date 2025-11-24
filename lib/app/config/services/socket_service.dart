@@ -51,6 +51,8 @@ class SocketService extends GetxService {
   final Rxn<UserData> updateContactUser = Rxn<UserData>();
   final Rxn<bool> updateGroupAdmins = Rxn<bool>();
 
+  final Rx<BlockUserModel?> incomBlockUser = Rx<BlockUserModel?>(null);
+
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
       if (_socket!.connected) {
@@ -561,51 +563,10 @@ class SocketService extends GetxService {
     _socket?.on('user-blocked', (data) async {
       print(data);
 
-      final (blockedI, blockedByMeI) = (await contactsTable.isUserBlocked(
-        data["blockedBy"],
-      ));
-
-      if (data["isBlock"] == true && (blockedByMeI == null)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          0,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == true && (blockedByMeI == 1)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          2,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == false && (blockedByMeI == 0)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          null,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      } else if (data["isBlock"] == false && (blockedByMeI == 2)) {
-        await contactsTable.updateUserBlockUnblock(
-          data["blockedBy"],
-          data["isBlock"] == true ? 1 : 0,
-          null,
-        );
-        await chatConectTable.updateUserBlockUnblock(
-          data["blockedBy"].toString(),
-          data["isBlock"] == true ? 1 : 0,
-        );
-      }
+      incomBlockUser.value = BlockUserModel(
+        blockedBy: data["blockedBy"],
+        isBlock: data["isBlock"],
+      );
     });
   }
 

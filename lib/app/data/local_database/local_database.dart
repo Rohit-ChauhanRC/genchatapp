@@ -60,7 +60,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 12,
+      version: 1,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,
@@ -81,7 +81,7 @@ class DataBaseService {
     // MessageTable().onUpgrade(database, oldVersion, newVersion);
     // ContactsTable().onUpgrade(database, oldVersion, newVersion);
     // ChatConectTable().onUpgrade(database, oldVersion, newVersion);
-    StatusTable().onUpgrade(database, oldVersion, newVersion);
+    // StatusTable().onUpgrade(database, oldVersion, newVersion);
   }
 
   Future<void> closeDb() async {
@@ -296,6 +296,7 @@ extension BackupRestore on DataBaseService {
     await ChatConectTable().deleteTable();
     await MessageTable().deleteQueueMessageTable();
     await GroupsTable().deleteGroupsTable();
+    await StatusTable().deleteTable();
   }
 
   Future<void> deleteDatabaseFile() async {

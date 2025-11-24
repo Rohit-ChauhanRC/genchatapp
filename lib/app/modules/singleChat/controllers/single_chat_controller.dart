@@ -146,7 +146,7 @@ class SingleChatController extends GetxController
 
   // blockedByMe
 
-  final RxInt blockedByMe = 0.obs;
+  final RxnInt blockedByMe = RxnInt();
 
   // int get blockedByMe => _blockedByMe.value;
   // set blockedByMe(int b) => _blockedByMe.value = b;
@@ -411,23 +411,19 @@ class SingleChatController extends GetxController
         receiverUserData!.userId!,
       ));
 
-      if (blockedByMeI == null || blockedByMeI == 0) {
+      if (blockedByMeI == null) {
         blockedByMe.value = 1;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           1,
           1,
         );
-        await chatConectTable.updateUserBlockUnblock(
-          receiverUserData!.userId!.toString(),
-          1,
-        );
-      } else if (blockedByMeI == 2) {
-        blockedByMe.value = 3;
+      } else if (blockedByMeI == 0 && blockedI == true) {
+        blockedByMe.value = 2;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           1,
-          3,
+          2,
         );
       }
       await chatConectTable.updateUserBlockUnblock(
@@ -457,23 +453,23 @@ class SingleChatController extends GetxController
         receiverUserData!.userId!,
       ));
 
-      if (blockedByMeI == 1) {
-        blockedByMe.value = 0;
+      if (blockedByMeI == 1 && blockedI == true) {
+        blockedByMe.value = null;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           0,
-          0,
+          null,
         );
         await chatConectTable.updateUserBlockUnblock(
           receiverUserData!.userId!.toString(),
           0,
         );
-      } else if (blockedByMeI == 3) {
-        blockedByMe.value = 2;
+      } else if (blockedByMeI == 2 && blockedI == true) {
+        blockedByMe.value = null;
         await contactsTable.updateUserBlockUnblock(
           receiverUserData!.userId!,
           0,
-          2,
+          null,
         );
       }
 

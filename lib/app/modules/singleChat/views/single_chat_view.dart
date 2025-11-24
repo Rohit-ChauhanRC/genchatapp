@@ -203,13 +203,13 @@ class SingleChatView extends GetView<SingleChatController> {
                 value:
                     controller.blocked.value &&
                         (controller.blockedByMe.value == 1 ||
-                            controller.blockedByMe.value == 3)
+                            controller.blockedByMe.value == 2)
                     ? unBlock
                     : block,
                 child: Text(
                   controller.blocked.value &&
                           (controller.blockedByMe.value == 1 ||
-                              controller.blockedByMe.value == 3)
+                              controller.blockedByMe.value == 2)
                       ? unBlock
                       : block,
                   style: const TextStyle(
@@ -247,7 +247,7 @@ class SingleChatView extends GetView<SingleChatController> {
               () =>
                   (controller.blocked.value &&
                       (controller.blockedByMe.value == 1 ||
-                          controller.blockedByMe.value == 3))
+                          controller.blockedByMe.value == 2))
                   ? Container(
                       color: textBarColor,
                       child: Row(
@@ -309,7 +309,7 @@ class SingleChatView extends GetView<SingleChatController> {
                 },
               ),
               if (controller.canDeleteForEveryone &&
-                  controller.blocked == false)
+                  controller.blocked.value == false)
                 ListTile(
                   leading: const Icon(Icons.delete_forever, color: Colors.red),
                   title: const Text("Delete for Everyone"),

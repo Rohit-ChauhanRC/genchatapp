@@ -164,7 +164,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                 : Row(
                     children: [
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          showComingSoon(context);
+                        },
                         child: Icon(
                           Symbols.videocam_rounded,
                           color: AppColors.whiteColor,
@@ -172,7 +174,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       ),
                       const SizedBox(width: 10),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          showComingSoon(context);
+                        },
                         child: const Icon(
                           Symbols.call_rounded,
                           color: AppColors.whiteColor,
@@ -246,7 +250,8 @@ class GroupChatsView extends GetView<GroupChatsController> {
           ),
           Obx(() {
             if (controller.isCurrentUserRemoved) {
-              return Container(
+              return SafeArea(
+                child:Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(color: AppColors.textBarColor),
                 child: Text(
@@ -258,7 +263,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
+                ) );
             } else {
               return GroupBottomChatField(
                 groupChatsController: controller,
@@ -281,7 +286,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return Column(
+        return SafeArea(
+
+          child:Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
@@ -303,8 +310,28 @@ class GroupChatsView extends GetView<GroupChatsController> {
                 },
               ),
           ],
-        );
+          )  );
       },
     );
   }
+  void showComingSoon(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          "Coming Soon",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text("This feature will be available soon."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

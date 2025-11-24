@@ -70,7 +70,8 @@ class GroupMyMessageCard extends StatelessWidget {
         replyText1.toLowerCase() != "null" &&
         type != MessageType.deleted;
 
-    return SwipeTo(
+    return
+      SwipeTo(
       onLeftSwipe: onLeftSwipe,
       child: Align(
         alignment: Alignment.centerRight,
@@ -200,7 +201,6 @@ class GroupMyMessageCard extends StatelessWidget {
                               Obx(() {
                                 final percent = controller.percent.value;
 
-                                // Show live upload progress (0–100%) over the media while uploading
                                 if (syncStatus == SyncStatus.pending &&
                                     percent > 0.0 &&
                                     percent < 100.0) {

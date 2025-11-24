@@ -29,13 +29,6 @@ class ApiInterceptor extends Interceptor {
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
-
-    // Debugging logs
-    print("📤 [API Request]: ${options.method} ${options.uri}");
-    print("🟢 Query Parameters: ${options.queryParameters}");
-    print("📄 Request Body: ${options.data}");
-    print("🔑 Headers: ${options.headers}");
-
     return handler.next(options);
   }
 

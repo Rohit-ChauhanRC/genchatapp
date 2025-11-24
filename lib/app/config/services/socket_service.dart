@@ -998,7 +998,6 @@ class SocketService extends GetxService {
     }
     return chunks;
   }
-
   Future<void> sendBase64Scientist(File data) async {
     const chunkSize = 512 * 1024;
     final raf = await data.open(mode: FileMode.read);

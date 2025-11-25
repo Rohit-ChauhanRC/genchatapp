@@ -99,9 +99,7 @@ class UpdatesView extends GetView<UpdatesController> {
                           ),
                           padding: const EdgeInsets.all(2),
                           child: Icon(
-                            myStatuses != null && myStatuses.isNotEmpty
-                                ? Icons.add
-                                : Icons.add,
+                            Icons.add,
                             size: 18,
                             color: Colors.white,
                           ),

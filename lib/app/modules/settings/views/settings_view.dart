@@ -104,6 +104,15 @@ class SettingsView extends GetView<SettingsController> {
                   ),
                   const SizedBox(height: 10),
                   _settingsItemWidget(
+                    title: "New Group",
+                    description: "Create new group",
+                    icon: Symbols.group_add,
+                    onTap: () {
+                      Get.toNamed(Routes.CREATE_GROUP);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _settingsItemWidget(
                     title: "Chat backup",
                     description:
                         "Back up your chats to your local device storage.",

@@ -100,7 +100,9 @@ class GroupBottomChatField extends StatelessWidget {
                               waveColor: Colors.white,
                               extendWaveform: true,
                               durationLinesColor: Colors.white,
-                              waveCap: StrokeCap.butt,
+                              spacing: 1.5,
+                              waveThickness: 1,
+                              // waveCap: StrokeCap.,
                             ),
                           ),
                         ],
@@ -323,8 +325,7 @@ class GroupBottomChatField extends StatelessWidget {
                                             MainAxisAlignment.end,
                                         children: [
                                           !groupChatsController.isShowSendButton
-                                              ?
-                                          IconButton(
+                                              ? IconButton(
                                                   onPressed: () {
                                                     groupChatsController
                                                         .selectFile(
@@ -341,9 +342,16 @@ class GroupBottomChatField extends StatelessWidget {
                                                 )
                                               : const SizedBox.shrink(),
                                           IconButton(
-                                            onPressed: () => showAttachmentSheetGroup(context, groupChatsController),
-                                            icon: const Icon(Icons.attach_file, color: Colors.grey),
-                                          )
+                                            onPressed: () =>
+                                                showAttachmentSheetGroup(
+                                                  context,
+                                                  groupChatsController,
+                                                ),
+                                            icon: const Icon(
+                                              Icons.attach_file,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
 
                                           // IconButton(
                                           //   onPressed: () {

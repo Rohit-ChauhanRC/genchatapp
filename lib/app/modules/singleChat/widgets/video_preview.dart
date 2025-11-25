@@ -10,7 +10,7 @@ class VideoPreviewScreen extends StatefulWidget {
   final String videoUrl;
 
   const VideoPreviewScreen({Key? key, required this.videoUrl})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<VideoPreviewScreen> createState() => _VideoPreviewScreenState();
@@ -55,28 +55,32 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: textBarColor,
-          iconTheme: const IconThemeData(color: Colors.white),
-          // automaticallyImplyLeading: false,
-          centerTitle: false,
-          title: const Text(
-            "Video Preview",
-            style: TextStyle(
-              fontSize: 20,
-              color: whiteColor,
-              fontWeight: FontWeight.bold,
-            ),
-          )),
+        backgroundColor: textBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        // automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: const Text(
+          "Video Preview",
+          style: TextStyle(
+            fontSize: 20,
+            color: whiteColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       backgroundColor: AppColors.blackColor,
       body: _controller.value.isInitialized
           ? Container(
               height: Get.height * 0.8,
-              padding: const EdgeInsets.all(18.0),
+              // padding: const EdgeInsets.all(18.0),
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
                   Center(
-                    child: VideoPlayer(_controller),
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
                   ),
                   VideoProgressIndicator(_controller, allowScrubbing: true),
                   // Positioned(

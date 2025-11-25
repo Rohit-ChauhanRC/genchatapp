@@ -98,7 +98,7 @@ class UpdatesView extends GetView<UpdatesController> {
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(2),
-                          child: Icon(
+                          child: const Icon(
                             Icons.add,
                             size: 18,
                             color: Colors.white,

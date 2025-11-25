@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/modules/call/views/call_view.dart';
 import 'package:genchatapp/app/modules/chats/views/chats_view.dart';
+import 'package:genchatapp/app/modules/settings/views/settings_view.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:genchatapp/app/modules/updates/views/updates_view.dart';
 
@@ -79,6 +80,11 @@ class HomeView extends GetView<HomeController> {
                 ),
                 label: 'Call',
               ),
+              const NavigationDestination(
+                selectedIcon: Icon(Icons.settings, color: highLightColor),
+                icon: Icon(Icons.settings, color: Colors.white),
+                label: 'Settings',
+              ),
             ],
           ),
         ),
@@ -86,6 +92,7 @@ class HomeView extends GetView<HomeController> {
           const ChatsView(),
           const UpdatesView(),
           const CallView(),
+          const SettingsView(),
         ][controller.currentPageIndex],
       ),
     );

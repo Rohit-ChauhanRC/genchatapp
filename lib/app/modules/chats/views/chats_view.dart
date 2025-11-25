@@ -87,43 +87,43 @@ class ChatsView extends GetView<ChatsController> {
                 //   ),
 
                 // Always show the popup menu
-                PopupMenuButton(
-                  icon: const Icon(Icons.more_vert, color: whiteColor),
-                  offset: const Offset(0, 40),
-                  color: whiteColor,
-                  onSelected: (value) {
-                    if (value == settings) {
-                      Get.back();
-                      Get.toNamed(Routes.SETTINGS);
-                    } else if (value == newGroup) {
-                      Get.toNamed(Routes.CREATE_GROUP);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: newGroup,
-                      child: Text(
-                        newGroup,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: blackColor,
-                        ),
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: settings,
-                      child: Text(
-                        settings,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: blackColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                // PopupMenuButton(
+                //   icon: const Icon(Icons.more_vert, color: whiteColor),
+                //   offset: const Offset(0, 40),
+                //   color: whiteColor,
+                //   onSelected: (value) {
+                //     if (value == settings) {
+                //       Get.back();
+                //       Get.toNamed(Routes.SETTINGS);
+                //     } else if (value == newGroup) {
+                //       Get.toNamed(Routes.CREATE_GROUP);
+                //     }
+                //   },
+                //   itemBuilder: (context) => [
+                //     const PopupMenuItem(
+                //       value: newGroup,
+                //       child: Text(
+                //         newGroup,
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           fontWeight: FontWeight.w400,
+                //           color: blackColor,
+                //         ),
+                //       ),
+                //     ),
+                //     const PopupMenuItem(
+                //       value: settings,
+                //       child: Text(
+                //         settings,
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           fontWeight: FontWeight.w400,
+                //           color: blackColor,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             );
           }),

@@ -180,8 +180,7 @@ class FilePickerService {
         if (croppedFile != null) {
           _imageFiles.add(File(croppedFile.path));
         }
-      }
-      else if (type == MessageType.video) {
+      } else if (type == MessageType.video) {
         final endTime = DateTime.now();
         print("Compression ended at: $endTime");
 
@@ -229,7 +228,7 @@ class FilePickerService {
               continue;
             }
 
-            if (compressed   != null &&
+            if (compressed != null &&
                 compressed.compressedFilePath != null &&
                 sizeInMB1 <= 50) {
               _imageFiles.add(File(compressed.compressedFilePath));
@@ -254,6 +253,7 @@ class FilePickerService {
 
     return _imageFiles;
   }
+
   Future<List<File>> pickVideoFromCamera() async {
     final pickedVideo = await ImagePicker().pickVideo(
       source: ImageSource.camera,
@@ -265,59 +265,120 @@ class FilePickerService {
 
     return [File(pickedVideo.path)];
   }
+  // Future<List<File>> pickFromGalleryVideo() async {
+  //   List<File> finalFiles = [];
+
+  //   final XFile? pickedVideo = await ImagePicker().pickVideo(
+  //     source: ImageSource.gallery,
+  //     maxDuration: const Duration(minutes: 10), // optional
+  //   );
+
+  //   if (pickedVideo == null) return [];
+
+  //   final File file = File(pickedVideo.path);
+
+  //   final sizeInBytes = await file.length();
+  //   final sizeInMB = sizeInBytes / (1024 * 1024);
+
+  //   if (sizeInMB >= 50) {
+  //     try {
+  //       final compressed = await VVideoCompressor().compressVideo(
+  //         file.path,
+  //         const VVideoCompressionConfig(
+  //           quality: VVideoCompressQuality.low,
+  //           deleteOriginal: false,
+  //         ),
+  //       );
+
+  //       if (compressed != null &&
+  //           compressed.compressedFilePath.isNotEmpty) {
+  //         final compressedFile = File(compressed.compressedFilePath);
+  //         final compressedSizeMB =
+  //             (await compressedFile.length()) / (1024 * 1024);
+
+  //         if (compressedSizeMB > 50) {
+  //           showSnackBar(
+  //             context: Get.context!,
+  //             content:
+  //             "Video is ${compressedSizeMB.toStringAsFixed(2)}MB. Please select below 50MB.",
+  //           );
+  //         } else {
+  //           finalFiles.add(compressedFile);
+  //         }
+  //       } else {
+  //         finalFiles.add(file);
+  //       }
+  //     } catch (e) {
+  //       debugPrint("Compression failed: $e");
+  //       finalFiles.add(file);
+  //     }
+  //   } else {
+  //     finalFiles.add(file);
+  //   }
+
+  //   return finalFiles;
+  // }
+
   Future<List<File>> pickFromGalleryVideo() async {
     List<File> finalFiles = [];
 
-    final XFile? pickedVideo = await ImagePicker().pickVideo(
-      source: ImageSource.gallery,
-      maxDuration: const Duration(minutes: 10), // optional
-    );
+    // Pick multiple videos
+    final List<XFile>? pickedVideos = await ImagePicker().pickMultiVideo();
 
-    if (pickedVideo == null) return [];
+    if (pickedVideos == null || pickedVideos.isEmpty) return [];
 
-    final File file = File(pickedVideo.path);
+    for (var xfile in pickedVideos) {
+      final file = File(xfile.path);
 
-    final sizeInBytes = await file.length();
-    final sizeInMB = sizeInBytes / (1024 * 1024);
+      final sizeBytes = await file.length();
+      final sizeMB = sizeBytes / (1024 * 1024);
 
-    if (sizeInMB >= 50) {
-      try {
-        final compressed = await VVideoCompressor().compressVideo(
-          file.path,
-          const VVideoCompressionConfig(
-            quality: VVideoCompressQuality.low,
-            deleteOriginal: false,
-          ),
-        );
+      // ─────────────────────────────
+      // LARGE → COMPRESS
+      // ─────────────────────────────
+      if (sizeMB >= 50) {
+        try {
+          final compressed = await VVideoCompressor().compressVideo(
+            file.path,
+            const VVideoCompressionConfig(
+              quality: VVideoCompressQuality.low,
+              deleteOriginal: false,
+            ),
+          );
 
-        if (compressed != null &&
-            compressed.compressedFilePath.isNotEmpty) {
-          final compressedFile = File(compressed.compressedFilePath);
-          final compressedSizeMB =
-              (await compressedFile.length()) / (1024 * 1024);
+          if (compressed != null) {
+            final compressedFile = File(compressed.compressedFilePath);
+            final compressedMB =
+                (await compressedFile.length()) / (1024 * 1024);
 
-          if (compressedSizeMB > 50) {
-            showSnackBar(
-              context: Get.context!,
-              content:
-              "Video is ${compressedSizeMB.toStringAsFixed(2)}MB. Please select below 50MB.",
-            );
+            if (compressedMB <= 50) {
+              finalFiles.add(compressedFile);
+            } else {
+              showSnackBar(
+                context: Get.context!,
+                content:
+                    "Video is still ${compressedMB.toStringAsFixed(2)} MB. Choose under 50MB.",
+              );
+            }
           } else {
-            finalFiles.add(compressedFile);
+            finalFiles.add(file);
           }
-        } else {
+        } catch (e) {
+          debugPrint("Compression failed: $e");
           finalFiles.add(file);
         }
-      } catch (e) {
-        debugPrint("Compression failed: $e");
+      }
+      // ─────────────────────────────
+      // SMALL → DIRECT
+      // ─────────────────────────────
+      else {
         finalFiles.add(file);
       }
-    } else {
-      finalFiles.add(file);
     }
 
     return finalFiles;
   }
+
   Future<List<File>> pickImagesFromGalleryWithCrop() async {
     List<File> resultFiles = [];
 

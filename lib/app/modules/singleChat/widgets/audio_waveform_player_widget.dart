@@ -207,14 +207,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                 ),
               ),
               AudioFileWaveforms(
-                size: const Size(120, 40),
+                size: const Size(150, 30),
+                // animationDuration: Duration(seconds: 1),
                 playerController: playerController,
-                animationCurve: Curves.elasticInOut,
+                animationCurve: Curves.easeInOut,
                 waveformType: WaveformType.fitWidth,
                 playerWaveStyle: const PlayerWaveStyle(
                   fixedWaveColor: Colors.white,
                   liveWaveColor: Colors.red,
-                  spacing: 2,
+                  spacing: 1.5,
                   waveThickness: 1,
                 ),
               ),

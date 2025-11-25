@@ -266,96 +266,57 @@ class FilePickerService {
     return [File(pickedVideo.path)];
   }
   Future<List<File>> pickFromGalleryVideo() async {
-    List<File> _imageFiles = [];
+    List<File> finalFiles = [];
 
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-      allowMultiple: true,
-      compressionQuality: 70,
+    final XFile? pickedVideo = await ImagePicker().pickVideo(
+      source: ImageSource.gallery,
+      maxDuration: const Duration(minutes: 10), // optional
     );
 
-    if (result == null || result.files.isEmpty) return [];
+    if (pickedVideo == null) return [];
 
-    final startTime = DateTime.now();
-    print("Compression started at: $startTime");
+    final File file = File(pickedVideo.path);
 
-    final pickedFiles = result.paths
-        .whereType<String>()
-        .map((path) => File(path))
-        .toList();
+    final sizeInBytes = await file.length();
+    final sizeInMB = sizeInBytes / (1024 * 1024);
 
-    for (var file in pickedFiles) {
-      final endTime = DateTime.now();
-      print("Compression ended at: $endTime");
+    if (sizeInMB >= 50) {
+      try {
+        final compressed = await VVideoCompressor().compressVideo(
+          file.path,
+          const VVideoCompressionConfig(
+            quality: VVideoCompressQuality.low,
+            deleteOriginal: false,
+          ),
+        );
 
-      final totalSeconds = endTime.difference(startTime).inSeconds;
-      print("Compression duration: $totalSeconds seconds");
-      // -------------------------------
+        if (compressed != null &&
+            compressed.compressedFilePath.isNotEmpty) {
+          final compressedFile = File(compressed.compressedFilePath);
+          final compressedSizeMB =
+              (await compressedFile.length()) / (1024 * 1024);
 
-      final sizeInBytes = await file.length();
-      final sizeInMB = sizeInBytes / (1024 * 1024);
-
-      // if (sizeInMB >= 50) {
-      //   showSnackBar(
-      //     context: Get.context!,
-      //     content:
-      //         "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
-      //   );
-      //   continue;
-      // }
-
-      if (sizeInMB >= 50) {
-        try {
-          final compressed = await VVideoCompressor().compressVideo(
-            file.path,
-            const VVideoCompressionConfig(
-              quality: VVideoCompressQuality.low,
-              deleteOriginal: false,
-            ),
-          );
-
-          final endTime = DateTime.now();
-          print("Compression ended at: $endTime");
-
-          final totalSeconds = endTime.difference(startTime).inSeconds;
-          print("Compression duration: $totalSeconds seconds");
-          // -------------------------------
-
-          final sizeInBytes1 = await File(
-            compressed!.compressedFilePath,
-          ).length();
-          final sizeInMB1 = sizeInBytes1 / (1024 * 1024);
-          print(sizeInMB1);
-
-          if (sizeInMB1 >= 50) {
+          if (compressedSizeMB > 50) {
             showSnackBar(
               context: Get.context!,
               content:
-                  "The selected video is ${sizeInMB.toStringAsFixed(2)} MB. Please select a file under 50 MB.",
+              "Video is ${compressedSizeMB.toStringAsFixed(2)}MB. Please select below 50MB.",
             );
-            continue;
-          }
-
-          if (compressed != null &&
-              compressed.compressedFilePath != null &&
-              sizeInMB1 <= 50) {
-            _imageFiles.add(File(compressed.compressedFilePath));
           } else {
-            _imageFiles.add(file);
+            finalFiles.add(compressedFile);
           }
-        } catch (e) {
-          debugPrint("Compression failed: $e");
-          _imageFiles.add(file);
+        } else {
+          finalFiles.add(file);
         }
-      } else {
-        _imageFiles.add(file); // small → no compression
+      } catch (e) {
+        debugPrint("Compression failed: $e");
+        finalFiles.add(file);
       }
+    } else {
+      finalFiles.add(file);
     }
-    // -----------------------------
-    // OTHER FILE TYPES
-    // -----------------------------
 
-    return _imageFiles;
+    return finalFiles;
   }
   Future<List<File>> pickImagesFromGalleryWithCrop() async {
     List<File> resultFiles = [];

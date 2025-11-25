@@ -190,12 +190,10 @@ class _StatusViewState extends State<StatusView> {
     controller.stopProgress();
     _videoController?.pause();
 
-    // Case 1: Move to previous media in same status
     if (index > 0) {
       index--;
     }
 
-    // Case 2: Move to previous status
     else if (currentStatusIndex > 0) {
       currentStatusIndex--;
       status = statusList[currentStatusIndex];

@@ -267,23 +267,26 @@ class FilePickerService {
   }
   Future<List<File>> pickFromGalleryVideo() async {
     List<File> finalFiles = [];
+    List <File> files=[];
 
-    final XFile? pickedVideo = await ImagePicker().pickVideo(
-      source: ImageSource.gallery,
-      maxDuration: const Duration(minutes: 10), // optional
+    final List<XFile?> pickedVideo = await ImagePicker().pickMultiVideo(
+      // source: ImageSource.gallery,
+      // maxDuration: const Duration(minutes: 10), // optional
     );
 
     if (pickedVideo == null) return [];
+    for (var file in pickedVideo){
+      files.addAll(file as Iterable<File>);
+    }
 
-    final File file = File(pickedVideo.path);
 
-    final sizeInBytes = await file.length();
+    final sizeInBytes = await files.length;
     final sizeInMB = sizeInBytes / (1024 * 1024);
 
     if (sizeInMB >= 50) {
       try {
         final compressed = await VVideoCompressor().compressVideo(
-          file.path,
+          files.length as String,
           const VVideoCompressionConfig(
             quality: VVideoCompressQuality.low,
             deleteOriginal: false,
@@ -306,14 +309,14 @@ class FilePickerService {
             finalFiles.add(compressedFile);
           }
         } else {
-          finalFiles.add(file);
+          finalFiles.add(files as File);
         }
       } catch (e) {
         debugPrint("Compression failed: $e");
-        finalFiles.add(file);
+        finalFiles.add(files as File);
       }
     } else {
-      finalFiles.add(file);
+      finalFiles.add(files as File);
     }
 
     return finalFiles;

@@ -1219,6 +1219,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         print("[GroupChat] Error sending file message: $e");
       }
     }
+    cancelReply();
   }
 
   void selectFile(String fileType) async {

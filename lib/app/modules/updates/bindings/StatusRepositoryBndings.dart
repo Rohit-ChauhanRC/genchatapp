@@ -10,7 +10,6 @@ class AppBinding extends Bindings {
   void dependencies() {
     Get.put(ApiClient());
     Get.put(SharedPreferenceService());
-
     Get.put(StatusRepository(
 
       apiClient: Get.find<ApiClient>(),

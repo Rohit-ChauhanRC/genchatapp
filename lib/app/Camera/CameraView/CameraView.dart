@@ -17,7 +17,7 @@ class CameraView extends GetView<CameraControllerX> {
     final ImagePicker picker = ImagePicker();
 
     Future<void> openGallery() async {
-      final XFile? media = await picker.pickMedia();
+      final XFile? media = await picker.pickImage(source: ImageSource.gallery);
 
       if (media != null) {
         final file = File(media.path);
@@ -54,6 +54,37 @@ class CameraView extends GetView<CameraControllerX> {
         }
       }
     }
+    Future<void> pickVideoFromGallery() async {
+      final ImagePicker picker = ImagePicker();
+
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.gallery, // Gallery only
+      );
+
+      if (video == null) return;
+
+      final file = File(video.path);
+      final sizeMB = file.lengthSync() / (1024 * 1024);
+
+      if (sizeMB > 50) {
+        Get.snackbar(
+          "Video too large",
+          "Maximum allowed size is 50 MB",
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+
+      Get.to(
+            () => VideoPlayerScreen(
+          videoPath: video.path,
+          statusRepository: controller.statusRepository,
+        ),
+      );
+    }
+
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -108,6 +139,26 @@ class CameraView extends GetView<CameraControllerX> {
                           style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
+
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: pickVideoFromGallery,
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.video_call_outlined,
+                          color: Colors.white,
+                          size: 35,
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          "Video",
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+
                     ),
                   ),
 
@@ -169,7 +220,6 @@ class CameraView extends GetView<CameraControllerX> {
                             // Navigate to a preview or post screen if you want
                           }
                         },
-
                         child: const Icon(
                           Icons.edit,
                           color: Colors.white,

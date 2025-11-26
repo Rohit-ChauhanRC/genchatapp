@@ -197,8 +197,8 @@ class BottomChatField extends StatelessWidget {
                                                   singleChatController
                                                       .selectFile(
                                                         MessageType
-                                                            .camera
-                                                            .value,
+                                                            .camera.value
+                                                            ,
                                                       );
                                                 },
                                                 icon: const Icon(

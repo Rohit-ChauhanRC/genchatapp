@@ -1277,7 +1277,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           },
         ),
       );
-    } else if (fileType == MessageType.document.value) {
+    }
+    else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");

@@ -41,10 +41,13 @@ import '../../../data/local_database/contacts_table.dart';
 import '../../../data/local_database/message_table.dart';
 import '../../../data/models/new_models/response_model/message_ack_model.dart';
 import '../../../data/repositories/status/status_repository.dart';
+import '../../../utils/DocumentPickerScreen.dart';
+import '../../../utils/DocumentViewer.dart';
 import '../../../utils/alert_popup_utils.dart';
 import '../../../utils/utils.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 
+import '../../Documents/View/DocumentsScreen.dart';
 import '../mediaPickerFiles/media_preview_screen.dart';
 import '../widgets/image_preview.dart';
 
@@ -1298,6 +1301,7 @@ class SingleChatController extends GetxController
   }
 
   void selectFile(String fileType) async {
+    print("🔥 FILE TYPE RECEIVED: $fileType");
     if (fileType == MessageType.image.value) {
       final files = await FilePickerService().pickImagesFromGalleryWithCrop();
 
@@ -1352,7 +1356,32 @@ class SingleChatController extends GetxController
         }
       });
       cancelReply();
-    } else if (fileType == MessageType.document.value) {
+    }
+    // else if (fileType == MessageType.document.value) {
+    //
+    //   final files = await DocumentScannerService.scanDocuments();
+    //
+    //   if (files.isEmpty) {
+    //     showSnackBar(
+    //       context: Get.context!,
+    //       content: "No documents found",
+    //     );
+    //     return;
+    //   }
+    //
+    //   Get.to(() => DocumentPickerScreen(
+    //     onSend: (selectedFiles) async {
+    //       for (File file in selectedFiles) {
+    //         await sendFileMessage(
+    //           file: file,
+    //           messageEnum: getMessageType(file),
+    //         );
+    //       }
+    //       cancelReply();
+    //     },
+    //   ));
+    // }
+    else if (fileType == MessageType.document.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1361,6 +1390,8 @@ class SingleChatController extends GetxController
       });
       cancelReply();
     }
+
+
   }
 
   Future<List<File>> pickImageAndVideo() async {
@@ -1384,7 +1415,9 @@ class SingleChatController extends GetxController
 
     return completer.future;
   }
-
+  Future<List<File>> pickDocuments() async {
+    return await DocumentScannerService.scanDocuments();
+  }
   // Future<String> saveFileLocally(
   //     File file, String fileType, String fileExtension) async {
   //   String newExtension = fileExtension.toLowerCase();

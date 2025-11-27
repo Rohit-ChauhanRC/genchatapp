@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 
 import '../Controllers/DocumentsController.dart';
-
-
 class DocumentPickerScreen extends StatelessWidget {
   final Function(List<File>) onSend;
 
@@ -14,7 +12,6 @@ class DocumentPickerScreen extends StatelessWidget {
     required this.onSend,
   });
 
-  final controller = Get.put(DocumentPickerController());
 
   Icon _fileIcon(String ext) {
     switch (ext) {
@@ -36,9 +33,33 @@ class DocumentPickerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DocumentPickerController>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select Documents"),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+
+
+            Text("Select Documents",style: TextStyle(fontSize: 15),),
+          ],
+        ),
+        leading: const BackButton(color: Colors.black),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // call your browse function
+            },
+            child: const Text(
+              "Browse Documents",
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
 
       body: Obx(() {
@@ -61,46 +82,50 @@ class DocumentPickerScreen extends StatelessWidget {
               childAspectRatio: 0.75,
             ),
             itemBuilder: (_, index) {
-              final file = controller.files[index];
-              final name = file.path.split('/').last;
+              final path = controller.files[index];
+              final name = path.split('/').last;
               final ext = name.split('.').last.toLowerCase();
-              final isSelected = controller.selected.contains(file);
+              final isSelected = controller.selected.contains(path);
 
-              return GestureDetector(
-                onTap: () => OpenFile.open(file.path),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.blue.shade50
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey.shade400,
-                      width: isSelected ? 2 : 1,
+
+              return Obx(() {
+                final isSelected = controller.selected.contains(path);
+
+                return GestureDetector(
+                  onTap: () => controller.toggleSelection(path),
+                  onLongPress: () => OpenFile.open(path),
+                  child: Container(
+                    key: ValueKey(path),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.blue.shade100 : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.grey.shade400,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _fileIcon(ext),
+                        const SizedBox(height: 8),
+                        Text(
+                          name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+                        if (isSelected)
+                          const Icon(Icons.check_circle, color: Colors.blue)
+                      ],
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _fileIcon(ext),
-                      const SizedBox(height: 8),
-                      Text(
-                        name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(height: 8),
-                      Checkbox(
-                        value: isSelected,
-                        onChanged: (_) => controller.toggleSelection(file),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+                );
+              });
+
             },
           ),
         );
@@ -114,8 +139,8 @@ class DocumentPickerScreen extends StatelessWidget {
           icon: const Icon(Icons.send),
           label: Text("Send (${controller.selected.length})"),
           onPressed: () {
-            onSend(controller.selected.toList());
-            Get.back();
+            onSend(controller.selected.map((path) => File(path)).toList());
+              Get.back();
           },
         );
       }),

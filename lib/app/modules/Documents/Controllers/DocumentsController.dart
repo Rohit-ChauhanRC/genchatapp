@@ -2,17 +2,13 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'dart:io';
-import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
-
 class DocumentPickerController extends GetxController {
-  RxList<File> files = <File>[].obs;
-  RxList<File> selected = <File>[].obs;
+  RxList<String> files = <String>[].obs;
+  RxList<String> selected = <String>[].obs;
   RxBool isLoading = true.obs;
 
   final List<String> extensions = [
-    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt', 'pptx'
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt', 'pptx', 'zip', 'rar'
   ];
 
   @override
@@ -22,19 +18,14 @@ class DocumentPickerController extends GetxController {
   }
 
   Future<bool> requestPermission() async {
-    // Android 13+ uses different permissions
     if (Platform.isAndroid) {
       if (await Permission.manageExternalStorage.isGranted) return true;
       if (await Permission.manageExternalStorage.request().isGranted) return true;
 
-      // Android 13+ fallback
       if (await Permission.photos.request().isGranted ||
           await Permission.videos.request().isGranted ||
-          await Permission.audio.request().isGranted) {
-        return true;
-      }
+          await Permission.audio.request().isGranted) return true;
 
-      // Normal storage permission
       if (await Permission.storage.isGranted) return true;
       if (await Permission.storage.request().isGranted) return true;
     }
@@ -52,18 +43,17 @@ class DocumentPickerController extends GetxController {
       return;
     }
 
-    Directory root = Directory('/storage/emulated/0/');
-    await scanFolder(root);
+    await scanFolder(Directory('/storage/emulated/0/'));
 
     isLoading.value = false;
   }
 
+  // 🔥🔥 MUST BE OUTSIDE fetchDocuments()
   Future<void> scanFolder(Directory dir) async {
     try {
       await for (var entity in dir.list(followLinks: false)) {
         final path = entity.path;
 
-        // Skip restricted Android folders
         if (path.contains("/Android/data") || path.contains("/Android/obb")) {
           continue;
         }
@@ -71,18 +61,21 @@ class DocumentPickerController extends GetxController {
         if (entity is Directory) {
           await scanFolder(entity);
         } else if (entity is File) {
-          final ext = path.split('.').last.toLowerCase();
+          String ext = path.split('.').last.toLowerCase();
           if (extensions.contains(ext)) {
-            files.add(entity);
+            files.add(path);
           }
         }
       }
     } catch (_) {}
   }
 
-  void toggleSelection(File file) {
-    selected.contains(file)
-        ? selected.remove(file)
-        : selected.add(file);
+  // 🔥🔥 THIS MUST BE HERE
+  void toggleSelection(String path) {
+    if (selected.contains(path)) {
+      selected.remove(path);
+    } else {
+      selected.add(path);
+    }
   }
 }

@@ -422,20 +422,20 @@ class FilePickerService {
   }
 
   /// Pick multiple documents (pdf, docx, etc.)
-  Future<List<File>> pickDocuments() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowMultiple: true,
-      allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
-    );
-
-    if (result == null || result.files.isEmpty) return [];
-
-    return result.paths.whereType<String>().map((path) => File(path)).toList();
-  }
   // Future<List<File>> pickDocuments() async {
-  //   return await DocumentScannerService.scanDocuments();
+  //   final result = await FilePicker.platform.pickFiles(
+  //     type: FileType.custom,
+  //     allowMultiple: true,
+  //     allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
+  //   );
+  //
+  //   if (result == null || result.files.isEmpty) return [];
+  //
+  //   return result.paths.whereType<String>().map((path) => File(path)).toList();
   // }
+  Future<List<File>> pickDocuments() async {
+    return await DocumentScannerService.scanDocuments();
+  }
 
   Future<List<File>> pickAudios() async {
     final result = await FilePicker.platform.pickFiles(

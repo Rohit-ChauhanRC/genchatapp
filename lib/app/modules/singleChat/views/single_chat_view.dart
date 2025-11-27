@@ -60,7 +60,9 @@ class SingleChatView extends GetView<SingleChatController> {
                   child: Row(
                     children: [
                       ((user?.displayPictureUrl?.isNotEmpty ?? false) &&
-                              !controller.blocked.value)
+                              (!controller.blocked.value ||
+                                  (controller.blocked.value &&
+                                      controller.blockedByMe.value == 1)))
                           ? CachedNetworkImage(
                               imageUrl: user!.displayPictureUrl.toString(),
                               imageBuilder: (context, image) {

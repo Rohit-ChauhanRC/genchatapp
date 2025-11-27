@@ -398,15 +398,20 @@ class FilePickerService {
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
             toolbarColor: Colors.deepOrange,
+
+            statusBarColor: Colors.deepOrange,
             toolbarWidgetColor: Colors.white,
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-            ],
+            activeControlsWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+            hideBottomControls: false,
           ),
-          IOSUiSettings(title: 'Cropper'),
+          IOSUiSettings(
+            title: 'Cropper',
+          ),
         ],
       );
+
 
       if (cropped != null) {
         resultFiles.add(File(cropped.path));

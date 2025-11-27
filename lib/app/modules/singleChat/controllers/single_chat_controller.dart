@@ -1358,7 +1358,7 @@ class SingleChatController extends GetxController
       });
       cancelReply();
     }
-    else if (fileType == MessageType.document.value) {
+    else if (fileType == MessageType.document.value&& Platform.isAndroid) {
 
       final files = await DocumentScannerService.scanDocuments();
 
@@ -1382,15 +1382,15 @@ class SingleChatController extends GetxController
         },
       ),binding:DocumentsBinding());
     }
-    // else if (fileType == MessageType.document.value) {
-    //   await pickAndSendDocuments((selectedFiles) async {
-    //     for (File file in selectedFiles) {
-    //       print("Yes Getting back all files:---> $file");
-    //       await sendFileMessage(file: file, messageEnum: getMessageType(file));
-    //     }
-    //   });
-    //   cancelReply();
-    // }
+    else if (fileType == MessageType.document.value && Platform.isIOS) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
+    }
 
 
   }

@@ -102,7 +102,7 @@ class CreateProfileController extends GetxController {
   Future<bool> _checkAndRequestStoragePermissionOnce() async {
     bool alreadyAsked =
         sharedPreferenceService.getBool(UserDefaultsKeys.permissionAsked) ??
-            false;
+        false;
 
     if (!alreadyAsked) {
       await Future.delayed(Duration(milliseconds: 300));
@@ -111,22 +111,27 @@ class CreateProfileController extends GetxController {
         WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
-            title: Text("Contacts and Media",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            title: Text(
+              "Contacts and Media",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             content: const Text(
-                "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo and other media.",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+              "To easily send messages and photos to friends and family, allow GenChat to access your contacts, photo and other media.",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+            ),
             actions: [
               TextButton(
                 onPressed: () async {
                   final status = await Permission.storage.request();
-                  final statusAndroid =
-                      await Permission.manageExternalStorage.request();
+                  final statusAndroid = await Permission.manageExternalStorage
+                      .request();
 
                   if (status.isGranted || statusAndroid.isGranted) {
                     await folder.createAppFolderStructure();
                     sharedPreferenceService.setBool(
-                        UserDefaultsKeys.permissionAsked, true);
+                      UserDefaultsKeys.permissionAsked,
+                      true,
+                    );
                     Get.back(result: true); // ✅ return true to dialog
                   } else {
                     Get.back(result: false); // ❌ not granted
@@ -153,11 +158,13 @@ class CreateProfileController extends GetxController {
   }
 
   void selectImage() async {
-    showImagePicker(onGetImage: (img) {
-      if (img != null) {
-        image = img;
-      }
-    });
+    showImagePicker(
+      onGetImage: (img) {
+        if (img != null) {
+          image = img;
+        }
+      },
+    );
   }
 
   Future<void> getUserData() async {
@@ -179,9 +186,12 @@ class CreateProfileController extends GetxController {
     // ✅ Set up the database with the user-specific ID
     if (userData?.userId != null) {
       sharedPreferenceService.setString(
-          UserDefaultsKeys.backupUserId, userData!.userId.toString());
-      dbService
-          .setUserId(userData.userId.toString()); // Set before accessing DB
+        UserDefaultsKeys.backupUserId,
+        userData!.userId.toString(),
+      );
+      dbService.setUserId(
+        userData.userId.toString(),
+      ); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized
     } else {
       print("⚠️ No user ID found, DB not initialized.");
@@ -201,8 +211,9 @@ class CreateProfileController extends GetxController {
       /// ✅ Step 1: Upload Image if Changed
       if (image != null) {
         processedImage = image!;
-        final uploadResponse =
-            await profileRepository.uploadProfilePicture(processedImage);
+        final uploadResponse = await profileRepository.uploadProfilePicture(
+          processedImage,
+        );
 
         if (uploadResponse?.statusCode == 200) {
           final result = VerifyOtpResponseModel.fromJson(uploadResponse!.data);
@@ -213,7 +224,9 @@ class CreateProfileController extends GetxController {
 
             if (user != null) {
               await sharedPreferenceService.setString(
-                  UserDefaultsKeys.userDetail, userDataToJson(user));
+                UserDefaultsKeys.userDetail,
+                userDataToJson(user),
+              );
             }
           }
         } else {
@@ -250,7 +263,9 @@ class CreateProfileController extends GetxController {
 
           if (user != null) {
             await sharedPreferenceService.setString(
-                UserDefaultsKeys.userDetail, userDataToJson(user));
+              UserDefaultsKeys.userDetail,
+              userDataToJson(user),
+            );
           }
 
           showAlertMessage('Profile updated successfully!');
@@ -276,10 +291,18 @@ class CreateProfileController extends GetxController {
     if (isFromInsideApp) {
       SettingsController settingsController = Get.find<SettingsController>();
       settingsController.isRefreshed();
-      Get.until((route) => route.settings.name == Routes.SETTINGS);
+      Get.back();
+
+      // Get.until((route) => route.settings.name == Routes.SETTINGS);
     } else {
-      await sharedPreferenceService.setBool(UserDefaultsKeys.createUserProfile, true);
-      await sharedPreferenceService.setBool(UserDefaultsKeys.isNumVerify, false);
+      await sharedPreferenceService.setBool(
+        UserDefaultsKeys.createUserProfile,
+        true,
+      );
+      await sharedPreferenceService.setBool(
+        UserDefaultsKeys.isNumVerify,
+        false,
+      );
       await FlutterContacts.requestPermission();
       await Get.offAllNamed(Routes.HOME);
     }
@@ -289,43 +312,43 @@ class CreateProfileController extends GetxController {
     final hasBackup = await dbService.hasBackup();
     if (hasBackup && !isFromInsideApp) {
       showAlertMessageWithAction(
-          title: "Backup Found",
-          message:
-              "A backup exists for this user. Would you like to restore it?",
-          cancelText: "Skip",
-          confirmText: "Restore",
-          showCancel: true,
-          onCancel: () {
-            Get.back();
-            navigateBack();
-          },
-          onConfirm: () async {
-            Get.back();
-            try {
-              restoreProgress.value = 0;
-              restoreCopiedFiles.value = 0;
-              restoreTotalFiles.value = 0;
+        title: "Backup Found",
+        message: "A backup exists for this user. Would you like to restore it?",
+        cancelText: "Skip",
+        confirmText: "Restore",
+        showCancel: true,
+        onCancel: () {
+          Get.back();
+          navigateBack();
+        },
+        onConfirm: () async {
+          Get.back();
+          try {
+            restoreProgress.value = 0;
+            restoreCopiedFiles.value = 0;
+            restoreTotalFiles.value = 0;
 
-              await dbService.restoreAllData(
-                onProgress: (done, total, copiedBytes, totalBytes) {
-                  restoreCopiedFiles.value = done;
-                  restoreTotalFiles.value = total;
-                  restoreProgress.value = done / total;
-                  restoreCopiedSize.value =
-                      (copiedBytes / (1024 * 1024)).toStringAsFixed(2);
-                  restoreSize.value =
-                      (totalBytes / (1024 * 1024)).toStringAsFixed(2);
-                },
-              );
+            await dbService.restoreAllData(
+              onProgress: (done, total, copiedBytes, totalBytes) {
+                restoreCopiedFiles.value = done;
+                restoreTotalFiles.value = total;
+                restoreProgress.value = done / total;
+                restoreCopiedSize.value = (copiedBytes / (1024 * 1024))
+                    .toStringAsFixed(2);
+                restoreSize.value = (totalBytes / (1024 * 1024))
+                    .toStringAsFixed(2);
+              },
+            );
 
-              showAlertMessage("Backup restored successfully.");
-            } catch (e) {
-              showAlertMessage("Failed to restore backup.");
-            } finally {
-              navigateBack(); // ✅ Move ahead after restore (success or fail)
-            }
-          },
-          context: navigatorKey.currentContext!);
+            showAlertMessage("Backup restored successfully.");
+          } catch (e) {
+            showAlertMessage("Failed to restore backup.");
+          } finally {
+            navigateBack(); // ✅ Move ahead after restore (success or fail)
+          }
+        },
+        context: navigatorKey.currentContext!,
+      );
     } else {
       navigateBack();
     }

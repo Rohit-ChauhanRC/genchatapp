@@ -65,7 +65,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
   await di.init();
-   // await StatusTable().deleteTable();
+  // await StatusTable().deleteTable();
   // print("Status Table reset successfully");
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();

@@ -48,14 +48,14 @@ class SingleUserProfileView extends StatelessWidget {
                         //     .withOpacity(0.4),
                         child:
                             user.displayPictureUrl?.isNotEmpty == true &&
-                                !controller.blocked.value &&
-                                (controller.blockedByMe.value != 1 ||
-                                    controller.blockedByMe.value != 2)
+                                (!controller.blocked.value ||
+                                    (controller.blocked.value &&
+                                        controller.blockedByMe.value == 1))
                             ? Image.network(
                                 user.displayPictureUrl!,
                                 fit: BoxFit.cover,
                               )
-                            : Center(
+                            : const Center(
                                 child: Icon(
                                   Icons.person,
                                   size: 120,
@@ -117,7 +117,7 @@ class SingleUserProfileView extends StatelessWidget {
                         trailing: GestureDetector(
                           onTap: () => Get.back(),
 
-                          child: Icon(Icons.message),
+                          child: const Icon(Icons.message),
                         ),
                       ),
                       if (user.userDescription != null &&
@@ -190,7 +190,11 @@ class SingleUserProfileView extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+          const BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(children: children),

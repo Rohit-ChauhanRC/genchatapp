@@ -39,26 +39,72 @@ class DocumentMessageWidget extends StatelessWidget {
     }
   }
 
+  // IconData _getIconForExtension(String extension) {
+  //   switch (extension.toLowerCase()) {
+  //     case 'pdf':
+  //       return Symbols.picture_as_pdf_rounded;
+  //     case 'doc':
+  //     case 'docx':
+  //       return Symbols.description_rounded;
+  //     case 'xls':
+  //     case 'xlsx':
+  //       return Symbols.grid_on_rounded;
+  //     case 'ppt':
+  //     case 'pptx':
+  //       return Symbols.slideshow_rounded;
+  //     case 'txt':
+  //       return Symbols.notes_rounded;
+  //     case 'zip':
+  //     case 'rar':
+  //       return Symbols.archive_rounded;
+  //     default:
+  //       return Symbols.insert_drive_file_rounded;
+  //   }
+  // }
+
   IconData _getIconForExtension(String extension) {
     switch (extension.toLowerCase()) {
       case 'pdf':
-        return Symbols.picture_as_pdf_rounded;
+        return Icons.picture_as_pdf; // PDF icon
       case 'doc':
       case 'docx':
-        return Symbols.description_rounded;
+        return Icons.description; // Document icon
       case 'xls':
       case 'xlsx':
-        return Symbols.grid_on_rounded;
+        return Icons.grid_on; // Spreadsheet icon
       case 'ppt':
       case 'pptx':
-        return Symbols.slideshow_rounded;
+        return Icons.slideshow; // Presentation icon
       case 'txt':
-        return Symbols.notes_rounded;
+        return Icons.notes; // Text file icon
       case 'zip':
       case 'rar':
-        return Symbols.archive_rounded;
+        return Icons.archive; // Archive icon
       default:
-        return Symbols.insert_drive_file_rounded;
+        return Icons.insert_drive_file; // Generic file icon
+    }
+  }
+
+  Color _getColorForExtension(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'pdf':
+        return Colors.red; // PDF icon
+      case 'doc':
+      case 'docx':
+        return Colors.blue; // Document icon
+      case 'xls':
+      case 'xlsx':
+        return Colors.green; // Spreadsheet icon
+      case 'ppt':
+      case 'pptx':
+        return Colors.deepOrange; // Presentation icon
+      case 'txt':
+        return Colors.black; // Text file icon
+      case 'zip':
+      case 'rar':
+        return Colors.yellow; // Archive icon
+      default:
+        return Colors.purple; // Generic file icon
     }
   }
 
@@ -66,10 +112,12 @@ class DocumentMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final file = File(localFilePath);
     final fileName = localFilePath.split('/').last;
-    final fileExtension = fileName.contains('.') ? fileName.split('.').last : '';
+    final fileExtension = fileName.contains('.')
+        ? fileName.split('.').last
+        : '';
 
     return GestureDetector(
-      onTap: () => isReply == true ? null:_downloadAndOpenFile(context),
+      onTap: () => isReply == true ? null : _downloadAndOpenFile(context),
       child: Container(
         margin: const EdgeInsets.all(4),
         padding: const EdgeInsets.all(12),
@@ -84,14 +132,14 @@ class DocumentMessageWidget extends StatelessWidget {
           children: [
             Icon(
               _getIconForExtension(fileExtension),
-              size: isReply? 20:36,
-              color: AppColors.textBarColor,
+              size: isReply ? 20 : 36,
+              color: _getColorForExtension(fileExtension),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 fileName,
-                maxLines: isReply? 1:3,
+                maxLines: isReply ? 1 : 3,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 16),
               ),
@@ -111,5 +159,3 @@ class DocumentMessageWidget extends StatelessWidget {
     );
   }
 }
-
-

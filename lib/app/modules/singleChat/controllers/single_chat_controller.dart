@@ -1356,32 +1356,28 @@ class SingleChatController extends GetxController
         }
       });
       cancelReply();
-    }
-    // else if (fileType == MessageType.document.value) {
-    //
-    //   final files = await DocumentScannerService.scanDocuments();
-    //
-    //   if (files.isEmpty) {
-    //     showSnackBar(
-    //       context: Get.context!,
-    //       content: "No documents found",
-    //     );
-    //     return;
-    //   }
-    //
-    //   Get.to(() => DocumentPickerScreen(
-    //     onSend: (selectedFiles) async {
-    //       for (File file in selectedFiles) {
-    //         await sendFileMessage(
-    //           file: file,
-    //           messageEnum: getMessageType(file),
-    //         );
-    //       }
-    //       cancelReply();
-    //     },
-    //   ));
-    // }
-    else if (fileType == MessageType.document.value) {
+    } else if (fileType == MessageType.document.value && Platform.isAndroid) {
+      final files = await DocumentScannerService.scanDocuments();
+
+      if (files.isEmpty) {
+        showSnackBar(context: Get.context!, content: "No documents found");
+        return;
+      }
+
+      Get.to(
+        () => DocumentPickerScreen(
+          onSend: (selectedFiles) async {
+            for (File file in selectedFiles) {
+              await sendFileMessage(
+                file: file,
+                messageEnum: getMessageType(file),
+              );
+            }
+            cancelReply();
+          },
+        ),
+      );
+    } else if (fileType == MessageType.document.value && Platform.isIOS) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1390,8 +1386,6 @@ class SingleChatController extends GetxController
       });
       cancelReply();
     }
-
-
   }
 
   Future<List<File>> pickImageAndVideo() async {
@@ -1415,6 +1409,7 @@ class SingleChatController extends GetxController
 
     return completer.future;
   }
+
   Future<List<File>> pickDocuments() async {
     return await DocumentScannerService.scanDocuments();
   }

@@ -127,6 +127,7 @@ enum MessageType {
   audio,
   video,
   gif,
+  browseDocx,
   deleted,
   camera,
   document
@@ -151,6 +152,8 @@ extension MessageTypeExtension on MessageType{
         return 'document';
       case MessageType.camera:
         return 'camera';
+      case MessageType.browseDocx:
+        return 'browseDocx';
     }
   }
 
@@ -168,6 +171,8 @@ extension MessageTypeExtension on MessageType{
         return MessageType.deleted;
       case 'document':
         return MessageType.document;
+      case 'browseDocx':
+        return MessageType.browseDocx;
       case 'text':
       default:
         return MessageType.text;

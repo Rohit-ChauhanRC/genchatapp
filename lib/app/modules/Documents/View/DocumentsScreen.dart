@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 
+import '../../../constants/message_enum.dart';
 import '../Controllers/DocumentsController.dart';
 class DocumentPickerScreen extends StatelessWidget {
   final Function(List<File>) onSend;
+  final SingleChatController singleChatController = Get.find<SingleChatController>();
 
   DocumentPickerScreen({
     super.key,
@@ -30,7 +34,17 @@ class DocumentPickerScreen extends StatelessWidget {
         return const Icon(Icons.insert_drive_file, size: 32);
     }
   }
+  Future<List<File>> pickDocuments() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowMultiple: true,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
+    );
 
+    if (result == null || result.files.isEmpty) return [];
+
+    return result.paths.whereType<String>().map((path) => File(path)).toList();
+  }
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DocumentPickerController>();
@@ -47,8 +61,23 @@ class DocumentPickerScreen extends StatelessWidget {
         leading: const BackButton(color: Colors.black),
         actions: [
           TextButton(
-            onPressed: () {
-              // call your browse function
+            onPressed: () async {
+              final picked = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowMultiple: true,
+                allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
+              );
+
+              if (picked == null || picked.files.isEmpty) return;
+
+              // Convert to File list
+              final docs = picked.paths.whereType<String>().map((e) => File(e)).toList();
+
+              // Close this screen
+              Navigator.pop(context);
+
+              // Now send files safely
+              onSend(docs);
             },
             child: const Text(
               "Browse Documents",
@@ -59,6 +88,8 @@ class DocumentPickerScreen extends StatelessWidget {
               ),
             ),
           ),
+
+
         ],
       ),
 

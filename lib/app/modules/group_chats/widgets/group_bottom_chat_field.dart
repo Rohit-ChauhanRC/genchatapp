@@ -307,7 +307,7 @@ class GroupBottomChatField extends StatelessWidget {
                                             child: const Icon(
                                               Icons.gif,
                                               color: greyMsgColor,
-                                              size: 20,
+                                              size: 25,
                                             ),
                                           ),
                                         ],

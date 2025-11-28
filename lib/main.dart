@@ -85,6 +85,7 @@ void main() async {
     alert: true, // Required to display a heads up notification
     badge: true,
     sound: true,
+
   );
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -95,7 +96,7 @@ void main() async {
     print('Notification permission not determined');
   }
 
-  AppConfig.setEnvironment(AppEnvironment.prod);
+  AppConfig.setEnvironment(AppEnvironment.dev);
 
   runApp(const App());
 }

@@ -37,6 +37,9 @@ import 'package:uuid/uuid.dart';
 
 import '../../../config/services/filePickerService.dart';
 import '../../../data/models/new_models/response_model/create_group_model.dart';
+import '../../../utils/DocumentViewer.dart';
+import '../../Documents/View/DocumentsScreen.dart';
+import '../../Documents/bindings/documentsBinding.dart';
 import '../../singleChat/mediaPickerFiles/media_preview_screen.dart';
 
 class GroupChatsController extends GetxController with WidgetsBindingObserver {
@@ -1258,7 +1261,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
       cancelReply();
-    } else if (fileType == MessageType.camera.value) {
+    }
+    else if (fileType == MessageType.camera.value) {
       // pickFromCamera returns List<File> (may be single file)
       final files = await FilePickerService().pickFromCamera(Get.context!);
       if (files.isEmpty) return;
@@ -1278,7 +1282,32 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         ),
       );
     }
-    else if (fileType == MessageType.document.value) {
+    else if (fileType == MessageType.document.value&& Platform.isAndroid) {
+
+
+
+      Get.to(() => DocumentPickerScreen(
+        onSend: (selectedFiles) async {
+          for (File file in selectedFiles) {
+            await sendFileMessage(
+              file: file,
+              messageEnum: getMessageType(file),
+            );
+          }
+          cancelReply();
+        },
+      ),binding:DocumentsBinding());
+      final files = await DocumentScannerService.scanDocuments();
+
+      if (files.isEmpty) {
+        showSnackBar(
+          context: Get.context!,
+          content: "No documents found",
+        );
+        return;
+      }
+    }
+    else if (fileType == MessageType.document.value && Platform.isIOS) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1287,6 +1316,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       });
       cancelReply();
     }
+
   }
 
   Future<List<File>> pickVideo() async {

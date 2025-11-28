@@ -70,7 +70,6 @@ class DocumentPickerController extends GetxController {
     } catch (_) {}
   }
 
-  // 🔥🔥 THIS MUST BE HERE
   void toggleSelection(String path) {
     if (selected.contains(path)) {
       selected.remove(path);

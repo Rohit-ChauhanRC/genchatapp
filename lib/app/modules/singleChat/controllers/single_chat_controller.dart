@@ -1347,7 +1347,8 @@ class SingleChatController extends GetxController
           },
         ),
       );
-    } else if (fileType == MessageType.audio.value) {
+    }
+    else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       // pickAndSendAudios
       await pickAndSendAudios((selectedFiles) async {
@@ -1360,15 +1361,7 @@ class SingleChatController extends GetxController
     }
     else if (fileType == MessageType.document.value&& Platform.isAndroid) {
 
-      final files = await DocumentScannerService.scanDocuments();
 
-      if (files.isEmpty) {
-        showSnackBar(
-          context: Get.context!,
-          content: "No documents found",
-        );
-        return;
-      }
 
       Get.to(() => DocumentPickerScreen(
         onSend: (selectedFiles) async {
@@ -1381,8 +1374,26 @@ class SingleChatController extends GetxController
           cancelReply();
         },
       ),binding:DocumentsBinding());
+      final files = await DocumentScannerService.scanDocuments();
+
+      if (files.isEmpty) {
+        showSnackBar(
+          context: Get.context!,
+          content: "No documents found",
+        );
+        return;
+      }
     }
     else if (fileType == MessageType.document.value && Platform.isIOS) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
+    }
+    else if (fileType == MessageType.browseDocx.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");

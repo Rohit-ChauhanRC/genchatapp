@@ -1295,8 +1295,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             );
           }
           cancelReply();
-        },
-      ),binding:DocumentsBinding());
+        }, chatController: Get.find<GroupChatsController>(),
+      ),binding:DocumentsBinding()
+      
+      
+      
+      
+      );
       final files = await DocumentScannerService.scanDocuments();
 
       if (files.isEmpty) {

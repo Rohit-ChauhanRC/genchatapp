@@ -24,15 +24,13 @@ import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:gif/gif.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tenor_flutter/tenor_flutter.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../Camera/CameraView/PreviewScreen.dart';
 import '../../../config/services/filePickerService.dart';
 import '../../../config/services/folder_creation.dart';
 import '../../../config/services/socket_service.dart';
@@ -1373,6 +1371,8 @@ class SingleChatController extends GetxController
           }
           cancelReply();
         },
+        chatController: Get.find<SingleChatController>(),
+
       ),binding:DocumentsBinding());
       final files = await DocumentScannerService.scanDocuments();
 

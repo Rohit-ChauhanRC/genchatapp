@@ -6,14 +6,16 @@ import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 
 import '../../../constants/message_enum.dart';
+import '../../../utils/utils.dart';
 import '../Controllers/DocumentsController.dart';
 class DocumentPickerScreen extends StatelessWidget {
   final Function(List<File>) onSend;
-  final SingleChatController singleChatController = Get.find<SingleChatController>();
-
+  // final SingleChatController singleChatController = Get.find<SingleChatController>();
+  final dynamic chatController;
   DocumentPickerScreen({
     super.key,
     required this.onSend,
+    required this.chatController,
   });
 
 
@@ -62,22 +64,47 @@ class DocumentPickerScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () async {
+              print("📂 Browse button clicked");
+
               final picked = await FilePicker.platform.pickFiles(
                 type: FileType.custom,
                 allowMultiple: true,
                 allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
               );
 
-              if (picked == null || picked.files.isEmpty) return;
+              print("📁 FilePicker result: ${picked?.files.length}");
 
-              // Convert to File list
-              final docs = picked.paths.whereType<String>().map((e) => File(e)).toList();
+              if (picked == null || picked.files.isEmpty) {
+                print("❌ No file selected");
+                return;
+              }
 
-              // Close this screen
+              final docs = picked.paths.whereType<String>().map((e) {
+                print("➡ Converting path to File: $e");
+                return File(e);
+              }).toList();
+
+              print("📄 Total documents selected: ${docs.length}");
+              print("📌 chatController runtimeType: ${chatController.runtimeType}");
+
+              for (final file in docs) {
+                final type = getMessageType(file);
+                print("🚀 Sending file: ${file.path} | type: ${type.value}");
+
+                try {
+                  await chatController.sendFileMessage(
+                    file: file,
+                    messageEnum: type,
+                  );
+                  print("✅ sendFileMessage success: ${file.path}");
+                } catch (e, s) {
+                  print("❌ ERROR sending file: $e");
+                  print(s);
+                }
+              }
+
+              print("🔙 Closing picker screen");
               Navigator.pop(context);
-
-              // Now send files safely
-              onSend(docs);
             },
             child: const Text(
               "Browse Documents",
@@ -88,6 +115,7 @@ class DocumentPickerScreen extends StatelessWidget {
               ),
             ),
           ),
+
 
 
         ],

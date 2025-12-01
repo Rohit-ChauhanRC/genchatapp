@@ -7,11 +7,9 @@ class DocumentPickerController extends GetxController {
   RxList<String> files = <String>[].obs;
   RxList<String> selected = <String>[].obs;
   RxBool isLoading = true.obs;
-
   final List<String> extensions = [
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt', 'pptx', 'zip', 'rar'
   ];
-
   @override
   void onInit() {
     super.onInit();

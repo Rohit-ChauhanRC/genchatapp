@@ -686,21 +686,32 @@ class SingleChatController extends GetxController
       }
     });
   }
+  void scrollToBottom({Duration duration = const Duration(milliseconds: 260)}) {
+    if (!itemScrollController.isAttached) return;
 
-  void scrollToBottom({bool animated = false}) {
-    if (itemScrollController.isAttached) {
-      final lastIndex = messageList.length - 1;
-      if (animated) {
-        itemScrollController.scrollTo(
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        itemScrollController.jumpTo(index: lastIndex);
-      }
-    }
+    final lastIndex = messageList.length - 1;
+
+    itemScrollController.scrollTo(
+      index: lastIndex,
+      duration: duration,
+      curve: Curves.easeOut, // WhatsApp-like feel
+    );
   }
+
+  // void scrollToBottom({bool animated = false}) {
+  //   if (itemScrollController.isAttached) {
+  //     final lastIndex = messageList.length - 1;
+  //     if (animated) {
+  //       itemScrollController.scrollTo(
+  //         index: lastIndex,
+  //         duration: const Duration(milliseconds: 300),
+  //         curve: Curves.easeInOut,
+  //       );
+  //     } else {
+  //       itemScrollController.jumpTo(index: lastIndex);
+  //     }
+  //   }
+  // }
 
   void bindReceiverUserStream(int userId) {
     receiverUserSubscription = getReceiverStream(userId).listen((user) {
@@ -709,7 +720,6 @@ class SingleChatController extends GetxController
       }
     });
   }
-
   Stream<UserList?> getReceiverStream(int userId) async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
       return await contactsTable.getUserById(userId);
@@ -728,6 +738,12 @@ class SingleChatController extends GetxController
 
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
+        if (!showScrollToBottom.value) {
+          Future.delayed(const Duration(milliseconds: 60), () {
+            scrollToBottom();
+          });
+        }
+
         // Acknowledge seen if message is incoming and not already seen
         if (message.senderId == receiverUserData?.userId &&
             socketService.isConnected &&
@@ -1043,7 +1059,7 @@ class SingleChatController extends GetxController
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(const Duration(milliseconds: 100), () {
-          scrollToBottom(animated: true);
+          scrollToBottom();
         });
       });
     });

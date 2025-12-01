@@ -35,6 +35,7 @@ class SplashView extends GetView<SplashController> {
                 SizedBox(
                   width: 10,
                 ),
+                SafeArea(child:
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -55,6 +56,7 @@ class SplashView extends GetView<SplashController> {
                           color: textBarColor),
                     )
                   ],
+                )
                 )
               ],
             ),

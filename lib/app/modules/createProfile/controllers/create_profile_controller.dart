@@ -109,6 +109,7 @@ class CreateProfileController extends GetxController {
 
       final permissionGranted = await Get.dialog<bool>(
         WillPopScope(
+
           onWillPop: () async => false,
           child: AlertDialog(
             title: Text(

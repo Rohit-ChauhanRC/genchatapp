@@ -63,47 +63,33 @@ class DocumentPickerScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () async {
-              print("📂 Browse button clicked");
-
               final picked = await FilePicker.platform.pickFiles(
                 type: FileType.custom,
                 allowMultiple: true,
                 allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
               );
 
-              print("📁 FilePicker result: ${picked?.files.length}");
 
               if (picked == null || picked.files.isEmpty) {
-                print("❌ No file selected");
                 return;
               }
-
               final docs = picked.paths.whereType<String>().map((e) {
-                print("➡ Converting path to File: $e");
                 return File(e);
               }).toList();
-
-              print("📄 Total documents selected: ${docs.length}");
-              print("📌 chatController runtimeType: ${chatController.runtimeType}");
-
               for (final file in docs) {
                 final type = getMessageType(file);
-                print("🚀 Sending file: ${file.path} | type: ${type.value}");
-
                 try {
                   await chatController.sendFileMessage(
                     file: file,
                     messageEnum: type,
                   );
-                  print("✅ sendFileMessage success: ${file.path}");
                 } catch (e, s) {
-                  print("❌ ERROR sending file: $e");
                   print(s);
                 }
               }
 
-              print("🔙 Closing picker screen");
               Navigator.pop(context);
+
             },
             child: const Text(
               "Browse Documents",
@@ -196,21 +182,58 @@ class DocumentPickerScreen extends StatelessWidget {
             onPressed: () async {
               final selectedCount = controller.selected.length;
 
-
               if (selectedCount > 5) {
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("You can only send up to 5 documents."),
                     backgroundColor: Colors.red,
                   ),
                 );
-
                 return;
               }
 
-              final files = controller.selected.map((path) => File(path)).toList();
+              // SHOW CONFIRMATION DIALOG
+              bool confirm = await showDialog(
+                context: context,
+                builder: (_) {
+                  return AlertDialog(
+                    title: const Text("Confirm Share"),
+                    content: Text("$selectedCount file(s) will be shared."),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        onPressed:()async{
+                          Navigator.pop(context,true);
+                  },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        ),
+                        child: const Text(
+                          "Send",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
 
+                    ],
+                  );
+                },
+              );
+
+              if (confirm != true) return;
+
+              // PROCEED IF USER CONFIRMS
+              final files = controller.selected.map((path) => File(path)).toList();
 
               try {
                 for (final f in files) {
@@ -224,7 +247,8 @@ class DocumentPickerScreen extends StatelessWidget {
               } catch (e, s) {
                 print(s);
               }
-            },
+            }
+            ,
           );
         }),
 

@@ -1283,9 +1283,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       );
     }
     else if (fileType == MessageType.document.value&& Platform.isAndroid) {
-
-
-
       Get.to(() => DocumentPickerScreen(
         onSend: (selectedFiles) async {
           for (File file in selectedFiles) {
@@ -1297,10 +1294,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           cancelReply();
         }, chatController: Get.find<GroupChatsController>(),
       ),binding:DocumentsBinding()
-      
-      
-      
-      
       );
       final files = await DocumentScannerService.scanDocuments();
 

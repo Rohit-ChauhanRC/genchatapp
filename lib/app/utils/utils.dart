@@ -604,8 +604,6 @@ Future<void> pickAndSendAudios(Function(List<File>) onConfirmedSend) async {
     title: 'Genchat',
     context: Get.context!,
   );
-
-  // Wait for the user's decision
   bool shouldSend = await completer.future;
 
   if (shouldSend) {

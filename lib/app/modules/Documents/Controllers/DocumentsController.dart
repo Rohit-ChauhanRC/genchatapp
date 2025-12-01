@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -21,7 +22,6 @@ class DocumentPickerController extends GetxController {
     if (Platform.isAndroid) {
       if (await Permission.manageExternalStorage.isGranted) return true;
       if (await Permission.manageExternalStorage.request().isGranted) return true;
-
       if (await Permission.photos.request().isGranted ||
           await Permission.videos.request().isGranted ||
           await Permission.audio.request().isGranted) return true;
@@ -48,7 +48,6 @@ class DocumentPickerController extends GetxController {
     isLoading.value = false;
   }
 
-  // 🔥🔥 MUST BE OUTSIDE fetchDocuments()
   Future<void> scanFolder(Directory dir) async {
     try {
       await for (var entity in dir.list(followLinks: false)) {
@@ -69,12 +68,27 @@ class DocumentPickerController extends GetxController {
       }
     } catch (_) {}
   }
-
   void toggleSelection(String path) {
+    // If already selected → allow unselect
     if (selected.contains(path)) {
       selected.remove(path);
-    } else {
-      selected.add(path);
+      return;
     }
+
+    if (selected.length >= 5) {
+      Get.snackbar(
+        "Limit Reached",
+        "You can select only up to 5 documents.",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+      );
+      return;
+    }
+
+    // Add new selection
+    selected.add(path);
   }
+
 }

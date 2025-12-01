@@ -232,7 +232,6 @@ class FolderCreation {
             } catch (e) {
               completer.complete(null);
             }
-
             Get.find<SingleChatController>().activeDownloads.remove(fileName);
           },
           onError: (e) async {

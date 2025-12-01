@@ -5,6 +5,7 @@ import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_contro
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 
+import '../../../constants/colors.dart';
 import '../../../constants/message_enum.dart';
 import '../../../utils/utils.dart';
 import '../Controllers/DocumentsController.dart';
@@ -55,8 +56,6 @@ class DocumentPickerScreen extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-
-
             Text("Select Documents",style: TextStyle(fontSize: 15),),
           ],
         ),
@@ -115,9 +114,6 @@ class DocumentPickerScreen extends StatelessWidget {
               ),
             ),
           ),
-
-
-
         ],
       ),
 
@@ -190,19 +186,48 @@ class DocumentPickerScreen extends StatelessWidget {
         );
       }),
 
-      floatingActionButton: Obx(() {
-        if (controller.selected.isEmpty) return const SizedBox.shrink();
+        floatingActionButton: Obx(() {
+          if (controller.selected.isEmpty) return const SizedBox.shrink();
 
-        return FloatingActionButton.extended(
-          backgroundColor: Colors.blue,
-          icon: const Icon(Icons.send),
-          label: Text("Send (${controller.selected.length})"),
-          onPressed: () {
-            onSend(controller.selected.map((path) => File(path)).toList());
-              Get.back();
-          },
-        );
-      }),
+          return FloatingActionButton.extended(
+            backgroundColor: textBarColor,
+            icon: const Icon(Icons.send),
+            label: Text("Send (${controller.selected.length})"),
+            onPressed: () async {
+              final selectedCount = controller.selected.length;
+
+
+              if (selectedCount > 5) {
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("You can only send up to 5 documents."),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+
+                return;
+              }
+
+              final files = controller.selected.map((path) => File(path)).toList();
+
+
+              try {
+                for (final f in files) {
+                  await chatController.sendFileMessage(
+                    file: f,
+                    messageEnum: getMessageType(f),
+                  );
+                }
+                Get.back();
+
+              } catch (e, s) {
+                print(s);
+              }
+            },
+          );
+        }),
+
     );
   }
 }

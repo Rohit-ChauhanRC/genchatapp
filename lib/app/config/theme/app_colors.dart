@@ -10,7 +10,6 @@ class AppColors{
   static var blackColor = Colors.black;
   static var whiteColor = Colors.white;
   static var redColor = Colors.red;
-
   static var messageColor = const Color.fromRGBO(5, 96, 98, 1);
   static var bgColor = const Color.fromRGBO(218, 227, 232, 1);
   static var mySideBgColor = const Color(0xFF4BD6FF);

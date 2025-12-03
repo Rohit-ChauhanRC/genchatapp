@@ -23,7 +23,7 @@ class HomeView extends GetView<HomeController> {
               indicatorColor: transparentColor.withOpacity(0.50),
               labelTextStyle: MaterialStateProperty.all(
                 const TextStyle(
-                  color: Colors.white, // Label color
+                  color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),

@@ -773,7 +773,7 @@ class SingleChatController extends GetxController
         } else {
           messageList.removeAt(index);
         }
-        messageList.refresh(); // Update UI
+        messageList.refresh();
       }
     });
 

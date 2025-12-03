@@ -96,7 +96,7 @@ void main() async {
     print('Notification permission not determined');
   }
 
-  AppConfig.setEnvironment(AppEnvironment.dev);
+  AppConfig.setEnvironment(AppEnvironment.prod);
 
   runApp(const App());
 }
@@ -108,7 +108,8 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return
+      GetMaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: appName,

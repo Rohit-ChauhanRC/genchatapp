@@ -46,7 +46,6 @@ class UpdatesView extends GetView<UpdatesController> {
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
-              // -------- MY STATUS --------
               ListTile(
                 onTap: () {
                   if (myStatuses != null && myStatuses.isNotEmpty) {
@@ -59,6 +58,7 @@ class UpdatesView extends GetView<UpdatesController> {
                         isSelf: true,
                       ),
                     );
+
                   } else {
                     // Add new status
                     Get.toNamed(Routes.CAMERA);

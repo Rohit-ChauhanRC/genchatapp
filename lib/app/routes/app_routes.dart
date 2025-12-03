@@ -36,7 +36,6 @@ abstract class _Paths {
   static const VERIFY_PHONE_NUMBER = '/verify-phone-number';
   static const OTP = '/otp';
   static const CREATE_PROFILE = '/create-profile';
-
   static const CHATS = '/chats';
   static const UPDATES = '/updates';
   static const CALL = '/call';

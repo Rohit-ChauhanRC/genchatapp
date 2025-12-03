@@ -175,7 +175,7 @@ class BottomChatField extends StatelessWidget {
                                           child: const Icon(
                                             Icons.gif,
                                             color: greyMsgColor,
-                                            size: 25,
+                                            size: 27,
                                           ),
                                         ),
                                       ],
@@ -216,7 +216,7 @@ class BottomChatField extends StatelessWidget {
                                           ),
                                           icon: const Icon(
                                             Icons.attach_file,
-                                            color: Colors.grey,
+                                            color: greyMsgColor,
                                           ),
                                         ),
 

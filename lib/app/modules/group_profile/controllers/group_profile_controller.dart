@@ -23,24 +23,34 @@ class GroupProfileController extends GetxController {
   final socketService = Get.find<SocketService>();
 
   final RxInt _groupId = 0.obs;
+
   int get groupId => _groupId.value;
+
   set groupId(int a) => _groupId.value = a;
 
   final Rx<GroupData> _groupDetails = GroupData().obs;
+
   GroupData get groupDetails => _groupDetails.value;
+
   set groupDetails(GroupData a) => _groupDetails.value = a;
 
   final Rx<UserList> _creatorUserDetail = UserList().obs;
+
   UserList get creatorUserDetail => _creatorUserDetail.value;
+
   set creatorUserDetail(UserList a) => _creatorUserDetail.value = a;
 
   final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
+
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
+
   set currentUserPermission(UserGroupInfo? info) =>
       _currentUserPermission.value = info;
 
   final Rx<File?> _image = Rx<File?>(null);
+
   File? get image => _image.value;
+
   set image(File? img) => _image.value = img;
 
   bool get isSuperAdmin =>
@@ -51,10 +61,15 @@ class GroupProfileController extends GetxController {
   bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
   bool get canEditGroup => isSuperAdmin || isAdmin;
+
   bool get canAddParticipants => isSuperAdmin || isAdmin;
+
   bool get canExitGroup => !isSuperAdmin;
+
   bool get canRevokeAdmin => isSuperAdmin;
+
   bool get canMakeAdmin => isSuperAdmin;
+
   bool get canRemoveMember => isSuperAdmin || isAdmin;
 
   @override
@@ -391,8 +406,7 @@ class GroupProfileController extends GetxController {
 
   void enableVanishMode(int uid) {
     final user = groupDetails.users?.firstWhere(
-          (u) => u.userGroupInfo?.userId == uid,
-
+      (u) => u.userGroupInfo?.userId == uid,
     );
 
     if (user != null) {
@@ -403,8 +417,7 @@ class GroupProfileController extends GetxController {
 
   void disableVanishMode(int uid) {
     final user = groupDetails.users?.firstWhere(
-          (u) => u.userGroupInfo?.userId == uid,
-
+      (u) => u.userGroupInfo?.userId == uid,
     );
 
     if (user != null) {

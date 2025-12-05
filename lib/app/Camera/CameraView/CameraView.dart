@@ -54,6 +54,7 @@ class CameraView extends GetView<CameraControllerX> {
         }
       }
     }
+
     Future<void> pickVideoFromGallery() async {
       final ImagePicker picker = ImagePicker();
 
@@ -78,13 +79,12 @@ class CameraView extends GetView<CameraControllerX> {
       }
 
       Get.to(
-            () => VideoPlayerScreen(
+        () => VideoPlayerScreen(
           videoPath: video.path,
           statusRepository: controller.statusRepository,
         ),
       );
     }
-
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -95,149 +95,154 @@ class CameraView extends GetView<CameraControllerX> {
           );
         }
 
-        return
-          SafeArea(child:
-
-          Stack(
-          children: [
-            Positioned.fill(child: CameraPreview(controller.cameraController!)),
-            // Bottom bar
-            Positioned(
-              top: 50,
-              right: 20,
-              child: GestureDetector(
-                onTap: controller.switchCamera,
-                child: const Icon(
-                  Icons.cameraswitch_rounded,
-                  size: 30,
-                  color: Colors.white,
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CameraPreview(controller.cameraController!),
+              ),
+              // Bottom bar
+              Positioned(
+                top: 50,
+                right: 20,
+                child: GestureDetector(
+                  onTap: controller.switchCamera,
+                  child: const Icon(
+                    Icons.cameraswitch_rounded,
+                    size: 30,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
 
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Gallery
-                  GestureDetector(
-                    onTap: openGallery,
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.photo_library_outlined,
-                          color: Colors.white,
-                          size: 35,
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "Gallery",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: pickVideoFromGallery,
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.video_call_outlined,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "Video",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-
-                    ),
-                  ),
-
-                  // Capture button
-                  GestureDetector(
-                    onTap: () async {
-                      final path = await controller.capturePhoto();
-                      if (path != null)
-                        Get.to(
-                          () => PreviewScreen(
-                            imagePath: path,
-                            statusRepository: controller.statusRepository,
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Gallery
+                    GestureDetector(
+                      onTap: openGallery,
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.photo_library_outlined,
+                            color: Colors.white,
+                            size: 35,
                           ),
-                        );
-                    },
-                    // onLongPressStart: (_) async => await controller.startVideoRecording(),
-                    // onLongPressEnd: (_) async {
-                    //   final path = await controller.stopVideoRecording();
-                    //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
-                    // },
-                    child: Obx(
-                      () => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: controller.isRecording.value ? 80 : 70,
-                        height: controller.isRecording.value ? 80 : 70,
-                        decoration: BoxDecoration(
-                          color: controller.isRecording.value
-                              ? Colors.red
-                              : Colors.white,
-                          shape: BoxShape.circle,
-
-                          border: Border.all(
-                            color: controller.isRecording.value
-                                ? Colors.redAccent
-                                : Colors.green,
-                            width: 4,
+                          SizedBox(height: 5),
+                          Text(
+                            "Gallery",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: pickVideoFromGallery,
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.video_call_outlined,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            "Video",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                  // Text Status
-                  // Text option
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          final result = await Get.to(
-                            () => TextStatusScreen(
+                    // Capture button
+                    GestureDetector(
+                      onTap: () async {
+                        final path = await controller.capturePhoto();
+                        if (path != null)
+                          Get.to(
+                            () => PreviewScreen(
+                              imagePath: path,
                               statusRepository: controller.statusRepository,
                             ),
                           );
-                          if (result != null) {
-                            // You can handle the text & color here
-                            print("Text: ${result['text']}");
-                            print("Color: ${result['color']}");
-                            // Navigate to a preview or post screen if you want
-                          }
-                        },
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 35,
+                      },
+                      // onLongPressStart: (_) async => await controller.startVideoRecording(),
+                      // onLongPressEnd: (_) async {
+                      //   final path = await controller.stopVideoRecording();
+                      //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
+                      // },
+                      child: Obx(
+                        () => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: controller.isRecording.value ? 80 : 70,
+                          height: controller.isRecording.value ? 80 : 70,
+                          decoration: BoxDecoration(
+                            color: controller.isRecording.value
+                                ? Colors.red
+                                : Colors.white,
+                            shape: BoxShape.circle,
+
+                            border: Border.all(
+                              color: controller.isRecording.value
+                                  ? Colors.redAccent
+                                  : Colors.green,
+                              width: 4,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      const Text(
-                        "Text",
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+
+                    // Text Status
+                    // Text option
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Get.to(
+                              () => TextStatusScreen(
+                                statusRepository: controller.statusRepository,
+                              ),
+                            );
+                            if (result != null) {
+                              // You can handle the text & color here
+                              print("Text: ${result['text']}");
+                              print("Color: ${result['color']}");
+                              // Navigate to a preview or post screen if you want
+                            }
+                          },
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                            size: 35,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        const Text(
+                          "Text",
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-          ) );
+            ],
+          ),
+        );
       }),
     );
   }

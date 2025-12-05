@@ -60,6 +60,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   );
 
   var hasScrolledInitially = false.obs;
+
   // final isKeyboardVisible = false.obs;
   final showScrollToBottom = false.obs;
 
@@ -70,39 +71,57 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   final ScrollController scrollController = ScrollController();
 
   final Rx<MessageReply> _messageReply = MessageReply().obs;
+
   MessageReply get messageReply => _messageReply.value;
+
   set messageReply(MessageReply msg) => _messageReply.value = msg;
 
   final RxBool _isShowSendButton = false.obs;
+
   bool get isShowSendButton => _isShowSendButton.value;
+
   set isShowSendButton(bool b) => _isShowSendButton.value = b;
 
   final RxBool _isRepUpdate = false.obs;
+
   bool get isRepUpdate => _isRepUpdate.value;
+
   set isRepUpdate(bool b) => _isRepUpdate.value = b;
 
   final RxBool _isReply = false.obs;
+
   bool get isReply => _isReply.value;
+
   set isReply(bool b) => _isReply.value = b;
 
   final RxBool _isShowEmojiContainer = false.obs;
+
   bool get isShowEmojiContainer => _isShowEmojiContainer.value;
+
   set isShowEmojiContainer(bool b) => _isShowEmojiContainer.value = b;
 
   final RxBool _isRecorderInit = false.obs;
+
   bool get isRecorderInit => _isRecorderInit.value;
+
   set isRecorderInit(bool b) => _isRecorderInit.value = b;
 
   final RxBool _isReceiverTyping = false.obs;
+
   bool get isReceiverTyping => _isReceiverTyping.value;
+
   set isReceiverTyping(bool b) => _isReceiverTyping.value = b;
 
   final RxString _typingDisplayText = "".obs;
+
   String get typingDisplayText => _typingDisplayText.value;
+
   set typingDisplayText(String b) => _typingDisplayText.value = b;
 
   final RxBool _isLoading = true.obs;
+
   bool get isLoading => _isLoading.value;
+
   set isLoading(bool b) => _isLoading.value = b;
 
   final RxList<NewMessageModel> messageList = <NewMessageModel>[].obs;
@@ -110,26 +129,36 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   FocusNode focusNode = FocusNode();
 
   final Rx<UserData?> _senderuserData = UserData().obs;
+
   UserData? get senderuserData => _senderuserData.value;
+
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
   final Rx<GroupData?> _receiverUserData = Rx<GroupData?>(null);
+
   GroupData? get receiverUserData => _receiverUserData.value;
+
   set receiverUserData(GroupData? userData) {
     // print("receiverUserData updated: ${userData?.isOnline}");
     _receiverUserData.value = (userData);
   }
 
   final RxString _id = "".obs;
+
   String get id => _id.value;
+
   set id(String str) => _id.value = str;
 
   final RxString _fullname = "".obs;
+
   String get fullname => _fullname.value;
+
   set fullname(String str) => _fullname.value = str;
 
   final RxString _rootPath = "".obs;
+
   String get rootPath => _rootPath.value;
+
   set rootPath(String str) => _rootPath.value = str;
 
   final RxList<NewMessageModel> selectedMessages = <NewMessageModel>[].obs;
@@ -166,35 +195,51 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   final ValueNotifier<String?> highlightedMessageId = ValueNotifier(null);
 
   final RxBool _isInCurrentChat = true.obs;
+
   bool get isInCurrentChat => _isInCurrentChat.value;
+
   set isInCurrentChat(bool b) => _isInCurrentChat.value = b;
 
   final RxInt _currentOffset = 0.obs;
+
   int get currentOffset => _currentOffset.value;
+
   set currentOffset(int a) => _currentOffset.value = a;
 
   final RxInt _pageSize = 10.obs;
+
   int get pageSize => _pageSize.value;
+
   set pageSize(int a) => _pageSize.value = a;
 
   final RxBool _isPaginating = false.obs;
+
   bool get isPaginating => _isPaginating.value;
+
   set isPaginating(bool b) => _isPaginating.value = b;
 
   final RxBool _hasMoreMessages = true.obs;
+
   bool get hasMoreMessages => _hasMoreMessages.value;
+
   set hasMoreMessages(bool b) => _hasMoreMessages.value = b;
 
   final RxInt _groupId = 0.obs;
+
   int get groupId => _groupId.value;
+
   set groupId(int a) => _groupId.value = a;
 
   final RxBool _isCurrentUserRemoved = false.obs;
+
   bool get isCurrentUserRemoved => _isCurrentUserRemoved.value;
+
   set isCurrentUserRemoved(bool b) => _isCurrentUserRemoved.value = b;
 
   final RxString _groupMemberNames = "".obs;
+
   String get groupMemberNames => _groupMemberNames.value;
+
   set groupMemberNames(String b) => _groupMemberNames.value = b;
 
   final RxMap<int, String> senderNamesCache = <int, String>{}.obs;
@@ -214,7 +259,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   RxDouble percent = 0.0.obs;
 
   final RxBool _isPause = false.obs;
+
   bool get isPause => _isPause.value;
+
   set isPause(bool b) => _isPause.value = b;
 
   @override
@@ -1005,7 +1052,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   final RxBool _canForward = false.obs;
+
   bool get canForward => _canForward.value;
+
   set canForward(bool b) => _canForward.value = b;
 
   void updateForwardAvailability() {
@@ -1513,6 +1562,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   void showKeyboard() => focusNode.requestFocus();
+
   void hideKeyboard() => focusNode.unfocus();
 
   void hideEmojiContainer() {
@@ -1637,6 +1687,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }
 
   Map<String, StreamSubscription<List<int>>> activeDownloads = {};
+
   void cancelDownload(MessageType type, String fileName) {
     activeDownloads[fileName]?.cancel(); // force cancel
     isDownloading[fileName] = false;

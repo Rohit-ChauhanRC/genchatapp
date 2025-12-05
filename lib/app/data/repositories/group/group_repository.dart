@@ -108,9 +108,7 @@ class GroupRepository {
     }
   }
 
-  Future<Response?> deleteGroup({
-    required int groupId,
-  }) async {
+  Future<Response?> deleteGroup({required int groupId}) async {
     try {
       final param = {'groupId': groupId};
       return await apiClient.post(ApiEndpoints.deleteGroup, param);

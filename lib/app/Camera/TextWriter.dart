@@ -27,6 +27,7 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
     6: Colors.teal,
     7: Colors.pink,
   };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

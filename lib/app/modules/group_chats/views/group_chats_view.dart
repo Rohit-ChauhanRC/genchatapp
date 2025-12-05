@@ -5,6 +5,7 @@ import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_bottom_chat_field.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_chat_list.dart';
+import 'package:genchatapp/app/modules/group_chats/widgets/message_info.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
 
@@ -185,58 +186,80 @@ class GroupChatsView extends GetView<GroupChatsController> {
                     ],
                   ),
           ),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert, color: whiteColor),
-            offset: const Offset(0, 40),
-            color: whiteColor,
-            onSelected: (value) async {
-              // Handle menu item selection
-              switch (value) {
-                case clearText:
-                  print("clear text in group:$clearText");
-                  await controller.deleteTextMessage();
-                  break;
-                default:
-              }
-            },
 
-            itemBuilder: (context) => [
-              // PopupMenuItem(
-              //   value: newGroup,
-              //   onTap: () {},
-              //   // ignore: prefer_const_constructors
-              //   child: Text(
-              //     newGroup,
-              //     style: const TextStyle(
-              //       fontSize: 14,
-              //       fontWeight: FontWeight.w400,
-              //       color: blackColor,
-              //     ),
-              //   ),
-              // ),
-              // const PopupMenuItem(
-              //   value: settings,
-              //   child: Text(
-              //     settings,
-              //     style: TextStyle(
-              //       fontSize: 14,
-              //       fontWeight: FontWeight.w400,
-              //       color: blackColor,
-              //     ),
-              //   ),
-              // ),
-              const PopupMenuItem(
-                value: clearText,
-                child: Text(
-                  clearText,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: blackColor,
-                  ),
-                ),
-              ),
-            ],
+          Obx(
+            () =>
+                controller.selectedMessages.isNotEmpty &&
+                    controller.selectedMessages.length == 1 &&
+                    controller.selectedMessages.first.senderId ==
+                        controller.senderuserData!.userId
+                ? PopupMenuButton(
+                    icon: const Icon(Icons.more_vert, color: whiteColor),
+                    offset: const Offset(0, 40),
+                    color: whiteColor,
+                    onSelected: (value) async {
+                      // Handle menu item selection
+                      switch (value) {
+                        case messageInfo:
+                          print("clear text in group:$messageInfo");
+                          // await controller.deleteTextMessage();
+                          Get.to(
+                            MessageInfo(
+                              selectedMessages:
+                                  controller.selectedMessages.first,
+                              groupChatsController: controller,
+                            ),
+                          );
+                          break;
+                        default:
+                      }
+                    },
+
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: messageInfo,
+                        child: Text(
+                          messageInfo,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: blackColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : controller.selectedMessages.isEmpty
+                ? PopupMenuButton(
+                    icon: const Icon(Icons.more_vert, color: whiteColor),
+                    offset: const Offset(0, 40),
+                    color: whiteColor,
+                    onSelected: (value) async {
+                      // Handle menu item selection
+                      switch (value) {
+                        case clearText:
+                          print("clear text in group:$clearText");
+                          await controller.deleteTextMessage();
+                          break;
+                        default:
+                      }
+                    },
+
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: clearText,
+                        child: Text(
+                          clearText,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: blackColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -251,19 +274,20 @@ class GroupChatsView extends GetView<GroupChatsController> {
           Obx(() {
             if (controller.isCurrentUserRemoved) {
               return SafeArea(
-                child:Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(color: AppColors.textBarColor),
-                child: Text(
-                  "You can't send messages to this group because you're no longer a member.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.whiteColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: AppColors.textBarColor),
+                  child: Text(
+                    "You can't send messages to this group because you're no longer a member.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.whiteColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                ) );
+              );
             } else {
               return GroupBottomChatField(
                 groupChatsController: controller,
@@ -287,33 +311,34 @@ class GroupChatsView extends GetView<GroupChatsController> {
       context: context,
       builder: (ctx) {
         return SafeArea(
-
-          child:Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text("Delete for Me"),
-              onTap: () {
-                Navigator.pop(context);
-                controller.deleteMessages(deleteForEveryone: false);
-              },
-            ),
-            if (controller.canDeleteForEveryone &&
-                !controller.isCurrentUserRemoved)
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text("Delete for Everyone"),
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text("Delete for Me"),
                 onTap: () {
                   Navigator.pop(context);
-                  controller.deleteMessages(deleteForEveryone: true);
+                  controller.deleteMessages(deleteForEveryone: false);
                 },
               ),
-          ],
-          )  );
+              if (controller.canDeleteForEveryone &&
+                  !controller.isCurrentUserRemoved)
+                ListTile(
+                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  title: const Text("Delete for Everyone"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    controller.deleteMessages(deleteForEveryone: true);
+                  },
+                ),
+            ],
+          ),
+        );
       },
     );
   }
+
   void showComingSoon(BuildContext context) {
     showDialog(
       context: context,
@@ -333,5 +358,4 @@ class GroupChatsView extends GetView<GroupChatsController> {
       ),
     );
   }
-
 }

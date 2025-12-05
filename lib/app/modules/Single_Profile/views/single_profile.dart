@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../common/widgets/gradient_container.dart';
@@ -39,30 +41,48 @@ class SingleUserProfileView extends StatelessWidget {
                 ),
                 background: Stack(
                   children: [
-                    Obx(
-                      () => Container(
-                        width: double.infinity,
-                        height: double.infinity,
+                    // Obx(
+                    //   () =>
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
 
-                        // color: AppColors.greyColor
-                        //     .withOpacity(0.4),
-                        child:
-                            user.displayPictureUrl?.isNotEmpty == true &&
-                                (!controller.blocked.value ||
-                                    (controller.blocked.value &&
-                                        controller.blockedByMe.value == 1))
-                            ? Image.network(
-                                user.displayPictureUrl!,
-                                fit: BoxFit.cover,
-                              )
-                            : const Center(
-                                child: Icon(
-                                  Icons.person,
-                                  size: 120,
-                                  color: Colors.white,
-                                ),
+                      // color: AppColors.greyColor
+                      //     .withOpacity(0.4),
+                      child: user.displayPictureUrl!.isNotEmpty
+                          // &&
+                          //     (!controller.blocked.value ||
+                          //         (controller.blocked.value &&
+                          //             controller.blockedByMe.value == 1))
+                          ? CachedNetworkImage(
+                              imageUrl: user.displayPictureUrl.toString(),
+                              imageBuilder: (context, image) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: image,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            )
+                          // Image.network(
+                          //     user.displayPictureUrl!,
+                          //     fit: BoxFit.cover,
+                          //   )
+                          : const Center(
+                              child: Icon(
+                                Icons.person,
+                                size: 120,
+                                color: Colors.white,
                               ),
-                      ),
+                            ),
+                      // ),
                     ),
 
                     Container(color: Colors.black26),

@@ -1261,8 +1261,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
       cancelReply();
-    }
-    else if (fileType == MessageType.camera.value) {
+    } else if (fileType == MessageType.camera.value) {
       // pickFromCamera returns List<File> (may be single file)
       final files = await FilePickerService().pickFromCamera(Get.context!);
       if (files.isEmpty) return;
@@ -1281,31 +1280,29 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           },
         ),
       );
-    }
-    else if (fileType == MessageType.document.value&& Platform.isAndroid) {
-      Get.to(() => DocumentPickerScreen(
-        onSend: (selectedFiles) async {
-          for (File file in selectedFiles) {
-            await sendFileMessage(
-              file: file,
-              messageEnum: getMessageType(file),
-            );
-          }
-          cancelReply();
-        }, chatController: Get.find<GroupChatsController>(),
-      ),binding:DocumentsBinding()
+    } else if (fileType == MessageType.document.value && Platform.isAndroid) {
+      Get.to(
+        () => DocumentPickerScreen(
+          onSend: (selectedFiles) async {
+            for (File file in selectedFiles) {
+              await sendFileMessage(
+                file: file,
+                messageEnum: getMessageType(file),
+              );
+            }
+            cancelReply();
+          },
+          chatController: Get.find<GroupChatsController>(),
+        ),
+        binding: DocumentsBinding(),
       );
       final files = await DocumentScannerService.scanDocuments();
 
       if (files.isEmpty) {
-        showSnackBar(
-          context: Get.context!,
-          content: "No documents found",
-        );
+        showSnackBar(context: Get.context!, content: "No documents found");
         return;
       }
-    }
-    else if (fileType == MessageType.document.value && Platform.isIOS) {
+    } else if (fileType == MessageType.document.value && Platform.isIOS) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1315,6 +1312,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       cancelReply();
     }
   }
+
   Future<List<File>> pickVideo() async {
     Completer<List<File>> completer = Completer<List<File>>();
     await showVideoPickerBottomSheet(

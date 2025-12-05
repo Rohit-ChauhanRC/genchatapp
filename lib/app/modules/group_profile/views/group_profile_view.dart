@@ -297,13 +297,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-
-
-                      right: 8,
-                      top: 10,
-                    ),
+                    padding: const EdgeInsets.only(left: 8, right: 8, top: 10),
                     child: Text(
                       "Created by ${controller.creatorUserDetail.localName}, ${formatDateTime(group?.createdAt)}",
                       style: const TextStyle(
@@ -388,7 +382,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     const SizedBox(height: 30),
                   ],
 
-
                   ///Delete Group
                   if (controller.isSuperAdmin) ...[
                     const Divider(),
@@ -401,15 +394,15 @@ class GroupProfileView extends GetView<GroupProfileController> {
                         onTap: () {
                           // exit logic here
                           showAlertMessageWithAction(
-                              title: "Delete Group: ${group?.name}?",
-                              message: "Are you sure you want to delete this group.",
-                              cancelText: "Cancel",
-                              confirmText: "Delete group",
-                              // onCancel: ()=> Get.back(),
-                              onConfirm: ()=> controller.deleteGroup(),
-                              context: context
+                            title: "Delete Group: ${group?.name}?",
+                            message:
+                                "Are you sure you want to delete this group.",
+                            cancelText: "Cancel",
+                            confirmText: "Delete group",
+                            // onCancel: ()=> Get.back(),
+                            onConfirm: () => controller.deleteGroup(),
+                            context: context,
                           );
-
                         },
                         child: const Row(
                           children: [
@@ -533,6 +526,10 @@ class GroupProfileView extends GetView<GroupProfileController> {
               case 'remove_member':
                 controller.removeUser(uid);
                 break;
+              case 'vanish_mode_on':
+                // controller.removeUser(uid);
+                debugPrint("vanish_mode");
+                break;
             }
           },
           itemBuilder: (_) {
@@ -563,6 +560,19 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   child: Text('Remove from Group'),
                 ),
               );
+              items.add(
+                const PopupMenuItem(
+                  value: 'vanish_mode_on',
+                  child: Text('Vanish Mode On'),
+                ),
+              );
+
+              // items.add(
+              //   const PopupMenuItem(
+              //     value: 'vanish_mode_off',
+              //     child: Text('Vanish Mode Off'),
+              //   ),
+              // );
             } else if (controller.isAdmin && !isAdmin) {
               items.add(
                 const PopupMenuItem(
@@ -614,10 +624,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FutureBuilder<String>(
-                        future: controller.getLocalName(
-                          user.userId,
-                          user.name,
-                        ),
+                        future: controller.getLocalName(user.userId, user.name),
                         builder: (_, snap) => Text(
                           snap.data ?? "~ $nameServer",
                           style: const TextStyle(fontWeight: FontWeight.w500),

@@ -47,6 +47,7 @@
 //   }
 // }
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -150,9 +151,38 @@ import 'package:permission_handler/permission_handler.dart';
 // }
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+
 class DocumentScannerService {
   static Future<List<File>> scanDocuments() async {
-    // Request permissions
+    if (Platform.isIOS) {
+      return await _pickFromFilesApp();
+    }
+
+    return await _scanAndroidStorage();
+  }
+
+  static Future<List<File>> _pickFromFilesApp() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      allowedExtensions: [
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'txt',
+        'ppt',
+        'pptx',
+      ],
+      type: FileType.custom,
+    );
+
+    if (result == null) return [];
+
+    return result.paths.map((p) => File(p!)).toList();
+  }
+
+  static Future<List<File>> _scanAndroidStorage() async {
     var status = await Permission.manageExternalStorage.request();
     if (!status.isGranted) {
       status = await Permission.storage.request();
@@ -160,11 +190,17 @@ class DocumentScannerService {
     }
 
     List<String> extensions = [
-      'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt', 'pptx'
+      'pdf',
+      'doc',
+      'docx',
+      'xls',
+      'xlsx',
+      'txt',
+      'ppt',
+      'pptx',
     ];
 
     Directory root = Directory('/storage/emulated/0/');
-
     List<File> results = [];
 
     Future<void> scanFolder(Directory dir) async {
@@ -173,26 +209,20 @@ class DocumentScannerService {
           final path = entity.path;
 
           if (entity is Directory) {
-            if (path.contains("/Android/data") || path.contains("/Android/obb")) {
+            if (path.contains("/Android/data") || path.contains("/Android/obb"))
               continue;
-            }
-            await scanFolder(entity); // manually recurse
+            await scanFolder(entity);
           }
 
           if (entity is File) {
             final ext = path.split('.').last.toLowerCase();
-            if (extensions.contains(ext)) {
-              results.add(entity);
-            }
+            if (extensions.contains(ext)) results.add(entity);
           }
         }
-      } catch (e) {
-        // Ignore permission denied folders
-      }
+      } catch (_) {}
     }
 
     await scanFolder(root);
-
     return results;
   }
 }

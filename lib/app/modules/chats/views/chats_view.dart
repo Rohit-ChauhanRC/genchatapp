@@ -280,53 +280,54 @@ class ChatsView extends GetView<ChatsController> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(25),
                                         child:
-                                            (chatConntactModel.profilePic ==
-                                                    null ||
-                                                chatConntactModel
-                                                    .profilePic!
-                                                    .isEmpty ||
-                                                chatConntactModel.isBlocked ==
-                                                    1)
-                                            ? Container(
-                                                color: textBarColor,
-                                                child: CircleAvatar(
-                                                  radius: 25,
-                                                  child: Icon(
-                                                    chatConntactModel.isGroup ==
-                                                            1
-                                                        ? Icons.group_rounded
-                                                        : Icons.person,
-                                                    color: whiteColor,
-                                                    // size: 25,
+                                            // (chatConntactModel.profilePic ==
+                                            //         null ||
+                                            //     chatConntactModel
+                                            //         .profilePic!
+                                            //         .isEmpty ||
+                                            //     chatConntactModel.isBlocked ==
+                                            //         1)
+                                            // ? Container(
+                                            //     color: textBarColor,
+                                            //     child: CircleAvatar(
+                                            //       radius: 25,
+                                            //       child: Icon(
+                                            //         chatConntactModel.isGroup ==
+                                            //                 1
+                                            //             ? Icons.group_rounded
+                                            //             : Icons.person,
+                                            //         color: whiteColor,
+                                            //         // size: 25,
+                                            //       ),
+                                            //     ),
+                                            //   )
+                                            // :
+                                            CachedNetworkImage(
+                                              imageUrl: chatConntactModel
+                                                  .profilePic
+                                                  .toString(),
+                                              imageBuilder:
+                                                  (context, imageProvider) =>
+                                                      CircleAvatar(
+                                                        backgroundImage:
+                                                            imageProvider,
+                                                        radius: 25,
+                                                      ),
+                                              placeholder: (context, url) =>
+                                                  const CircleAvatar(
+                                                    radius: 25,
+                                                    child:
+                                                        CircularProgressIndicator(),
                                                   ),
-                                                ),
-                                              )
-                                            : CachedNetworkImage(
-                                                imageUrl: chatConntactModel
-                                                    .profilePic
-                                                    .toString(),
-                                                imageBuilder:
-                                                    (context, imageProvider) =>
-                                                        CircleAvatar(
-                                                          backgroundImage:
-                                                              imageProvider,
-                                                          radius: 25,
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const CircleAvatar(
+                                                        radius: 25,
+                                                        child: Icon(
+                                                          Icons.error,
                                                         ),
-                                                placeholder: (context, url) =>
-                                                    const CircleAvatar(
-                                                      radius: 25,
-                                                      child:
-                                                          CircularProgressIndicator(),
-                                                    ),
-                                                errorWidget:
-                                                    (context, url, error) =>
-                                                        const CircleAvatar(
-                                                          radius: 25,
-                                                          child: Icon(
-                                                            Icons.error,
-                                                          ),
-                                                        ),
-                                              ),
+                                                      ),
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 10),

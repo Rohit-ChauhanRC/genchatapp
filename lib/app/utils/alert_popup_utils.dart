@@ -8,7 +8,6 @@ void showAlertMessage(String message) {
   final context = navigatorKey.currentContext;
 
   if (context == null) {
-    // print('Context is not available:-------------------------------> Getting error for showing popup');
     return;
   }
   showDialog(

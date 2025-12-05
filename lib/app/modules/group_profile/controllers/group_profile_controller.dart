@@ -388,4 +388,28 @@ class GroupProfileController extends GetxController {
       showAlertMessage("Error getting delete group: $e");
     }
   }
+
+  void enableVanishMode(int uid) {
+    final user = groupDetails.users?.firstWhere(
+          (u) => u.userGroupInfo?.userId == uid,
+
+    );
+
+    if (user != null) {
+      user.userGroupInfo?.vanishMode = true;
+      update();
+    }
+  }
+
+  void disableVanishMode(int uid) {
+    final user = groupDetails.users?.firstWhere(
+          (u) => u.userGroupInfo?.userId == uid,
+
+    );
+
+    if (user != null) {
+      user.userGroupInfo?.vanishMode = false;
+      update();
+    }
+  }
 }

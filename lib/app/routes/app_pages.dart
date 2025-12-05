@@ -165,8 +165,5 @@ class AppPages {
       page: () =>  CameraView(),
       binding: CameraBindings(),
     ),
-    
-
-    
   ];
 }

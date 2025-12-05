@@ -1391,7 +1391,6 @@ class SingleChatController extends GetxController
 
       ),binding:DocumentsBinding());
       final files = await DocumentScannerService.scanDocuments();
-
       if (files.isEmpty) {
         showSnackBar(
           context: Get.context!,

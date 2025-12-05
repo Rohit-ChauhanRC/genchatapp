@@ -70,35 +70,28 @@ Future<Response?> retryFormDataUpload({
             'invalid token';
 
     if (isUnauthorized) {
-      print("🛑 DioException: 401 or invalid token. Refreshing...");
           final refreshed = await Get.find<ApiInterceptor>().refreshToken();
 
       if (refreshed) {
         try {
-          print("🔁 Retrying upload after token refresh (DioException)");
           return await uploadCall(formDataBuilder(), onProgress: onProgress);
         } catch (e) {
-          print("❌ Retry after DioException failed: $e");
           return null;
         }
       }
     }
 
-    print("🔥 DioException (not auth): ${e.message}");
     return null;
   } catch (e) {
     final message = e.toString().toLowerCase();
     if (message.contains("invalid token") || message.contains("401")) {
-      print("🛑 Generic error with 401 message. Retrying...");
       try {
         return await uploadCall(formDataBuilder(), onProgress: onProgress);
       } catch (e) {
-        print("❌ Retry after generic catch failed: $e");
         return null;
       }
     }
 
-    print("🔥 Unexpected error: $e");
     return null;
   }
 }

@@ -212,6 +212,8 @@ class UserGroupInfo {
         isRemoved: json["isRemoved"] == 1 || json["isRemoved"],
       );
 
+  bool vanishMode =false;
+
   Map<String, dynamic> toJson() => {
         "groupId": groupId,
         "userId": userId,

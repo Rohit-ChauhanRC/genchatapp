@@ -109,7 +109,7 @@ class CameraView extends GetView<CameraControllerX> {
                 onTap: controller.switchCamera,
                 child: const Icon(
                   Icons.cameraswitch_rounded,
-                  size: 40,
+                  size: 30,
                   color: Colors.white,
                 ),
               ),
@@ -150,7 +150,7 @@ class CameraView extends GetView<CameraControllerX> {
                         Icon(
                           Icons.video_call_outlined,
                           color: Colors.white,
-                          size: 35,
+                          size: 40,
                         ),
                         SizedBox(height: 5),
                         Text(

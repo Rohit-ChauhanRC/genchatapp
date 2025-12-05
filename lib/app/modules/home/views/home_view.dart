@@ -30,13 +30,22 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          child: NavigationBar(
-            onDestinationSelected: (int index) {
+          child:
+          NavigationBar(
+            onDestinationSelected: (index) {
               controller.currentPageIndex = index;
+
+              if (index == 1) {
+                final UpdatesController update = Get.put(UpdatesController());
+                Future.microtask(() {
+                  update.getContacts();
+                  update.getStatus();
+                });
+              }
             },
             selectedIndex: controller.currentPageIndex,
-            destinations: <Widget>[
-              const NavigationDestination(
+            destinations: const <Widget>[
+              NavigationDestination(
                 selectedIcon: ImageIcon(
                   AssetImage("assets/images/chatsIcon.png"),
                   color: highLightColor,
@@ -48,28 +57,33 @@ class HomeView extends GetView<HomeController> {
                 label: 'Chats',
               ),
               NavigationDestination(
-                selectedIcon: const ImageIcon(
+                selectedIcon: ImageIcon(
                   AssetImage("assets/images/statusIcon.png"),
                   color: highLightColor,
                 ),
-                icon: InkWell(
-                  onTap: () async {
-                    final UpdatesController update = Get.put<UpdatesController>(
-                      UpdatesController(),
-                    );
-                    if (controller.connectivityService.isConnected.value) {
-                      await update.getContacts();
-                      await update.getStatus();
-                    }
-                  },
-                  child: const ImageIcon(
-                    AssetImage("assets/images/statusIcon.png"),
-                    color: whiteColor,
-                  ),
+                // icon: InkWell(
+                //   onTap: () async {
+                //     final UpdatesController update = Get.put<UpdatesController>(
+                //       UpdatesController(),
+                //     );
+                //     if (controller.connectivityService.isConnected.value) {
+                //       await update.getContacts();
+                //       await update.getStatus();
+                //     }
+                //   },
+                //   child: const ImageIcon(
+                //     AssetImage("assets/images/statusIcon.png"),
+                //     color: whiteColor,
+                //   ),
+                // ),
+                icon: ImageIcon(
+                  AssetImage("assets/images/statusIcon.png"),
+                  color: whiteColor,
                 ),
+
                 label: 'Updates',
               ),
-              const NavigationDestination(
+              NavigationDestination(
                 selectedIcon: ImageIcon(
                   AssetImage("assets/images/callIcon.png"),
                   color: highLightColor,
@@ -80,7 +94,7 @@ class HomeView extends GetView<HomeController> {
                 ),
                 label: 'Call',
               ),
-              const NavigationDestination(
+              NavigationDestination(
                 selectedIcon: Icon(Icons.settings, color: highLightColor),
                 icon: Icon(Icons.settings, color: Colors.white),
                 label: 'Settings',

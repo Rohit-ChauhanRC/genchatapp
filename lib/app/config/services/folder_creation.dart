@@ -19,7 +19,7 @@ class FolderCreation {
       final status = await Permission.storage.request();
       final statusAndroid = await Permission.manageExternalStorage.request();
       if (status.isGranted || statusAndroid.isGranted) {
-        // final Directory appDir = await getApplicationDocumentsDirectory();
+        // final Directo appDir = await getApplicationDocumentsDirectory();
         final Directory appDir;
         if (Platform.isAndroid) {
           appDir = Directory("/storage/emulated/0/Android/media");

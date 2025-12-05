@@ -27,6 +27,17 @@ class DocumentPickerController extends GetxController {
       if (await Permission.storage.isGranted) return true;
       if (await Permission.storage.request().isGranted) return true;
     }
+
+    if (Platform.isIOS) {
+      if (await Permission.manageExternalStorage.isGranted) return true;
+      if (await Permission.manageExternalStorage.request().isGranted) return true;
+      if (await Permission.photos.request().isGranted ||
+          await Permission.videos.request().isGranted ||
+          await Permission.audio.request().isGranted) return true;
+
+      if (await Permission.storage.isGranted) return true;
+      if (await Permission.storage.request().isGranted) return true;
+    }
     return false;
   }
 

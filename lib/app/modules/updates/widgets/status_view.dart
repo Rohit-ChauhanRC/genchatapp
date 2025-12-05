@@ -103,9 +103,6 @@ class _StatusViewState extends State<StatusView> {
       return;
     }
 
-    //--------------------------------------------------
-    //                IMAGE STATUS
-    //--------------------------------------------------
     if (type == "image") {
       try {
         if (localPath != null && localPath.toString().isNotEmpty) {

@@ -245,9 +245,6 @@ class FilePickerService {
           _imageFiles.add(file); // small → no compression
         }
       }
-      // -----------------------------
-      // OTHER FILE TYPES
-      // -----------------------------
       else {
         _imageFiles.add(file);
       }

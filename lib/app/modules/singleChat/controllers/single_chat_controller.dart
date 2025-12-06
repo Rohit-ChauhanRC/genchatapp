@@ -1386,6 +1386,9 @@ class SingleChatController extends GetxController
             );
           }
           cancelReply();
+
+          print("calling cancel reply ${cancelReply()}");
+
         },
         chatController: Get.find<SingleChatController>(),
 

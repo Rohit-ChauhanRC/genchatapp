@@ -9,16 +9,18 @@ import '../../../constants/colors.dart';
 import '../../../constants/message_enum.dart';
 import '../../../utils/utils.dart';
 import '../Controllers/DocumentsController.dart';
+
 class DocumentPickerScreen extends StatelessWidget {
   final Function(List<File>) onSend;
-  // final SingleChatController singleChatController = Get.find<SingleChatController>();
+
+  // SingleChatController singleChatController = Get.find<SingleChatController>();
   final dynamic chatController;
+
   DocumentPickerScreen({
     super.key,
     required this.onSend,
     required this.chatController,
   });
-
 
   Icon _fileIcon(String ext) {
     switch (ext) {
@@ -37,6 +39,7 @@ class DocumentPickerScreen extends StatelessWidget {
         return const Icon(Icons.insert_drive_file, size: 32);
     }
   }
+
   Future<List<File>> pickDocuments() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -48,6 +51,7 @@ class DocumentPickerScreen extends StatelessWidget {
 
     return result.paths.whereType<String>().map((path) => File(path)).toList();
   }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DocumentPickerController>();
@@ -55,9 +59,7 @@ class DocumentPickerScreen extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text("Select Documents",style: TextStyle(fontSize: 15),),
-          ],
+          children: [Text("Select Documents", style: TextStyle(fontSize: 15))],
         ),
         leading: const BackButton(color: Colors.black),
         actions: [
@@ -66,9 +68,16 @@ class DocumentPickerScreen extends StatelessWidget {
               final picked = await FilePicker.platform.pickFiles(
                 type: FileType.custom,
                 allowMultiple: true,
-                allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt'],
+                allowedExtensions: [
+                  'pdf',
+                  'doc',
+                  'docx',
+                  'xls',
+                  'xlsx',
+                  'txt',
+                  'ppt',
+                ],
               );
-
 
               if (picked == null || picked.files.isEmpty) {
                 return;
@@ -89,7 +98,6 @@ class DocumentPickerScreen extends StatelessWidget {
               }
 
               Navigator.pop(context);
-
             },
             child: const Text(
               "Browse Documents",
@@ -128,7 +136,6 @@ class DocumentPickerScreen extends StatelessWidget {
               final ext = name.split('.').last.toLowerCase();
               final isSelected = controller.selected.contains(path);
 
-
               return Obx(() {
                 final isSelected = controller.selected.contains(path);
 
@@ -139,7 +146,9 @@ class DocumentPickerScreen extends StatelessWidget {
                     key: ValueKey(path),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade100 : Colors.grey.shade100,
+                      color: isSelected
+                          ? Colors.blue.shade100
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.grey.shade400,
@@ -160,98 +169,101 @@ class DocumentPickerScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         if (isSelected)
-                          const Icon(Icons.check_circle, color: Colors.blue)
+                          const Icon(Icons.check_circle, color: Colors.blue),
                       ],
                     ),
                   ),
                 );
               });
-
             },
           ),
         );
       }),
 
-        floatingActionButton: Obx(() {
-          if (controller.selected.isEmpty) return const SizedBox.shrink();
+      floatingActionButton: Obx(() {
+        if (controller.selected.isEmpty) return const SizedBox.shrink();
 
-          return FloatingActionButton.extended(
-            backgroundColor: textBarColor,
-            icon: const Icon(Icons.send),
-            label: Text("Send (${controller.selected.length})"),
-            onPressed: () async {
-              final selectedCount = controller.selected.length;
+        return FloatingActionButton.extended(
+          backgroundColor: textBarColor,
+          icon: const Icon(Icons.send),
+          label: Text("Send (${controller.selected.length})"),
+          onPressed: () async {
+            final selectedCount = controller.selected.length;
 
-              if (selectedCount > 5) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("You can only send up to 5 documents."),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-
-              // SHOW CONFIRMATION DIALOG
-              bool confirm = await showDialog(
-                context: context,
-                builder: (_) {
-                  return AlertDialog(
-                    title: const Text("Confirm Share"),
-                    content: Text("$selectedCount file(s) will be shared."),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text("Cancel"),
-                      ),
-                      ElevatedButton(
-                        onPressed:()async{
-                          Navigator.pop(context,true);
-                  },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        ),
-                        child: const Text(
-                          "Send",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-
-                    ],
-                  );
-                },
+            if (selectedCount > 5) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("You can only send up to 5 documents."),
+                  backgroundColor: Colors.red,
+                ),
               );
-
-              if (confirm != true) return;
-
-              // PROCEED IF USER CONFIRMS
-              final files = controller.selected.map((path) => File(path)).toList();
-
-              try {
-                for (final f in files) {
-                  await chatController.sendFileMessage(
-                    file: f,
-                    messageEnum: getMessageType(f),
-                  );
-                }
-                Get.back();
-
-              } catch (e, s) {
-                print(s);
-              }
+              return;
             }
-            ,
-          );
-        }),
 
+            // SHOW CONFIRMATION DIALOG
+            // bool confirm = await showDialog(
+            //   context: context,
+            //   builder: (_) {
+            //     return AlertDialog(
+            //       title: const Text("Confirm Share"),
+            //       content: Text("$selectedCount file(s) will be shared."),
+            //       actions: [
+            //         TextButton(
+            //           onPressed: () => Navigator.pop(context, false),
+            //           child: const Text("Cancel"),
+            //         ),
+            //         ElevatedButton(
+            //           onPressed: () async {
+            //             singleChatController.cancelReply();
+            //
+            //             Navigator.pop(context, true);
+            //           },
+            //           style: ElevatedButton.styleFrom(
+            //             backgroundColor: Colors.teal,
+            //             foregroundColor: Colors.white,
+            //             shape: RoundedRectangleBorder(
+            //               borderRadius: BorderRadius.circular(8),
+            //             ),
+            //             padding: const EdgeInsets.symmetric(
+            //               horizontal: 18,
+            //               vertical: 12,
+            //             ),
+            //           ),
+            //           child: const Text(
+            //             "Send",
+            //             style: TextStyle(
+            //               fontSize: 14,
+            //               fontWeight: FontWeight.w600,
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // );
+
+            // if (confirm != true) return;
+
+            // PROCEED IF USER CONFIRMS
+            final files = controller.selected
+                .map((path) => File(path))
+                .toList();
+
+            try {
+              for (final f in files) {
+                await chatController.sendFileMessage(
+                  file: f,
+                  messageEnum: getMessageType(f),
+                );
+              }
+              chatController.cancelReply();
+              Get.back();
+            } catch (e, s) {
+              print(s);
+            }
+          },
+        );
+      }),
     );
   }
 }

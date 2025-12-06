@@ -61,7 +61,7 @@ class GroupProfileController extends GetxController {
   bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
   bool get canEditGroup => isSuperAdmin || isAdmin;
-
+  bool get canGivePermission=>isSuperAdmin;
   bool get canAddParticipants => isSuperAdmin || isAdmin;
 
   bool get canExitGroup => !isSuperAdmin;

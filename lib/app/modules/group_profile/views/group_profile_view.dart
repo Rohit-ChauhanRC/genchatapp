@@ -98,6 +98,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                         );
                       }
+                      if(controller.canGivePermission){
+                        items.add(
+                          _styledMenuItem(value: 'Group Permissions', text: 'Group Permissions', icon: Icons.shield, iconColor: Colors.green)
+                        );
+                      }
 
                       return items;
                     },

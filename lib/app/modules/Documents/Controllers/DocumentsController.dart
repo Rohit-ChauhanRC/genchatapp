@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../data/models/message_reply.dart';
+
 class DocumentPickerController extends GetxController {
   RxList<String> files = <String>[].obs;
   RxList<String> selected = <String>[].obs;
+  final Rx<MessageReply> _messageReply = MessageReply().obs;
+
+  set messageReply(MessageReply msg) => _messageReply.value = msg;
+
   RxBool isLoading = true.obs;
   final List<String> extensions = [
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'ppt', 'pptx', 'zip', 'rar'
@@ -100,4 +106,8 @@ class DocumentPickerController extends GetxController {
     selected.add(path);
   }
 
+
+  Future<void> cancelReply() async {
+    messageReply = MessageReply(isMe: false, message: null, isReplied: false);
+  }
 }

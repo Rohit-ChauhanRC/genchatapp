@@ -21,10 +21,16 @@ class ApiInterceptor extends Interceptor {
   final SocketService socketService;
 
   ApiInterceptor(
-      this.sharedPreference, this.apiClient, this.db, this.socketService);
+    this.sharedPreference,
+    this.apiClient,
+    this.db,
+    this.socketService,
+  );
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     String? token = sharedPreference.getString(UserDefaultsKeys.accessToken);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -36,7 +42,8 @@ class ApiInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     // Debugging response logs
     print(
-        "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}");
+      "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}",
+    );
     print("📥 Response Data: ${response.data}");
 
     return handler.next(response);
@@ -45,39 +52,40 @@ class ApiInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     print(
-        "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}");
+      "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}",
+    );
     print("🔴 Error Message: ${err.message}");
     if (err.response != null) {
       print("🔴 Response Data: ${err.response?.data}");
     }
 
     if (err.response?.statusCode == 401) {
-      final isFormData = err.requestOptions.data is FormData;
+      // final isFormData = err.requestOptions.data is FormData;
 
-      // 🪝 Call refreshToken even for FormData requests
-      bool tokenRefreshed = await refreshToken();
+      // // 🪝 Call refreshToken even for FormData requests
+      // bool tokenRefreshed = await refreshToken();
 
-      if (tokenRefreshed) {
-        if (isFormData) {
-          print(
-              "⚠️ Interceptor won't retry FormData request. Repo will handle retry.");
-          return handler.next(err); // Let the repository retry manually with new FormData
-        } else {
-          // Retry JSON request
-          try {
-            final retryResponse = await _retry(err.requestOptions);
-            return handler.resolve(retryResponse);
-          } catch (e) {
-            return handler.next(err);
-          }
-        }
-      } else {
-        showAlertMessage("Your session has expired. Please log in again.");
-        await logout(() {
-          Get.offAllNamed(Routes.LANDING);
-        });
-        return;
-      }
+      // if (tokenRefreshed) {
+      //   if (isFormData) {
+      //     print(
+      //         "⚠️ Interceptor won't retry FormData request. Repo will handle retry.");
+      //     return handler.next(err); // Let the repository retry manually with new FormData
+      //   } else {
+      //     // Retry JSON request
+      //     try {
+      //       final retryResponse = await _retry(err.requestOptions);
+      //       return handler.resolve(retryResponse);
+      //     } catch (e) {
+      //       return handler.next(err);
+      //     }
+      //   }
+      // } else {
+      showAlertMessage("Your session has expired. Please log in again.");
+      await logout(() {
+        Get.offAllNamed(Routes.LANDING);
+      });
+      return;
+      // }
     }
 
     return handler.next(err); // Other errors
@@ -85,12 +93,13 @@ class ApiInterceptor extends Interceptor {
 
   /// Refresh Token Logic
   Future<bool> refreshToken() async {
-    String? refreshToken =
-        sharedPreference.getString(UserDefaultsKeys.refreshToken);
+    // String? refreshToken =
+    //     sharedPreference.getString(UserDefaultsKeys.refreshToken);
     int? userId = sharedPreference.getUserData()?.userId;
 
     print(
-        "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId");
+      "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
+    );
 
     if (refreshToken == null || userId == null) {
       print("🔴 No refresh token or user ID found!");
@@ -98,15 +107,17 @@ class ApiInterceptor extends Interceptor {
     }
 
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
-        connectTimeout: const Duration(seconds: 50),
-        receiveTimeout: const Duration(seconds: 50),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
+          connectTimeout: const Duration(seconds: 50),
+          receiveTimeout: const Duration(seconds: 50),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
       Response response = await dio.post(
         'refresh-access-token',
@@ -114,20 +125,23 @@ class ApiInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
-        print("🔁 Refresh token response: ${response.statusCode} ${response.data}");
-        String newAccessToken =
-            response.data['data']['accessToken']; // ✅ Corrected key
-        String newRefreshToken =
-            response.data['data']['refreshToken']; // ✅ Corrected key
-
         print(
-            "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken");
+          "🔁 Refresh token response: ${response.statusCode} ${response.data}",
+        );
+        String newAccessToken =
+            response.data['data']['authToken']; // ✅ Corrected key
+        // String newRefreshToken =
+        //     response.data['data']['refreshToken']; // ✅ Corrected key
+
+        print("New Access Token: $newAccessToken\n");
         await sharedPreference.remove(UserDefaultsKeys.accessToken);
-        await sharedPreference.remove(UserDefaultsKeys.refreshToken);
+        // await sharedPreference.remove(UserDefaultsKeys.refreshToken);
         await sharedPreference.setString(
-            UserDefaultsKeys.accessToken, newAccessToken);
-        await sharedPreference.setString(
-            UserDefaultsKeys.refreshToken, newRefreshToken);
+          UserDefaultsKeys.accessToken,
+          newAccessToken,
+        );
+        // await sharedPreference.setString(
+        //     UserDefaultsKeys.refreshToken, newRefreshToken);
 
         print("✅ Token refreshed successfully!");
         return true;
@@ -153,21 +167,20 @@ class ApiInterceptor extends Interceptor {
     }
 
     print(
-        "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}");
+      "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}",
+    );
 
     // 💥 If original request was multipart/form-data, you CANNOT reuse the body
     if (requestOptions.data is FormData) {
       print(
-          "⚠️ Skipping retry for FormData. Let the repository handle retry manually.");
+        "⚠️ Skipping retry for FormData. Let the repository handle retry manually.",
+      );
       throw DioException(
         requestOptions: requestOptions,
         error:
             "FormData cannot be reused after the original request failed. Retry manually.",
         type: DioExceptionType.unknown,
-        response: Response(
-          requestOptions: requestOptions,
-          statusCode: 401,
-        ),
+        response: Response(requestOptions: requestOptions, statusCode: 401),
       );
     }
 

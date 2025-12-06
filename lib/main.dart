@@ -70,7 +70,7 @@ void main() async {
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
-  // Get.put(ChatsController());
+   // Get.put(ChatsController());
   NotificationSettings settings = await FirebaseMessaging.instance
       .requestPermission(
         alert: true,
@@ -85,7 +85,6 @@ void main() async {
     alert: true, // Required to display a heads up notification
     badge: true,
     sound: true,
-
   );
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -108,8 +107,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-      GetMaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: appName,

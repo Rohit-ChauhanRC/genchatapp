@@ -6,9 +6,11 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 
-VerifyOtpResponseModel verifyOtpResponseModelFromJson(String str) => VerifyOtpResponseModel.fromJson(json.decode(str));
+VerifyOtpResponseModel verifyOtpResponseModelFromJson(String str) =>
+    VerifyOtpResponseModel.fromJson(json.decode(str));
 
-String verifyOtpResponseModelToJson(VerifyOtpResponseModel data) => json.encode(data.toJson());
+String verifyOtpResponseModelToJson(VerifyOtpResponseModel data) =>
+    json.encode(data.toJson());
 
 class VerifyOtpResponseModel {
   bool? status;
@@ -23,12 +25,13 @@ class VerifyOtpResponseModel {
     this.data,
   });
 
-  factory VerifyOtpResponseModel.fromJson(Map<String, dynamic> json) => VerifyOtpResponseModel(
-    status: json["status"],
-    message: json["message"],
-    statusCode: json["statusCode"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
-  );
+  factory VerifyOtpResponseModel.fromJson(Map<String, dynamic> json) =>
+      VerifyOtpResponseModel(
+        status: json["status"],
+        message: json["message"],
+        statusCode: json["statusCode"],
+        data: json["data"] == null ? null : Data.fromJson(json["data"]),
+      );
 
   Map<String, dynamic> toJson() => {
     "status": status,
@@ -39,25 +42,27 @@ class VerifyOtpResponseModel {
 }
 
 class Data {
-  String? refreshToken;
-  String? accessToken;
+  // String? refreshToken;
+  String? authToken;
   UserData? userData;
 
   Data({
-    this.refreshToken,
-    this.accessToken,
+    // this.refreshToken,
+    this.authToken,
     this.userData,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-    refreshToken: json["refreshToken"],
-    accessToken: json["accessToken"],
-    userData: json["userData"] == null ? null : UserData.fromJson(json["userData"]),
+    authToken: json["authToken"],
+    // accessToken: json["accessToken"],
+    userData: json["userData"] == null
+        ? null
+        : UserData.fromJson(json["userData"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "refreshToken": refreshToken,
-    "accessToken": accessToken,
+    "authToken": authToken,
+    // "accessToken": accessToken,
     "userData": userData?.toJson(),
   };
 }
@@ -65,7 +70,8 @@ class Data {
 UserData userDataFromJson(String str) => UserData.fromJson(json.decode(str));
 
 String userDataToJson(UserData data) => json.encode(data.toJson());
-class UserData extends Equatable{
+
+class UserData extends Equatable {
   int? userId;
   int? countryCode;
   String? phoneNumber;
@@ -128,6 +134,6 @@ class UserData extends Equatable{
     isOnline,
     displayPicture,
     displayPictureUrl,
-    lastSeenTime
+    lastSeenTime,
   ];
 }

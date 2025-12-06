@@ -138,7 +138,7 @@ class StatusTable {
 
     // Get current timestamp minus 24 hours
     final DateTime now = DateTime.now();
-    final DateTime cutoff = now.subtract(const Duration(hours: 12));
+    final DateTime cutoff = now.subtract(const Duration(hours: 24));
 
     final cutoffString = cutoff.toIso8601String();
 

@@ -137,50 +137,48 @@ class GroupSenderMessageCard extends StatelessWidget {
                                   ]
                                 : [],
                           ),
-                        Obx(
-                          () =>
-                              type != MessageType.deleted &&
-                                  repliedText.value.isNotEmpty &&
-                                  repliedText.value != "null"
-                              ? Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: replyColor.withOpacity(0.67),
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(5),
+                        // Obx(
+                        //   () =>
+                        type != MessageType.deleted &&
+                                repliedText.value.isNotEmpty &&
+                                repliedText.value != "null"
+                            ? Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: replyColor.withOpacity(0.67),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(5),
+                                  ),
+                                ),
+                                child: Column(
+                                  // mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      repliedUserName ?? "username",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: blackColor,
+                                      ),
                                     ),
-                                  ),
-                                  child: Column(
-                                    // mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        repliedUserName ?? "username",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: blackColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      GroupDisplayTextImageGIF(
-                                        message:
-                                            repliedMessageType !=
-                                                MessageType.text
-                                            ? repliedAssetServerName ?? ""
-                                            : repliedText.value,
-                                        type: repliedMessageType,
-                                        isReply: true,
-                                        url: url,
-                                        assetThumbnail: repliedThumbnail,
-                                        isSentByMe:
-                                            false, // Reply previews should not use sent message logic
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : const SizedBox(),
-                        ),
+                                    const SizedBox(height: 3),
+                                    GroupDisplayTextImageGIF(
+                                      message:
+                                          repliedMessageType != MessageType.text
+                                          ? repliedAssetServerName ?? ""
+                                          : repliedText.value,
+                                      type: repliedMessageType,
+                                      isReply: true,
+                                      url: url,
+                                      assetThumbnail: repliedThumbnail,
+                                      isSentByMe:
+                                          false, // Reply previews should not use sent message logic
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox(),
+                        // ),
                         GroupDisplayTextImageGIF(
                           message: message,
                           type: type,

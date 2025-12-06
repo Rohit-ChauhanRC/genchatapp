@@ -25,7 +25,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
             controller.groupDetails.users
                 ?.where((u) => u.userGroupInfo?.isRemoved != true)
                 .length ??
-                0;
+            0;
 
         users.sort((a, b) {
           final aId = a.userGroupInfo?.userId;
@@ -57,120 +57,119 @@ class GroupProfileView extends GetView<GroupProfileController> {
               leading: const BackButton(color: Colors.white),
               actions: [
                 if (controller.canEditGroup || controller.canAddParticipants)
-        PopupMenuButton<String>(
-          offset: const Offset(0, 40),
-          elevation: 8,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          onSelected: (value) {
-            if (value == 'edit') {
-              _showEditGroupNameDialog(
-                context,
-                controller.groupDetails,
-              );
-            } else if (value == 'add') {
-              controller.navigateToAddParticipant();
-            }
-          },
-          itemBuilder: (context) {
-            final items = <PopupMenuEntry<String>>[];
+                  PopupMenuButton<String>(
+                    offset: const Offset(0, 40),
+                    elevation: 8,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _showEditGroupNameDialog(
+                          context,
+                          controller.groupDetails,
+                        );
+                      } else if (value == 'add') {
+                        controller.navigateToAddParticipant();
+                      }
+                    },
+                    itemBuilder: (context) {
+                      final items = <PopupMenuEntry<String>>[];
 
-            if (controller.canEditGroup) {
-              items.add(
-                _styledMenuItem(
-                  value: 'edit',
-                  text: 'Edit Group Name',
-                  icon: Icons.edit,
-                  iconColor: Colors.blue,
-                ),
-              );
-            }
+                      if (controller.canEditGroup) {
+                        items.add(
+                          _styledMenuItem(
+                            value: 'edit',
+                            text: 'Edit Group Name',
+                            icon: Icons.edit,
+                            iconColor: Colors.blue,
+                          ),
+                        );
+                      }
 
-            if (controller.canAddParticipants) {
-              items.add(
-                _styledMenuItem(
-                  value: 'add',
-                  text: 'Add Participants',
-                  icon: Icons.group_add_rounded,
-                  iconColor: Colors.green,
-                ),
-              );
-            }
+                      if (controller.canAddParticipants) {
+                        items.add(
+                          _styledMenuItem(
+                            value: 'add',
+                            text: 'Add Participants',
+                            icon: Icons.group_add_rounded,
+                            iconColor: Colors.green,
+                          ),
+                        );
+                      }
 
-            return items;
-          },
-          icon: const Icon(Icons.more_vert, color: Colors.white),
-        )
-
-        ],
+                      return items;
+                    },
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                  ),
+              ],
               flexibleSpace: LayoutBuilder(
                 builder: (context, constraints) {
                   final top = constraints.biggest.height;
                   final isCollapsed =
                       top <=
-                          kToolbarHeight + MediaQuery.of(context).padding.top;
+                      kToolbarHeight + MediaQuery.of(context).padding.top;
 
                   return FlexibleSpaceBar(
                     centerTitle: true,
                     title: isCollapsed
                         ? Row(
-                      children: [
-                        const SizedBox(width: 48),
-                        Obx(() {
-                          if (controller.image == null &&
-                              (group?.displayPictureUrl ?? "").isEmpty) {
-                            return CircleAvatar(
-                              backgroundColor: AppColors.greyColor
-                                  .withOpacity(0.4),
-                              radius: 20,
-                              child: Icon(
-                                Icons.group,
-                                color: AppColors.greyColor,
+                            children: [
+                              const SizedBox(width: 48),
+                              Obx(() {
+                                if (controller.image == null &&
+                                    (group?.displayPictureUrl ?? "").isEmpty) {
+                                  return CircleAvatar(
+                                    backgroundColor: AppColors.greyColor
+                                        .withOpacity(0.4),
+                                    radius: 20,
+                                    child: Icon(
+                                      Icons.group,
+                                      color: AppColors.greyColor,
+                                    ),
+                                  );
+                                } else if (controller.image != null) {
+                                  return CircleAvatar(
+                                    backgroundColor: AppColors.greyColor
+                                        .withOpacity(0.4),
+                                    backgroundImage: FileImage(
+                                      controller.image!,
+                                    ),
+                                    radius: 20,
+                                  );
+                                } else {
+                                  return CachedNetworkImage(
+                                    imageUrl: group!.displayPictureUrl
+                                        .toString(),
+                                    imageBuilder: (context, image) {
+                                      return CircleAvatar(
+                                        backgroundColor: AppColors.greyColor
+                                            .withOpacity(0.4),
+                                        backgroundImage: image,
+                                        radius: 20,
+                                      );
+                                    },
+                                    placeholder: (context, url) =>
+                                        const CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                  );
+                                }
+                              }),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  group?.name ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            );
-                          } else if (controller.image != null) {
-                            return CircleAvatar(
-                              backgroundColor: AppColors.greyColor
-                                  .withOpacity(0.4),
-                              backgroundImage: FileImage(
-                                controller.image!,
-                              ),
-                              radius: 20,
-                            );
-                          } else {
-                            return CachedNetworkImage(
-                              imageUrl: group!.displayPictureUrl
-                                  .toString(),
-                              imageBuilder: (context, image) {
-                                return CircleAvatar(
-                                  backgroundColor: AppColors.greyColor
-                                      .withOpacity(0.4),
-                                  backgroundImage: image,
-                                  radius: 20,
-                                );
-                              },
-                              placeholder: (context, url) =>
-                              const CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                            );
-                          }
-                        }),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            group?.name ?? '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    )
+                            ],
+                          )
                         : null,
                     background: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -218,9 +217,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                       );
                                     },
                                     placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
+                                        const CircularProgressIndicator(),
                                     errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error, size: 70),
+                                        const Icon(Icons.error, size: 70),
                                   );
                                 }
                               }),
@@ -279,44 +278,38 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     padding: const EdgeInsets.only(left: 8.0, right: 8),
                     child: controller.canEditGroup
                         ? InkWell(
-                      onTap: () => _showEditDescriptionDialog(
-                        context,
-                        controller.groupDetails,
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          group?.groupDescription ??
-                              'Add group description',
-                          key: ValueKey(group?.groupDescription),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color:
-                            group?.groupDescription == null ||
-                                group?.groupDescription == ""
-                                ? AppColors.textBarColor
-                                : AppColors.blackColor,
-                          ),
-                        ),
-                      ),
-                    )
+                            onTap: () => _showEditDescriptionDialog(
+                              context,
+                              controller.groupDetails,
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: Text(
+                                group?.groupDescription ??
+                                    'Add group description',
+                                key: ValueKey(group?.groupDescription),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      group?.groupDescription == null ||
+                                          group?.groupDescription == ""
+                                      ? AppColors.textBarColor
+                                      : AppColors.blackColor,
+                                ),
+                              ),
+                            ),
+                          )
                         : Text(
-                      group?.groupDescription ?? 'No group description',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                            group?.groupDescription ?? 'No group description',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-
-
-                      right: 8,
-                      top: 10,
-                    ),
+                    padding: const EdgeInsets.only(left: 8, right: 8, top: 10),
                     child: Text(
                       "Created by ${controller.creatorUserDetail.localName}, ${formatDateTime(group?.createdAt)}",
                       style: const TextStyle(
@@ -375,7 +368,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           showAlertMessageWithAction(
                             title: "Exit Group: ${group?.name}?",
                             message:
-                            "Are you sure you want to leave this group.",
+                                "Are you sure you want to leave this group.",
                             cancelText: "Cancel",
                             confirmText: "Exit group",
                             // onCancel: ()=> Get.back(),
@@ -401,7 +394,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
                     const SizedBox(height: 30),
                   ],
 
-
                   ///Delete Group
                   if (controller.isSuperAdmin) ...[
                     const Divider(),
@@ -414,15 +406,15 @@ class GroupProfileView extends GetView<GroupProfileController> {
                         onTap: () {
                           // exit logic here
                           showAlertMessageWithAction(
-                              title: "Delete Group: ${group?.name}?",
-                              message: "Are you sure you want to delete this group.",
-                              cancelText: "Cancel",
-                              confirmText: "Delete group",
-                              // onCancel: ()=> Get.back(),
-                              onConfirm: ()=> controller.deleteGroup(),
-                              context: context
+                            title: "Delete Group: ${group?.name}?",
+                            message:
+                                "Are you sure you want to delete this group.",
+                            cancelText: "Cancel",
+                            confirmText: "Delete group",
+                            // onCancel: ()=> Get.back(),
+                            onConfirm: () => controller.deleteGroup(),
+                            context: context,
                           );
-
                         },
                         child: const Row(
                           children: [
@@ -520,11 +512,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
   }
 
   Widget buildUserTile(
-      UserInfo? user,
-      UserGroupInfo? perm,
-      bool isCreator, {
-        required bool isPast,
-      }) {
+    UserInfo? user,
+    UserGroupInfo? perm,
+    bool isCreator, {
+    required bool isPast,
+  }) {
     final pictureUrl = user?.displayPictureUrl ?? '';
     final nameServer = user?.name ?? "";
 
@@ -532,113 +524,129 @@ class GroupProfileView extends GetView<GroupProfileController> {
       opacity: isPast ? 0.6 : 1.0,
       child: IgnorePointer(
         ignoring: isPast,
-        child: Builder(builder: (context) {
-          return InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _showStyledPopup(context, user, perm, isCreator),
+        child: Builder(
+          builder: (context) {
+            return InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _showStyledPopup(context, user, perm, isCreator),
 
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 5),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12.withOpacity(0.08),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Avatar
-                  FutureBuilder<bool>(
-                    future: controller.getUerBlock(user!.userId),
-                    builder: (_, snap) => pictureUrl.isEmpty || snap.data == true
-                        ? CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.grey.withOpacity(0.4),
-                      child: const Icon(Icons.person),
-                    )
-                        : CachedNetworkImage(
-                      imageUrl: pictureUrl,
-                      imageBuilder: (_, image) => CircleAvatar(
-                        backgroundImage: image,
-                        radius: 24,
-                      ),
-                      placeholder: (_, __) =>
-                      const CircularProgressIndicator(strokeWidth: 1.5),
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 5),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
-                  ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Avatar
+                    FutureBuilder<bool>(
+                      future: controller.getUerBlock(user!.userId),
+                      builder: (_, snap) =>
+                          pictureUrl.isEmpty || snap.data == true
+                          ? CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey.withOpacity(0.4),
+                              child: const Icon(Icons.person),
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: pictureUrl,
+                              imageBuilder: (_, image) => CircleAvatar(
+                                backgroundImage: image,
+                                radius: 24,
+                              ),
+                              placeholder: (_, __) =>
+                                  const CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                  ),
+                            ),
+                    ),
 
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                  // Name + phone
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FutureBuilder<String>(
-                          future: controller.getLocalName(user.userId, user.name),
-                          builder: (_, snap) => Text(
-                            snap.data ?? "~ $nameServer",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                    // Name + phone
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FutureBuilder<String>(
+                            future: controller.getLocalName(
+                              user.userId,
+                              user.name,
+                            ),
+                            builder: (_, snap) => Text(
+                              snap.data ?? "~ $nameServer",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user.phoneNumber ?? '',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    if ((perm?.isAdmin == true) && !isPast)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.phoneNumber ?? '',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
+                        decoration: BoxDecoration(
+                          color: AppColors.textBarColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isCreator ? "Super Admin" : "Admin",
+                          style: TextStyle(
+                            color: AppColors.textBarColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  if ((perm?.isAdmin == true) && !isPast)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.textBarColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        isCreator ? "Super Admin" : "Admin",
-                        style: TextStyle(
-                          color: AppColors.textBarColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       ),
     );
   }
-  void _showStyledPopup(BuildContext context, UserInfo? user,
-      UserGroupInfo? perm, bool isCreator) {
 
+  void _showStyledPopup(
+    BuildContext context,
+    UserInfo? user,
+    UserGroupInfo? perm,
+    bool isCreator,
+  ) {
+    final items = _buildStyledPopupItems(user, perm, isCreator);
+
+    // Prevent crashing by avoiding empty menu
+    if (items.isEmpty) return;
     final renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero) & renderBox.size;
 
     showMenu(
       context: context,
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       elevation: 8,
       position: RelativeRect.fromLTRB(
         position.left,
@@ -651,9 +659,12 @@ class GroupProfileView extends GetView<GroupProfileController> {
       if (value != null) _handlePopupSelection(value, user);
     });
   }
-  List<PopupMenuEntry<String>> _buildStyledPopupItems(
-      UserInfo? user, UserGroupInfo? perm, bool isCreator) {
 
+  List<PopupMenuEntry<String>> _buildStyledPopupItems(
+    UserInfo? user,
+    UserGroupInfo? perm,
+    bool isCreator,
+  ) {
     final curUid = controller.sharedPreferenceService.getUserData()?.userId;
     final isSelf = user?.userId == curUid;
     final isSuper = user?.userId == controller.groupDetails.group?.creatorId;
@@ -667,43 +678,49 @@ class GroupProfileView extends GetView<GroupProfileController> {
     // ⭐ SUPER ADMIN ONLY
     // -------------------------------
     if (controller.isSuperAdmin) {
-
       // Make / Revoke Admin
-      items.add(_styledMenuItem(
-        value: isAdmin ? "revoke_admin" : "make_admin",
-        text: isAdmin ? "Revoke Admin" : "Make Admin",
-        icon: isAdmin ? Icons.shield_outlined : Icons.shield,
-        iconColor: isAdmin ? Colors.orange : Colors.blue,
-      ));
+      items.add(
+        _styledMenuItem(
+          value: isAdmin ? "revoke_admin" : "make_admin",
+          text: isAdmin ? "Revoke Admin" : "Make Admin",
+          icon: isAdmin ? Icons.shield_outlined : Icons.shield,
+          iconColor: isAdmin ? Colors.orange : Colors.blue,
+        ),
+      );
 
       // Remove Member
-      items.add(_styledMenuItem(
-        value: "remove_member",
-        text: "Remove From Group",
-        icon: Icons.person_remove,
-        iconColor: Colors.red,
-      ));
+      items.add(
+        _styledMenuItem(
+          value: "remove_member",
+          text: "Remove From Group",
+          icon: Icons.person_remove,
+          iconColor: Colors.red,
+        ),
+      );
 
-      items.add(_styledMenuItem(
-        value: perm?.vanishMode == true ? "vanish_off" : "vanish_on",
-        text: perm?.vanishMode == true
-            ? "Vanish Mode Off"
-            : "Vanish Mode On",
-        icon:perm?.vanishMode==true? Icons.visibility:Icons.visibility_off,
-        iconColor: Colors.purple,
-      ));
+      items.add(
+        _styledMenuItem(
+          value: perm?.vanishMode == true ? "vanish_off" : "vanish_on",
+          text: perm?.vanishMode == true ? "Vanish Mode Off" : "Vanish Mode On",
+          icon: perm?.vanishMode == true
+              ? Icons.visibility
+              : Icons.visibility_off,
+          iconColor: Colors.purple,
+        ),
+      );
     }
-
     // -------------------------------
     // ⭐ NORMAL ADMIN (NO VANISH MODE)
     // -------------------------------
     else if (controller.isAdmin && !isAdmin) {
-      items.add(_styledMenuItem(
-        value: "remove_member",
-        text: "Remove From Group",
-        icon: Icons.person_remove,
-        iconColor: Colors.red,
-      ));
+      items.add(
+        _styledMenuItem(
+          value: "remove_member",
+          text: "Remove From Group",
+          icon: Icons.person_remove,
+          iconColor: Colors.red,
+        ),
+      );
     }
 
     return items;
@@ -730,10 +747,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
         ],
       ),
@@ -761,11 +775,8 @@ class GroupProfileView extends GetView<GroupProfileController> {
       case 'vanish_off':
         controller.disableVanishMode(uid);
         break;
-
     }
   }
-
-
 
   void _showEditGroupNameDialog(BuildContext context, GroupData groupDetails) {
     final textController = TextEditingController(
@@ -791,15 +802,15 @@ class GroupProfileView extends GetView<GroupProfileController> {
                 borderRadius: BorderRadius.circular(18),
               ),
               titlePadding: const EdgeInsets.only(top: 20, bottom: 10),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
 
               title: const Text(
                 "Edit Group Name",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
 
               content: TextField(
@@ -824,10 +835,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(fontSize: 14),
-                  ),
+                  child: const Text("Cancel", style: TextStyle(fontSize: 14)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -848,10 +856,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   ),
                   child: const Text(
                     "Save",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.white),
                   ),
                 ),
               ],
@@ -863,9 +868,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
   }
 
   void _showEditDescriptionDialog(
-      BuildContext context,
-      GroupData groupDetails,
-      ) {
+    BuildContext context,
+    GroupData groupDetails,
+  ) {
     final textController = TextEditingController(
       text: groupDetails.group?.groupDescription,
     );

@@ -40,6 +40,8 @@ class GroupNameController extends GetxController {
   File? get image => _image.value;
   set image(File? img) => _image.value = img;
 
+  RxBool isOn = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -57,11 +59,13 @@ class GroupNameController extends GetxController {
   }
 
   void selectImage() async {
-    showImagePicker(onGetImage: (img) {
-      if (img != null) {
-        image = img;
-      }
-    });
+    showImagePicker(
+      onGetImage: (img) {
+        if (img != null) {
+          image = img;
+        }
+      },
+    );
   }
 
   Future<void> createGroup() async {
@@ -71,10 +75,15 @@ class GroupNameController extends GetxController {
       circularProgress = true;
 
       // Step 1: Create group
-      final response = await groupRepository.createGroup(groupName, selectedUserIds);
+      final response = await groupRepository.createGroup(
+        groupName,
+        selectedUserIds,
+      );
 
       if (response != null && response.statusCode == 200) {
-        final createGroupModelResponse = CreateGroupModel.fromJson(response.data);
+        final createGroupModelResponse = CreateGroupModel.fromJson(
+          response.data,
+        );
 
         if (createGroupModelResponse.status == true) {
           final data = createGroupModelResponse.data;
@@ -82,7 +91,6 @@ class GroupNameController extends GetxController {
 
           // Step 2: Insert initial group data into DB
           await groupsTable.insertOrUpdateGroup(data!);
-
 
           // Step 3: Only upload image if selected
           if (image != null) {
@@ -95,7 +103,9 @@ class GroupNameController extends GetxController {
                 lastMessage: "",
                 name: data.group?.name ?? '',
                 profilePic: data.group?.displayPictureUrl ?? '',
-                timeSent:  data.group?.updatedAt ?? "",//DateTime.now().toString(), //?? data.group?.createdAt,
+                timeSent:
+                    data.group?.updatedAt ??
+                    "", //DateTime.now().toString(), //?? data.group?.createdAt,
                 uid: groupId.toString(),
                 isGroup: 1,
               ),
@@ -118,7 +128,10 @@ class GroupNameController extends GetxController {
 
     try {
       final processedImage = image!;
-      final uploadResponse = await groupRepository.uploadGroupPic(processedImage, groupId);
+      final uploadResponse = await groupRepository.uploadGroupPic(
+        processedImage,
+        groupId,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
         print("✅ Group icon uploaded: ${uploadResponse.data}");
@@ -136,7 +149,9 @@ class GroupNameController extends GetxController {
                 lastMessage: "",
                 name: data?.group?.name ?? '',
                 profilePic: data?.group?.displayPictureUrl ?? '',
-                timeSent:  data?.group?.updatedAt ?? '', // DateTime.now().toString(),//data?.group?.createdAt ?? '',
+                timeSent:
+                    data?.group?.updatedAt ??
+                    '', // DateTime.now().toString(),//data?.group?.createdAt ?? '',
                 uid: groupId.toString(),
                 isGroup: 1,
               ),
@@ -153,4 +168,8 @@ class GroupNameController extends GetxController {
 
   void showKeyboard() => focusNode.requestFocus();
   void hideKeyboard() => focusNode.unfocus();
+
+  void setValue(bool value) {
+    isOn.value = value;
+  }
 }

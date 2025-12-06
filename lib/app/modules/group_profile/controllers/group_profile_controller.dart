@@ -63,7 +63,7 @@ class GroupProfileController extends GetxController {
   bool get canEditGroup => isSuperAdmin || isAdmin;
   bool get canGivePermission=>isSuperAdmin;
   bool get canAddParticipants => isSuperAdmin || isAdmin;
-
+  var canSendMessages = true.obs;
   bool get canExitGroup => !isSuperAdmin;
 
   bool get canRevokeAdmin => isSuperAdmin;

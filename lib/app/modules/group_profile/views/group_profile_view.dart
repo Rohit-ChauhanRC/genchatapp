@@ -5,8 +5,6 @@ import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-import '../../../common/widgets/user_avatar.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../data/models/new_models/response_model/create_group_model.dart';
 import '../../../utils/time_utils.dart';
@@ -98,9 +96,14 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                         );
                       }
-                      if(controller.canGivePermission){
+                      if (controller.canGivePermission) {
                         items.add(
-                          _styledMenuItem(value: 'Group Permissions', text: 'Group Permissions', icon: Icons.shield, iconColor: Colors.green)
+                          _styledMenuItem(
+                            value: 'Group Permissions',
+                            text: 'Group Permissions',
+                            icon: Icons.shield,
+                            iconColor: Colors.green,
+                          ),
                         );
                       }
 
@@ -326,8 +329,64 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   ),
                   const SizedBox(height: 8),
                   const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: controller.canGivePermission
+                        ? Obx(
+                            () => InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                controller.canSendMessages.value =
+                                    !controller.canSendMessages.value;
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  /// Title + Toggle
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Send New Messages",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: AppColors.textBarColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
 
-                  /// Members Header
+                                      Transform.scale(
+                                        scale: 0.75,
+                                        child: Switch(
+                                          value:
+                                              controller.canSendMessages.value,
+                                          activeColor: AppColors.textBarColor,
+                                          onChanged: (val) {
+                                            controller.canSendMessages.value =
+                                                val;
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    controller.canSendMessages.value
+                                        ? "Only Super admins can send messages"
+                                        : "Everyone can send messages",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade600,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  // const SizedBox(height: 8
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0, right: 8),
                     child: Row(
@@ -737,9 +796,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
           iconColor: Colors.purple,
         ),
       );
-    }
-
-    else if (controller.isAdmin && !isAdmin) {
+    } else if (controller.isAdmin && !isAdmin) {
       items.add(
         _styledMenuItem(
           value: "remove_member",

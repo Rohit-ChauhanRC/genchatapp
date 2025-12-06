@@ -94,25 +94,37 @@ class OtpController extends GetxController {
     try {
       circularProgress = true;
       int countryNum = int.parse(countryCode);
-      final response =
-          await authRepository.verifyOtp(mobileNumber, countryNum, otp);
+      final response = await authRepository.verifyOtp(
+        mobileNumber,
+        countryNum,
+        otp,
+      );
       if (response != null && response.statusCode == 200) {
-        final getVerifyNumberResponse =
-            VerifyOtpResponseModel.fromJson(response.data);
+        final getVerifyNumberResponse = VerifyOtpResponseModel.fromJson(
+          response.data,
+        );
         if (getVerifyNumberResponse.status == true) {
-          String? accessToken = getVerifyNumberResponse.data?.accessToken;
-          String? refreshToken = getVerifyNumberResponse.data?.refreshToken;
+          String? authToken = getVerifyNumberResponse.data?.authToken;
+          // String? refreshToken = getVerifyNumberResponse.data?.refreshToken;
           UserData? userDetails = getVerifyNumberResponse.data?.userData;
           int? userId = userDetails?.userId;
           String? mobileNum = userDetails?.phoneNumber;
-          saveIsNumVerified(accessToken ?? "", refreshToken ?? "", true,
-              userId ?? 0, mobileNum ?? "");
+          saveIsNumVerified(
+            authToken ?? "",
+            true,
+            userId ?? 0,
+            mobileNum ?? "",
+          );
           sharedPreferenceService.setString(
-              UserDefaultsKeys.userDetail, userDataToJson(userDetails!));
+            UserDefaultsKeys.userDetail,
+            userDataToJson(userDetails!),
+          );
           // print("getUserData full details:---> ${sharedPreferenceService.getUserData()}");
-          Get.offAllNamed(Routes.CREATE_PROFILE, arguments: false
-              // arguments: [mobileNumber, a.toString()],
-              );
+          Get.offAllNamed(
+            Routes.CREATE_PROFILE,
+            arguments: false,
+            // arguments: [mobileNumber, a.toString()],
+          );
         }
       }
     } catch (e) {
@@ -123,14 +135,22 @@ class OtpController extends GetxController {
     }
   }
 
-  void saveIsNumVerified(String accessToken, String refreshToken,
-      bool isNumVerified, int uid, String mob) {
+  void saveIsNumVerified(
+    String accessToken,
+    bool isNumVerified,
+    int uid,
+    String mob,
+  ) {
     sharedPreferenceService.setString(
-        UserDefaultsKeys.accessToken, accessToken);
-    sharedPreferenceService.setString(
-        UserDefaultsKeys.refreshToken, refreshToken);
+      UserDefaultsKeys.accessToken,
+      accessToken,
+    );
+    // sharedPreferenceService.setString(
+    //     UserDefaultsKeys.refreshToken, refreshToken);
     sharedPreferenceService.setBool(
-        UserDefaultsKeys.isNumVerify, isNumVerified);
+      UserDefaultsKeys.isNumVerify,
+      isNumVerified,
+    );
     sharedPreferenceService.setInt(UserDefaultsKeys.userId, uid);
     sharedPreferenceService.setString(UserDefaultsKeys.userMobileNum, mob);
   }

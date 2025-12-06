@@ -159,7 +159,7 @@ class SharedPreferenceService {
   Future<void> clear() async {
     await remove(UserDefaultsKeys.userDetail);
     await remove(UserDefaultsKeys.accessToken);
-    await remove(UserDefaultsKeys.refreshToken);
+    // await remove(UserDefaultsKeys.refreshToken);
     await remove(UserDefaultsKeys.userId);
     await remove(UserDefaultsKeys.isNumVerify);
     await remove(UserDefaultsKeys.createUserProfile);
@@ -177,8 +177,9 @@ class SharedPreferenceService {
       Get.offAllNamed(Routes.LANDING);
       return null;
     } else {
-      UserData user =
-          userDataFromJson(getString(UserDefaultsKeys.userDetail) ?? "");
+      UserData user = userDataFromJson(
+        getString(UserDefaultsKeys.userDetail) ?? "",
+      );
       return user;
     }
   }

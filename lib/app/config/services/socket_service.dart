@@ -5,16 +5,21 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
+import 'package:genchatapp/app/config/services/notification_service.dart';
+import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
+import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/block_user_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
+import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -53,6 +58,9 @@ class SocketService extends GetxService {
 
   final Rx<BlockUserModel?> incomBlockUser = Rx<BlockUserModel?>(null);
 
+  final DataBaseService db = Get.find();
+  final SharedPreferenceService sharedPreference = Get.find();
+
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
       if (_socket!.connected) {
@@ -80,6 +88,10 @@ class SocketService extends GetxService {
     _registerSocketListeners(onConnected, userId);
     _socket?.connect();
     print('🔌 Socket initialized');
+    print("Socket base url : ${ApiEndpoints.socketBaseUrl}");
+    print(
+      "sharedPreferenceService.getString(UserDefaultsKeys.accessToken): ${sharedPreferenceService.getString(UserDefaultsKeys.accessToken)}",
+    );
   }
 
   void _registerSocketListeners(Function()? onConnected, String userId) {
@@ -548,15 +560,10 @@ class SocketService extends GetxService {
       print('🚫 Custom Error: $data');
       final statusCode = data['statusCode'];
       if (statusCode == 401) {
-        final refreshed = await refreshToken();
-        if (refreshed) {
-          await initSocket(
-            sharedPreferenceService.getUserData()!.userId.toString(),
-            onConnected: () {
-              print("custom Error called init socket");
-            },
-          );
-        }
+        showAlertMessage("Your session has expired. Please log in again.");
+        await logoutApp(() {
+          Get.offAllNamed(Routes.LANDING);
+        });
       }
     });
 
@@ -883,77 +890,77 @@ class SocketService extends GetxService {
     // _socket?.off('custom-error');
   }
 
-  Future<bool> refreshToken() async {
-    String? refreshToken = sharedPreferenceService.getString(
-      UserDefaultsKeys.refreshToken,
-    );
-    int? userId = sharedPreferenceService.getUserData()?.userId;
+  // Future<bool> refreshToken() async {
+  //   String? refreshToken = sharedPreferenceService.getString(
+  //     UserDefaultsKeys.refreshToken,
+  //   );
+  //   int? userId = sharedPreferenceService.getUserData()?.userId;
 
-    print(
-      "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
-    );
+  //   print(
+  //     "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
+  //   );
 
-    if (refreshToken == null || userId == null) {
-      print("🔴 No refresh token or user ID found!");
-      return false;
-    }
+  //   if (refreshToken == null || userId == null) {
+  //     print("🔴 No refresh token or user ID found!");
+  //     return false;
+  //   }
 
-    try {
-      final dio = Dio(
-        BaseOptions(
-          baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
-          connectTimeout: const Duration(seconds: 50),
-          receiveTimeout: const Duration(seconds: 50),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
+  //   try {
+  //     final dio = Dio(
+  //       BaseOptions(
+  //         baseUrl: "${ApiEndpoints.baseUrl}${ApiEndpoints.apiVersion}",
+  //         connectTimeout: const Duration(seconds: 50),
+  //         receiveTimeout: const Duration(seconds: 50),
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Content-Type': 'application/json',
+  //         },
+  //       ),
+  //     );
 
-      Response response = await dio.post(
-        'refresh-access-token',
-        data: {"userId": userId, "refreshToken": refreshToken},
-      );
+  //     Response response = await dio.post(
+  //       'refresh-access-token',
+  //       data: {"userId": userId, "refreshToken": refreshToken},
+  //     );
 
-      if (response.statusCode == 200 && response.data['status'] == true) {
-        print(
-          "🔁 Refresh token response: ${response.statusCode} ${response.data}",
-        );
-        String newAccessToken =
-            response.data['data']['accessToken']; // ✅ Corrected key
-        String newRefreshToken =
-            response.data['data']['refreshToken']; // ✅ Corrected key
+  //     if (response.statusCode == 200 && response.data['status'] == true) {
+  //       print(
+  //         "🔁 Refresh token response: ${response.statusCode} ${response.data}",
+  //       );
+  //       String newAccessToken =
+  //           response.data['data']['accessToken']; // ✅ Corrected key
+  //       String newRefreshToken =
+  //           response.data['data']['refreshToken']; // ✅ Corrected key
 
-        print(
-          "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken",
-        );
-        await sharedPreferenceService.remove(UserDefaultsKeys.accessToken);
-        await sharedPreferenceService.remove(UserDefaultsKeys.refreshToken);
-        await sharedPreferenceService.setString(
-          UserDefaultsKeys.accessToken,
-          newAccessToken,
-        );
-        await sharedPreferenceService.setString(
-          UserDefaultsKeys.refreshToken,
-          newRefreshToken,
-        );
+  //       print(
+  //         "New Access Token: $newAccessToken\n New refresh token: $newRefreshToken",
+  //       );
+  //       await sharedPreferenceService.remove(UserDefaultsKeys.accessToken);
+  //       // await sharedPreferenceService.remove(UserDefaultsKeys.refreshToken);
+  //       await sharedPreferenceService.setString(
+  //         UserDefaultsKeys.accessToken,
+  //         newAccessToken,
+  //       );
+  //       // await sharedPreferenceService.setString(
+  //       //   UserDefaultsKeys.refreshToken,
+  //       //   newRefreshToken,
+  //       // );
 
-        print("✅ Token refreshed successfully!");
-        return true;
-      } else {
-        print("🔴 Token refresh failed: ${response.data}");
-      }
-    } catch (e) {
-      print("🔴 Refresh token request failed: $e");
-    }
-    print("🔴 Refresh token invalid, logging out...");
+  //       print("✅ Token refreshed successfully!");
+  //       return true;
+  //     } else {
+  //       print("🔴 Token refresh failed: ${response.data}");
+  //     }
+  //   } catch (e) {
+  //     print("🔴 Refresh token request failed: $e");
+  //   }
+  //   print("🔴 Refresh token invalid, logging out...");
 
-    // await sharedPreference.clear().then((onValue) {
-    //   Get.offAllNamed(Routes.LANDING);
-    // });
-    return false;
-  }
+  //   // await sharedPreference.clear().then((onValue) {
+  //   //   Get.offAllNamed(Routes.LANDING);
+  //   // });
+  //   return false;
+  // }
 
   Future<void> sendBase64(File data) async {
     print(data.length);
@@ -998,6 +1005,7 @@ class SocketService extends GetxService {
     }
     return chunks;
   }
+
   Future<void> sendBase64Scientist(File data) async {
     const chunkSize = 512 * 1024;
     final raf = await data.open(mode: FileMode.read);
@@ -1025,5 +1033,13 @@ class SocketService extends GetxService {
     } finally {
       raf.closeSync();
     }
+  }
+
+  Future<void> logoutApp(Function()? onSuccess) async {
+    await NotificationService.unsubscribeFromTopics();
+    await db.closeDb();
+    await disposeSocket();
+    await sharedPreference.clear();
+    onSuccess?.call();
   }
 }

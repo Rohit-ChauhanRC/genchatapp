@@ -14,6 +14,7 @@ import '../controllers/single_chat_controller.dart';
 
 class SingleChatView extends GetView<SingleChatController> {
   const SingleChatView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,56 +187,78 @@ class SingleChatView extends GetView<SingleChatController> {
                     ],
                   ),
           ),
-          PopupMenuButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: whiteColor),
             offset: const Offset(0, 40),
-            color: whiteColor,
-            onSelected: (value) async {
-              // Handle menu item selection
+            color: Colors.white,
+            elevation: 6,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
 
+            onSelected: (value) async {
               if (value == clearText) {
                 await controller.deleteTextMessage();
               } else if (value == block) {
                 await controller.blockUser();
-                // await controller.unblockUser();
               } else if (value == unBlock) {
                 await controller.unblockUser();
               }
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value:
-                    controller.blocked.value &&
-                        (controller.blockedByMe.value == 1 ||
-                            controller.blockedByMe.value == 2)
-                    ? unBlock
-                    : block,
-                child: Text(
-                  controller.blocked.value &&
-                          (controller.blockedByMe.value == 1 ||
-                              controller.blockedByMe.value == 2)
-                      ? unBlock
-                      : block,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: blackColor,
+
+            itemBuilder: (context) {
+              final isBlocked = controller.blocked.value &&
+                  (controller.blockedByMe.value == 1 || controller.blockedByMe.value == 2);
+
+              return [
+                PopupMenuItem(
+                  value: isBlocked ? unBlock : block,
+                  child: Row(
+                    children: [
+                      Icon(
+                        isBlocked ? Icons.lock_open : Icons.block,
+                        size: 20,
+                        color: isBlocked ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        isBlocked ? unBlock : block,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const PopupMenuItem(
-                value: clearText,
-                child: Text(
-                  clearText,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: blackColor,
+
+                PopupMenuItem(
+                  value: clearText,
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.cleaning_services_outlined,
+                        size: 20,
+                        color: Colors.blueGrey,
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        clearText,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
+              ];
+            },
+          )
+
+          ,
         ],
       ),
       body: SafeArea(

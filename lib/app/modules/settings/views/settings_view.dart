@@ -13,6 +13,7 @@ import '../controllers/settings_controller.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +55,7 @@ class SettingsView extends GetView<SettingsController> {
                                 backgroundColor: greyColor.withOpacity(0.4),
                                 radius: 30,
                                 backgroundImage: image,
-                              );
+                               );
                             },
                             placeholder: (context, url) =>
                                 const CircularProgressIndicator(),

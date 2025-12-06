@@ -701,10 +701,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
     if (isSelf || isSuper) return [];
 
     final List<PopupMenuEntry<String>> items = [];
-
-    // -------------------------------
-    // ⭐ SUPER ADMIN ONLY
-    // -------------------------------
     if (controller.isSuperAdmin) {
       // Make / Revoke Admin
       items.add(
@@ -737,9 +733,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
         ),
       );
     }
-    // -------------------------------
-    // ⭐ NORMAL ADMIN (NO VANISH MODE)
-    // -------------------------------
+
     else if (controller.isAdmin && !isAdmin) {
       items.add(
         _styledMenuItem(

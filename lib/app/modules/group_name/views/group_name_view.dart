@@ -15,7 +15,6 @@ class GroupNameView extends GetView<GroupNameController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: const Text(
           'New Group',
           style: TextStyle(color: Colors.white, fontSize: 15),
@@ -54,6 +53,43 @@ class GroupNameView extends GetView<GroupNameController> {
                 validator: (value) =>
                     value!.isEmpty ? "Please enter group name!" : null,
                 keyboardType: TextInputType.name,
+              ),
+              ListTile(
+                title: const SizedBox(
+                  child: Text(
+                    "Send a new message",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                subtitle: const SizedBox(
+                  child: Text(
+                    "Only admin send message",
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ),
+                trailing: Obx(
+                  () => Switch(
+                    value: controller.isOn.value,
+                    onChanged: (val) => controller.setValue(val),
+                  ),
+                ),
+              ),
+
+              ListTile(
+                onTap: () {},
+                title: const SizedBox(
+                  child: Text("Vanish mode", style: TextStyle(fontSize: 16)),
+                ),
+                subtitle: const SizedBox(
+                  child: Text(
+                    "Specific user disappearing messages",
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.remove_red_eye_sharp,
+                  color: textBarColor,
+                ),
               ),
               const SizedBox(height: 50),
               Obx(

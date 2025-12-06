@@ -108,6 +108,29 @@ class DocumentMessageWidget extends StatelessWidget {
     }
   }
 
+  String _getImageForExtension(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'pdf':
+        return "pdf1.png"; // PDF icon
+      case 'doc':
+      case 'docx':
+        return "docs.png"; // Document icon
+      case 'xls':
+      case 'xlsx':
+        return "xls.png"; // Spreadsheet icon
+      case 'ppt':
+      case 'pptx':
+        return "ppt.png"; // Presentation icon
+      case 'txt':
+        return "text.png"; // Text file icon
+      case 'zip':
+      case 'rar':
+        return "zip.png"; // Archive icon
+      default:
+        return "image.png"; // Generic file icon
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final file = File(localFilePath);
@@ -130,10 +153,16 @@ class DocumentMessageWidget extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _getIconForExtension(fileExtension),
-              size: isReply ? 20 : 36,
-              color: _getColorForExtension(fileExtension),
+            // Icon(
+            //   _getIconForExtension(fileExtension),
+            //   size: isReply ? 20 : 36,
+            //   color: _getColorForExtension(fileExtension),
+            // ),
+            Image.asset(
+              "assets/images/${_getImageForExtension(fileExtension)}",
+              // color: _getColorForExtension(fileExtension),
+              height: 30,
+              width: 30,
             ),
             const SizedBox(width: 10),
             Expanded(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
@@ -201,7 +202,10 @@ class UpdatesController extends GetxController
   }
 
   Future<void> getLocalSaveSatus() async {
-    final saved = await StatusTable().getAllStatuses();
+    int? statusTime = sharedPreferenceService.getInt(
+      UserDefaultsKeys.statusDurationKey,
+    );
+    final saved = await StatusTable().getAllStatuses(statusTime: statusTime!);
 
     final Map<String, List<Statusmodel>> grouped = {};
     for (var status in saved) {

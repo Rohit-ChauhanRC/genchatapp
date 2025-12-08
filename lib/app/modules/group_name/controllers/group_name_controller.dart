@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
+import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -21,6 +23,8 @@ class GroupNameController extends GetxController {
 
   final GroupsTable groupsTable = GroupsTable();
   final ChatConectTable chatConectTable = ChatConectTable();
+
+  final ContactsTable contactsTable = ContactsTable();
 
   FocusNode focusNode = FocusNode();
 
@@ -42,6 +46,15 @@ class GroupNameController extends GetxController {
 
   RxBool isOn = false.obs;
 
+  final RxList<int> _selectedUserIdVanishMode = <int>[].obs;
+  List<int> get selectedUserIdVanishMode => _selectedUserIdVanishMode;
+  set selectedUserIdVanishMode(List<int> i) =>
+      _selectedUserIdVanishMode.assignAll(i);
+
+  final RxList<UserList> contacts = <UserList>[].obs;
+
+  final RxBool isLoading = true.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -49,8 +62,9 @@ class GroupNameController extends GetxController {
   }
 
   @override
-  void onReady() {
+  void onReady() async {
     super.onReady();
+    await fetchData();
   }
 
   @override
@@ -171,5 +185,26 @@ class GroupNameController extends GetxController {
 
   void setValue(bool value) {
     isOn.value = value;
+  }
+
+  void toggleSelection(int userId) {
+    if (selectedUserIdVanishMode.contains(userId)) {
+      selectedUserIdVanishMode.remove(userId);
+    } else {
+      selectedUserIdVanishMode.add(userId);
+    }
+  }
+
+  Future<void> fetchData() async {
+    // isLoading.value = true;
+
+    contacts.clear();
+    if (selectedUserIds.isNotEmpty) {
+      for (var i = 0; i < selectedUserIds.length; i++) {
+        final allContacts = await contactsTable.getUserById(selectedUserIds[i]);
+        contacts.add(allContacts!);
+      }
+    }
+    // isLoading.value = false;
   }
 }

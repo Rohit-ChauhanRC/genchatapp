@@ -70,7 +70,7 @@ void main() async {
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await NotificationService.init();
 
-   // Get.put(ChatsController());
+  // Get.put(ChatsController());
   NotificationSettings settings = await FirebaseMessaging.instance
       .requestPermission(
         alert: true,
@@ -95,7 +95,7 @@ void main() async {
     print('Notification permission not determined');
   }
 
-  AppConfig.setEnvironment(AppEnvironment.prod);
+  AppConfig.setEnvironment(AppEnvironment.dev);
 
   runApp(const App());
 }

@@ -1,3 +1,4 @@
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/status_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -5,6 +6,9 @@ import 'local_database.dart';
 
 class StatusTable {
   final tableName = statusDb;
+
+  // int get statusTime => 12;
+  // set statusTime(int i) => statusTime = i;
 
   Future<void> createTable(Database database) async {
     print("Creating Status Table...");
@@ -72,10 +76,10 @@ class StatusTable {
     print("All statuses inserted successfully!");
   }
 
-  Future<List<Statusmodel>> getAllStatuses() async {
+  Future<List<Statusmodel>> getAllStatuses({required int statusTime}) async {
     final db = await DataBaseService().database;
 
-    await deleteExpiredStatuses();
+    await deleteExpiredStatuses(statusTime: statusTime);
 
     final List<Map<String, dynamic>> maps = await db.query(
       tableName,
@@ -152,11 +156,12 @@ class StatusTable {
   //   print("🗑 Deleted $count expired statuses (older than 24 hours)");
   // }
 
-  Future<void> deleteExpiredStatuses() async {
+  Future<void> deleteExpiredStatuses({required int statusTime}) async {
     final db = await DataBaseService().database;
 
+    /// statusTime is already in minutes
     final int cutoff = DateTime.now()
-        .subtract(const Duration(hours: 12))
+        .subtract(Duration(minutes: statusTime))
         .millisecondsSinceEpoch;
 
     final count = await db.delete(
@@ -165,6 +170,8 @@ class StatusTable {
       whereArgs: [cutoff],
     );
 
-    print("🗑 Deleted $count expired statuses (older than 12 hours)");
+    print(
+      "🗑 Deleted $count expired statuses (older than $statusTime minutes)",
+    );
   }
 }

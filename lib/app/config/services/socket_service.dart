@@ -12,6 +12,7 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/local_database.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
+import 'package:genchatapp/app/data/local_database/status_table.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/block_user_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
@@ -60,6 +61,8 @@ class SocketService extends GetxService {
 
   final DataBaseService db = Get.find();
   final SharedPreferenceService sharedPreference = Get.find();
+
+  final StatusTable statusTable = StatusTable();
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
@@ -575,6 +578,34 @@ class SocketService extends GetxService {
         isBlock: data["isBlock"],
       );
     });
+
+    // status time
+    _socket?.on('config-change', (data) async {
+      if (data["statusDuration"] != null) {
+        sharedPreferenceService.setInt(
+          UserDefaultsKeys.statusDurationKey,
+          int.parse(data["statusDuration"].toString()),
+        );
+      }
+
+      if (data["messageDuration"] != null) {
+        sharedPreferenceService.setInt(
+          UserDefaultsKeys.statusDurationKey,
+          int.parse(data["messageDuration"].toString()),
+        );
+      }
+
+      print(data);
+    });
+
+    // config chg
+    //  _socket?.on('config', (data) async {
+    //   print(data);
+    //   sharedPreferenceService.setInt(
+    //     UserDefaultsKeys.statusDurationKey,
+    //     int.parse(data["status-duration"].toString()),
+    //   );
+    // });
   }
 
   void sendMessage(NewMessageModel data) async {

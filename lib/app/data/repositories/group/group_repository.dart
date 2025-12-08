@@ -164,4 +164,19 @@ class GroupRepository {
           apiClient.uploadFile(ApiEndpoints.uploadGroupIcon, formData),
     );
   }
+
+  Future<Response?> fetchStatusTime() async {
+    try {
+      return await apiClient.get(ApiEndpoints.statusTime);
+    } catch (e) {
+      if (e == "404_NOT_FOUND") {
+        print("Group not found.");
+        // showAlertMessage("Group not found.");
+      } else {
+        print("Error in fetchGroup: $e");
+        // showAlertMessage("Error: $e");
+      }
+      return null;
+    }
+  }
 }

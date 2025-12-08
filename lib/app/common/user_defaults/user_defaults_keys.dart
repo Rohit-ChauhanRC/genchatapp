@@ -10,4 +10,7 @@ class UserDefaultsKeys {
   static const String backupUserId = "backupUserId";
 
   static const String shownMessageIdsKeys = 'shown_message_ids';
+
+  static const String statusDurationKey = 'status_duration_key';
+  static const String messageDurationKey = 'message_duration_key';
 }

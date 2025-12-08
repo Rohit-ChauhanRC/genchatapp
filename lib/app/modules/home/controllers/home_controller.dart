@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/firebase_controller.dart';
 import 'package:genchatapp/app/config/services/notification_service.dart';
@@ -67,6 +68,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     var subscriptionTopic = ["genchat-message-$userPhoneNumber"];
     await NotificationService.subscribeToTopics(subscriptionTopic);
     await getGroups();
+    await getStatusTime();
     await selectedContactController.syncContactsWithServer();
     // connectSocket();
     // print(sharedPreferenceService.getUserDetails()?.name);
@@ -225,5 +227,37 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       print("❌ Silent crop failed: $e");
     }
+  }
+
+  Future<void> getStatusTime() async {
+    try {
+      // Step 1: Create group
+      final response = await groupRepository.fetchStatusTime();
+
+      if (response != null && response.statusCode == 200) {
+        int? modelList = int.parse(
+          (response.data['data']['statusDuration']).toString(),
+        );
+
+        //
+        int? messageTime = int.parse(
+          (response.data['data']['statusDuration']).toString(),
+        );
+
+        if (modelList != null) {
+          sharedPreferenceService.setInt(
+            UserDefaultsKeys.statusDurationKey,
+            int.parse(modelList.toString()),
+          );
+          // messageDurationKey
+          sharedPreferenceService.setInt(
+            UserDefaultsKeys.messageDurationKey,
+            int.parse(messageTime.toString()),
+          );
+        }
+      }
+    } catch (e) {
+      // showAlertMessage("Something went wrong: $e");
+    } finally {}
   }
 }

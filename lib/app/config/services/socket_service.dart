@@ -17,6 +17,7 @@ import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/block_user_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -53,6 +54,12 @@ class SocketService extends GetxService {
   // final Rx<BlockUserModel?> blockUserModel = Rx<BlockUserModel?>(null);
 
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
+  // ReadOnlyAdmin
+  final Rxn<ReadOnlyAdmin> groupRedOnly = Rxn<ReadOnlyAdmin>();
+  // VanishModeAutoDelete
+  final Rxn<VanishModeAutoDelete> vanishModeAutoDelete =
+      Rxn<VanishModeAutoDelete>();
+
   final Rxn<MessageAckModel> messageAcknowledgement = Rxn<MessageAckModel>();
   final Rxn<UserData> updateContactUser = Rxn<UserData>();
   final Rxn<bool> updateGroupAdmins = Rxn<bool>();
@@ -63,6 +70,7 @@ class SocketService extends GetxService {
   final SharedPreferenceService sharedPreference = Get.find();
 
   final StatusTable statusTable = StatusTable();
+  // final GroupChatsController groupChatsController = Get.find();
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
@@ -598,14 +606,41 @@ class SocketService extends GetxService {
       print(data);
     });
 
-    // config chg
-    //  _socket?.on('config', (data) async {
-    //   print(data);
-    //   sharedPreferenceService.setInt(
-    //     UserDefaultsKeys.statusDurationKey,
-    //     int.parse(data["status-duration"].toString()),
-    //   );
-    // });
+    // group israedonly chg
+    _socket?.on('group-state-toggled', (data) async {
+      print(data);
+
+      groupsTable.updateGroupReadOnly(
+        data["groupId"],
+        data["isReadOnly"] ? 1 : 0,
+      );
+      groupRedOnly.value = ReadOnlyAdmin(
+        groupId: data["groupId"],
+        isReadOnly: data["isReadOnly"],
+      );
+      // groupId, isReadOnly
+    });
+    //  vanish mode
+    _socket?.on('group-message-autodelete-toggled', (data) async {
+      print(data);
+      // groupId, userId,autoDeleteMessages
+      groupsTable.updateAutoDeleteMessages(
+        groupId: data["groupId"],
+        userId: data["userId"],
+        autoDeleteMessages: data["autoDeleteMessages"],
+      );
+
+      // VanishModeAutoDelete
+
+      vanishModeAutoDelete.value = VanishModeAutoDelete(
+        groupId: data["groupId"],
+        autoDeleteMessages: data["autoDeleteMessages"],
+        userId: data["userId"],
+      );
+      // fndj
+      // getGroupDataFromLocal
+      // groupId, isReadOnly
+    });
   }
 
   void sendMessage(NewMessageModel data) async {

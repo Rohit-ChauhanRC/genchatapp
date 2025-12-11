@@ -9,7 +9,7 @@ class GroupsTable {
   final String userGroupsTableName = userGroupsTable;
 
   Future<void> createTable(Database db) async {
-    await db.execute( '''
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS $groupsTableName (
         id INTEGER PRIMARY KEY,
         name TEXT,
@@ -19,7 +19,8 @@ class GroupsTable {
         createdAt TEXT,
         updatedAt TEXT,
         displayPictureUrl TEXT,
-        isActive INTEGER
+        isActive INTEGER,
+        isReadOnly INTEGER
       );
     ''');
 
@@ -46,6 +47,7 @@ class GroupsTable {
         createdAt TEXT,
         updatedAt TEXT,
         isRemoved INTEGER,
+        autoDeleteMessages INTEGER,
         PRIMARY KEY (groupId, userId),
         FOREIGN KEY (groupId) REFERENCES $groupsTableName(id) ON DELETE CASCADE,
         FOREIGN KEY (userId) REFERENCES $usersTableName(userId) ON DELETE CASCADE
@@ -57,10 +59,14 @@ class GroupsTable {
   Future<void> migrate(Database db) async {
     // Example: Add a column if not exists
     final columns = await db.rawQuery("PRAGMA table_info($groupsTableName)");
-    final hasGroupDescription = columns.any((col) => col['name'] == 'groupDescription');
+    final hasGroupDescription = columns.any(
+      (col) => col['name'] == 'groupDescription',
+    );
 
     if (!hasGroupDescription) {
-      await db.execute('ALTER TABLE $groupsTableName ADD COLUMN groupDescription TEXT;');
+      await db.execute(
+        'ALTER TABLE $groupsTableName ADD COLUMN groupDescription TEXT;',
+      );
     }
     // Repeat for any other missing columns
   }
@@ -79,6 +85,7 @@ class GroupsTable {
       'updatedAt': group?.updatedAt,
       'displayPictureUrl': group?.displayPictureUrl,
       'isActive': group?.isActive == true ? 1 : 0,
+      'isReadOnly': group?.isReadOnly == true ? 1 : 0,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
 
     for (User user in groupData.users ?? []) {
@@ -105,7 +112,7 @@ class GroupsTable {
         'createdAt': g.createdAt,
         'updatedAt': g.updatedAt,
         'isRemoved': g.isRemoved == true ? 1 : 0,
-
+        'autoDeleteMessages': g.autoDeleteMessages == true ? 1 : 0,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
   }
@@ -119,12 +126,15 @@ class GroupsTable {
     for (final group in groupRows) {
       final groupId = group['id'] as int;
 
-      final joined = await db.rawQuery('''
+      final joined = await db.rawQuery(
+        '''
         SELECT u.*, ug.groupId, ug.isAdmin, ug.updaterId
         FROM $userGroupsTableName ug
         JOIN $usersTableName u ON u.userId = ug.userId
         WHERE ug.groupId = ?
-      ''', [groupId]);
+      ''',
+        [groupId],
+      );
 
       final users = joined.map((row) {
         return User(
@@ -148,17 +158,19 @@ class GroupsTable {
         );
       }).toList();
 
-      groupList.add(GroupData(
-        group: Group(
-          id: group['id'] as int,
-          name: group['name'] as String,
-          displayPicture: group['displayPicture'] as String?,
-          groupDescription: group['groupDescription'] as String?,
-          creatorId: group['creatorId'] as int,
-          isActive: group['isActive'] == 1,
+      groupList.add(
+        GroupData(
+          group: Group(
+            id: group['id'] as int,
+            name: group['name'] as String,
+            displayPicture: group['displayPicture'] as String?,
+            groupDescription: group['groupDescription'] as String?,
+            creatorId: group['creatorId'] as int,
+            isActive: group['isActive'] == 1,
+          ),
+          users: users,
         ),
-        users: users,
-      ));
+      );
     }
 
     return groupList;
@@ -170,7 +182,8 @@ class GroupsTable {
     // users table is NOT deleted — only user_groups cascades
   }
 
-  Future<void> updateGroupDetails(int groupId, {
+  Future<void> updateGroupDetails(
+    int groupId, {
     String? name,
     String? description,
     String? displayPicture,
@@ -206,12 +219,15 @@ class GroupsTable {
     final group = groupRows.first;
 
     // Fetch users in this group
-    final joined = await db.rawQuery('''
-    SELECT u.*, ug.groupId, ug.isAdmin, ug.updaterId, ug.createdAt, ug.updatedAt, ug.isRemoved
+    final joined = await db.rawQuery(
+      '''
+    SELECT u.*, ug.groupId, ug.isAdmin, ug.updaterId, ug.createdAt, ug.updatedAt, ug.isRemoved,ug.autoDeleteMessages
     FROM $userGroupsTableName ug
     JOIN $usersTableName u ON u.userId = ug.userId
     WHERE ug.groupId = ?
-  ''', [groupId]);
+  ''',
+      [groupId],
+    );
 
     final users = joined.map((row) {
       return User(
@@ -234,6 +250,7 @@ class GroupsTable {
           createdAt: row['createdAt'] as String?,
           updatedAt: row['updatedAt'] as String?,
           isRemoved: row['isRemoved'] == 1,
+          autoDeleteMessages: row['autoDeleteMessages'] == 1,
         ),
       );
     }).toList();
@@ -249,6 +266,7 @@ class GroupsTable {
         updatedAt: group['updatedAt'] as String?,
         displayPictureUrl: group['displayPictureUrl'] as String?,
         isActive: group['isActive'] == 1,
+        isReadOnly: group['isReadOnly'] == 1,
       ),
       users: users,
     );
@@ -287,18 +305,15 @@ class GroupsTable {
       );
     } else {
       // Insert if not exists
-      await db.insert(
-        userGroupsTableName,
-        {
-          'groupId': groupId,
-          'userId': userId,
-          'isAdmin': isAdmin ? 1 : 0,
-          'isRemoved': isRemoved ? 1 : 0,
-          'updaterId': updaterId,
-          'createdAt': createdAt,
-          'updatedAt': updatedAt,
-        },
-      );
+      await db.insert(userGroupsTableName, {
+        'groupId': groupId,
+        'userId': userId,
+        'isAdmin': isAdmin ? 1 : 0,
+        'isRemoved': isRemoved ? 1 : 0,
+        'updaterId': updaterId,
+        'createdAt': createdAt,
+        'updatedAt': updatedAt,
+      });
     }
   }
 
@@ -323,7 +338,6 @@ class GroupsTable {
     );
   }
 
-
   Future<void> updateUserIfNeeded(UserInfo user) async {
     final db = await DataBaseService().database;
 
@@ -339,7 +353,6 @@ class GroupsTable {
       'displayPictureUrl': user.displayPictureUrl,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
-
 
   Future<bool> isGroupExists(int groupId) async {
     final db = await DataBaseService().database;
@@ -362,4 +375,43 @@ class GroupsTable {
     await createTable(db);
   }
 
+  void onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE $groupsTableName ADD COLUMN isReadOnly INTEGER;");
+    }
+  }
+
+  Future<void> updateGroupReadOnly(int groupId, int? isReadOnly) async {
+    final db = await DataBaseService().database;
+    final Map<String, dynamic> updateData = {};
+    if (isReadOnly != null) updateData['isReadOnly'] = isReadOnly;
+
+    if (updateData.isNotEmpty) {
+      await db.update(
+        groupsTableName,
+        updateData,
+        where: 'id = ?',
+        whereArgs: [groupId],
+      );
+    }
+  }
+
+  Future<void> updateAutoDeleteMessages({
+    required int groupId,
+    required int userId,
+    required bool autoDeleteMessages,
+    // required String updatedAt,
+  }) async {
+    final db = await DataBaseService().database;
+
+    await db.update(
+      userGroupsTableName,
+      {
+        'autoDeleteMessages': autoDeleteMessages ? 1 : 0,
+        // 'updatedAt': updatedAt,
+      },
+      where: 'groupId = ? AND userId = ?',
+      whereArgs: [groupId, userId],
+    );
+  }
 }

@@ -81,7 +81,7 @@ class DataBaseService {
     // MessageTable().onUpgrade(database, oldVersion, newVersion);
     // ContactsTable().onUpgrade(database, oldVersion, newVersion);
     // ChatConectTable().onUpgrade(database, oldVersion, newVersion);
-    // StatusTable().onUpgrade(database, oldVersion, newVersion);
+    // GroupsTable().onUpgrade(database, oldVersion, newVersion);
   }
 
   Future<void> closeDb() async {

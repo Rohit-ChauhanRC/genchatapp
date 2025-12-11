@@ -37,4 +37,6 @@ class ApiEndpoints {
   static const String deleteStatus = "status/delete";
   // static const String uploadStatus = "group/update-display-picture";
   static const String statusTime = "config";
+  static const String isVanishModeGroup = "group/auto-delete-messages";
+  static const String isReadOnlyAd = "group/read-only";
 }

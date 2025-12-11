@@ -348,7 +348,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "Send New Messages",
+                                        "Send a new messages",
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: AppColors.textBarColor,
@@ -365,6 +365,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                           onChanged: (val) {
                                             controller.canSendMessages.value =
                                                 val;
+                                            controller.isReadOnlyAdGroup(val);
                                           },
                                         ),
                                       ),
@@ -624,7 +625,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
           builder: (context) {
             return InkWell(
               borderRadius: BorderRadius.circular(12),
-              onTap: () => _showStyledPopup(context, user, perm, isCreator),
+              onTap: () => (controller.isSuperAdmin || controller.isAdmin)
+                  ? _showStyledPopup(context, user, perm, isCreator)
+                  : null,
 
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 5),
@@ -788,9 +791,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
 
       items.add(
         _styledMenuItem(
-          value: perm?.vanishMode == true ? "vanish_off" : "vanish_on",
-          text: perm?.vanishMode == true ? "Vanish Mode Off" : "Vanish Mode On",
-          icon: perm?.vanishMode == true
+          value: perm?.autoDeleteMessages == true ? "vanish_off" : "vanish_on",
+          text: perm?.autoDeleteMessages == true
+              ? "Vanish Mode Off"
+              : "Vanish Mode On",
+          icon: perm?.autoDeleteMessages == true
               ? Icons.visibility
               : Icons.visibility_off,
           iconColor: Colors.purple,

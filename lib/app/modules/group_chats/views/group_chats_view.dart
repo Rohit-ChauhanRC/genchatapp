@@ -48,7 +48,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
           return selectedCount > 0
               ? Text(
                   "$selectedCount selected",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     color: whiteColor,
                     fontWeight: FontWeight.bold,
@@ -152,7 +152,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       ),
                       if (controller.canForward)
                         IconButton(
-                          icon: Icon(
+                          icon: const Icon(
                             Symbols.forward,
                             color: AppColors.whiteColor,
                           ),
@@ -168,7 +168,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                         onTap: () {
                           showComingSoon(context);
                         },
-                        child: Icon(
+                        child: const Icon(
                           Symbols.videocam_rounded,
                           color: AppColors.whiteColor,
                         ),
@@ -275,10 +275,31 @@ class GroupChatsView extends GetView<GroupChatsController> {
             if (controller.isCurrentUserRemoved) {
               return SafeArea(
                 child: Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: AppColors.textBarColor),
-                  child: Text(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: AppColors.textBarColor,
+                  ),
+                  child: const Text(
                     "You can't send messages to this group because you're no longer a member.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.whiteColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            } else if (controller.groupData.value!.group!.isReadOnly != null &&
+                controller.groupData.value!.group!.isReadOnly == true) {
+              return SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: AppColors.textBarColor,
+                  ),
+                  child: const Text(
+                    "Only Admin send messages",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppColors.whiteColor,

@@ -55,6 +55,8 @@ class GroupNameController extends GetxController {
 
   final RxBool isLoading = true.obs;
 
+  final RxInt groupId = RxInt(0);
+
   @override
   void onInit() {
     super.onInit();
@@ -101,29 +103,37 @@ class GroupNameController extends GetxController {
 
         if (createGroupModelResponse.status == true) {
           final data = createGroupModelResponse.data;
-          final groupId = data?.group?.id ?? 0;
+          groupId.value = data?.group?.id ?? 0;
 
           // Step 2: Insert initial group data into DB
           await groupsTable.insertOrUpdateGroup(data!);
 
           // Step 3: Only upload image if selected
           if (image != null) {
-            await uploadGroupIcon(groupId: groupId);
+            await uploadGroupIcon(groupId: groupId.value);
           } else {
             await chatConectTable.insert(
               contact: ChatConntactModel(
                 lastMessageId: 0,
-                contactId: groupId.toString(),
+                contactId: groupId.value.toString(),
                 lastMessage: "",
                 name: data.group?.name ?? '',
                 profilePic: data.group?.displayPictureUrl ?? '',
                 timeSent:
                     data.group?.updatedAt ??
                     "", //DateTime.now().toString(), //?? data.group?.createdAt,
-                uid: groupId.toString(),
+                uid: groupId.value.toString(),
                 isGroup: 1,
               ),
             );
+          }
+
+          if (isOn.value) {
+            await isReadOnlyAdGroup();
+          }
+
+          if (selectedUserIdVanishMode.isNotEmpty) {
+            await isVanishModeGroup();
           }
 
           print("✅ Create group response: $data");
@@ -206,5 +216,59 @@ class GroupNameController extends GetxController {
       }
     }
     // isLoading.value = false;
+  }
+
+  Future<void> isVanishModeGroup() async {
+    if (selectedUserIdVanishMode.isEmpty) return;
+
+    try {
+      circularProgress = true;
+
+      // Step 1: Create group
+      final response = await groupRepository.isVanishModeGroup(
+        selectedUserIdVanishMode,
+        groupId.value,
+      );
+
+      if (response != null && response.statusCode == 200) {
+        final responseModel = CreateGroupModel.fromJson(response.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupsTable.insertOrUpdateGroup(responseModel.data!);
+          }
+        }
+      }
+    } catch (e) {
+      showAlertMessage("Something went wrong: $e");
+    } finally {
+      circularProgress = false;
+    }
+  }
+
+  // isReadOnlyAdminGroup
+
+  Future<void> isReadOnlyAdGroup() async {
+    // if (selectedUserIdVanishMode.isEmpty) return;
+
+    try {
+      circularProgress = true;
+
+      // Step 1: Create group
+      final response = await groupRepository.isReadOnlyAdminGroup(
+        groupId.value,
+      );
+
+      if (response != null && response.statusCode == 200) {
+        await groupsTable.updateGroupReadOnly(
+          groupId.value,
+          response.data['data']['isReadOnly'] == true ? 1 : 0,
+        );
+      }
+    } catch (e) {
+      showAlertMessage("Something went wrong: $e");
+    } finally {
+      circularProgress = false;
+    }
   }
 }

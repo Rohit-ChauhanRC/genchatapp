@@ -264,6 +264,31 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   set isPause(bool b) => _isPause.value = b;
 
+  final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
+
+  UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
+
+  final Rx<GroupData?> groupData = Rx<GroupData?>(null);
+
+  bool get isSuperAdmin =>
+      groupData.value!.group!.creatorId == currentUserPermission?.userId;
+
+  bool get isAdmin => currentUserPermission?.isAdmin == true && !isSuperAdmin;
+
+  bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
+
+  bool get canEditGroup => isSuperAdmin || isAdmin;
+  bool get canGivePermission => isSuperAdmin;
+  bool get canAddParticipants => isSuperAdmin || isAdmin;
+  var canSendMessages = true.obs;
+  bool get canExitGroup => !isSuperAdmin;
+
+  bool get canRevokeAdmin => isSuperAdmin;
+
+  bool get canMakeAdmin => isSuperAdmin;
+
+  bool get canRemoveMember => isSuperAdmin || isAdmin;
+
   @override
   void onInit() async {
     super.onInit();
@@ -274,16 +299,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     senderuserData = sharedPreferenceService.getUserData();
 
-    GroupData? groupData = Get.arguments;
-    if (groupData != null) {
-      checkUserOnline(groupData);
-      receiverUserData = groupData;
-      groupId = groupData.group?.id ?? 0;
-      bindReceiverUserStream(groupData.group?.id ?? 0);
-      final groupDetails = await GroupsTable().getGroupById(groupId);
-      checkIfCurrentUserRemoved(groupDetails);
-      groupMemberNames = await getSortedGroupMemberNames(groupDetails?.users);
-    }
+    groupData.value = Get.arguments;
+
+    await getGroupDataFromLocal();
+
     if (isCurrentUserRemoved == false) {
       socketService.monitorGroupTyping(groupId.toString(), (typingUsers) {
         if (typingUsers.isNotEmpty) {
@@ -342,6 +361,20 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.paused:
         break;
       default:
+    }
+  }
+
+  Future<void> getGroupDataFromLocal() async {
+    if (groupData.value != null) {
+      checkUserOnline(groupData.value);
+      receiverUserData = groupData.value;
+      groupId = groupData.value!.group?.id ?? 0;
+      bindReceiverUserStream(groupData.value!.group?.id ?? 0);
+      groupData.value = await GroupsTable().getGroupById(groupId);
+      checkIfCurrentUserRemoved(groupData.value);
+      groupMemberNames = await getSortedGroupMemberNames(
+        groupData.value?.users,
+      );
     }
   }
 
@@ -665,6 +698,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           messageList.refresh();
         }
       }
+    });
+
+    ever(socketService.groupRedOnly, (ReadOnlyAdmin? del) async {
+      await getGroupDataFromLocal();
     });
   }
 

@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/message_ack_model.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
+import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
@@ -21,6 +23,8 @@ class GroupProfileController extends GetxController {
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
   final GroupRepository groupRepository = Get.find<GroupRepository>();
   final socketService = Get.find<SocketService>();
+
+  final GroupChatsController groupChatsController = Get.find();
 
   final RxInt _groupId = 0.obs;
 
@@ -61,7 +65,7 @@ class GroupProfileController extends GetxController {
   bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
   bool get canEditGroup => isSuperAdmin || isAdmin;
-  bool get canGivePermission=>isSuperAdmin;
+  bool get canGivePermission => isSuperAdmin;
   bool get canAddParticipants => isSuperAdmin || isAdmin;
   var canSendMessages = true.obs;
   bool get canExitGroup => !isSuperAdmin;
@@ -99,6 +103,13 @@ class GroupProfileController extends GetxController {
         getGroupDetails(groupId: groupId);
       }
     });
+
+    ever(socketService.vanishModeAutoDelete, (VanishModeAutoDelete? vanishChg) {
+      // if (updateGroupAdmin == true) {
+      //   getGroupDetails(groupId: groupId);
+      // }
+      getGroupDetails(groupId: groupId);
+    });
   }
 
   Future<void> getGroupDetails({required int groupId}) async {
@@ -114,6 +125,8 @@ class GroupProfileController extends GetxController {
       if (userDetail != null) {
         creatorUserDetail = userDetail;
       }
+
+      canSendMessages.value = groupDetails.group!.isReadOnly!;
 
       final currentUserId = sharedPreferenceService.getUserData()?.userId;
       final currentUserInfo = groupDetail.users?.firstWhere(
@@ -405,24 +418,79 @@ class GroupProfileController extends GetxController {
   }
 
   void enableVanishMode(int uid) {
-    final user = groupDetails.users?.firstWhere(
-      (u) => u.userGroupInfo?.userId == uid,
-    );
+    // final user = groupDetails.users?.firstWhere(
+    //   (u) => u.userGroupInfo?.userId == uid,
+    // );
 
-    if (user != null) {
-      user.userGroupInfo?.vanishMode = true;
-      update();
-    }
+    // if (user != null) {
+    //   user.userGroupInfo?.vanishMode = true;
+    //   update();
+    // }
+
+    isVanishModeGroup(uid, true);
   }
 
   void disableVanishMode(int uid) {
-    final user = groupDetails.users?.firstWhere(
-      (u) => u.userGroupInfo?.userId == uid,
-    );
+    isVanishModeGroup(uid, false);
+  }
 
-    if (user != null) {
-      user.userGroupInfo?.vanishMode = false;
-      update();
+  Future<void> isReadOnlyAdGroup(bool toggle) async {
+    // if (selectedUserIdVanishMode.isEmpty) return;
+
+    try {
+      // Step 1: Create group
+      final response = await groupRepository.isReadOnlyAdminGroup(
+        groupId,
+        toggle: toggle,
+      );
+
+      if (response != null && response.statusCode == 200) {
+        await groupTable.updateGroupReadOnly(
+          groupId,
+          response.data['data']['isReadOnly'] == true ? 1 : 0,
+        );
+        groupChatsController.getGroupDataFromLocal();
+      }
+    } catch (e) {
+      showAlertMessage("Something went wrong: $e");
+    } finally {}
+  }
+
+  Future<void> isVanishModeGroup(int id, bool toggle) async {
+    // if (selectedUserIdVanishMode.isEmpty) return;
+
+    try {
+      // circularProgress = true;
+
+      // Step 1: Create group
+      final response = await groupRepository.isVanishModeGroup(
+        [id],
+        groupId,
+        toggle: toggle,
+      );
+
+      if (response != null && response.statusCode == 200) {
+        // final user = groupDetails.users?.firstWhere(
+        //   (u) => u.userGroupInfo?.userId == id,
+        // );
+
+        // if (user != null) {
+        //   user.userGroupInfo?.vanishMode = toggle;
+        //   update();
+        // }
+        final responseModel = CreateGroupModel.fromJson(response.data);
+
+        if (responseModel.status == true && responseModel.data != null) {
+          if (responseModel.status == true) {
+            await groupTable.insertOrUpdateGroup(responseModel.data!);
+          }
+        }
+        await getGroupDetails(groupId: groupId);
+      }
+    } catch (e) {
+      showAlertMessage("Something went wrong: $e");
+    } finally {
+      // circularProgress = false;
     }
   }
 }

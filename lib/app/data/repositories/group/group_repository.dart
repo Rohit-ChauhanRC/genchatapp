@@ -179,4 +179,40 @@ class GroupRepository {
       return null;
     }
   }
+
+  Future<Response?> isVanishModeGroup(
+    List<int> userIdsArray,
+    int? groupId, {
+    bool toggle = true,
+  }) async {
+    try {
+      final param = {
+        'userIds': userIdsArray,
+        'autoDeleteMessages': toggle,
+        'groupId': groupId,
+      };
+      return await apiClient.post(ApiEndpoints.isVanishModeGroup, param);
+    } catch (e) {
+      // print('Error in verifyOTPAPI: $e');
+      // showAlertMessage("Error: $e");
+      return null;
+    }
+  }
+
+  // /group/read-only
+
+  Future<Response?> isReadOnlyAdminGroup(
+    //  bool userIdsArray,
+    int? groupId, {
+    bool toggle = true,
+  }) async {
+    try {
+      final param = {'toggle': toggle, 'groupId': groupId};
+      return await apiClient.post(ApiEndpoints.isReadOnlyAd, param);
+    } catch (e) {
+      // print('Error in verifyOTPAPI: $e');
+      // showAlertMessage("Error: $e");
+      return null;
+    }
+  }
 }

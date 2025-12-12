@@ -55,9 +55,34 @@ class MessageTable {
     ''');
   }
 
-  // Insert or update a message based on messageId
+  bool isOlderThanNow(NewMessageModel msg) {
+    if (msg.createdAt == null) return false;
+
+    try {
+      final created = DateTime.parse(msg.createdAt!);
+      return created.isBefore(DateTime.now());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // // Insert or update a message based on messageId
+  // Future<void> insertOrUpdateMessage(NewMessageModel message) async {
+  //
+  //   final existingMessage = await getMessageById(message.messageId!);
+  //   if (existingMessage == null) {
+  //     await insertMessage(message);
+  //   } else {
+  //     await updateMessage(message);
+  //   }
+  // }
   Future<void> insertOrUpdateMessage(NewMessageModel message) async {
-    final existingMessage = await getMessageById(message.messageId!);
+    if (isOlderThanNow(message)) {
+      return;
+    }
+
+    final existingMessage = await getMessageById(message.messageId ?? -1);
+
     if (existingMessage == null) {
       await insertMessage(message);
     } else {
@@ -118,7 +143,20 @@ class MessageTable {
       offset: offset,
     );
 
-    final messages = result.map((map) => NewMessageModel.fromMap(map)).toList();
+    List<NewMessageModel> messages = result
+        .map((map) => NewMessageModel.fromMap(map))
+        .toList();
+
+    //  FILTER OUT OLD MESSAGES
+    messages.removeWhere((m) => isOlderThanNow(m));
+
+    //  DELETE EXPIRED FROM LOCAL DB
+    for (var m in messages) {
+      if (isOlderThanNow(m)) {
+        await deleteMessage(m.messageId!);
+      }
+    }
+
     return messages.reversed.toList();
   }
 
@@ -499,11 +537,14 @@ class MessageTable {
     if (oldVersion < newVersion) {
       // Safely add the new column only if it doesn't exist
       final result = await db.rawQuery('PRAGMA table_info($tableName);');
-      final columnExists = result.any((column) => column['name'] == 'receiverPhoneNumber');
+      final columnExists = result.any(
+        (column) => column['name'] == 'receiverPhoneNumber',
+      );
 
       if (!columnExists) {
         db.execute(
-            "ALTER TABLE $tableName ADD COLUMN receiverPhoneNumber TEXT;");
+          "ALTER TABLE $tableName ADD COLUMN receiverPhoneNumber TEXT;",
+        );
       }
     }
   }

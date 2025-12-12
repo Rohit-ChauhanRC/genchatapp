@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/common/widgets/gradient_container.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
 
 import 'package:get/get.dart';
@@ -9,7 +10,6 @@ import '../../../config/theme/app_colors.dart';
 import '../../../data/models/new_models/response_model/create_group_model.dart';
 import '../../../utils/time_utils.dart';
 import '../controllers/group_profile_controller.dart';
-
 class GroupProfileView extends GetView<GroupProfileController> {
   const GroupProfileView({super.key});
 
@@ -373,14 +373,15 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                   ),
                                   Text(
                                     controller.canSendMessages.value
-                                        ? "Only Super admins can send messages"
-                                        : "Everyone can send messages",
+                                        ? "Everyone can send messages"
+                                        : "Only Super Admin can send messages",
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey.shade600,
                                       height: 1,
                                     ),
                                   ),
+
                                 ],
                               ),
                             ),
@@ -669,8 +670,10 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                         ),
 
-                        /// ⏳ Vanish Mode Clock Icon
-                        if (perm?.autoDeleteMessages == true)
+
+
+                        if ((controller.isSuperAdmin || controller.isAdmin) &&
+                            perm?.autoDeleteMessages == true)
                           Positioned(
                             right: -2,
                             bottom: -2,
@@ -689,7 +692,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                               child: const Icon(
                                 Icons.timer,
                                 size: 14,
-                                color: Colors.purple,
+                                color:textBarColor,
                               ),
                             ),
                           ),
@@ -785,26 +788,25 @@ class GroupProfileView extends GetView<GroupProfileController> {
   }
 
   List<PopupMenuEntry<String>> _buildStyledPopupItems(
-    UserInfo? user,
-    UserGroupInfo? perm,
-    bool isCreator,
-  ) {
-    final curUid = controller.sharedPreferenceService.getUserData()?.userId;
-    final isSelf = user?.userId == curUid;
-    final isSuper = user?.userId == controller.groupDetails.group?.creatorId;
-    final isAdmin = perm?.isAdmin == true;
+      UserInfo? user,
+      UserGroupInfo? perm,
+      bool isCreator,
+      ) {
+    final bool targetIsSuperAdmin = user?.userId == controller.groupDetails.group?.creatorId;
+    final bool targetIsAdmin = perm?.isAdmin == true;
 
-    if (isSelf || isSuper) return [];
+   if ( targetIsSuperAdmin) return [];
 
     final List<PopupMenuEntry<String>> items = [];
+
     if (controller.isSuperAdmin) {
       // Make / Revoke Admin
       items.add(
         _styledMenuItem(
-          value: isAdmin ? "revoke_admin" : "make_admin",
-          text: isAdmin ? "Revoke Admin" : "Make Admin",
-          icon: isAdmin ? Icons.shield_outlined : Icons.shield,
-          iconColor: isAdmin ? Colors.orange : Colors.blue,
+          value: targetIsAdmin ? "revoke_admin" : "make_admin",
+          text: targetIsAdmin ? "Revoke Admin" : "Make Admin",
+          icon: targetIsAdmin ? Icons.shield_outlined : Icons.shield,
+          iconColor: targetIsAdmin ? Colors.orange : Colors.blue,
         ),
       );
 
@@ -818,6 +820,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
         ),
       );
 
+      // Toggle Vanish Mode
       items.add(
         _styledMenuItem(
           value: perm?.autoDeleteMessages == true ? "vanish_off" : "vanish_on",
@@ -830,15 +833,40 @@ class GroupProfileView extends GetView<GroupProfileController> {
           iconColor: Colors.purple,
         ),
       );
-    } else if (controller.isAdmin && !isAdmin) {
-      items.add(
-        _styledMenuItem(
-          value: "remove_member",
-          text: "Remove From Group",
-          icon: Icons.person_remove,
-          iconColor: Colors.red,
-        ),
-      );
+
+      return items; // done for super admin
+    }
+
+    // -----------------------------------------
+    // ADMIN PERMISSIONS
+    // -----------------------------------------
+    if (controller.isAdmin) {
+      // ❌ admin cannot modify other admins
+      if (!targetIsAdmin) {
+        // Remove Member
+        items.add(
+          _styledMenuItem(
+            value: "remove_member",
+            text: "Remove From Group",
+            icon: Icons.person_remove,
+            iconColor: Colors.red,
+          ),
+        );
+
+        // Toggle Vanish Mode
+        items.add(
+          _styledMenuItem(
+            value: perm?.autoDeleteMessages == true ? "vanish_off" : "vanish_on",
+            text: perm?.autoDeleteMessages == true
+                ? "Vanish Mode Off"
+                : "Vanish Mode On",
+            icon: perm?.autoDeleteMessages == true
+                ? Icons.visibility
+                : Icons.visibility_off,
+            iconColor: Colors.purple,
+          ),
+        );
+      }
     }
 
     return items;

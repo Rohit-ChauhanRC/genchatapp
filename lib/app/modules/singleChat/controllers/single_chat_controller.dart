@@ -686,6 +686,7 @@ class SingleChatController extends GetxController
       }
     });
   }
+
   void scrollToBottom({Duration duration = const Duration(milliseconds: 260)}) {
     if (!itemScrollController.isAttached) return;
 
@@ -720,6 +721,7 @@ class SingleChatController extends GetxController
       }
     });
   }
+
   Stream<UserList?> getReceiverStream(int userId) async* {
     yield* Stream.periodic(const Duration(seconds: 1), (_) async {
       return await contactsTable.getUserById(userId);
@@ -1361,8 +1363,7 @@ class SingleChatController extends GetxController
           },
         ),
       );
-    }
-    else if (fileType == MessageType.audio.value) {
+    } else if (fileType == MessageType.audio.value) {
       //  final selectedFile = await pickAudio();
       // pickAndSendAudios
       await pickAndSendAudios((selectedFiles) async {
@@ -1372,37 +1373,38 @@ class SingleChatController extends GetxController
         }
       });
       cancelReply();
-    }
-    else if (fileType == MessageType.document.value&& Platform.isAndroid) {
+    } else if (fileType == MessageType.document.value && Platform.isAndroid) {
+      Get.to(
+        () => DocumentPickerScreen(
+          onSend: (selectedFiles) async {
+            for (File file in selectedFiles) {
+              await sendFileMessage(
+                file: file,
+                messageEnum: getMessageType(file),
+              );
+            }
+            cancelReply();
 
-
-
-      Get.to(() => DocumentPickerScreen(
-        onSend: (selectedFiles) async {
-          for (File file in selectedFiles) {
-            await sendFileMessage(
-              file: file,
-              messageEnum: getMessageType(file),
-            );
-          }
-          cancelReply();
-
-          print("calling cancel reply ${cancelReply()}");
-
-        },
-        chatController: Get.find<SingleChatController>(),
-
-      ),binding:DocumentsBinding());
+            print("calling cancel reply ${cancelReply()}");
+          },
+          chatController: Get.find<SingleChatController>(),
+        ),
+        binding: DocumentsBinding(),
+      );
       final files = await DocumentScannerService.scanDocuments();
       if (files.isEmpty) {
-        showSnackBar(
-          context: Get.context!,
-          content: "No documents found",
-        );
+        showSnackBar(context: Get.context!, content: "No documents found");
         return;
       }
-    }
-    else if (fileType == MessageType.document.value && Platform.isIOS) {
+    } else if (fileType == MessageType.document.value && Platform.isIOS) {
+      await pickAndSendDocuments((selectedFiles) async {
+        for (File file in selectedFiles) {
+          print("Yes Getting back all files:---> $file");
+          await sendFileMessage(file: file, messageEnum: getMessageType(file));
+        }
+      });
+      cancelReply();
+    } else if (fileType == MessageType.browseDocx.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
           print("Yes Getting back all files:---> $file");
@@ -1411,17 +1413,6 @@ class SingleChatController extends GetxController
       });
       cancelReply();
     }
-    else if (fileType == MessageType.browseDocx.value) {
-      await pickAndSendDocuments((selectedFiles) async {
-        for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
-          await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        }
-      });
-      cancelReply();
-    }
-
-
   }
 
   Future<List<File>> pickImageAndVideo() async {
@@ -1445,9 +1436,11 @@ class SingleChatController extends GetxController
 
     return completer.future;
   }
+
   Future<List<File>> pickDocuments() async {
     return await DocumentScannerService.scanDocuments();
   }
+
   // Future<String> saveFileLocally(
   //     File file, String fileType, String fileExtension) async {
   //   String newExtension = fileExtension.toLowerCase();
@@ -1809,6 +1802,7 @@ class SingleChatController extends GetxController
   }
 
   void showKeyboard() => focusNode.requestFocus();
+
   void hideKeyboard() => focusNode.unfocus();
 
   void hideEmojiContainer() {
@@ -1927,6 +1921,7 @@ class SingleChatController extends GetxController
   }
 
   Map<String, StreamSubscription<List<int>>> activeDownloads = {};
+
   void cancelDownload(MessageType type, String fileName) {
     activeDownloads[fileName]?.cancel(); // force cancel
     isDownloading[fileName] = false;

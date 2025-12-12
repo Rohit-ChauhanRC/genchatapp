@@ -269,9 +269,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
 
   final Rx<GroupData?> groupData = Rx<GroupData?>(null);
-
   bool get isSuperAdmin =>
-      groupData.value!.group!.creatorId == currentUserPermission?.userId;
+      groupData.value?.group?.creatorId == senderuserData?.userId;
+
+  // bool get isSuperAdmin =>
+  //     groupData.value!.group!.creatorId == currentUserPermission?.userId;
 
   bool get isAdmin => currentUserPermission?.isAdmin == true && !isSuperAdmin;
 
@@ -443,6 +445,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         offset: localOffset,
         limit: pageSize,
       );
+      messages.removeWhere((m) => MessageTable().isOlderThanNow(m));
+
 
       if (messages.isEmpty) {
         // All pages scanned, messae not found. Check if it existed and is deleted

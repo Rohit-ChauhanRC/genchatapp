@@ -271,55 +271,99 @@ class GroupChatsView extends GetView<GroupChatsController> {
               // firebaseController: controller.firebaseController,
             ),
           ),
+          // Obx(() {
+          //   if (controller.isCurrentUserRemoved) {
+          //     return SafeArea(
+          //       child: Container(
+          //         padding: const EdgeInsets.all(10),
+          //         decoration: const BoxDecoration(
+          //           color: AppColors.textBarColor,
+          //         ),
+          //         child: const Text(
+          //           "You can't send messages to this group because you're no longer a member.",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: AppColors.whiteColor,
+          //             fontSize: 16,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         ),
+          //       ),
+          //     );
+          //   }
+          //   else if (controller.groupData.value!.group!.isReadOnly != null &&
+          //       controller.groupData.value!.group!.isReadOnly == true && controller.isSuperAdmin==true) {
+          //     return SafeArea(
+          //       child: Container(
+          //         padding: const EdgeInsets.all(10),
+          //         decoration: const BoxDecoration(
+          //           color: AppColors.textBarColor,
+          //         ),
+          //         child: const Text(
+          //           "Only Super Admin can send messages",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: AppColors.whiteColor,
+          //             fontSize: 16,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         ),
+          //       ),
+          //     );
+          //   } else {
+          //     return GroupBottomChatField(
+          //       groupChatsController: controller,
+          //       onTap: () {
+          //         controller.sendTextMessage();
+          //         controller.cancelReply();
+          //       },
+          //     );
+          //   }
+          // }),
           Obx(() {
+            final isReadOnly = controller.groupData.value?.group?.isReadOnly == true;
+            final isSuperAdmin = controller.groupData.value?.group?.creatorId == controller.senderuserData?.userId;
+
+
             if (controller.isCurrentUserRemoved) {
               return SafeArea(
                 child: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: AppColors.textBarColor,
-                  ),
+                  color: AppColors.textBarColor,
                   child: const Text(
                     "You can't send messages to this group because you're no longer a member.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.whiteColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: AppColors.whiteColor, fontSize: 16),
                   ),
                 ),
               );
             }
-            else if (controller.groupData.value!.group!.isReadOnly != null &&
-                controller.groupData.value!.group!.isReadOnly == true && controller.isSuperAdmin==true) {
+
+            ///  Read-only ON → only SuperAdmin can send
+            if (isReadOnly && !isSuperAdmin) {
               return SafeArea(
                 child: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: AppColors.textBarColor,
-                  ),
+                  color: AppColors.textBarColor,
                   child: const Text(
-                    "Only Admin send messages",
+                    "Only super admin can send messages",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.whiteColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: AppColors.whiteColor, fontSize: 16),
                   ),
                 ),
               );
-            } else {
-              return GroupBottomChatField(
-                groupChatsController: controller,
-                onTap: () {
-                  controller.sendTextMessage();
-                  controller.cancelReply();
-                },
-              );
             }
+
+            /// Otherwise → normal message input box
+            return GroupBottomChatField(
+              groupChatsController: controller,
+              onTap: () {
+                controller.sendTextMessage();
+                controller.cancelReply();
+              },
+            );
           }),
+
         ],
       ),
     );

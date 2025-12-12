@@ -73,8 +73,8 @@ class NewMessageModel extends Equatable {
     this.isRetrying,
     this.uploadProgress,
     this.isUploading,
-  })  : context = Get.context,
-        keys = GlobalKey();
+  }) : context = Get.context,
+       keys = GlobalKey();
 
   factory NewMessageModel.fromMap(Map<String, dynamic> map) {
     // assert(map['messageId'] != null, "messageId cannot be null");
@@ -114,7 +114,7 @@ class NewMessageModel extends Equatable {
       messageRepliedOnAssetServerName: map['messageRepliedOnAssetServerName'],
       messageRepliedOnAssetThumbnail: map['messageRepliedOnAssetThumbnail'],
       isAsset: map['isAsset'] == 1 || map['isAsset'] == true,
-      assetThumbnail: map['assetThumbnail'] ??'',
+      assetThumbnail: map['assetThumbnail'] ?? '',
       assetOriginalName: map['assetOriginalName'] ?? '',
       assetServerName: map['assetServerName'] ?? '',
       assetUrl: map['assetUrl'] ?? '',
@@ -213,8 +213,11 @@ class NewMessageModel extends Equatable {
       messageRepliedOnId: messageRepliedOnId ?? this.messageRepliedOnId,
       messageRepliedOn: messageRepliedOn ?? this.messageRepliedOn,
       messageRepliedOnType: messageRepliedOnType ?? this.messageRepliedOnType,
-      messageRepliedOnAssetServerName: messageRepliedOnAssetServerName ?? this.messageRepliedOnAssetServerName,
-      messageRepliedOnAssetThumbnail: messageRepliedOnAssetThumbnail ?? this.messageRepliedOnAssetThumbnail,
+      messageRepliedOnAssetServerName:
+          messageRepliedOnAssetServerName ??
+          this.messageRepliedOnAssetServerName,
+      messageRepliedOnAssetThumbnail:
+          messageRepliedOnAssetThumbnail ?? this.messageRepliedOnAssetThumbnail,
       isAsset: isAsset ?? this.isAsset,
       assetThumbnail: assetThumbnail ?? this.assetThumbnail,
       assetOriginalName: assetOriginalName ?? this.assetOriginalName,

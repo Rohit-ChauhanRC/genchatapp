@@ -67,7 +67,7 @@ class GroupNameView extends GetView<GroupNameController> {
                 ListTile(
                   title: const SizedBox(
                     child: Text(
-                      "Send a new message",
+                      "Send new message",
                       style: TextStyle(fontSize: 16),
                     ),
                   ),

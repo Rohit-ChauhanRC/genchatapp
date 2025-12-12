@@ -348,7 +348,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "Send a new messages",
+                                        "Send new messages",
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: AppColors.textBarColor,
@@ -646,27 +646,56 @@ class GroupProfileView extends GetView<GroupProfileController> {
                 child: Row(
                   children: [
                     // Avatar
-                    FutureBuilder<bool>(
-                      future: controller.getUerBlock(user!.userId),
-                      builder: (_, snap) =>
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        FutureBuilder<bool>(
+                          future: controller.getUerBlock(user!.userId),
+                          builder: (_, snap) =>
                           pictureUrl.isEmpty || snap.data == true
-                          ? CircleAvatar(
+                              ? CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.grey.withOpacity(0.4),
+                            child: const Icon(Icons.person),
+                          )
+                              : CachedNetworkImage(
+                            imageUrl: pictureUrl,
+                            imageBuilder: (_, image) => CircleAvatar(
+                              backgroundImage: image,
                               radius: 24,
-                              backgroundColor: Colors.grey.withOpacity(0.4),
-                              child: const Icon(Icons.person),
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: pictureUrl,
-                              imageBuilder: (_, image) => CircleAvatar(
-                                backgroundImage: image,
-                                radius: 24,
-                              ),
-                              placeholder: (_, __) =>
-                                  const CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                  ),
                             ),
+                            placeholder: (_, __) =>
+                            const CircularProgressIndicator(strokeWidth: 1.5),
+                          ),
+                        ),
+
+                        /// ⏳ Vanish Mode Clock Icon
+                        if (perm?.autoDeleteMessages == true)
+                          Positioned(
+                            right: -2,
+                            bottom: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                  )
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.timer,
+                                size: 14,
+                                color: Colors.purple,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
+
 
                     const SizedBox(width: 12),
 

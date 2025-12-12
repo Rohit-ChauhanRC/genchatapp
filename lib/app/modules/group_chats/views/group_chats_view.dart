@@ -290,8 +290,9 @@ class GroupChatsView extends GetView<GroupChatsController> {
                   ),
                 ),
               );
-            } else if (controller.groupData.value!.group!.isReadOnly != null &&
-                controller.groupData.value!.group!.isReadOnly == true) {
+            }
+            else if (controller.groupData.value!.group!.isReadOnly != null &&
+                controller.groupData.value!.group!.isReadOnly == true && controller.isSuperAdmin==true) {
               return SafeArea(
                 child: Container(
                   padding: const EdgeInsets.all(10),

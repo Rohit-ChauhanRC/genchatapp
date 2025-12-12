@@ -168,6 +168,9 @@ class SharedPreferenceService {
     await remove(UserDefaultsKeys.backupUserId);
     await _storage.erase();
   }
+  int? getUserId() {
+    return getInt(UserDefaultsKeys.userId);
+  }
 
   UserData? getUserData() {
     if (getString(UserDefaultsKeys.userDetail) == null ||

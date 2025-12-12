@@ -598,7 +598,7 @@ class SocketService extends GetxService {
 
       if (data["messageDuration"] != null) {
         sharedPreferenceService.setInt(
-          UserDefaultsKeys.statusDurationKey,
+          UserDefaultsKeys.messageDurationKey,
           int.parse(data["messageDuration"].toString()),
         );
       }

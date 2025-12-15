@@ -11,6 +11,7 @@ enum MessageEnum {
 
   final String type;
 }
+
 extension ConvertMessage on String {
   MessageEnum toEnum() {
     switch (this) {
@@ -60,10 +61,10 @@ enum MessageStatus {
 }
 
 enum MessageState {
-  unsent,     // 0
-  sent,       // 1
-  delivered,  // 2
-  read        // 3
+  unsent, // 0
+  sent, // 1
+  delivered, // 2
+  read, // 3
 }
 
 extension MessageStateExtension on MessageState {
@@ -95,10 +96,7 @@ extension MessageStateExtension on MessageState {
   }
 }
 
-enum SyncStatus {
-  pending,
-  synced
-}
+enum SyncStatus { pending, synced }
 
 extension SyncStatusExtension on SyncStatus {
   String get value {
@@ -130,10 +128,11 @@ enum MessageType {
   browseDocx,
   deleted,
   camera,
-  document
+  document,
+  contact,
 }
 
-extension MessageTypeExtension on MessageType{
+extension MessageTypeExtension on MessageType {
   String get value {
     switch (this) {
       case MessageType.text:
@@ -152,6 +151,8 @@ extension MessageTypeExtension on MessageType{
         return 'document';
       case MessageType.camera:
         return 'camera';
+      case MessageType.contact:
+        return "contact";
       case MessageType.browseDocx:
         return 'browseDocx';
     }
@@ -173,10 +174,11 @@ extension MessageTypeExtension on MessageType{
         return MessageType.document;
       case 'browseDocx':
         return MessageType.browseDocx;
+      case 'contact':
+        return MessageType.contact;
       case 'text':
       default:
         return MessageType.text;
     }
   }
 }
-

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -969,7 +970,7 @@ class SingleChatController extends GetxController
     return _sendingMessageIds.contains(clientSystemMessageId);
   }
 
-  Future<void> sendTextMessage() async {
+  Future<void> sendTextMessage({bool isContact = false}) async {
     final message = messageController.text.trim();
     if (message.isEmpty) return;
     if (message.length > 800) {
@@ -991,7 +992,7 @@ class SingleChatController extends GetxController
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
       receiverPhoneNumber: receiverUserData?.phoneNumber,
-      messageType: MessageType.text,
+      messageType: isContact ? MessageType.contact : MessageType.text,
       isForwarded: false,
       isGroupMessage: false,
       forwardedMessageId: 0,
@@ -2223,5 +2224,19 @@ class SingleChatController extends GetxController
     return receiverUserData!.name ?? "";
   }
 
-  // block
+  // save contact
+  Future<void> saveContact({
+    required String name,
+    required String phone,
+  }) async {
+    if (!await FlutterContacts.requestPermission()) {
+      return;
+    }
+
+    final contact = Contact()
+      ..name.first = name
+      ..phones = [Phone(phone)];
+
+    await contact.insert();
+  }
 }

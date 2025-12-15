@@ -45,7 +45,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>App requires camera</string>
 	<key>NSContactsUsageDescription</key>
-	<string>App needs access to the contact list</string>
+	<string>App needs access to the contact list and contacts to save phone numbers.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
 	<string>Apps needs to access  documents folder is required to store files.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/models/contact_save_mode.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
@@ -62,15 +63,18 @@ class DisplayTextImageGIF extends StatelessWidget {
       );
     }
     if (type == MessageType.contact) {
+      final contactSend = ContactSaveModel.fromJson(
+        controller.encryptionService.decryptText(message),
+      );
       return ContactMessageBubble(
-        name:  controller.encryptionService.decryptText(message),
+        name: contactSend.fullName,
         onTap: () async {
           await controller.saveContact(
-            name: "Support Team",
-            phone: "+91 9876543210",
+            name: contactSend.fullName,
+            phone: contactSend.contactNumber,
           );
         },
-        phone: "",
+        phone: contactSend.contactNumber,
       );
     }
     return FutureBuilder(

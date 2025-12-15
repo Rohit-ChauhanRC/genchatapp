@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'contactpreviewsheet.dart';
+
 class ContactMessageBubble extends StatelessWidget {
   final String name;
   final String phone;
@@ -15,7 +17,7 @@ class ContactMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerLeft, // or centerRight for sender
+      alignment: Alignment.centerLeft,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -75,21 +77,32 @@ class ContactMessageBubble extends StatelessWidget {
                 ),
               ),
 
-              // Action
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: const Text(
-                  "View contact",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
+              // ActionG
+              GestureDetector(
+                onTap: () {
+                  showContactPreviewSheet(
+                    context,
+                    name: name,
+                    phone: phone,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: const Text(
+                    "View contact",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
+              )
+
             ],
           ),
         ),
       ),
     );
   }
+
 }

@@ -125,6 +125,12 @@ void showContactsPicker(BuildContext context,SingleChatController singleChatCont
                       subtitle: phone != null ? Text(phone) : null,
                       onTap: () {
                         Navigator.pop(context);
+                        singleChatController.messageController.text =
+
+                         "${contact.displayName ?? ""} : ${phone ?? ""}";
+
+                        singleChatController.sendTextMessage(isContact: true);
+
 
                       },
                     );

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
@@ -10,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
+import 'package:permission_handler/permission_handler.dart';
 import '../../../config/services/connectivity_service.dart';
 import '../../../data/local_database/contacts_table.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
@@ -191,7 +193,24 @@ class SelectContactsController extends GetxController {
       }
     });
   }
+  Future<List<ContactInfo>> getDeviceContacts() async {
+    final permission = await Permission.contacts.request();
 
+    if (!permission.isGranted) {
+      Get.snackbar(
+        "Permission Required",
+        "Please allow contacts permission",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return [];
+    }
+
+    final contacts = await FlutterContactsService.getContacts(
+      withThumbnails: false,
+    );
+
+    return contacts;
+  }
   Future<void> _downloadAndCacheProfileImage(
     String imageUrl,
     String fileName,

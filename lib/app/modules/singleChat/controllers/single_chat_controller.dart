@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
@@ -451,24 +452,7 @@ class SingleChatController extends GetxController
       // "contact blocked successfully"
     }
   }
-  Future<List<ContactInfo>> getDeviceContacts() async {
-    final permission = await Permission.contacts.request();
 
-    if (!permission.isGranted) {
-      Get.snackbar(
-        "Permission Required",
-        "Please allow contacts permission",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return [];
-    }
-
-    final contacts = await FlutterContactsService.getContacts(
-      withThumbnails: false,
-    );
-
-    return contacts;
-  }
   Future<void> unblockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,
@@ -547,6 +531,24 @@ class SingleChatController extends GetxController
     }
   }
 
+  Future<List<ContactInfo>> getDeviceContacts() async {
+    final permission = await Permission.contacts.request();
+
+    if (!permission.isGranted) {
+      Get.snackbar(
+        "Permission Required",
+        "Please allow contacts permission",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return [];
+    }
+
+    final contacts = await FlutterContactsService.getContacts(
+      withThumbnails: false,
+    );
+
+    return contacts;
+  }
   Future<void> scrollToOriginalMessage(int? repliedId) async {
     if (repliedId == null) return;
 
@@ -987,7 +989,7 @@ class SingleChatController extends GetxController
     return _sendingMessageIds.contains(clientSystemMessageId);
   }
 
-  Future<void> sendTextMessage() async {
+  Future<void> sendTextMessage({bool isContact = false}) async {
     final message = messageController.text.trim();
     if (message.isEmpty) return;
     if (message.length > 800) {
@@ -1009,7 +1011,7 @@ class SingleChatController extends GetxController
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
       receiverPhoneNumber: receiverUserData?.phoneNumber,
-      messageType: MessageType.text,
+      messageType: isContact ? MessageType.contact : MessageType.text,
       isForwarded: false,
       isGroupMessage: false,
       forwardedMessageId: 0,
@@ -2241,5 +2243,19 @@ class SingleChatController extends GetxController
     return receiverUserData!.name ?? "";
   }
 
-  // block
+  // save contact
+  Future<void> saveContact({
+    required String name,
+    required String phone,
+  }) async {
+    if (!await FlutterContacts.requestPermission()) {
+      return;
+    }
+
+    final contact = Contact()
+      ..name.first = name
+      ..phones = [Phone(phone)];
+
+    await contact.insert();
+  }
 }

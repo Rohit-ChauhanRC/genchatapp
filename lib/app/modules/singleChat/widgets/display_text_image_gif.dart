@@ -9,6 +9,7 @@ import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/modules/singleChat/controllers/single_chat_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/contact_message_bubble.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
@@ -60,7 +61,18 @@ class DisplayTextImageGIF extends StatelessWidget {
         ),
       );
     }
-
+    if (type == MessageType.contact) {
+      return ContactMessageBubble(
+        name:  controller.encryptionService.decryptText(message),
+        onTap: () async {
+          await controller.saveContact(
+            name: "Support Team",
+            phone: "+91 9876543210",
+          );
+        },
+        phone: "",
+      );
+    }
     return FutureBuilder(
       future: controller.checkIfFileExists(type, message),
       builder: (context, snapshot) {
@@ -246,6 +258,17 @@ class DisplayTextImageGIF extends StatelessWidget {
                 filePath: gifPath,
                 isReply: isReply ?? false,
               ); // if using
+            // case MessageType.contact:
+            //   return ContactMessageBubble(
+            //     name: "",
+            //     onTap: () async {
+            //       await controller.saveContact(
+            //         name: "Support Team",
+            //         phone: "+91 9876543210",
+            //       );
+            //     },
+            //     phone: "",
+            //   );
             default:
               return const SizedBox();
           }

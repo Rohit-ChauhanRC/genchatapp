@@ -58,6 +58,15 @@ void showAttachmentSheet(BuildContext context, SingleChatController singleChatCo
                     singleChatController.selectFile(MessageType.document.value);
                   },
                 ),
+                _buildAttachmentItem(
+                  icon: Icons.contact_page_sharp,
+                  label: "Contacts",
+                  color: Colors.blue,
+                  onTap: () {
+                    Navigator.pop(context);
+                    showContactsPicker(context, singleChatController);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -67,6 +76,67 @@ void showAttachmentSheet(BuildContext context, SingleChatController singleChatCo
     },
   );
 
+}
+void showContactsPicker(BuildContext context,SingleChatController singleChatController) async {
+  final contacts = await  singleChatController.getDeviceContacts();;
+
+  if (contacts.isEmpty) return;
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) {
+      return SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                "Select Contact",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Divider(),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: contacts.length,
+                  itemBuilder: (_, index) {
+                    final contact = contacts[index];
+                    final phone = contact.phones?.isNotEmpty == true
+                        ? contact.phones!.first.value
+                        : null;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Text(
+                          (contact.displayName ?? "?")
+                              .substring(0, 1)
+                              .toUpperCase(),
+                        ),
+                      ),
+                      title: Text(contact.displayName ?? "Unknown"),
+                      subtitle: phone != null ? Text(phone) : null,
+                      onTap: () {
+                        Navigator.pop(context);
+
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 Widget _buildAttachmentItem({

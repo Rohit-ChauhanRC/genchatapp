@@ -63,6 +63,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     onSelected: (value) {
+                      if (!controller.ensureInternetOrShowError()) return;
                       if (value == 'edit') {
                         _showEditGroupNameDialog(
                           context,
@@ -851,7 +852,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
     // ADMIN PERMISSIONS
     // -----------------------------------------
     if (controller.isAdmin) {
-      // ❌ admin cannot modify other admins
       if (!targetIsAdmin) {
         // Remove Member
         items.add(

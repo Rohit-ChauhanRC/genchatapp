@@ -58,6 +58,15 @@ void showAttachmentSheetGroup(BuildContext context,GroupChatsController GroupCha
                     GroupChatsController.selectFile(MessageType.document.value);
                   },
                 ),
+                _buildAttachmentItemGroup(
+                  icon: Icons.contact_page_outlined,
+                  label: "Contacts",
+                  color: Colors.blue,
+                  onTap: () {
+                    Navigator.pop(context);
+                    GroupChatsController.selectFile(MessageType.video.value);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 10),

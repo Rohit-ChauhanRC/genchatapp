@@ -61,6 +61,7 @@ dependencies:
   v_video_compressor: ^1.2.1
   flutter_launcher_icons: ^0.14.4
   webview_flutter: ^4.13.0
+  flutter_contacts_service: ^0.0.3
 
 
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -450,7 +451,24 @@ class SingleChatController extends GetxController
       // "contact blocked successfully"
     }
   }
+  Future<List<ContactInfo>> getDeviceContacts() async {
+    final permission = await Permission.contacts.request();
 
+    if (!permission.isGranted) {
+      Get.snackbar(
+        "Permission Required",
+        "Please allow contacts permission",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return [];
+    }
+
+    final contacts = await FlutterContactsService.getContacts(
+      withThumbnails: false,
+    );
+
+    return contacts;
+  }
   Future<void> unblockUser() async {
     final response = await chatRepository.userBlock(
       receiverUserData!.userId!,

@@ -5,7 +5,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:flutter_contacts_service/flutter_contacts_service.dart';
+// import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -531,10 +531,10 @@ class SingleChatController extends GetxController
     }
   }
 
-  Future<List<ContactInfo>> getDeviceContacts() async {
-    final permission = await Permission.contacts.request();
+  Future<List<Contact>> getDeviceContacts() async {
+    final permission = await FlutterContacts.requestPermission();
 
-    if (!permission.isGranted) {
+    if (!permission) {
       Get.snackbar(
         "Permission Required",
         "Please allow contacts permission",
@@ -543,12 +543,11 @@ class SingleChatController extends GetxController
       return [];
     }
 
-    final contacts = await FlutterContactsService.getContacts(
-      withThumbnails: false,
-    );
+    final contacts = await FlutterContacts.getContacts(withProperties: true);
 
     return contacts;
   }
+
   Future<void> scrollToOriginalMessage(int? repliedId) async {
     if (repliedId == null) return;
 

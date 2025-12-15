@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
@@ -9,6 +10,7 @@ import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 
+import '../../../config/services/connectivity_service.dart';
 import '../../../config/services/socket_service.dart';
 import '../../../data/local_database/groups_table.dart';
 import '../../../data/models/chat_conntact_model.dart';
@@ -47,7 +49,7 @@ class GroupProfileController extends GetxController {
   final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
 
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
-
+  final ConnectivityService connectivityService = Get.find<ConnectivityService>();
   set currentUserPermission(UserGroupInfo? info) =>
       _currentUserPermission.value = info;
 
@@ -149,7 +151,23 @@ class GroupProfileController extends GetxController {
     final contact = await contactsTable.getUserById(userId!);
     return contact!.isBlocked ?? false;
   }
+  //Internet check
+  bool ensureInternetOrShowError() {
+    if (!connectivityService.isConnected.value) {
+      Get.snackbar(
+        "No Internet",
+        "Please turn on internet to perform this action",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
 
+
+      );
+
+      return false;
+    }
+    return true;
+  }
   Future<void> selectImage() async {
     showImagePicker(
       onGetImage: (img) async {
@@ -418,19 +436,22 @@ class GroupProfileController extends GetxController {
   }
 
   void enableVanishMode(int uid) {
-    // final user = groupDetails.users?.firstWhere(
-    //   (u) => u.userGroupInfo?.userId == uid,
-    // );
+    // Only super admin or admin can toggle vanish mode
+    if (!(isSuperAdmin || isAdmin)) {
+      return;
+    }
 
-    // if (user != null) {
-    //   user.userGroupInfo?.vanishMode = true;
-    //   update();
-    // }
-
+    // Proceed to enable vanish mode for the given user
     isVanishModeGroup(uid, true);
   }
 
   void disableVanishMode(int uid) {
+    // Only super admin or admin can toggle vanish mode
+    if (!(isSuperAdmin || isAdmin)) {
+      return;
+    }
+
+    // Proceed to disable vanish mode for the given user
     isVanishModeGroup(uid, false);
   }
 

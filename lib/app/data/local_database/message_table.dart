@@ -90,6 +90,7 @@ class MessageTable {
     }
   }
 
+
   // Fetch messages between sender & receiver
   Future<List<NewMessageModel>> fetchMessages({
     required int receiverId,
@@ -148,14 +149,14 @@ class MessageTable {
         .toList();
 
     //  FILTER OUT OLD MESSAGES
-    messages.removeWhere((m) => isOlderThanNow(m));
+    // messages.removeWhere((m) => isOlderThanNow(m));
 
-    //  DELETE EXPIRED FROM LOCAL DB
-    for (var m in messages) {
-      if (isOlderThanNow(m)) {
-        await deleteMessage(m.messageId!);
-      }
-    }
+    // //  DELETE EXPIRED FROM LOCAL DB
+    // for (var m in messages) {
+    //   if (isOlderThanNow(m)) {
+    //     await deleteMessage(m.messageId!);
+    //   }
+    // }
 
     return messages.reversed.toList();
   }

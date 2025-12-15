@@ -96,16 +96,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                           ),
                         );
                       }
-                      if (controller.canGivePermission) {
-                        items.add(
-                          _styledMenuItem(
-                            value: 'Group Permissions',
-                            text: 'Group Permissions',
-                            icon: Icons.shield,
-                            iconColor: Colors.green,
-                          ),
-                        );
-                      }
+
 
                       return items;
                     },
@@ -332,62 +323,81 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: controller.canGivePermission
-                        ? Obx(
-                            () => InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {
-                                controller.canSendMessages.value =
-                                    !controller.canSendMessages.value;
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  /// Title + Toggle
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Send new messages",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: AppColors.textBarColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                        ? Obx(() {
+                      final isOnline =
+                          controller.connectivityService.isConnected.value;
 
-                                      Transform.scale(
-                                        scale: 0.75,
-                                        child: Switch(
-                                          value:
-                                              controller.canSendMessages.value,
-                                          activeColor: AppColors.textBarColor,
-                                          onChanged: (val) {
-                                            controller.canSendMessages.value =
-                                                val;
-                                            controller.isReadOnlyAdGroup(val);
-                                          },
-                                        ),
-                                      ),
-                                    ],
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: isOnline
+                            ? () {
+                          controller.canSendMessages.value =
+                          !controller.canSendMessages.value;
+                          controller.isReadOnlyAdGroup(
+                            controller.canSendMessages.value,
+                          );
+                        }
+                            : () {
+                          Get.snackbar(
+                            "No Internet",
+                            "Please turn on internet to change permissions",
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Title + Toggle
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Send new messages",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isOnline
+                                        ? AppColors.textBarColor
+                                        : Colors.grey,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  Text(
-                                    controller.canSendMessages.value
-                                        ? "Everyone can send messages"
-                                        : "Only Super Admin can send messages",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                      height: 1,
-                                    ),
-                                  ),
+                                ),
 
-                                ],
+                                Transform.scale(
+                                  scale: 0.75,
+                                  child: Switch(
+                                    value: controller.canSendMessages.value,
+                                    activeColor: AppColors.textBarColor,
+                                    onChanged: isOnline
+                                        ? (val) {
+                                      controller.canSendMessages.value = val;
+                                      controller.isReadOnlyAdGroup(val);
+                                    }
+                                        : null, // 👈 disables switch
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            /// Subtitle
+                            Text(
+                              !isOnline
+                                  ? "Turn on internet to change this setting"
+                                  : controller.canSendMessages.value
+                                  ? "Only Super Admin can send messages"
+                                  : "Everyone can send messages",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                                height: 1.3,
                               ),
                             ),
-                          )
+                          ],
+                        ),
+                      );
+                    })
                         : const SizedBox.shrink(),
                   ),
+
                   // const SizedBox(height: 8
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0, right: 8),
@@ -904,16 +914,21 @@ class GroupProfileView extends GetView<GroupProfileController> {
     final uid = user?.userId;
     if (uid == null) return;
 
+    if (!controller.ensureInternetOrShowError()) return;
+
     switch (val) {
       case 'make_admin':
         controller.makeAdmin(uid);
         break;
+
       case 'revoke_admin':
         controller.revokeAdmin(uid);
         break;
+
       case 'remove_member':
         controller.removeUser(uid);
         break;
+
       case 'vanish_on':
         controller.enableVanishMode(uid);
         break;

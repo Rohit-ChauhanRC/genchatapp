@@ -17,6 +17,9 @@ import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 
+import '../../../utils/utils.dart';
+import 'GroupContactMessageBubble.dart';
+
 class GroupDisplayTextImageGIF extends StatelessWidget {
   final String message;
   final MessageType type;
@@ -66,10 +69,10 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
       final contactSend = ContactSaveModel.fromJson(
         controller.encryptionService.decryptText(message),
       );
-      return ContactMessageBubble(
+      return GroupContactMessageBubble(
         name: contactSend.fullName,
         onTap: () async {
-          await controller.saveContact(
+          await saveContact(
             name: contactSend.fullName,
             phone: contactSend.contactNumber,
           );

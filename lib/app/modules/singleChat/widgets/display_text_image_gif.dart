@@ -69,12 +69,14 @@ class DisplayTextImageGIF extends StatelessWidget {
       );
       return ContactMessageBubble(
         name: contactSend.fullName,
-        onTap: () async {
-          await saveContact(
-            name: contactSend.fullName,
-            phone: contactSend.contactNumber,
-          );
-        },
+        onTap: () async => isReply == true
+            ? null
+            : {
+                await saveContact(
+                  name: contactSend.fullName,
+                  phone: contactSend.contactNumber,
+                ),
+              },
         phone: contactSend.contactNumber,
       );
     }

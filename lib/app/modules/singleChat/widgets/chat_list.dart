@@ -233,7 +233,11 @@ class ChatList extends StatelessWidget {
                                                     isMe: true,
                                                     message:
                                                         messages.messageType !=
-                                                            MessageType.text
+                                                                MessageType
+                                                                    .text &&
+                                                            messages.messageType !=
+                                                                MessageType
+                                                                    .contact
                                                         ? messages
                                                               .assetServerName
                                                               .toString()
@@ -325,28 +329,27 @@ class ChatList extends StatelessWidget {
                                               MessageType.deleted
                                           ? null
                                           : (v) {
-                                              singleChatController
-                                                  .onMessageSwipe(
-                                                    isMe: false,
-                                                    message:
+                                              singleChatController.onMessageSwipe(
+                                                isMe: false,
+                                                message:
+                                                    messages.messageType !=
+                                                            MessageType.text &&
                                                         messages.messageType !=
-                                                            MessageType.text
-                                                        ? messages
-                                                              .assetServerName
-                                                              .toString()
-                                                        : messages.message
-                                                              .toString(),
-                                                    messageType:
-                                                        messages.messageType ??
-                                                        MessageType.text,
-                                                    isReplied: true,
-                                                    messageId:
-                                                        messages.messageId ?? 0,
-                                                    assetsThumbnail:
-                                                        messages
-                                                            .assetThumbnail ??
-                                                        "",
-                                                  );
+                                                            MessageType.contact
+                                                    ? messages.assetServerName
+                                                          .toString()
+                                                    : messages.message
+                                                          .toString(),
+                                                messageType:
+                                                    messages.messageType ??
+                                                    MessageType.text,
+                                                isReplied: true,
+                                                messageId:
+                                                    messages.messageId ?? 0,
+                                                assetsThumbnail:
+                                                    messages.assetThumbnail ??
+                                                    "",
+                                              );
                                             },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??

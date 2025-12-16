@@ -235,35 +235,34 @@ class GroupChatList extends StatelessWidget {
                                               MessageType.deleted
                                           ? null
                                           : (v) {
-                                              groupChatsController
-                                                  .onMessageSwipe(
-                                                    recipientUserId:
-                                                        groupChatsController
-                                                            .receiverUserData!
-                                                            .group!
-                                                            .id!,
-                                                    senderName: "",
-                                                    isMe: true,
+                                              groupChatsController.onMessageSwipe(
+                                                recipientUserId:
+                                                    groupChatsController
+                                                        .receiverUserData!
+                                                        .group!
+                                                        .id!,
+                                                senderName: "",
+                                                isMe: true,
 
-                                                    messageType:
-                                                        messages.messageType ??
-                                                        MessageType.text,
-                                                    isReplied: true,
-                                                    messageId:
-                                                        messages.messageId ?? 0,
-                                                    assetsThumbnail:
-                                                        messages
-                                                            .assetThumbnail ??
-                                                        "",
-                                                    message:
+                                                messageType:
+                                                    messages.messageType ??
+                                                    MessageType.text,
+                                                isReplied: true,
+                                                messageId:
+                                                    messages.messageId ?? 0,
+                                                assetsThumbnail:
+                                                    messages.assetThumbnail ??
+                                                    "",
+                                                message:
+                                                    messages.messageType !=
+                                                            MessageType.text &&
                                                         messages.messageType !=
-                                                            MessageType.text
-                                                        ? messages
-                                                              .assetServerName
-                                                              .toString()
-                                                        : messages.message
-                                                              .toString(),
-                                                  );
+                                                            MessageType.contact
+                                                    ? messages.assetServerName
+                                                          .toString()
+                                                    : messages.message
+                                                          .toString(),
+                                              );
                                             },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??
@@ -328,32 +327,30 @@ class GroupChatList extends StatelessWidget {
                                               MessageType.deleted
                                           ? null
                                           : (v) {
-                                              groupChatsController
-                                                  .onMessageSwipe(
-                                                    isMe: false,
-                                                    message:
+                                              groupChatsController.onMessageSwipe(
+                                                isMe: false,
+                                                message:
+                                                    messages.messageType !=
+                                                            MessageType.text &&
                                                         messages.messageType !=
-                                                            MessageType.text
-                                                        ? messages
-                                                              .assetServerName
-                                                              .toString()
-                                                        : messages.message
-                                                              .toString(),
-                                                    messageType:
-                                                        messages.messageType ??
-                                                        MessageType.text,
-                                                    isReplied: true,
-                                                    messageId:
-                                                        messages.messageId ?? 0,
-                                                    senderName:
-                                                        messageSenderName,
-                                                    recipientUserId:
-                                                        messages.senderId ?? 0,
-                                                    assetsThumbnail:
-                                                        messages
-                                                            .assetThumbnail ??
-                                                        "",
-                                                  );
+                                                            MessageType.contact
+                                                    ? messages.assetServerName
+                                                          .toString()
+                                                    : messages.message
+                                                          .toString(),
+                                                messageType:
+                                                    messages.messageType ??
+                                                    MessageType.text,
+                                                isReplied: true,
+                                                messageId:
+                                                    messages.messageId ?? 0,
+                                                senderName: messageSenderName,
+                                                recipientUserId:
+                                                    messages.senderId ?? 0,
+                                                assetsThumbnail:
+                                                    messages.assetThumbnail ??
+                                                    "",
+                                              );
                                             },
                                       repliedMessageType:
                                           messages.messageRepliedOnType ??

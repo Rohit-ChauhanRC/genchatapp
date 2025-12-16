@@ -60,7 +60,7 @@ class DataBaseService {
     final path = await fullPath;
     var database = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: create,
       singleInstance: true,
       onUpgrade: onUpgrade,

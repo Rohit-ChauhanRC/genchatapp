@@ -626,7 +626,7 @@ class SocketService extends GetxService {
       // groupId, userId,autoDeleteMessages
       groupsTable.updateAutoDeleteMessages(
         groupId: data["groupId"],
-        userId: data["userId"],
+        userId: data["userIds"][0],
         autoDeleteMessages: data["autoDeleteMessages"],
       );
 
@@ -635,7 +635,7 @@ class SocketService extends GetxService {
       vanishModeAutoDelete.value = VanishModeAutoDelete(
         groupId: data["groupId"],
         autoDeleteMessages: data["autoDeleteMessages"],
-        userId: data["userId"],
+        userId: data["userIds"][0],
       );
       // fndj
       // getGroupDataFromLocal

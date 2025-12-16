@@ -848,9 +848,6 @@ class GroupProfileView extends GetView<GroupProfileController> {
       return items; // done for super admin
     }
 
-    // -----------------------------------------
-    // ADMIN PERMISSIONS
-    // -----------------------------------------
     if (controller.isAdmin) {
       if (!targetIsAdmin) {
         // Remove Member

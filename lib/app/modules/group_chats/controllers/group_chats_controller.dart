@@ -271,6 +271,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
 
   final Rx<GroupData?> groupData = Rx<GroupData?>(null);
+
   bool get isSuperAdmin =>
       groupData.value?.group?.creatorId == senderuserData?.userId;
 
@@ -282,9 +283,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
 
   bool get canEditGroup => isSuperAdmin || isAdmin;
+
   bool get canGivePermission => isSuperAdmin;
+
   bool get canAddParticipants => isSuperAdmin || isAdmin;
   var canSendMessages = true.obs;
+
   bool get canExitGroup => !isSuperAdmin;
 
   bool get canRevokeAdmin => isSuperAdmin;
@@ -478,6 +482,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+
   Future<List<Contact>> getDeviceContacts() async {
     final permission = await FlutterContacts.requestPermission();
 
@@ -543,7 +548,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     // print("CurrentUserId: $currentUserId");
 
     final matchingUser = groupData?.users?.firstWhere(
-      (u) => u.userInfo?.userId == currentUserId,
+          (u) => u.userInfo?.userId == currentUserId,
       orElse: () => User(userInfo: null, userGroupInfo: null),
     );
 
@@ -688,8 +693,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (ack == null) return;
 
       int index = messageList.indexWhere(
-        (msg) =>
-            msg.clientSystemMessageId == ack.clientSystemMessageId ||
+            (msg) =>
+        msg.clientSystemMessageId == ack.clientSystemMessageId ||
             msg.messageId == ack.messageId,
       );
 
@@ -792,8 +797,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       // ✅ Existing sync/seen logic...
       for (var i in messages) {
         if ((i.state == MessageState.sent ||
-                i.state == MessageState.unsent ||
-                i.state == MessageState.delivered) &&
+            i.state == MessageState.unsent ||
+            i.state == MessageState.delivered) &&
             i.messageId != null) {
           if (receiverUserData!.group?.id == i.recipientId &&
               socketService.isConnected) {
@@ -987,10 +992,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       final isLast = hasMessageId
           ? await MessageTable().isLastMessage(
-              messageId: message.messageId!,
-              senderId: message.senderId!,
-              receiverId: message.recipientId!,
-            )
+        messageId: message.messageId!,
+        senderId: message.senderId!,
+        receiverId: message.recipientId!,
+      )
           : false;
 
       if (!hasMessageId && message.clientSystemMessageId != null) {
@@ -999,7 +1004,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         );
         // 🟢 Remove from message list (offline messages)
         messageList.removeWhere(
-          (m) => m.clientSystemMessageId == message.clientSystemMessageId,
+              (m) => m.clientSystemMessageId == message.clientSystemMessageId,
         );
         continue;
       }
@@ -1028,7 +1033,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
           // 🟢 Update messageList manually
           final index = messageList.indexWhere(
-            (m) => m.messageId == message.messageId,
+                (m) => m.messageId == message.messageId,
           );
           if (index != -1) {
             messageList[index] = messageList[index].copyWith(
@@ -1126,7 +1131,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     // ❗ If even one selected message is deleted, disable forward
     final hasDeleted = selected.any(
-      (msg) => msg.messageType == MessageType.deleted,
+          (msg) => msg.messageType == MessageType.deleted,
     );
 
     if (hasDeleted) {
@@ -1142,8 +1147,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     // Optional: limit media messages
     final mediaMessages = selected.where(
-      (msg) =>
-          msg.messageType == MessageType.image ||
+          (msg) =>
+      msg.messageType == MessageType.image ||
           msg.messageType == MessageType.video ||
           msg.messageType == MessageType.audio ||
           msg.messageType == MessageType.document ||
@@ -1184,7 +1189,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           if (total > 0) {
             percent.value = (sent / total) * 100;
             print(
-              "📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(0)}%",
+              "📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(
+                  0)}%",
             );
             if (percent.value >= 100) {
               // reset after completion to avoid stale value on next upload
@@ -1218,12 +1224,20 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   }) async {
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
-    final fileType = messageEnum.value.split('.').last;
-    final fileExtension = file.toString().split('.').last.replaceAll("'", "");
+    final fileType = messageEnum.value
+        .split('.')
+        .last;
+    final fileExtension = file
+        .toString()
+        .split('.')
+        .last
+        .replaceAll("'", "");
     try {
       // Save file locally
       final fileName =
-          "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+          "genchat_message_${senderuserData!.userId.toString()}_${DateTime
+          .now()
+          .millisecondsSinceEpoch}";
 
       Map<String, File?> f = messageEnum == MessageType.video
           ? {fileExtension: file}
@@ -1236,16 +1250,17 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         fileName,
       );
       final String? assetThumnail =
-          f.keys.first == "mp4" ||
-              f.keys.first == "mov" ||
-              f.keys.first == 'avi' ||
-              f.keys.first == "mkv"
+      f.keys.first == "mp4" ||
+          f.keys.first == "mov" ||
+          f.keys.first == 'avi' ||
+          f.keys.first == "mkv"
           ? await getThumbnail(File(localFilePath))
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
       print(
-        "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}",
+        "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum
+            .value}",
       );
 
       // Create message immediately so it appears in UI with local media
@@ -1288,7 +1303,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             : receiverUserData?.group?.id,
       );
       print(
-        "[GroupChat] sendFileMessage -> created local message: ${newMessage.toMap()}",
+        "[GroupChat] sendFileMessage -> created local message: ${newMessage
+            .toMap()}",
       );
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
@@ -1300,7 +1316,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           fileData.statusCode == 200 &&
           fileData.status == true) {
         print(
-          "[GroupChat] sendFileMessage -> upload success: ${fileData.data?.url}",
+          "[GroupChat] sendFileMessage -> upload success: ${fileData.data
+              ?.url}",
         );
         final updatedMessage = newMessage.copyWith(
           assetOriginalName: fileData.data?.originalName,
@@ -1309,7 +1326,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         );
         await MessageTable().updateMessageByClientId(updatedMessage);
         final index = messageList.indexWhere(
-          (m) => m.clientSystemMessageId == clientSystemMessageId,
+              (m) => m.clientSystemMessageId == clientSystemMessageId,
         );
         if (index != -1) {
           messageList[index] = updatedMessage;
@@ -1342,16 +1359,18 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final fileTypeValue = getMessageType(files.first).value;
 
       Get.to(
-        () => MediaPreviewScreen(
-          files: files,
-          fileType: fileTypeValue,
-          onSend: (List<File> selectedFiles) async {
-            for (final f in selectedFiles) {
-              await sendFileMessage(file: f, messageEnum: getMessageType(f));
-            }
-            cancelReply();
-          },
-        ),
+            () =>
+            MediaPreviewScreen(
+              files: files,
+              fileType: fileTypeValue,
+              onSend: (List<File> selectedFiles) async {
+                for (final f in selectedFiles) {
+                  await sendFileMessage(
+                      file: f, messageEnum: getMessageType(f));
+                }
+                cancelReply();
+              },
+            ),
       );
     } else if (fileType == MessageType.video.value) {
       final selectedFiles = await pickVideo();
@@ -1377,31 +1396,34 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final fileTypeValue = getMessageType(files.first).value;
 
       Get.to(
-        () => MediaPreviewScreen(
-          files: files,
-          fileType: fileTypeValue,
-          onSend: (List<File> selectedFiles) async {
-            for (final f in selectedFiles) {
-              await sendFileMessage(file: f, messageEnum: getMessageType(f));
-            }
-            cancelReply();
-          },
-        ),
+            () =>
+            MediaPreviewScreen(
+              files: files,
+              fileType: fileTypeValue,
+              onSend: (List<File> selectedFiles) async {
+                for (final f in selectedFiles) {
+                  await sendFileMessage(
+                      file: f, messageEnum: getMessageType(f));
+                }
+                cancelReply();
+              },
+            ),
       );
     } else if (fileType == MessageType.document.value && Platform.isAndroid) {
       Get.to(
-        () => DocumentPickerScreen(
-          onSend: (selectedFiles) async {
-            for (File file in selectedFiles) {
-              await sendFileMessage(
-                file: file,
-                messageEnum: getMessageType(file),
-              );
-            }
-            cancelReply();
-          },
-          chatController: Get.find<GroupChatsController>(),
-        ),
+            () =>
+            DocumentPickerScreen(
+              onSend: (selectedFiles) async {
+                for (File file in selectedFiles) {
+                  await sendFileMessage(
+                    file: file,
+                    messageEnum: getMessageType(file),
+                  );
+                }
+                cancelReply();
+              },
+              chatController: Get.find<GroupChatsController>(),
+            ),
         binding: DocumentsBinding(),
       );
       final files = await DocumentScannerService.scanDocuments();
@@ -1419,7 +1441,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       });
       cancelReply();
     }
-
   }
 
   Future<List<File>> pickVideo() async {
@@ -1433,12 +1454,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     return completer.future;
   }
 
-  Future<String> saveFileLocally(
-    File file,
-    String fileType,
-    String fileExtension,
-    String fileName,
-  ) async {
+  Future<String> saveFileLocally(File file,
+      String fileType,
+      String fileExtension,
+      String fileName,) async {
     final subFolderName = fileType.toTitleCase;
     final name = "$fileName.$fileExtension";
     //     "genchat_message_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
@@ -1474,10 +1493,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
       print(
-        "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}",
+        "gif URL:---->  ${gif.media.tinyGif?.url ??
+            gif.media.tinyGifTransparent?.url ?? gif.url}",
       );
       final fileName =
-          "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
+          "genchat_gif_${senderuserData!.userId.toString()}_${DateTime
+          .now()
+          .millisecondsSinceEpoch}.gif";
       downloadFile(
         MessageType.gif,
         fileName,
@@ -1485,7 +1507,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       );
       sendGIFMessage(
         gifUrl:
-            gif.media.tinyGif?.url ??
+        gif.media.tinyGif?.url ??
             gif.media.tinyGifTransparent?.url ??
             gif.url,
         messageEnum: MessageType.gif,
@@ -1701,11 +1723,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> downloadFile(
-    MessageType type,
-    String fileName,
-    String url,
-  ) async {
+  Future<void> downloadFile(MessageType type,
+      String fileName,
+      String url,) async {
     if (isDownloading[fileName] == true || isDownloaded[fileName] == true)
       return;
 
@@ -1774,7 +1794,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     try {
       isRecording.value = true;
       final fileName =
-          "genchat_audio_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}";
+          "genchat_audio_${senderuserData!.userId.toString()}_${DateTime
+          .now()
+          .millisecondsSinceEpoch}";
 
       final Directory thumDir;
       if (Platform.isAndroid) {
@@ -1925,7 +1947,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   Future<void> sendAudioMessage() async {
     final clientSystemMessageId = const Uuid().v1();
     final timeSent = DateTime.now();
-    final fileType = MessageType.audio.value.split('.').last;
+    final fileType = MessageType.audio.value
+        .split('.')
+        .last;
     try {
       await stopRecordingAudioWaveform();
       // stopPlayback();
@@ -1936,7 +1960,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       isPause = false;
       final serverName = recordedPath.value.toString().split(
         "/",
-      )[recordedPath.value.toString().split("/").length - 1];
+      )[recordedPath.value
+          .toString()
+          .split("/")
+          .length - 1];
 
       print(serverName);
 
@@ -2007,19 +2034,4 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // save contact
-  Future<void> saveContact({
-    required String name,
-    required String phone,
-  }) async {
-    if (!await FlutterContacts.requestPermission()) {
-      return;
-    }
-
-    final contact = Contact()
-      ..name.first = name
-      ..phones = [Phone(phone)];
-
-    await contact.insert();
-  }
 }

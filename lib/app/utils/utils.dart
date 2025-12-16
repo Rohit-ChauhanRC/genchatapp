@@ -4,6 +4,7 @@ import 'dart:io';
 // import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -544,6 +545,20 @@ Future<void> showVideoPickerBottomSheet({
       );
     },
   );
+}
+Future<void> saveContact({
+  required String name,
+  required String phone,
+}) async {
+  if (!await FlutterContacts.requestPermission()) {
+    return;
+  }
+
+  final contact = Contact()
+    ..name.first = name
+    ..phones = [Phone(phone)];
+
+  await contact.insert();
 }
 
 

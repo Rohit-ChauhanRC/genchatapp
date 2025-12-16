@@ -17,6 +17,7 @@ import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
+import '../../../utils/utils.dart';
 import 'document_message_widget.dart';
 
 class DisplayTextImageGIF extends StatelessWidget {
@@ -69,7 +70,7 @@ class DisplayTextImageGIF extends StatelessWidget {
       return ContactMessageBubble(
         name: contactSend.fullName,
         onTap: () async {
-          await controller.saveContact(
+          await saveContact(
             name: contactSend.fullName,
             phone: contactSend.contactNumber,
           );

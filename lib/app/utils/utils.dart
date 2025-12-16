@@ -546,20 +546,25 @@ Future<void> showVideoPickerBottomSheet({
     },
   );
 }
-Future<void> saveContact({
+Future<bool> saveContact({
   required String name,
   required String phone,
 }) async {
-  if (!await FlutterContacts.requestPermission()) {
-    return;
+  final granted = await FlutterContacts.requestPermission();
+  if (!granted) return false;
+
+  try {
+    final contact = Contact()
+      ..name.first = name
+      ..phones = [Phone(phone)];
+
+    await contact.insert();
+    return true; // ✅ success
+  } catch (e) {
+    return false; // ❌ failed
   }
-
-  final contact = Contact()
-    ..name.first = name
-    ..phones = [Phone(phone)];
-
-  await contact.insert();
 }
+
 
 
 Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {

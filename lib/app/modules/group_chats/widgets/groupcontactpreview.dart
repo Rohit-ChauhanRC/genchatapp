@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -6,11 +5,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/utils.dart';
 import '../controllers/group_chats_controller.dart';
+
 void GroupshowContactPreviewSheet(
-    BuildContext context, {
-      required String name,
-      required String phone,
-    }) {
+  BuildContext context, {
+  required String name,
+  required String phone,
+}) {
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -40,10 +40,7 @@ void GroupshowContactPreviewSheet(
 
               Text(
                 phone,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
 
               const SizedBox(height: 20),
@@ -57,19 +54,42 @@ void GroupshowContactPreviewSheet(
                     onTap: () => _callNumber(phone),
                   ),
                   _contactAction(
-                    icon: Icons.message,
-                    label: "Message",
-                    onTap: () => _smsNumber(phone),
-                  ),
-                  _contactAction(
                     icon: Icons.person_add,
                     label: "Save",
                     onTap: () async {
-                      await saveContact(
+                      final success = await saveContact(
                         name: name,
                         phone: phone,
                       );
-                      Get.back();
+
+                      if (success) {
+                        Get.back();
+
+                        await Future.delayed(const Duration(milliseconds: 300));
+
+                        Get.snackbar(
+                          "Contact Saved",
+                          "Contact saved as $name",
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                          margin: const EdgeInsets.all(12),
+                          borderRadius: 12,
+                          icon: const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                          ),
+                          duration: const Duration(seconds: 2),
+                        );
+                      } else {
+                        Get.snackbar(
+                          "Failed",
+                          "Unable to save contact",
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                      }
                     },
                   ),
                 ],
@@ -81,6 +101,7 @@ void GroupshowContactPreviewSheet(
     },
   );
 }
+
 Widget _contactAction({
   required IconData icon,
   required String label,

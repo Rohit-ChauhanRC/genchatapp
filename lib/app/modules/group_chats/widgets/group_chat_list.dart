@@ -211,7 +211,9 @@ class GroupChatList extends StatelessWidget {
                                           messages.messageType ==
                                                   MessageType.text ||
                                               messages.messageType ==
-                                                  MessageType.deleted
+                                                  MessageType.deleted ||
+                                              messages.messageType ==
+                                                  MessageType.contact
                                           ? (messages.message ?? '')
                                           : (messages.assetServerName ?? ''),
                                       date: DateFormat('hh:mm a').format(
@@ -307,7 +309,9 @@ class GroupChatList extends StatelessWidget {
                                           messages.messageType ==
                                                   MessageType.text ||
                                               messages.messageType ==
-                                                  MessageType.deleted
+                                                  MessageType.deleted ||
+                                              messages.messageType ==
+                                                  MessageType.contact
                                           ? (messages.message ?? '')
                                           : (messages.assetServerName ?? ''),
                                       date: DateFormat('hh:mm a').format(

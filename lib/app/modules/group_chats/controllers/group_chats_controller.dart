@@ -6,6 +6,8 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
@@ -476,6 +478,22 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+  Future<List<Contact>> getDeviceContacts() async {
+    final permission = await FlutterContacts.requestPermission();
+
+    if (!permission) {
+      Get.snackbar(
+        "Permission Required",
+        "Please allow contacts permission",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return [];
+    }
+
+    final contacts = await FlutterContacts.getContacts(withProperties: true);
+
+    return contacts;
+  }
 
   void updateMessageIdToIndex() {
     messageIdToIndex.clear();
@@ -826,7 +844,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     return _sendingMessageIds.contains(clientSystemMessageId);
   }
 
-  Future<void> sendTextMessage() async {
+  Future<void> sendTextMessage({bool isContact = false}) async {
     final message = messageController.text.trim();
     if (message.isEmpty) return;
     if (message.length > 800) {
@@ -848,7 +866,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       syncStatus: SyncStatus.pending,
       createdAt: timeSent.toString(),
       senderPhoneNumber: senderuserData?.phoneNumber,
-      messageType: MessageType.text,
+      messageType: isContact ? MessageType.contact : MessageType.text,
       isForwarded: false,
       forwardedMessageId: 0,
       showForwarded: false,
@@ -1989,4 +2007,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  // save contact
+  Future<void> saveContact({
+    required String name,
+    required String phone,
+  }) async {
+    if (!await FlutterContacts.requestPermission()) {
+      return;
+    }
+
+    final contact = Contact()
+      ..name.first = name
+      ..phones = [Phone(phone)];
+
+    await contact.insert();
+  }
 }

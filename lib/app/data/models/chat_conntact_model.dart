@@ -112,12 +112,12 @@ String parseLastMessage(String? lastMessage) {
       final fullName = decoded['fullName'];
 
       if (fullName != null) {
-        // Text fallback (for notifications / logs)
         return '👤 $fullName';
 
       }
     }
-  } catch (_) {
+  }
+  catch (_) {
   }
 
   return lastMessage;

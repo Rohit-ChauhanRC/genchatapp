@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/data/models/contact_save_mode.dart';
 
 import '../../../constants/message_enum.dart';
 import '../controllers/group_chats_controller.dart';
@@ -64,7 +65,7 @@ void showAttachmentSheetGroup(BuildContext context,GroupChatsController GroupCha
                   color: Colors.blue,
                   onTap: () {
                     Navigator.pop(context);
-                    GroupChatsController.selectFile(MessageType.video.value);
+                    showContactsPicker(context, GroupChatsController);
                   },
                 ),
               ],
@@ -76,7 +77,77 @@ void showAttachmentSheetGroup(BuildContext context,GroupChatsController GroupCha
     },
   );
 }
+void showContactsPicker(
+    BuildContext context,
+     GroupChatsController GroupChatsController,
+    ) async {
+  final contacts = await GroupChatsController.getDeviceContacts();
+  // ;
 
+  if (contacts.isEmpty) return;
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) {
+      return SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                "Select Contact",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: contacts.length,
+                  itemBuilder: (_, index) {
+                    final contact = contacts[index];
+                    final phone = contact.phones.isNotEmpty == true
+                        ? contact.phones.first
+                        : null;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Text(
+                          (contact.displayName ?? "?")
+                              .substring(0, 1)
+                              .toUpperCase(),
+                        ),
+                      ),
+                      title: Text(contact.displayName ?? "Unknown"),
+                      subtitle: phone != null ? Text(phone.number) : null,
+                      onTap: () {
+                        Navigator.pop(context);
+
+                        final contactSend = ContactSaveModel(
+                          contactNumber: phone!.number ?? "",
+                          fullName: contact.displayName ?? "",
+                        );
+
+                        GroupChatsController.messageController.text =
+                            contactSend.toJson();
+
+                        GroupChatsController.sendTextMessage(isContact: true);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
 Widget _buildAttachmentItemGroup({
   required IconData icon,

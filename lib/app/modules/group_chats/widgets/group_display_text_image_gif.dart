@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/models/contact_save_mode.dart';
 import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_preview.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/audio_waveform_player_widget.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/contact_message_bubble.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/display_gif_image.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/document_message_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
@@ -58,6 +60,21 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
               : FontStyle.normal,
           color: type == MessageType.deleted ? greyMsgColor : blackColor,
         ),
+      );
+    }
+    if (type == MessageType.contact) {
+      final contactSend = ContactSaveModel.fromJson(
+        controller.encryptionService.decryptText(message),
+      );
+      return ContactMessageBubble(
+        name: contactSend.fullName,
+        onTap: () async {
+          await controller.saveContact(
+            name: contactSend.fullName,
+            phone: contactSend.contactNumber,
+          );
+        },
+        phone: contactSend.contactNumber,
       );
     }
 

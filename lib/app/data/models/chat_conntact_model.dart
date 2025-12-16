@@ -102,3 +102,24 @@ class ChatConntactModel extends Equatable {
     isBlocked,
   ];
 }
+String parseLastMessage(String? lastMessage) {
+  if (lastMessage == null || lastMessage.isEmpty) return '';
+
+  try {
+    final decoded = jsonDecode(lastMessage);
+
+    if (decoded is Map<String, dynamic>) {
+      final fullName = decoded['fullName'];
+
+      if (fullName != null) {
+        // Text fallback (for notifications / logs)
+        return '👤 $fullName';
+
+      }
+    }
+  } catch (_) {
+  }
+
+  return lastMessage;
+}
+

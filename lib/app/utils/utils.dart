@@ -506,7 +506,8 @@ Future<void> showVideoPickerBottomSheet({
                   child: InkWell(
                     onTap: () async {
                       Get.back();
-                      final files = await FilePickerService().pickVideoFromCamera();
+                      final files = await FilePickerService()
+                          .pickVideoFromCamera();
 
                       // final files = [File(xfiles!.path)];
                       if (files.isNotEmpty) {
@@ -546,10 +547,8 @@ Future<void> showVideoPickerBottomSheet({
     },
   );
 }
-Future<bool> saveContact({
-  required String name,
-  required String phone,
-}) async {
+
+Future<bool> saveContact({required String name, required String phone}) async {
   final granted = await FlutterContacts.requestPermission();
   if (!granted) return false;
 
@@ -564,8 +563,6 @@ Future<bool> saveContact({
     return false; // ❌ failed
   }
 }
-
-
 
 Future<void> pickAndSendDocuments(Function(List<File>) onConfirmedSend) async {
   List<File> files = await FilePickerService().pickDocuments();
@@ -788,6 +785,16 @@ Future<Map<String, File?>> compressFiles(
   //     "genchat_message_${senderuserData!.userId}_${DateTime.now().millisecondsSinceEpoch}.$newExtension";
 
   return {newExtension: processedFile};
+}
+
+bool isMessageExpired(String? sentTime, int timerMinutes) {
+  if (sentTime == null) return false;
+
+  final sentDate = DateTime.tryParse(sentTime);
+  if (sentDate == null) return false;
+
+  final expiryTime = sentDate.add(Duration(minutes: timerMinutes));
+  return DateTime.now().isAfter(expiryTime);
 }
 
 // Future<Map<String, File?>> compressFiles(File file, String extension) async {

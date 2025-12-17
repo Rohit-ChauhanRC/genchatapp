@@ -22,6 +22,7 @@ import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:genchatapp/app/utils/alert_popup_utils.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -185,30 +186,157 @@ class SocketService extends GetxService {
           forwardedMessageId: data['forwardedMessageId'] ?? 0,
           messageRepliedUserId: data["messageRepliedUserId"] ?? 0,
         );
-        messageTable.insertMessage(newMessage);
-        incomingMessage.value = newMessage;
+        final groupId = newMessage.recipientId;
+        final receiveMessageTime = newMessage.messageSentFromDeviceTime;
 
-        final chatContactMessage = NewMessageModel(
-          message: data["message"],
-          senderId: data["recipientId"],
-          messageId: data["messageId"],
-          recipientId: data["isGroupMessage"] == true
-              ? data["recipientId"]
-              : data["senderId"],
-          messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
-          isGroupMessage: data["isGroupMessage"],
-          messageType: data['messageType'] != null
-              ? MessageTypeExtension.fromValue(data['messageType'])
-              : MessageType.text,
-          state: MessageState.sent,
-          senderPhoneNumber: data["senderPhoneNumber"],
+        final msgDate = DateTime.tryParse(
+          newMessage.messageSentFromDeviceTime ?? "",
         );
 
-        saveChatContacts(chatContactMessage);
+        final messageTimer = sharedPreferenceService.getInt(
+          UserDefaultsKeys.messageDurationKey,
+        );
+        final bool isGroup = newMessage.isGroupMessage!;
+
+        if (isGroup) {
+          final group = await groupsTable.getGroupById(groupId!);
+          final userList = group!.users;
+          //  final user = userList!.map((e) => e.userInfo!.userId == newMessage.senderId);
+          final sender = userList!.firstWhere(
+            (u) => u.userInfo?.userId == newMessage.senderId,
+          );
+
+          final String sentTime = data["messageSentFromDeviceTime"].toString();
+
+          if (sender.userGroupInfo!.autoDeleteMessages == true &&
+              messageTimer != null &&
+              messageTimer > 0 &&
+              isMessageExpired(sentTime, messageTimer)) {
+            print("⏱ Message expired before save. Skipping DB insert.");
+            return;
+          } else {
+            messageTable.insertMessage(newMessage);
+            incomingMessage.value = newMessage;
+
+            final chatContactMessage = NewMessageModel(
+              message: data["message"],
+              senderId: data["recipientId"],
+              messageId: data["messageId"],
+              recipientId: data["isGroupMessage"] == true
+                  ? data["recipientId"]
+                  : data["senderId"],
+              messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+              isGroupMessage: data["isGroupMessage"],
+              messageType: data['messageType'] != null
+                  ? MessageTypeExtension.fromValue(data['messageType'])
+                  : MessageType.text,
+              state: MessageState.sent,
+              senderPhoneNumber: data["senderPhoneNumber"],
+            );
+
+            saveChatContacts(chatContactMessage);
+          }
+        } else {
+          messageTable.insertMessage(newMessage);
+          incomingMessage.value = newMessage;
+
+          final chatContactMessage = NewMessageModel(
+            message: data["message"],
+            senderId: data["recipientId"],
+            messageId: data["messageId"],
+            recipientId: data["isGroupMessage"] == true
+                ? data["recipientId"]
+                : data["senderId"],
+            messageSentFromDeviceTime: data["messageSentFromDeviceTime"],
+            isGroupMessage: data["isGroupMessage"],
+            messageType: data['messageType'] != null
+                ? MessageTypeExtension.fromValue(data['messageType'])
+                : MessageType.text,
+            state: MessageState.sent,
+            senderPhoneNumber: data["senderPhoneNumber"],
+          );
+
+          saveChatContacts(chatContactMessage);
+        }
       } else {
         print("⚠️ Message $messageId found in locally, Skipping reinserting.");
       }
     });
+
+    // _socket?.on('message-event', (data) async {
+    //   print('📩 Message received: $data');
+
+    //   final int messageId = data["messageId"];
+    //   final bool existsLocally = await messageTable.messageExists(messageId);
+
+    //   if (existsLocally) {
+    //     print("⚠️ Message $messageId already exists. Skipping.");
+    //     return;
+    //   }
+
+    //   final int? messageTimer = sharedPreferenceService.getInt(
+    //     UserDefaultsKeys.messageDurationKey,
+    //   ); // minutes
+
+    //   final String? sentTime = data["messageSentFromDeviceTime"];
+
+    //   final bool?  isGroup = data["isGroupMessage"];
+
+    //   // ⛔ Skip saving if expired
+    //   if (isGroup! && messageTimer != null &&
+    //       messageTimer > 0 &&
+    //       isMessageExpired(sentTime, messageTimer) ) {
+    //     print("⏱ Message expired before save. Skipping DB insert.");
+    //     return;
+    //   }
+
+    //   final newMessage = NewMessageModel(
+    //     message: data["message"],
+    //     senderId: data["senderId"],
+    //     messageId: messageId,
+    //     recipientId: data["recipientId"],
+    //     messageSentFromDeviceTime: sentTime,
+    //     messageType: data['messageType'] != null
+    //         ? MessageTypeExtension.fromValue(data['messageType'])
+    //         : MessageType.text,
+    //     state: MessageState.sent,
+    //     senderPhoneNumber: data["senderPhoneNumber"],
+    //     receiverPhoneNumber: data["receiverPhoneNumber"],
+    //     isGroupMessage: data["isGroupMessage"] ?? false,
+    //     isRepliedMessage: data["isRepliedMessage"] ?? false,
+    //     messageRepliedOnId: data["messageRepliedOnId"],
+    //     messageRepliedOn: data["messageRepliedOn"] ?? '',
+    //     messageRepliedOnType: data["messageRepliedOnType"] != null
+    //         ? MessageTypeExtension.fromValue(data["messageRepliedOnType"])
+    //         : null,
+    //     messageRepliedOnAssetThumbnail:
+    //         data["messageRepliedOnAssetThumbnail"] ?? '',
+    //     messageRepliedOnAssetServerName:
+    //         data["messageRepliedOnAssetServerName"] ?? '',
+    //     isAsset: data["isAsset"] ?? false,
+    //     assetThumbnail: data["assetThumbnail"] ?? "",
+    //     assetOriginalName: data["assetOriginalName"] ?? '',
+    //     assetServerName: data["assetServerName"] ?? '',
+    //     assetUrl: data["assetUrl"] ?? '',
+    //     isForwarded: data["isForwarded"] ?? false,
+    //     showForwarded: data["showForwarded"] ?? false,
+    //     forwardedMessageId: data['forwardedMessageId'] ?? 0,
+    //     messageRepliedUserId: data["messageRepliedUserId"] ?? 0,
+    //   );
+
+    //   // ✅ Save message
+    //   await messageTable.insertMessage(newMessage);
+    //   incomingMessage.value = newMessage;
+
+    //   // ⏳ Schedule auto-delete if timer exists
+    //   if (messageTimer != null && messageTimer > 0) {
+    //     scheduleMessageDeletion(
+    //       messageId: messageId,
+    //       sentTime: sentTime,
+    //       timerMinutes: messageTimer,
+    //     );
+    //   }
+    // });
 
     _socket?.on('message-acknowledgement', (data) async {
       print('✅ Message Ack: $data');
@@ -630,6 +758,7 @@ class SocketService extends GetxService {
     _socket?.on('group-message-autodelete-toggled', (data) async {
       print(data);
       // groupId, userId,autoDeleteMessages
+
       groupsTable.updateAutoDeleteMessages(
         groupId: data["groupId"],
         userId: data["userIds"][0],
@@ -1114,5 +1243,26 @@ class SocketService extends GetxService {
     await disposeSocket();
     await sharedPreference.clear();
     onSuccess?.call();
+  }
+
+  void scheduleMessageDeletion({
+    required int messageId,
+    required String? sentTime,
+    required int timerMinutes,
+  }) {
+    if (sentTime == null) return;
+
+    final sentDate = DateTime.tryParse(sentTime);
+    if (sentDate == null) return;
+
+    final expiryTime = sentDate.add(Duration(minutes: timerMinutes));
+    final delay = expiryTime.difference(DateTime.now());
+
+    if (delay.isNegative) return;
+
+    Future.delayed(delay, () async {
+      print("🗑 Auto deleting message $messageId");
+      await messageTable.deleteMessage(messageId);
+    });
   }
 }

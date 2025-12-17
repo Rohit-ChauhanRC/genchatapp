@@ -187,7 +187,8 @@ class ChatsView extends GetView<ChatsController> {
                           itemBuilder: (context, i) {
                             ChatConntactModel chatConntactModel =
                                 contactsToDisplay[i];
-                            final rawMessage = chatConntactModel.lastMessage ?? '';
+                            final rawMessage =
+                                chatConntactModel.lastMessage ?? '';
 
                             UserList? user = ctc.contacts.firstWhere(
                               (e) =>
@@ -208,17 +209,19 @@ class ChatsView extends GetView<ChatsController> {
                                 chatConntactModel.isBlocked == 0;
 
                             final lastMessageText =
-                            rawMessage.isNotEmpty &&
-                                ![
-                                  MessageType.image.value,
-                                  MessageType.video.value,
-                                  MessageType.document.value,
-                                  MessageType.gif.value,
-                                  MessageType.audio.value,
-                                ].contains(rawMessage)
+                                rawMessage.isNotEmpty &&
+                                    ![
+                                      MessageType.image.value,
+                                      MessageType.video.value,
+                                      MessageType.document.value,
+                                      MessageType.gif.value,
+                                      MessageType.audio.value,
+                                    ].contains(rawMessage)
                                 ? parseLastMessage(
-                              controller.encryptionService.decryptText(rawMessage),
-                            )
+                                    controller.encryptionService.decryptText(
+                                      rawMessage,
+                                    ),
+                                  )
                                 : parseLastMessage(rawMessage);
                             final isSelected = controller.selectedChatUids
                                 .contains(chatConntactModel.uid);
@@ -279,7 +282,7 @@ class ChatsView extends GetView<ChatsController> {
                                           ),
                                         );
                                       },
-                                      child: ClipRRect(
+                                      child: ClipRRect (
                                         borderRadius: BorderRadius.circular(25),
                                         child:
                                             // (chatConntactModel.profilePic ==
@@ -516,6 +519,4 @@ class ChatsView extends GetView<ChatsController> {
       ),
     );
   }
-
 }
-

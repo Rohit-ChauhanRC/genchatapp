@@ -137,7 +137,8 @@ class GroupNameController extends GetxController {
           }
 
           print("✅ Create group response: $data");
-          Get.until((route) => route.settings.name == Routes.HOME);
+          Get.offAllNamed(Routes.HOME);
+          // Get.until((route) => route.settings.name == Routes.HOME);
         }
       }
     } catch (e) {

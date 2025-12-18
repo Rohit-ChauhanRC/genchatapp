@@ -40,6 +40,7 @@ class NewMessageModel extends Equatable {
   RxBool? isRetrying = false.obs;
   RxDouble? uploadProgress = 0.0.obs;
   RxBool? isUploading = false.obs;
+  final bool? isVanish;
 
   NewMessageModel({
     this.messageId,
@@ -73,6 +74,7 @@ class NewMessageModel extends Equatable {
     this.isRetrying,
     this.uploadProgress,
     this.isUploading,
+    this.isVanish = false,
   }) : context = Get.context,
        keys = GlobalKey();
 
@@ -122,6 +124,7 @@ class NewMessageModel extends Equatable {
       isRetrying: false.obs,
       uploadProgress: 0.0.obs,
       isUploading: false.obs,
+      isVanish: map['isVanish'] == 1 || map['isVanish'] == true,
     );
   }
 
@@ -155,6 +158,7 @@ class NewMessageModel extends Equatable {
       'assetUrl': assetUrl,
       'messageRepliedUserId': messageRepliedUserId,
       'showForwarded': showForwarded == true ? 1 : 0,
+      'isVanish': isVanish == true ? 1 : 0,
     };
   }
 
@@ -190,6 +194,7 @@ class NewMessageModel extends Equatable {
     RxBool? isRetrying,
     RxDouble? uploadProgress,
     RxBool? isUploading,
+    bool? isVanish,
   }) {
     return NewMessageModel(
       clientSystemMessageId:
@@ -228,9 +233,14 @@ class NewMessageModel extends Equatable {
       isRetrying: isRetrying ?? this.isRetrying,
       uploadProgress: uploadProgress ?? this.uploadProgress,
       isUploading: isUploading ?? this.isUploading,
+      isVanish: isVanish ?? this.isVanish,
     );
   }
 
   @override
-  List<Object?> get props => [messageId ?? clientSystemMessageId, isRetrying];
+  List<Object?> get props => [
+    messageId ?? clientSystemMessageId,
+    isRetrying,
+    isVanish,
+  ];
 }

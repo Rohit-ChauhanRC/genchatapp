@@ -790,7 +790,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             messageTimer != null &&
             messageTimer > 0 &&
             isMessageExpired(msgDate!.toIso8601String(), messageTimer) &&
-            !isMine) {
+            !isMine &&
+            msg.isVanish!) {
           // print("⏱ Message expired and delete from db.");
           await MessageTable().deleteMessage(msg.messageId!);
 

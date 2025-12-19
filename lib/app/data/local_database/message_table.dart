@@ -556,4 +556,21 @@ class MessageTable {
       whereArgs: [receiverId],
     );
   }
+
+  Future<NewMessageModel?> getLatestMessageForGroup(int recipientId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'recipientId = ?',
+      whereArgs: [recipientId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return NewMessageModel.fromMap(result.first);
+    }
+
+    return null;
+  }
 }

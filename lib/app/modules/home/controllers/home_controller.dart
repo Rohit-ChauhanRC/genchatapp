@@ -103,6 +103,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
           await connectSocket();
+          // await getGroups();
+
           // await selectedContactController.syncContactsWithServer();
         }
 

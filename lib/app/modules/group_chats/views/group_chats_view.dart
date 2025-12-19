@@ -6,6 +6,7 @@ import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_bottom_chat_field.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/group_chat_list.dart';
 import 'package:genchatapp/app/modules/group_chats/widgets/message_info.dart';
+import 'package:genchatapp/app/modules/message_info/views/message_info_view.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/utils/time_utils.dart';
 
@@ -203,12 +204,19 @@ class GroupChatsView extends GetView<GroupChatsController> {
                         case messageInfo:
                           print("clear text in group:$messageInfo");
                           // await controller.deleteTextMessage();
-                          Get.to(
-                            MessageInfo(
-                              selectedMessages:
-                                  controller.selectedMessages.first,
-                              groupChatsController: controller,
-                            ),
+                          // Get.to(
+                          //   MessageInfo(
+                          //     selectedMessages:
+                          //         controller.selectedMessages.first,
+                          //     groupChatsController: controller,
+                          //   ),
+                          // );
+                          Get.toNamed(
+                            Routes.MESSAGE_INFO,
+                            arguments: [
+                              controller.selectedMessages.first,
+                              controller.groupData.value!.users,
+                            ],
                           );
                           break;
                         default:
@@ -321,9 +329,11 @@ class GroupChatsView extends GetView<GroupChatsController> {
           //   }
           // }),
           Obx(() {
-            final isReadOnly = controller.groupData.value?.group?.isReadOnly == true;
-            final isSuperAdmin = controller.groupData.value?.group?.creatorId == controller.senderuserData?.userId;
-
+            final isReadOnly =
+                controller.groupData.value?.group?.isReadOnly == true;
+            final isSuperAdmin =
+                controller.groupData.value?.group?.creatorId ==
+                controller.senderuserData?.userId;
 
             if (controller.isCurrentUserRemoved) {
               return SafeArea(
@@ -363,7 +373,6 @@ class GroupChatsView extends GetView<GroupChatsController> {
               },
             );
           }),
-
         ],
       ),
     );

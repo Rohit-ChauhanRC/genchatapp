@@ -28,6 +28,8 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/landing/bindings/landing_binding.dart';
 import '../modules/landing/views/landing_view.dart';
+import '../modules/message_info/bindings/message_info_binding.dart';
+import '../modules/message_info/views/message_info_view.dart';
 import '../modules/otp/bindings/otp_binding.dart';
 import '../modules/otp/views/otp_view.dart';
 import '../modules/search_new_contact/bindings/search_new_contact_binding.dart';
@@ -40,7 +42,6 @@ import '../modules/singleChat/bindings/single_chat_binding.dart';
 import '../modules/singleChat/views/single_chat_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
-
 import '../modules/updates/bindings/updates_binding.dart';
 import '../modules/updates/views/updates_view.dart';
 import '../modules/verifyPhoneNumber/bindings/verify_phone_number_binding.dart';
@@ -51,7 +52,6 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-
   static const INITIAL = Routes.SPLASH;
   static final routes = [
     GetPage(
@@ -59,7 +59,6 @@ class AppPages {
       page: () => const HomeView(),
       binding: HomeBinding(),
     ),
-
     GetPage(
       name: _Paths.SPLASH,
       page: () => const SplashView(),
@@ -162,8 +161,13 @@ class AppPages {
     ),
     GetPage(
       name: Routes.CAMERA,
-      page: () =>  CameraView(),
+      page: () => CameraView(),
       binding: CameraBindings(),
+    ),
+    GetPage(
+      name: _Paths.MESSAGE_INFO,
+      page: () => const MessageInfoView(),
+      binding: MessageInfoBinding(),
     ),
   ];
 }

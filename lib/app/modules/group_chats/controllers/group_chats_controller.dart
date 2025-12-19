@@ -19,6 +19,7 @@ import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/message_table.dart';
+import 'package:genchatapp/app/data/models/message_info_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart'
     show MessageReply;
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
@@ -26,6 +27,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/message_ack
 import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/upload_file_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
+import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -61,6 +63,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   final ProfileRepository profileRepository = Get.put<ProfileRepository>(
     ProfileRepository(apiClient: Get.find()),
   );
+
+  // GroupRepository
 
   var hasScrolledInitially = false.obs;
 
@@ -2067,4 +2071,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+
+  //
 }

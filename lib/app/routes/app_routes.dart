@@ -12,7 +12,7 @@ abstract class Routes {
   static const CHATS = _Paths.CHATS;
   static const UPDATES = _Paths.UPDATES;
   static const CALL = _Paths.CALL;
-  static const CAMERA=_Paths.camera;
+  static const CAMERA = _Paths.camera;
   static const SINGLE_CHAT = _Paths.SINGLE_CHAT;
   static const SELECT_CONTACTS = _Paths.SELECT_CONTACTS;
   static const SETTINGS = _Paths.SETTINGS;
@@ -25,6 +25,7 @@ abstract class Routes {
   static const SEARCH_NEW_CONTACT = _Paths.SEARCH_NEW_CONTACT;
   static const AUDIO_RECORD = _Paths.AUDIO_RECORD;
   static const ADD_PARTICIPENTS_IN_GROUP = _Paths.ADD_PARTICIPENTS_IN_GROUP;
+  static const MESSAGE_INFO = _Paths.MESSAGE_INFO;
 }
 
 abstract class _Paths {
@@ -50,5 +51,6 @@ abstract class _Paths {
   static const SEARCH_NEW_CONTACT = '/search-new-contact';
   static const AUDIO_RECORD = '/audio-record';
   static const ADD_PARTICIPENTS_IN_GROUP = '/add-participents-in-group';
-  static const camera='/camera';
+  static const camera = '/camera';
+  static const MESSAGE_INFO = '/message-info';
 }

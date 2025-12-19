@@ -75,13 +75,13 @@ class MessageInfoController extends GetxController {
 
         final message = await messageInfoTable.getMessageById(messageId);
         if (message.isNotEmpty) {
-          // for (var i = 0; i < messageInfoData.length; i++) {
-          //   await messageInfoTable.updateMessage(messageInfoData[i]);
-          // }
+          for (var i = 0; i < messageInfoData.length; i++) {
+            await messageInfoTable.updateMessage(messageInfoData[i]);
+          }
           // await messageInfoTable.updateMessage(message);
           final newMessage = await messageInfoTable.getMessageById(messageId);
 
-          messageInfoList.assignAll(message);
+          messageInfoList.assignAll(newMessage);
         } else {
           for (var i = 0; i < messageInfoData.length; i++) {
             await messageInfoTable.insertMessage(messageInfoData[i]);

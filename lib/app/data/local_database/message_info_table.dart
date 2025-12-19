@@ -178,8 +178,8 @@ class MessageInfoTable {
     return await db.update(
       tableName,
       message.toJson(),
-      where: 'messageId = ?',
-      whereArgs: [message.messageId],
+      where: 'id = ?',
+      whereArgs: [message.id],
     );
   }
 

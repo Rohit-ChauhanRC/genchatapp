@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
@@ -17,6 +18,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/new_message
 import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_response_model.dart';
 import 'package:genchatapp/app/data/repositories/group/group_repository.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
+import 'package:genchatapp/app/utils/utils.dart';
 import 'package:get/get.dart';
 
 import 'package:rxdart/rxdart.dart' as rx;
@@ -126,72 +128,320 @@ class ChatsController extends GetxController {
     }
   }
 
+  // void bindCombinedStreams() {
+  //   final userId = senderuserData?.userId;
+  //   if (userId == null) return;
+
+  //   rx.Rx.combineLatest2(getChatUsersStream(), getMessagesStream(), (
+  //     List<ChatConntactModel> contacts,
+  //     List<NewMessageModel> messages,
+  //   ) {
+  //     // Update each contact with unread count
+  //     contacts.map((e) async {
+  //       if (e.isGroup == 1) {
+  //         final groupId = int.parse(e.uid!);
+  //         final messageTimer = sharedPreferenceService.getInt(
+  //           UserDefaultsKeys.messageDurationKey,
+  //         );
+
+  //         final group = await groupsTable.getGroupById(groupId);
+  //         final messageId = e.lastMessageId;
+  //         final userList = group!.users;
+  //         //  final user = userList!.map((e) => e.userInfo!.userId == newMessage.senderId);
+  //         final userData = sharedPreferenceService.getUserData();
+  //         final sender = userList!.firstWhere(
+  //           (u) => u.userInfo?.userId == userData!.userId,
+  //         );
+  //         final getMsg = await messageTable.getMessageById(messageId!);
+  //         //
+  //         // for (var i = 0; i < messages.length; i++) {
+  //         final String sentTime = getMsg!.messageSentFromDeviceTime.toString();
+  //         if (sender.userGroupInfo!.autoDeleteMessages == true &&
+  //             messageTimer != null &&
+  //             messageTimer > 0 &&
+  //             isMessageExpired(sentTime, messageTimer)) {
+  //           await MessageTable().deleteMessage(getMsg.messageId!);
+  //           return;
+  //           // }
+  //         }
+  //       }
+  //     });
+
+  //     final updatedContacts = contacts.map((contact) {
+  //       int unreadCount = 0;
+
+  //       if (contact.isGroup == 1) {
+  //         // 🔁 For GROUPS: unread if userId != senderId and not read
+
+  //         unreadCount = messages
+  //             .where(
+  //               (msg) =>
+  //                   msg.isGroupMessage == true &&
+  //                   msg.recipientId.toString() == contact.uid &&
+  //                   msg.senderId != userId &&
+  //                   msg.state != MessageState.read,
+  //             )
+  //             .length;
+  //       } else {
+  //         // 🔁 For PERSONAL chats
+  //         unreadCount = messages
+  //             .where(
+  //               (msg) =>
+  //                   msg.senderId.toString() == contact.uid &&
+  //                   msg.recipientId == userId &&
+  //                   msg.state != MessageState.read,
+  //             )
+  //             .length;
+  //       }
+  //       // print(messages.first.senderPhoneNumber);
+  //       return ChatConntactModel(
+  //         uid: contact.uid,
+  //         name: contact.name,
+  //         unreadCount: unreadCount,
+  //         lastMessage: contact.lastMessage,
+  //         profilePic: contact.profilePic,
+  //         timeSent: contact.timeSent,
+  //         contactId: contact.contactId,
+  //         isGroup: contact.isGroup,
+  //         isBlocked: contact.isBlocked,
+  //       );
+  //     }).toList();
+
+  //     return updatedContacts;
+  //   }).listen((updatedList) {
+  //     updatedList.sort((a, b) {
+  //       final aTime =
+  //           DateTime.tryParse(a.timeSent ?? '') ??
+  //           DateTime.fromMillisecondsSinceEpoch(0);
+  //       final bTime =
+  //           DateTime.tryParse(b.timeSent ?? '') ??
+  //           DateTime.fromMillisecondsSinceEpoch(0);
+  //       return bTime.compareTo(aTime); // descending (latest first)
+  //     });
+  //     contactsList.assignAll(updatedList);
+  //   });
+  // }
+
+  // Future<void> handleLastMessageAfterDelete(
+  //   int recipientId,
+  //   int senderId,
+  // ) async {
+  //   // Get latest remaining message
+  //   // final lastMsg = await messageTable.getMessageByClientID(mesaageId,);
+
+  //   final newLast = await messageTable.getLatestMessageForUser(
+  //     senderId,
+  //     recipientId,
+  //   );
+  //   final isGroupNewLast = newLast?.isGroupMessage;
+  //   if (newLast != null) {
+  //     filteredContacts.map((f) {
+  //       if(int.parse(f.uid!) == recipientId){
+  //         f.lastMessage = newLast.message;
+  //       }
+  //     });
+  //     await chatConectTable.updateContact(
+  //       lastMessageId: newLast.messageId,
+  //       uid: newLast.recipientId.toString(),
+  //       isGroup: 0,
+  //       lastMessage: newLast.message,
+  //       timeSent: newLast.clientSystemMessageId,
+  //     );
+  //   }
+  // }
+  Future<void> handleLastMessageAfterDelete(
+    int recipientId,
+    int senderId,
+  ) async {
+    final newLast = await messageTable.getLatestMessageForUser(
+      senderId,
+      recipientId,
+    );
+    final chatUid = senderId == senderuserData?.userId
+        ? recipientId.toString()
+        : senderId.toString();
+
+    if (newLast != null) {
+      // 2️⃣ Update CHAT TABLE
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 0,
+        lastMessageId: newLast.messageId,
+        lastMessage: newLast.message,
+        timeSent: newLast.messageSentFromDeviceTime,
+      );
+
+      // 3️⃣ Update CONTACTS LIST (source of truth)
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: newLast.message,
+          timeSent: newLast.messageSentFromDeviceTime,
+        );
+      }
+    } else {
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 0,
+        lastMessageId: null,
+        lastMessage: '',
+        timeSent: null,
+      );
+
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: '',
+          timeSent: null,
+        );
+      }
+    }
+
+    // 5️⃣ Sync filtered list
+    filterContacts();
+  }
+
+  Future<void> handleGroupLastMessageAfterVanish(int groupId) async {
+    final newLast = await messageTable.getLatestMessageForGroup(groupId);
+
+    final chatUid = groupId.toString();
+
+    if (newLast != null) {
+      //  Update CHAT TABLE
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 1,
+        lastMessageId: newLast.messageId,
+        lastMessage: newLast.messageType == MessageType.text
+            ? newLast.message
+            : newLast.messageType?.value,
+        timeSent: newLast.messageSentFromDeviceTime,
+      );
+
+      //  Update CONTACTS LIST
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: newLast.messageType == MessageType.text
+              ? newLast.message
+              : newLast.messageType?.value,
+          timeSent: newLast.messageSentFromDeviceTime,
+          lastMessageId: newLast.messageId,
+        );
+      }
+    } else {
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 1,
+        lastMessageId: null,
+        lastMessage: '',
+        timeSent: null,
+      );
+
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: '',
+          timeSent: null,
+          lastMessageId: null,
+        );
+      }
+    }
+
+    // 5️⃣ Sync filtered list
+    filterContacts();
+  }
+
   void bindCombinedStreams() {
     final userId = senderuserData?.userId;
     if (userId == null) return;
 
     rx.Rx.combineLatest2(getChatUsersStream(), getMessagesStream(), (
-      List<ChatConntactModel> contacts,
-      List<NewMessageModel> messages,
-    ) {
-      // Update each contact with unread count
-      final updatedContacts = contacts.map((contact) {
-        int unreadCount = 0;
+          List<ChatConntactModel> contacts,
+          List<NewMessageModel> messages,
+        ) async {
+          // 🔥 async cleanup
+          await Future.wait(
+            contacts.where((c) => c.isGroup == 1).map((contact) async {
+              final groupId = int.tryParse(contact.uid ?? '');
+              if (groupId == null) return;
 
-        if (contact.isGroup == 1) {
-          // 🔁 For GROUPS: unread if userId != senderId and not read
-          unreadCount = messages
-              .where(
-                (msg) =>
-                    msg.isGroupMessage == true &&
+              final messageTimer = sharedPreferenceService.getInt(
+                UserDefaultsKeys.messageDurationKey,
+              );
+              if (messageTimer == null || messageTimer <= 0) return;
+
+              final group = await groupsTable.getGroupById(groupId);
+              if (group == null) return;
+
+              final userData = sharedPreferenceService.getUserData();
+              if (userData == null) return;
+
+              final sender = group.users?.firstWhere(
+                (u) => u.userInfo?.userId == userData.userId,
+              );
+
+              if (sender?.userGroupInfo?.autoDeleteMessages != true) return;
+
+              final messageId = contact.lastMessageId;
+              if (messageId == null) return;
+
+              final msg = await messageTable.getMessageById(messageId);
+              if (msg == null) return;
+
+              final sentTime = msg.messageSentFromDeviceTime?.toString() ?? '';
+              if (isMessageExpired(sentTime, messageTimer) && msg.isVanish == true) {
+                await messageTable.deleteMessage(msg.messageId!);
+                await handleGroupLastMessageAfterVanish(groupId);
+              }
+            }),
+          );
+
+          return contacts.map((contact) {
+            int unreadCount = 0;
+
+            if (contact.isGroup == 1) {
+              unreadCount = messages.where((msg) {
+                return msg.isGroupMessage == true &&
                     msg.recipientId.toString() == contact.uid &&
                     msg.senderId != userId &&
-                    msg.state != MessageState.read,
-              )
-              .length;
-        } else {
-          // 🔁 For PERSONAL chats
-          unreadCount = messages
-              .where(
-                (msg) =>
-                    msg.senderId.toString() == contact.uid &&
+                    msg.state != MessageState.read;
+              }).length;
+            } else {
+              unreadCount = messages.where((msg) {
+                return msg.senderId.toString() == contact.uid &&
                     msg.recipientId == userId &&
-                    msg.state != MessageState.read,
-              )
-              .length;
-        }
-        // print(messages.first.senderPhoneNumber);
-        return ChatConntactModel(
-          uid: contact.uid,
-          name: contact.name,
-          unreadCount: unreadCount,
-          lastMessage: contact.lastMessage,
-          profilePic: contact.profilePic,
-          timeSent: contact.timeSent,
-          contactId: contact.contactId,
-          isGroup: contact.isGroup,
-          isBlocked: contact.isBlocked,
-        );
-      }).toList();
+                    msg.state != MessageState.read;
+              }).length;
+            }
 
-      return updatedContacts;
-    }).listen((updatedList) {
-      updatedList.sort((a, b) {
-        final aTime =
-            DateTime.tryParse(a.timeSent ?? '') ??
-            DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime =
-            DateTime.tryParse(b.timeSent ?? '') ??
-            DateTime.fromMillisecondsSinceEpoch(0);
-        return bTime.compareTo(aTime); // descending (latest first)
-      });
-      contactsList.assignAll(updatedList);
-    });
+            return contact.copyWith(unreadCount: unreadCount);
+          }).toList();
+        })
+        // 🔑 FLATTEN THE FUTURE HERE
+        .asyncMap((futureList) => futureList)
+        .listen((updatedList) {
+          updatedList.sort((a, b) {
+            final aTime =
+                DateTime.tryParse(a.timeSent ?? '') ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            final bTime =
+                DateTime.tryParse(b.timeSent ?? '') ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            return bTime.compareTo(aTime);
+          });
+
+          contactsList.assignAll(updatedList);
+        });
   }
 
   void filterContacts() async {
     if (searchText.isEmpty) {
-      filteredContacts.assignAll(contactsList); // Show full list
+      filteredContacts.assignAll(contactsList);
     } else {
       filteredContacts.assignAll(
         contactsList.where((contact) {

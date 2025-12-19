@@ -873,8 +873,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     final groupId = receiverUserData?.group?.id;
     if (groupId == null) return;
 
-    final latestMessage = await MessageTable().getLatestMessageForGroup(groupId);
-    
+    final latestMessage = await MessageTable().getLatestMessageForGroup(
+      groupId,
+    );
+
     if (latestMessage != null) {
       await chatConectTable.updateContact(
         uid: groupId.toString(),

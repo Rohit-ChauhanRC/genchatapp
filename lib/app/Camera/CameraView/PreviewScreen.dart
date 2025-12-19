@@ -35,11 +35,11 @@ class PreviewScreen extends StatelessWidget {
             child: imagePath != null
                 ? Image.file(File(imagePath!))
                 : (videoPath != null
-                ? VideoPlayerScreen(
-              videoPath: videoPath!,
-              statusRepository: statusRepository,
-            )
-                : const SizedBox()),
+                      ? VideoPlayerScreen(
+                          videoPath: videoPath!,
+                          statusRepository: statusRepository,
+                        )
+                      : const SizedBox()),
           ),
           Positioned(
             bottom: 30,
@@ -50,37 +50,37 @@ class PreviewScreen extends StatelessWidget {
                 onPressed: isUploading.value
                     ? null // 🚫 Disable multiple clicks
                     : () async {
-                  isUploading.value = true;
+                        isUploading.value = true;
 
-                  try {
-                    final uploadResponse =
-                    await statusRepository.uploadStatus(
-                      imageFile: imagePath != null
-                          ? File(imagePath!)
-                          : File(videoPath!),
-                      isAssets: true,
-                      onProgress: (int sent, int total) {},
-                      text: "",
-                    );
+                        try {
+                          final uploadResponse = await statusRepository
+                              .uploadStatus(
+                                imageFile: imagePath != null
+                                    ? File(imagePath!)
+                                    : File(videoPath!),
+                                isAssets: true,
+                                onProgress: (int sent, int total) {},
+                                text: "",
+                              );
 
-                    if (uploadResponse != null &&
-                        uploadResponse.statusCode == 200) {
-                      await updatesController.getStatus();
-                      Get.close(2);
-                    }
-                  } finally {
-                    isUploading.value=false;
-                  }
-                },
+                          if (uploadResponse != null &&
+                              uploadResponse.statusCode == 200) {
+                            await updatesController.getStatus();
+                            Get.close(2);
+                          }
+                        } finally {
+                          isUploading.value = false;
+                        }
+                      },
                 child: isUploading.value
                     ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Icon(Icons.send, color: Colors.white),
               );
             }),
@@ -88,6 +88,5 @@ class PreviewScreen extends StatelessWidget {
         ],
       ),
     );
-
   }
 }

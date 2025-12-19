@@ -187,15 +187,11 @@ class _StatusViewState extends State<StatusView> {
 
     if (index > 0) {
       index--;
-    }
-
-    else if (currentStatusIndex > 0) {
+    } else if (currentStatusIndex > 0) {
       currentStatusIndex--;
       status = statusList[currentStatusIndex];
       index = status.media.length - 1; // last media of previous status
-    }
-
-    else {
+    } else {
       Get.back();
       return;
     }

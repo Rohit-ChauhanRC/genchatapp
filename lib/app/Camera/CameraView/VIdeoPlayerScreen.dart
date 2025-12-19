@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoPath;
+
   VideoPlayerScreen({
     super.key,
     required this.videoPath,
@@ -28,7 +29,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   VideoPlayerController? _videoController;
   bool isLoading = true;
   bool isPlaying = true;
-  final RxBool isUploading=false.obs;
+  final RxBool isUploading = false.obs;
+
   @override
   void initState() {
     super.initState();
@@ -116,40 +118,36 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                 onPressed: isUploading.value
                     ? null
                     : () async {
-                  isUploading.value = true;
+                        isUploading.value = true;
 
-                  try {
-                    final uploadResponse =
-                    await widget.statusRepository.uploadStatus(
-                      imageFile: File(widget.videoPath!),
-                      isAssets: true,
-                      onProgress: (int sent, int total) {},
-                      text: "",
-                    );
-
-                    if (uploadResponse != null &&
-                        uploadResponse.statusCode == 200) {
-                      await widget.updatesController.getStatus();
-                      Get.close(2);
-                    }
-                  }
-
-                  catch(e){
-                    return ;
-                  }
-                  finally{
-                    isUploading.value=false;
-                  }
-                },
+                        try {
+                          final uploadResponse = await widget.statusRepository
+                              .uploadStatus(
+                                imageFile: File(widget.videoPath!),
+                                isAssets: true,
+                                onProgress: (int sent, int total) {},
+                                text: "",
+                              );
+                          if (uploadResponse != null &&
+                              uploadResponse.statusCode == 200) {
+                            await widget.updatesController.getStatus();
+                            Get.close(2);
+                          }
+                        } catch (e) {
+                          return;
+                        } finally {
+                          isUploading.value = false;
+                        }
+                      },
                 child: isUploading.value
                     ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Icon(Icons.send),
               );
             }),

@@ -16,7 +16,7 @@ class TextStatusScreen extends StatefulWidget {
 
 class _TextStatusScreenState extends State<TextStatusScreen> {
   final TextEditingController _textController = TextEditingController();
-  final RxBool isUploading=false.obs;
+  final RxBool isUploading = false.obs;
 
   Color _backgroundColor = Colors.black;
   final Map<int, Color> _colors = {
@@ -101,59 +101,56 @@ class _TextStatusScreenState extends State<TextStatusScreen> {
                   onTap: isUploading.value
                       ? null // 🚫 block multiple taps
                       : () async {
-                    int? key = _colors.entries
-                        .firstWhere(
-                          (entry) => entry.value == _backgroundColor,
-                      orElse: () =>
-                      const MapEntry(-1, Colors.transparent),
-                    )
-                        .key;
+                          int? key = _colors.entries
+                              .firstWhere(
+                                (entry) => entry.value == _backgroundColor,
+                                orElse: () =>
+                                    const MapEntry(-1, Colors.transparent),
+                              )
+                              .key;
 
-                    if (_textController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please type something")),
-                      );
-                      return;
-                    }
+                          if (_textController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please type something"),
+                              ),
+                            );
+                            return;
+                          }
 
-                    isUploading.value = true;
+                          isUploading.value = true;
 
-                    try {
-                      final uploadResponse =
-                      await widget.statusRepository.uploadStatus(
-                        imageFile: null,
-                        isAssets: false,
-                        onProgress: (int i, int j) {},
-                        text: "$key-${_textController.text.trim()}",
-                      );
+                          try {
+                            final uploadResponse = await widget.statusRepository
+                                .uploadStatus(
+                                  imageFile: null,
+                                  isAssets: false,
+                                  onProgress: (int i, int j) {},
+                                  text: "$key-${_textController.text.trim()}",
+                                );
 
-                      if (uploadResponse != null &&
-                          uploadResponse.statusCode == 200) {
-                        await widget.updatesController.getStatus();
-                        Get.close(2);
-                      }
-                    } finally {
-                      isUploading.value = false;
-                    }
-                  },
+                            if (uploadResponse != null &&
+                                uploadResponse.statusCode == 200) {
+                              await widget.updatesController.getStatus();
+                              Get.close(2);
+                            }
+                          } finally {
+                            isUploading.value = false;
+                          }
+                        },
                   child: isUploading.value
                       ? const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                      : const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.check, color: Colors.white, size: 28),
                 );
               }),
             ),
-
           ],
         ),
       ),

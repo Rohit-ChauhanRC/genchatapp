@@ -206,7 +206,6 @@ class SocketService extends GetxService {
           final sender = userList!.firstWhere(
             (u) => u.userInfo?.userId == userData!.userId,
           );
-
           final String sentTime = data["messageSentFromDeviceTime"].toString();
 
           if (sender.userGroupInfo!.autoDeleteMessages == true &&
@@ -389,7 +388,7 @@ class SocketService extends GetxService {
 
       print(
         success
-            ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
+            ? "✅    User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
             : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime",
       );
     });

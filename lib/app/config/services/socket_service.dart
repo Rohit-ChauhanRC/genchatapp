@@ -202,8 +202,9 @@ class SocketService extends GetxService {
           final group = await groupsTable.getGroupById(groupId!);
           final userList = group!.users;
           //  final user = userList!.map((e) => e.userInfo!.userId == newMessage.senderId);
+          final userData = sharedPreferenceService.getUserData();
           final sender = userList!.firstWhere(
-            (u) => u.userInfo?.userId == newMessage.senderId,
+            (u) => u.userInfo?.userId == userData!.userId,
           );
 
           final String sentTime = data["messageSentFromDeviceTime"].toString();
@@ -212,10 +213,15 @@ class SocketService extends GetxService {
               messageTimer != null &&
               messageTimer > 0 &&
               isMessageExpired(sentTime, messageTimer)) {
+            _socket?.emit('message-seen', {"messageId": messageId});
             print("⏱ Message expired before save. Skipping DB insert.");
             return;
           } else {
-            messageTable.insertMessage(newMessage);
+            messageTable.insertMessage(
+              newMessage.copyWith(
+                isVanish: sender.userGroupInfo!.autoDeleteMessages,
+              ),
+            );
             incomingMessage.value = newMessage;
 
             final chatContactMessage = NewMessageModel(
@@ -772,6 +778,11 @@ class SocketService extends GetxService {
         autoDeleteMessages: data["autoDeleteMessages"],
         userId: data["userIds"][0],
       );
+
+      if (data["autoDeleteMessages"] == false) {
+        messageTable.updateMessageByVanishMode(data["groupId"], 0);
+      }
+
       // fndj
       // getGroupDataFromLocal
       // groupId, isReadOnly

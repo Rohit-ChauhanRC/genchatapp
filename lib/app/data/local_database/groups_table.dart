@@ -235,12 +235,18 @@ class GroupsTable {
           userId: row['userId'] as int,
           countryCode: row['countryCode'] as int,
           phoneNumber: row['phoneNumber'] as String,
-          name: row['name'] as String,
-          email: row['email'] as String,
-          userDescription: row['userDescription'] as String?,
+          name: row['name'] != null ? row['name'] as String : "",
+          email: row['email'] != null ? row['email'] as String : "",
+          userDescription: row['userDescription'] != null
+              ? row['userDescription'] as String
+              : '',
           isOnline: row['isOnline'] == 1,
-          displayPicture: row['displayPicture'] as String?,
-          displayPictureUrl: row['displayPictureUrl'] as String?,
+          displayPicture: row['displayPicture'] != null
+              ? row['displayPicture'] as String
+              : "",
+          displayPictureUrl: row['displayPictureUrl'] != null
+              ? row['displayPictureUrl'] as String
+              : "",
         ),
         userGroupInfo: UserGroupInfo(
           groupId: row['groupId'] as int,

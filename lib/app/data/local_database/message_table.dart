@@ -39,7 +39,8 @@ class MessageTable {
         assetOriginalName TEXT,
         assetServerName TEXT,
         assetUrl TEXT,
-        messageRepliedUserId INTEGER
+        messageRepliedUserId INTEGER,
+        isVanish INTEGER DEFAULT 0
       )
     ''');
   }
@@ -89,7 +90,6 @@ class MessageTable {
       await updateMessage(message);
     }
   }
-
 
   // Fetch messages between sender & receiver
   Future<List<NewMessageModel>> fetchMessages({
@@ -537,16 +537,23 @@ class MessageTable {
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
       // Safely add the new column only if it doesn't exist
+      // isVanish
       final result = await db.rawQuery('PRAGMA table_info($tableName);');
-      final columnExists = result.any(
-        (column) => column['name'] == 'receiverPhoneNumber',
-      );
+      final columnExists = result.any((column) => column['name'] == 'isVanish');
 
       if (!columnExists) {
-        db.execute(
-          "ALTER TABLE $tableName ADD COLUMN receiverPhoneNumber TEXT;",
-        );
+        db.execute("ALTER TABLE $tableName ADD COLUMN isVanish INTEGER;");
       }
     }
+  }
+
+  Future<void> updateMessageByVanishMode(int receiverId, int isVanish) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'isVanish': isVanish},
+      where: 'recipientId = ?',
+      whereArgs: [receiverId],
+    );
   }
 }

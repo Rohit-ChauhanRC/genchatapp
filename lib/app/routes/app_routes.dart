@@ -25,7 +25,6 @@ abstract class Routes {
   static const SEARCH_NEW_CONTACT = _Paths.SEARCH_NEW_CONTACT;
   static const AUDIO_RECORD = _Paths.AUDIO_RECORD;
   static const ADD_PARTICIPENTS_IN_GROUP = _Paths.ADD_PARTICIPENTS_IN_GROUP;
-
 }
 
 abstract class _Paths {

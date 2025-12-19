@@ -782,6 +782,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       currentOffset += messages.length;
       // ✅ Cache sender names for newly loaded messages
+      bool hasDeletedVanishMessages = false;
       for (var msg in messages) {
         final msgDate = DateTime.tryParse(msg.messageSentFromDeviceTime ?? "");
         final isMine = msg.senderId == senderuserData?.userId;
@@ -794,6 +795,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             msg.isVanish!) {
           // print("⏱ Message expired and delete from db.");
           await MessageTable().deleteMessage(msg.messageId!);
+          hasDeletedVanishMessages = true;
 
           // return;
         } else {
@@ -811,6 +813,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           }
           messageList.add(msg);
         }
+      }
+
+      // ✅ Update last message in chat contact if vanish messages were deleted
+      if (hasDeletedVanishMessages) {
+        await _updateLastMessageAfterVanish();
       }
 
       // messageList.insertAll(0, messages);
@@ -860,6 +867,33 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     Timer(const Duration(seconds: 3), () {
       isLoading = false; // Stop loading after 3 seconds
     });
+  }
+
+  Future<void> _updateLastMessageAfterVanish() async {
+    final groupId = receiverUserData?.group?.id;
+    if (groupId == null) return;
+
+    final latestMessage = await MessageTable().getLatestMessageForGroup(groupId);
+    
+    if (latestMessage != null) {
+      await chatConectTable.updateContact(
+        uid: groupId.toString(),
+        isGroup: 1,
+        lastMessage: latestMessage.messageType == MessageType.text
+            ? latestMessage.message
+            : latestMessage.messageType?.value,
+        lastMessageId: latestMessage.messageId,
+        timeSent: latestMessage.messageSentFromDeviceTime,
+      );
+    } else {
+      // No messages left, clear last message
+      await chatConectTable.updateContact(
+        uid: groupId.toString(),
+        isGroup: 1,
+        lastMessage: '',
+        timeSent: '',
+      );
+    }
   }
 
   Future<void> getRootFolder() async {

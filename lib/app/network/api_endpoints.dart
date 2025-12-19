@@ -39,4 +39,6 @@ class ApiEndpoints {
   static const String statusTime = "config";
   static const String isVanishModeGroup = "group/auto-delete-messages";
   static const String isReadOnlyAd = "group/read-only";
+  static const String groupFetchAcknowledgements =
+      "group/fetch-acknowledgements";
 }

@@ -43,3 +43,4 @@ const videoCall = "Video Call";
 const viewContact = "View Contact";
 const statusDb = "statusDb";
 const messageInfo = "Message Info";
+const messageInfoTable = "messageInfoTable";

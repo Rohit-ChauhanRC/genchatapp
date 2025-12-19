@@ -215,4 +215,18 @@ class GroupRepository {
       return null;
     }
   }
+
+  Future<Response?> getMessageInfo(int? messageId) async {
+    try {
+      final param = {'messageId': messageId};
+      return await apiClient.get(
+        ApiEndpoints.groupFetchAcknowledgements,
+        queryParams: param,
+      );
+    } catch (e) {
+      // print('Error in verifyOTPAPI: $e');
+      // showAlertMessage("Error: $e");
+      return null;
+    }
+  }
 }

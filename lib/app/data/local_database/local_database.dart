@@ -1,4 +1,5 @@
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
+import 'package:genchatapp/app/data/local_database/message_info_table.dart';
 import 'package:genchatapp/app/data/local_database/status_table.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
@@ -75,6 +76,7 @@ class DataBaseService {
     await MessageTable().createDeletionQueueTable(database);
     await GroupsTable().createTable(database);
     await StatusTable().createTable(database);
+    await MessageInfoTable().createTable(database);
   }
 
   void onUpgrade(Database database, int oldVersion, int newVersion) async {
@@ -98,6 +100,7 @@ class DataBaseService {
     await MessageTable().deleteQueueMessageTable();
     await GroupsTable().deleteGroupsTable();
     await StatusTable().deleteTable();
+    await MessageInfoTable().deleteQueueMessageTable();
   }
 }
 
@@ -297,6 +300,8 @@ extension BackupRestore on DataBaseService {
     await MessageTable().deleteQueueMessageTable();
     await GroupsTable().deleteGroupsTable();
     await StatusTable().deleteTable();
+    await StatusTable().deleteTable();
+    await MessageInfoTable().deleteQueueMessageTable();
   }
 
   Future<void> deleteDatabaseFile() async {

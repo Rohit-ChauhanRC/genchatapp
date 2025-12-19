@@ -1,0 +1,555 @@
+import 'package:genchatapp/app/constants/constants.dart';
+import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/models/message_info_model.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/new_message_model.dart';
+import 'package:sqflite/sqflite.dart';
+import 'local_database.dart';
+
+class MessageInfoTable {
+  final tableName = messageInfoTable;
+  final deleteQueueTblName = deleteQueueTable;
+
+  // Create message table
+  Future<void> createTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableName (
+        messageId INTEGER,
+        id INTEGER,
+        eventRecipientId INTEGER,
+        eventName TEXT,
+        eventEmitted INTEGER,
+        createdAt TEXT,
+        sentAt TEXT
+      )
+    ''');
+  }
+
+  // Create deletion queue table
+  Future<void> createDeletionQueueTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $deleteQueueTblName (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        messageId INTEGER NOT NULL UNIQUE,
+        deleteState INTEGER NOT NULL
+      )
+    ''');
+  }
+
+  bool isOlderThanNow(MessageInfoModel msg) {
+    if (msg.createdAt == null) return false;
+
+    try {
+      final created = DateTime.parse(msg.createdAt!);
+      return created.isBefore(DateTime.now());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // // Insert or update a message based on messageId
+  // Future<void> insertOrUpdateMessage(NewMessageModel message) async {
+  //
+  //   final existingMessage = await getMessageById(message.messageId!);
+  //   if (existingMessage == null) {
+  //     await insertMessage(message);
+  //   } else {
+  //     await updateMessage(message);
+  //   }
+  // }
+  Future<void> insertOrUpdateMessage(MessageInfoModel message) async {
+    if (isOlderThanNow(message)) {
+      return;
+    }
+
+    final existingMessage = await getMessageById(message.messageId ?? -1);
+
+    if (existingMessage == null) {
+      await insertMessage(message);
+    } else {
+      await updateMessage(message);
+    }
+  }
+
+  // Fetch messages between sender & receiver
+  Future<List<MessageInfoModel>> fetchMessages({
+    required int receiverId,
+    required int senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+      orderBy: 'messageSentFromDeviceTime ASC',
+    );
+
+    return result.map((map) => MessageInfoModel.fromJson(map)).toList();
+  }
+
+  Future<List<MessageInfoModel>> fetchMessagesPaginated({
+    required int receiverId,
+    required int senderId,
+    int offset = 0,
+    int limit = 10,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ? AND isGroupMessage = 0) OR (senderId = ? AND recipientId = ? AND isGroupMessage = 0)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    final messages = result
+        .map((map) => MessageInfoModel.fromJson(map))
+        .toList();
+    return messages.reversed.toList();
+  }
+
+  Future<List<MessageInfoModel>> fetchGroupMessagesPaginated({
+    required int receiverId,
+    int offset = 0,
+    int limit = 10,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: ' (isGroupMessage = 1 AND recipientId = ?)',
+      whereArgs: [receiverId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    List<MessageInfoModel> messages = result
+        .map((map) => MessageInfoModel.fromJson(map))
+        .toList();
+
+    //  FILTER OUT OLD MESSAGES
+    // messages.removeWhere((m) => isOlderThanNow(m));
+
+    // //  DELETE EXPIRED FROM LOCAL DB
+    // for (var m in messages) {
+    //   if (isOlderThanNow(m)) {
+    //     await deleteMessage(m.messageId!);
+    //   }
+    // }
+
+    return messages.reversed.toList();
+  }
+
+  // Insert a new message
+  Future<void> insertMessage(MessageInfoModel message) async {
+    final db = await DataBaseService().database;
+
+    // debugPrint("meesageSent: ${message.message}");
+
+    await db.insert(
+      tableName,
+      message.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<MessageInfoModel?> fetchMessageById(int messageId) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return MessageInfoModel.fromJson(result.first);
+    }
+
+    return null; // message does not exist at all
+  }
+
+  // Update message by messageId
+  Future<int> updateMessage(MessageInfoModel message) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      message.toJson(),
+      where: 'messageId = ?',
+      whereArgs: [message.messageId],
+    );
+  }
+
+  Future<int> updateMessageForAsset({
+    required String assetPath,
+    required String fileName,
+  }) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      {"assetThumbnail": assetPath},
+      where: 'assetServerName = ?',
+      whereArgs: [fileName],
+    );
+  }
+
+  // Future<int> updateMessageByClientId(MessageInfoModel message) async {
+  //   final db = await DataBaseService().database;
+  //   return await db.update(
+  //     tableName,
+  //     message.toJson(),
+  //     where: 'clientSystemMessageId = ?',
+  //     whereArgs: [message.clientSystemMessageId],
+  //   );
+  // }
+
+  //     final database = await DataBaseService().database;
+  //     return await database.update(
+  //       tableName,
+  //       {
+  //         if (name != null) 'name': name,
+  //         if (profilePic != null) 'profilePic': profilePic,
+  //         if (isOnline != null) 'isOnline': isOnline,
+  //         if (phoneNumber != null) 'phoneNumber': phoneNumber,
+  //         if (groupId != null) 'groupId': groupId,
+  //         if (email != null) 'email': email,
+  //         if (fcmToken != null) 'fcmToken': fcmToken,
+  //         if (lastSeen != null) 'lastSeen': lastSeen,
+  //       },
+  //       where: 'uid = ?',
+  //       conflictAlgorithm: ConflictAlgorithm.rollback,
+  //       whereArgs: [uid],
+  //     );
+
+  Future<int> updateAckMessage({
+    required String clientSystemMessageId,
+    required int state,
+    required int messageId,
+    required SyncStatus syncStatus,
+  }) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      {"state": state, "messageId": messageId, "syncStatus": syncStatus.value},
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [clientSystemMessageId],
+      conflictAlgorithm: ConflictAlgorithm.rollback,
+    );
+  }
+
+  Future<int> updateAckStateMessage({
+    required String messageId,
+    required int state,
+  }) async {
+    final db = await DataBaseService().database;
+    return await db.update(
+      tableName,
+      {"state": state},
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      conflictAlgorithm: ConflictAlgorithm.rollback,
+    );
+  }
+
+  Future<List<MessageInfoModel>> fetchAllPendingMessages({
+    required int loginUserId,
+  }) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.query(
+      tableName,
+      where: 'syncStatus = ? AND senderId = ?',
+      whereArgs: [SyncStatus.pending.value, loginUserId],
+    );
+
+    return result.map((e) => MessageInfoModel.fromJson(e)).toList();
+  }
+
+  // Get message by messageId
+  Future<List<MessageInfoModel>> getMessageById(int messageId) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+
+    return result.map((map) => MessageInfoModel.fromJson(map)).toList();
+  }
+
+  Future<bool> isLastMessage({
+    required int messageId,
+    required int senderId,
+    required int receiverId,
+  }) async {
+    final db = await DataBaseService().database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT messageId FROM $tableName
+    WHERE 
+      (senderId = ? AND recipientId = ?) OR 
+      (senderId = ? AND recipientId = ?)
+    ORDER BY messageSentFromDeviceTime DESC
+    LIMIT 1
+  ''',
+      [senderId, receiverId, receiverId, senderId],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['messageId'] == messageId;
+    }
+
+    return false;
+  }
+
+  Future<MessageInfoModel?> getLatestMessageForUser(
+    int recipientId,
+    int senderId,
+  ) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+      whereArgs: [senderId, recipientId, recipientId, senderId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return MessageInfoModel.fromJson(result.first);
+    }
+
+    return null;
+  }
+
+  Future<MessageInfoModel?> getMessageByClientID(
+    String clientSystemMessageId,
+  ) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [clientSystemMessageId],
+    );
+
+    if (result.isNotEmpty) {
+      return MessageInfoModel.fromJson(result.first);
+    }
+    return null;
+  }
+
+  // Fetch messages not yet synced
+  Future<List<MessageInfoModel>> fetchUnsentMessages() async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'syncStatus = ?',
+      whereArgs: ['pending'],
+    );
+
+    return result.map((map) => MessageInfoModel.fromJson(map)).toList();
+  }
+
+  // Update syncStatus and state by messageId
+  Future<void> updateSyncStatus(
+    String messageId,
+    SyncStatus syncStatus,
+    MessageState state,
+  ) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'syncStatus': syncStatus.value, 'state': state.value},
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+  }
+
+  // Delete a message
+  Future<void> deleteMessage(int messageId) async {
+    final db = await DataBaseService().database;
+    await db.delete(tableName, where: 'messageId = ?', whereArgs: [messageId]);
+  }
+
+  // Delete a message By ClientSystemMessageId
+  Future<void> deleteMessageByClientSystemMessageId(
+    String clientSystemMessageId,
+  ) async {
+    final db = await DataBaseService().database;
+    await db.delete(
+      tableName,
+      where: 'clientSystemMessageId = ?',
+      whereArgs: [clientSystemMessageId],
+    );
+  }
+
+  Future<void> deleteMessageText({
+    required String messageType,
+    required int? receiverId,
+    required int? senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.delete(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?) AND messageType = ?',
+      whereArgs: [senderId, receiverId, receiverId, senderId, messageType],
+    );
+    if (messageType != "text") {
+      //  media delete
+    }
+  }
+
+  Future<void> deleteMessageAll({
+    required int? receiverId,
+    required int? senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.delete(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ?) OR (senderId = ? AND recipientId = ?)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+    );
+  }
+
+  // Add to deletion queue
+  Future<void> markForDeletion({
+    required int messageId,
+    required bool isDeleteFromEveryone,
+  }) async {
+    try {
+      final db = await DataBaseService().database;
+      await db.insert(deleteQueueTblName, {
+        'messageId': messageId,
+        'deleteState': isDeleteFromEveryone ? 1 : 0,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    } catch (e) {
+      print("Error marking message for deletion: $e");
+    }
+  }
+
+  // Get all queued deletions
+  Future<List<Map<String, dynamic>>> getQueuedDeletions() async {
+    final db = await DataBaseService().database;
+    final result = await db.query(deleteQueueTblName);
+    return result
+        .map(
+          (row) => {
+            'messageId': row['messageId'],
+            'deleteState': row['deleteState'] == 1, // true or false
+          },
+        )
+        .toList();
+  }
+
+  // Remove from deletion queue
+  Future<void> removeQueuedDeletion(int messageId) async {
+    final db = await DataBaseService().database;
+    await db.delete(
+      deleteQueueTblName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+  }
+
+  Future<void> updateMessageContent({
+    required int messageId,
+    required String newText,
+    required MessageType newType,
+  }) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'message': newText, 'messageType': newType.value},
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+  }
+
+  Future<void> deleteMessagesForUser(int userId) async {
+    final db = await DataBaseService().database;
+
+    await db.delete(
+      tableName,
+      where: '(senderId = ? OR recipientId = ?)',
+      whereArgs: [userId, userId],
+    );
+  }
+
+  Future<List<MessageInfoModel>> getAllMessages() async {
+    final db = await DataBaseService().database;
+    final result = await db.query(tableName);
+
+    return result.map((map) => MessageInfoModel.fromJson(map)).toList();
+  }
+
+  Future<bool> messageExists(int messageId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<void> deleteMessageTable() async {
+    final db = await DataBaseService().database;
+    await db.execute('DROP TABLE IF EXISTS $tableName');
+    await createTable(db);
+  }
+
+  Future<void> deleteQueueMessageTable() async {
+    final db = await DataBaseService().database;
+    await db.execute('DROP TABLE IF EXISTS $deleteQueueTblName');
+    await createDeletionQueueTable(db);
+  }
+
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < newVersion) {
+      // Safely add the new column only if it doesn't exist
+      // isVanish
+      final result = await db.rawQuery('PRAGMA table_info($tableName);');
+      final columnExists = result.any((column) => column['name'] == 'isVanish');
+
+      if (!columnExists) {
+        db.execute("ALTER TABLE $tableName ADD COLUMN isVanish INTEGER;");
+      }
+    }
+  }
+
+  Future<void> updateMessageByVanishMode(int receiverId, int isVanish) async {
+    final db = await DataBaseService().database;
+    await db.update(
+      tableName,
+      {'isVanish': isVanish},
+      where: 'recipientId = ?',
+      whereArgs: [receiverId],
+    );
+  }
+
+  Future<MessageInfoModel?> getLatestMessageForGroup(int recipientId) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: 'recipientId = ?',
+      whereArgs: [recipientId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return MessageInfoModel.fromJson(result.first);
+    }
+
+    return null;
+  }
+}

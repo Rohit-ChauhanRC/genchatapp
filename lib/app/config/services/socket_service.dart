@@ -33,6 +33,7 @@ import '../../data/models/new_models/response_model/message_ack_model.dart';
 
 class SocketService extends GetxService {
   IO.Socket? _socket;
+
   IO.Socket? get socket => _socket;
 
   final ContactsTable contactsTable = ContactsTable();
@@ -52,11 +53,14 @@ class SocketService extends GetxService {
   final RxMap<String, Map<String, String>> typingGroupUsersMap =
       <String, Map<String, String>>{}.obs;
   final Rx<NewMessageModel?> incomingMessage = Rx<NewMessageModel?>(null);
+
   // final Rx<BlockUserModel?> blockUserModel = Rx<BlockUserModel?>(null);
 
   final Rxn<DeletedMessageModel> deletedMessage = Rxn<DeletedMessageModel>();
+
   // ReadOnlyAdmin
   final Rxn<ReadOnlyAdmin> groupRedOnly = Rxn<ReadOnlyAdmin>();
+
   // VanishModeAutoDelete
   final Rxn<VanishModeAutoDelete> vanishModeAutoDelete =
       Rxn<VanishModeAutoDelete>();
@@ -71,6 +75,7 @@ class SocketService extends GetxService {
   final SharedPreferenceService sharedPreference = Get.find();
 
   final StatusTable statusTable = StatusTable();
+
   // final GroupChatsController groupChatsController = Get.find();
 
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
@@ -144,6 +149,7 @@ class SocketService extends GetxService {
       bool existsLocally = await messageTable.messageExists(messageId);
       //
 
+
       if (!existsLocally) {
         print("message not found");
         final newMessage = NewMessageModel(
@@ -200,7 +206,6 @@ class SocketService extends GetxService {
           final sender = userList!.firstWhere(
             (u) => u.userInfo?.userId == userData!.userId,
           );
-
           final String sentTime = data["messageSentFromDeviceTime"].toString();
 
           if (sender.userGroupInfo!.autoDeleteMessages == true &&
@@ -383,7 +388,7 @@ class SocketService extends GetxService {
 
       print(
         success
-            ? "✅ User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
+            ? "✅    User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
             : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime",
       );
     });
@@ -930,7 +935,8 @@ class SocketService extends GetxService {
               lastMessage: messageText,
               lastMessageId: data.messageId,
               timeSent: data.messageSentFromDeviceTime,
-              name: existing.name, // Don't override name/profilePic
+              name: existing.name,
+              // Don't override name/profilePic
               profilePic: existing.profilePic,
               isGroup: 1,
             );

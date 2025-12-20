@@ -16,6 +16,7 @@ class PreviewScreen extends StatelessWidget {
   final StatusRepository statusRepository;
 
   final UpdatesController updatesController = Get.find();
+  final RxBool isUploading = false.obs;
 
   PreviewScreen({
     super.key,
@@ -43,29 +44,46 @@ class PreviewScreen extends StatelessWidget {
           Positioned(
             bottom: 30,
             right: 30,
-            child: FloatingActionButton(
-              backgroundColor: textBarColor,
-              onPressed: () async {
-                final uploadResponse = await statusRepository.uploadStatus(
-                  imageFile: imagePath != null
-                      ? File(imagePath!)
-                      : File(videoPath!),
-                  isAssets: true,
-                  onProgress: (int i, int j) {},
-                  text: "",
-                );
-                print(uploadResponse);
+            child: Obx(() {
+              return FloatingActionButton(
+                backgroundColor: textBarColor,
+                onPressed: isUploading.value
+                    ? null // 🚫 Disable multiple clicks
+                    : () async {
+                        isUploading.value = true;
 
-                if (uploadResponse != null &&
-                    uploadResponse.statusCode == 200) {
-                  await updatesController.getStatus();
-                } else {
-                  return;
-                }
-                Get.close(2);
-              },
-              child: const Icon(Icons.send, color: Colors.white),
-            ),
+                        try {
+                          final uploadResponse = await statusRepository
+                              .uploadStatus(
+                                imageFile: imagePath != null
+                                    ? File(imagePath!)
+                                    : File(videoPath!),
+                                isAssets: true,
+                                onProgress: (int sent, int total) {},
+                                text: "",
+                              );
+
+                          if (uploadResponse != null &&
+                              uploadResponse.statusCode == 200) {
+                            await updatesController.getStatus();
+                            Get.close(2);
+                          }
+                        } finally {
+                          isUploading.value = false;
+                        }
+                      },
+                child: isUploading.value
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.send, color: Colors.white),
+              );
+            }),
           ),
         ],
       ),

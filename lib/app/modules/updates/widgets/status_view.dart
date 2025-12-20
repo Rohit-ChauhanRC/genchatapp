@@ -19,6 +19,7 @@ class StatusView extends StatefulWidget {
   final UpdatesController controller;
   final Statusmodel? status;
   final List<Statusmodel> statusList;
+
   final int? startIndex;
   final bool isSelf;
 
@@ -120,9 +121,6 @@ class _StatusViewState extends State<StatusView> {
       return;
     }
 
-    //--------------------------------------------------
-    //                VIDEO STATUS
-    //--------------------------------------------------
     if (type == "video") {
       File? videoFile;
 
@@ -189,15 +187,11 @@ class _StatusViewState extends State<StatusView> {
 
     if (index > 0) {
       index--;
-    }
-
-    else if (currentStatusIndex > 0) {
+    } else if (currentStatusIndex > 0) {
       currentStatusIndex--;
       status = statusList[currentStatusIndex];
       index = status.media.length - 1; // last media of previous status
-    }
-
-    else {
+    } else {
       Get.back();
       return;
     }

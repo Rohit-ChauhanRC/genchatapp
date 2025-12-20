@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:video_player/video_player.dart';
@@ -9,6 +10,7 @@ import 'package:get/get.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoPath;
+
   VideoPlayerScreen({
     super.key,
     required this.videoPath,
@@ -27,6 +29,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   VideoPlayerController? _videoController;
   bool isLoading = true;
   bool isPlaying = true;
+  final RxBool isUploading = false.obs;
 
   @override
   void initState() {
@@ -108,29 +111,46 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           Positioned(
             bottom: 30,
             right: 30,
-            child: FloatingActionButton(
-              heroTag: "sendBtnVideo",
-              backgroundColor: Colors.green,
-              onPressed: () async {
-                final uploadResponse = await widget.statusRepository
-                    .uploadStatus(
-                      imageFile: File(widget.videoPath!),
-                      isAssets: true,
-                      onProgress: (int i, int j) {},
-                      text: "",
-                    );
-                print(uploadResponse);
+            child: Obx(() {
+              return FloatingActionButton(
+                heroTag: "sendBtnVideo",
+                backgroundColor: AppColors.textBarColor,
+                onPressed: isUploading.value
+                    ? null
+                    : () async {
+                        isUploading.value = true;
 
-                if (uploadResponse != null &&
-                    uploadResponse.statusCode == 200) {
-                  await widget.updatesController.getStatus();
-                } else {
-                  return;
-                }
-                Get.close(2);
-              },
-              child: const Icon(Icons.send),
-            ),
+                        try {
+                          final uploadResponse = await widget.statusRepository
+                              .uploadStatus(
+                                imageFile: File(widget.videoPath!),
+                                isAssets: true,
+                                onProgress: (int sent, int total) {},
+                                text: "",
+                              );
+                          if (uploadResponse != null &&
+                              uploadResponse.statusCode == 200) {
+                            await widget.updatesController.getStatus();
+                            Get.close(2);
+                          }
+                        } catch (e) {
+                          return;
+                        } finally {
+                          isUploading.value = false;
+                        }
+                      },
+                child: isUploading.value
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.send),
+              );
+            }),
           ),
         ],
       ),

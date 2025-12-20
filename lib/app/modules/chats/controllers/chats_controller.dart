@@ -253,13 +253,10 @@ class ChatsController extends GetxController {
     int recipientId,
     int senderId,
   ) async {
-    // 1️⃣ Get latest remaining message
     final newLast = await messageTable.getLatestMessageForUser(
       senderId,
       recipientId,
     );
-
-    // Determine chat UID (personal chat)
     final chatUid = senderId == senderuserData?.userId
         ? recipientId.toString()
         : senderId.toString();
@@ -284,7 +281,6 @@ class ChatsController extends GetxController {
         );
       }
     } else {
-      // 4️⃣ No messages left → clear chat preview
       await chatConectTable.updateContact(
         uid: chatUid,
         isGroup: 0,
@@ -299,6 +295,59 @@ class ChatsController extends GetxController {
         contactsList[index] = contactsList[index].copyWith(
           lastMessage: '',
           timeSent: null,
+        );
+      }
+    }
+
+    // 5️⃣ Sync filtered list
+    filterContacts();
+  }
+
+  Future<void> handleGroupLastMessageAfterVanish(int groupId) async {
+    final newLast = await messageTable.getLatestMessageForGroup(groupId);
+
+    final chatUid = groupId.toString();
+
+    if (newLast != null) {
+      //  Update CHAT TABLE
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 1,
+        lastMessageId: newLast.messageId,
+        lastMessage: newLast.messageType == MessageType.text
+            ? newLast.message
+            : newLast.messageType?.value,
+        timeSent: newLast.messageSentFromDeviceTime,
+      );
+
+      //  Update CONTACTS LIST
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: newLast.messageType == MessageType.text
+              ? newLast.message
+              : newLast.messageType?.value,
+          timeSent: newLast.messageSentFromDeviceTime,
+          lastMessageId: newLast.messageId,
+        );
+      }
+    } else {
+      await chatConectTable.updateContact(
+        uid: chatUid,
+        isGroup: 1,
+        lastMessageId: null,
+        lastMessage: '',
+        timeSent: null,
+      );
+
+      final index = contactsList.indexWhere((c) => c.uid == chatUid);
+
+      if (index != -1) {
+        contactsList[index] = contactsList[index].copyWith(
+          lastMessage: '',
+          timeSent: null,
+          lastMessageId: null,
         );
       }
     }
@@ -345,18 +394,13 @@ class ChatsController extends GetxController {
               if (msg == null) return;
 
               final sentTime = msg.messageSentFromDeviceTime?.toString() ?? '';
-              if (isMessageExpired(sentTime, messageTimer)) {
+              if (isMessageExpired(sentTime, messageTimer) && msg.isVanish == true) {
                 await messageTable.deleteMessage(msg.messageId!);
-                await handleLastMessageAfterDelete(
-                  groupId,
-                  userData.userId!,
-                  // group
-                );
+                await handleGroupLastMessageAfterVanish(groupId);
               }
             }),
           );
 
-          // 🔹 return updated contacts
           return contacts.map((contact) {
             int unreadCount = 0;
 
@@ -397,7 +441,7 @@ class ChatsController extends GetxController {
 
   void filterContacts() async {
     if (searchText.isEmpty) {
-      filteredContacts.assignAll(contactsList); // Show full list
+      filteredContacts.assignAll(contactsList);
     } else {
       filteredContacts.assignAll(
         contactsList.where((contact) {

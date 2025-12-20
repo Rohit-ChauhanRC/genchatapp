@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -16,6 +17,7 @@ import 'package:genchatapp/app/modules/singleChat/widgets/document_message_widge
 import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/utils.dart';
 import 'GroupContactMessageBubble.dart';
@@ -49,11 +51,14 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     final gifPath = "${controller.rootPath}GIFs/$assetThumbnail";
     final audioPath = "${controller.rootPath}Audio/$assetThumbnail";
 
+
     if (type == MessageType.text || type == MessageType.deleted) {
-      return SelectableText(
-        type == MessageType.text
-            ? controller.encryptionService.decryptText(message)
-            : message,
+      final displayText = type == MessageType.text
+          ? controller.encryptionService.decryptText(message)
+          : message;
+
+      return SelectableLinkify(
+        text: displayText,
         autofocus: true,
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
@@ -63,6 +68,19 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
               : FontStyle.normal,
           color: type == MessageType.deleted ? greyMsgColor : blackColor,
         ),
+        linkStyle: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+        onOpen: (link) async {
+          final uri = Uri.parse(link.url);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        },
       );
     }
     if (type == MessageType.contact) {

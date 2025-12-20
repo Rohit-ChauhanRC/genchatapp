@@ -58,7 +58,6 @@ class UpdatesView extends GetView<UpdatesController> {
                         isSelf: true,
                       ),
                     );
-
                   } else {
                     // Add new status
                     Get.toNamed(Routes.CAMERA);

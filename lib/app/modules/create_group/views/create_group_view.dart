@@ -10,6 +10,7 @@ import '../controllers/create_group_controller.dart';
 
 class CreateGroupView extends GetView<CreateGroupController> {
   const CreateGroupView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

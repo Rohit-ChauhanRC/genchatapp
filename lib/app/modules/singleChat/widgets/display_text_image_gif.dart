@@ -68,7 +68,7 @@ class DisplayTextImageGIF extends StatelessWidget {
         ),
         linkStyle: const TextStyle(
           color: Colors.blue,
-          decoration: TextDecoration.underline,
+          decoration: TextDecoration.none,
         ),
         onOpen: (link) async {
           final uri = Uri.parse(link.url);

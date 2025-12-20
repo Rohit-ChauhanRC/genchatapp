@@ -205,6 +205,10 @@ class UpdatesController extends GetxController
     int? statusTime = sharedPreferenceService.getInt(
       UserDefaultsKeys.statusDurationKey,
     );
+    if (statusTime == null) {
+      return;
+    }
+
     final saved = await StatusTable().getAllStatuses(statusTime: statusTime!);
 
     final Map<String, List<Statusmodel>> grouped = {};

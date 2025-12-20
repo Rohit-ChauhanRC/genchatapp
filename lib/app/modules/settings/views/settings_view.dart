@@ -60,7 +60,7 @@ class SettingsView extends GetView<SettingsController> {
                             placeholder: (context, url) =>
                                 const CircularProgressIndicator(),
                             errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
+                                const Icon(Icons.person),
                           ),
                           const SizedBox(width: 10),
                           Expanded(

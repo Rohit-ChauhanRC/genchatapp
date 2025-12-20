@@ -1712,6 +1712,16 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       senderId: senderuserData?.userId,
     );
 
+    MessageTable().deleteMessageAll(
+      receiverId: receiverUserData!.group?.id,
+      senderId: senderuserData?.userId,
+    );
+
+    // deleteMessageGroupAll
+    MessageTable().deleteMessageGroupAll(
+      receiverId: receiverUserData!.group?.id,
+    );
+
     messageList.clear();
 
     await chatConectTable.updateContact(

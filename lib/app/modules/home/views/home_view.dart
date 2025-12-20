@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/modules/call/views/call_view.dart';
 import 'package:genchatapp/app/modules/chats/views/chats_view.dart';
+import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
 import 'package:genchatapp/app/modules/settings/views/settings_view.dart';
 import 'package:genchatapp/app/modules/updates/controllers/updates_controller.dart';
 import 'package:genchatapp/app/modules/updates/views/updates_view.dart';
@@ -30,17 +31,19 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          child:
-          NavigationBar(
+          child: NavigationBar(
             onDestinationSelected: (index) {
               controller.currentPageIndex = index;
 
               if (index == 1) {
-                final UpdatesController update = Get.put(UpdatesController());
+                final UpdatesController update = Get.find();
                 Future.microtask(() {
                   update.getContacts();
                   update.getStatus();
                 });
+              }
+              if (index == 3) {
+                final SettingsController update = Get.put(SettingsController());
               }
             },
             selectedIndex: controller.currentPageIndex,

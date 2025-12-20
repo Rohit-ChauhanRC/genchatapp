@@ -76,10 +76,10 @@ class StatusTable {
     print("All statuses inserted successfully!");
   }
 
-  Future<List<Statusmodel>> getAllStatuses({required int statusTime}) async {
+  Future<List<Statusmodel>> getAllStatuses({required int? statusTime}) async {
     final db = await DataBaseService().database;
 
-    await deleteExpiredStatuses(statusTime: statusTime);
+    if (statusTime != null) await deleteExpiredStatuses(statusTime: statusTime);
 
     final List<Map<String, dynamic>> maps = await db.query(
       tableName,

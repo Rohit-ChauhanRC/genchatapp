@@ -49,7 +49,6 @@ class DisplayTextImageGIF extends StatelessWidget {
     final gifPath = "${controller.rootPath}GIFs/$assetThumbnail";
     final audioPath = "${controller.rootPath}Audio/$assetThumbnail";
 
-
     if (type == MessageType.text || type == MessageType.deleted) {
       final displayText = type == MessageType.text
           ? controller.encryptionService.decryptText(message)
@@ -73,10 +72,7 @@ class DisplayTextImageGIF extends StatelessWidget {
         onOpen: (link) async {
           final uri = Uri.parse(link.url);
           if (await canLaunchUrl(uri)) {
-            await launchUrl(
-              uri,
-              mode: LaunchMode.externalApplication,
-            );
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
           }
         },
       );

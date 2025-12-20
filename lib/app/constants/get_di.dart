@@ -53,7 +53,7 @@ init() async {
   Get.lazyPut(() => ChatRepository(apiClient: Get.find<ApiClient>()));
 
   // StatusRepository
-  Get.lazyPut(
+  Get.put(
     () => StatusRepository(
       apiClient: Get.find<ApiClient>(),
       sharedPreferences: Get.find<SharedPreferenceService>(),
@@ -91,7 +91,7 @@ init() async {
   Get.lazyPut(() => HomeController());
   Get.lazyPut(() => ChatsController());
   Get.lazyPut(() => SelectContactsController());
-  Get.lazyPut(() => SettingsController());
+  Get.put(() => SettingsController());
 
   Get.lazyPut(() => ForwardMessagesController());
   Get.lazyPut(() => CreateGroupController());

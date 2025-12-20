@@ -54,6 +54,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     controllerInit();
 
     String? userId = sharedPreferenceService.getUserData()?.userId.toString();
+    await getStatusTime();
+
+    await getGroups();
+    await selectedContactController.syncContactsWithServer();
+    String? userPhoneNumber = sharedPreferenceService
+        .getUserData()
+        ?.phoneNumber;
+
     await socketService.initSocket(
       userId!,
       onConnected: () {
@@ -62,24 +70,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         );
       },
     );
-    String? userPhoneNumber = sharedPreferenceService
-        .getUserData()
-        ?.phoneNumber;
+
     var subscriptionTopic = ["genchat-message-$userPhoneNumber"];
     await NotificationService.subscribeToTopics(subscriptionTopic);
-    await getGroups();
-    await getStatusTime();
-    await selectedContactController.syncContactsWithServer();
-    // connectSocket();
-    // print(sharedPreferenceService.getUserDetails()?.name);
-    // print(connectivityService.isConnected.value);
-    // SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
-    //   if (connectivityService.isConnected.value) {
-    //     // await setUserOnline();
-    //   } else {
-    //     // await setUserOffline();
-    //   }
-    // });
+
     WidgetsBinding.instance.addObserver(this);
   }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:genchatapp/app/config/theme/app_colors.dart';
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
@@ -16,6 +17,7 @@ import 'package:genchatapp/app/modules/singleChat/widgets/image_widget.dart';
 import 'package:genchatapp/app/modules/singleChat/widgets/video_player_item.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/utils.dart';
 import 'document_message_widget.dart';
@@ -47,11 +49,14 @@ class DisplayTextImageGIF extends StatelessWidget {
     final gifPath = "${controller.rootPath}GIFs/$assetThumbnail";
     final audioPath = "${controller.rootPath}Audio/$assetThumbnail";
 
+
     if (type == MessageType.text || type == MessageType.deleted) {
-      return SelectableText(
-        type == MessageType.text
-            ? controller.encryptionService.decryptText(message)
-            : message,
+      final displayText = type == MessageType.text
+          ? controller.encryptionService.decryptText(message)
+          : message;
+
+      return SelectableLinkify(
+        text: displayText,
         autofocus: true,
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
@@ -61,8 +66,22 @@ class DisplayTextImageGIF extends StatelessWidget {
               : FontStyle.normal,
           color: type == MessageType.deleted ? greyMsgColor : blackColor,
         ),
+        linkStyle: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+        onOpen: (link) async {
+          final uri = Uri.parse(link.url);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        },
       );
     }
+
     if (type == MessageType.contact) {
       final contactSend = ContactSaveModel.fromJson(
         controller.encryptionService.decryptText(message),

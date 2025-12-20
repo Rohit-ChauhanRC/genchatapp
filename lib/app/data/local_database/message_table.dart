@@ -574,6 +574,15 @@ class MessageTable {
     );
   }
 
+  Future<void> deleteMessageGroupAll({required int? receiverId}) async {
+    final db = await DataBaseService().database;
+    await db.delete(
+      tableName,
+      where: 'recipientId = ?',
+      whereArgs: [receiverId],
+    );
+  }
+
   // Future<NewMessageModel?> getLatestMessageForGroup(int recipientId) async {
   //   final db = await DataBaseService().database;
   //   final result = await db.query(

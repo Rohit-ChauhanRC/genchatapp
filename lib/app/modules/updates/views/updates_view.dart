@@ -35,14 +35,18 @@ class UpdatesView extends GetView<UpdatesController> {
       ),
       body: GradientContainer(
         child: Obx(() {
-          final grouped = controller.groupedStatusMap;
+          final grouped = controller.groupedStatusMap.value;
           final myUserId = controller.senderuserData?.userId?.toString() ?? '';
-          final myStatuses = grouped[myUserId];
+          final myStatuses = grouped.isNotEmpty ? grouped[myUserId] : [];
 
           // Clone grouped map and remove your own statuses
-          final others = Map<String, List<dynamic>>.from(grouped)
-            ..remove(myUserId);
-
+          // final others = Map<String, List<dynamic>>.from(grouped)
+          //   ..remove(myUserId);
+          final Map<String, List<Statusmodel>> others =
+              grouped.isEmpty
+                    ? {}
+                    : Map<String, List<Statusmodel>>.from(grouped)
+                ..remove(myUserId);
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
@@ -53,7 +57,7 @@ class UpdatesView extends GetView<UpdatesController> {
                     Get.to(
                       () => StatusView(
                         controller: controller,
-                        statusList: myStatuses,
+                        statusList: myStatuses as List<Statusmodel>,
                         startIndex: 0,
                         isSelf: true,
                       ),

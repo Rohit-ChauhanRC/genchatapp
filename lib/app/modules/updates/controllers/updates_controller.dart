@@ -22,7 +22,9 @@ import 'package:rxdart/rxdart.dart' as rx;
 
 class UpdatesController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final statusRepository = Get.find<StatusRepository>();
+  final statusRepository = Get.put<StatusRepository>(
+    StatusRepository(apiClient: Get.find(), sharedPreferences: Get.find()),
+  );
 
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
@@ -205,7 +207,7 @@ class UpdatesController extends GetxController
     int? statusTime = sharedPreferenceService.getInt(
       UserDefaultsKeys.statusDurationKey,
     );
-    final saved = await StatusTable().getAllStatuses(statusTime: statusTime!);
+    final saved = await StatusTable().getAllStatuses(statusTime: statusTime);
 
     final Map<String, List<Statusmodel>> grouped = {};
     for (var status in saved) {

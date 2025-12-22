@@ -732,7 +732,9 @@ class GroupProfileView extends GetView<GroupProfileController> {
                               user.name,
                             ),
                             builder: (_, snap) => Text(
-                              snap.data ?? "~ $nameServer",
+                              snap.data != null && snap.data!.isNotEmpty
+                                  ? snap.data!
+                                  : "~ $nameServer",
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,

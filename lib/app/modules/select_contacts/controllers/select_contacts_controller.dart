@@ -98,6 +98,7 @@ class SelectContactsController extends GetxController {
       if (await FlutterContacts.requestPermission()) {
         final phoneContacts = await FlutterContacts.getContacts(
           withProperties: true,
+          // deduplicateProperties: false,
         );
 
         final Map<String, String> localContactMap = {};
@@ -193,6 +194,7 @@ class SelectContactsController extends GetxController {
       }
     });
   }
+
   Future<List<ContactInfo>> getDeviceContacts() async {
     final permission = await Permission.contacts.request();
 
@@ -211,6 +213,7 @@ class SelectContactsController extends GetxController {
 
     return contacts;
   }
+
   Future<void> _downloadAndCacheProfileImage(
     String imageUrl,
     String fileName,

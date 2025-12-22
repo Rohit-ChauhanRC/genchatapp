@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
+import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
 import 'package:genchatapp/app/data/local_database/contacts_table.dart';
@@ -28,6 +29,8 @@ class UpdatesController extends GetxController
 
   final socketService = Get.find<SocketService>();
   final sharedPreferenceService = Get.find<SharedPreferenceService>();
+
+  final ConnectivityService connectivityService = Get.find();
 
   FocusNode focusNode = FocusNode();
   var currentMediaCount = 0.obs;
@@ -139,10 +142,10 @@ class UpdatesController extends GetxController
   Future<void> getStatus() async {
     try {
       // CHECK INTERNET
-      final connectivityResult = await Connectivity().checkConnectivity();
-      final hasInternet = connectivityResult != ConnectivityResult.none;
+      // final connectivityResult = await Connectivity().checkConnectivity();
+      // final hasInternet = connectivityResult != ConnectivityResult.none;
 
-      if (!hasInternet) {
+      if (!connectivityService.isConnected.value) {
         print("📛 No internet → Loading local saved statuses only...");
         await getLocalSaveSatus(); // ⭐ LOAD ONLY FROM DB
         return;

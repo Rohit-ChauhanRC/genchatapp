@@ -180,7 +180,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       selectedMessages.any((msg) => msg.messageType == MessageType.deleted);
 
   bool get canDeleteForEveryone =>
-      isOnlySenderMessages && !hasAnyDeleted && allMessagesHaveServerId;
+      (isOnlySenderMessages || isSuperAdmin) &&
+      !hasAnyDeleted &&
+      allMessagesHaveServerId;
 
   late Stream<List<NewMessageModel>> messageStream;
   late StreamSubscription<List<NewMessageModel>> messageSubscription;

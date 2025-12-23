@@ -21,6 +21,7 @@ import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository.dart';
 import 'package:genchatapp/app/modules/Single_Profile/views/single_profile.dart';
+import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -74,6 +75,8 @@ class SingleChatController extends GetxController
   final EncryptionService encryptionService = Get.find();
 
   final selectedContactController = Get.find<SelectContactsController>();
+
+  // final ChatsController chatsController = Get.find();
 
   var hasScrolledInitially = false.obs;
 
@@ -2259,7 +2262,7 @@ class SingleChatController extends GetxController
     await contact.insert();
   }
 
-  void showSaveContactDialog(BuildContext context, String mobile) async {
+  void showSaveContactDialog(BuildContext context, String mobile) {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController mobileController = TextEditingController(
       text: mobile,
@@ -2354,6 +2357,13 @@ class SingleChatController extends GetxController
                       unreadCount: 0,
                     ),
                   );
+                  receiverUserData = receiverUserData!.copyWith(
+                    name: nameController.text,
+                    phoneNumber: mobileController.text,
+                  );
+                  if (connectivityService.isConnected.value) {
+                    selectedContactController.syncContactsWithServer();
+                  }
 
                   Get.back();
                 }

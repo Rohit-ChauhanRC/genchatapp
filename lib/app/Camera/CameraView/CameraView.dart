@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
+import '../../config/services/filePickerService.dart';
 import '../Controllers/CameraUpdateController.dart';
 import '../TextWriter.dart';
 import 'PreviewScreen.dart';
@@ -15,18 +17,18 @@ class CameraView extends GetView<CameraControllerX> {
   @override
   Widget build(BuildContext context) {
     final ImagePicker picker = ImagePicker();
-
+    final filePicker = FilePickerService();
     Future<void> openGallery() async {
       final XFile? media = await picker.pickImage(source: ImageSource.gallery);
 
       if (media != null) {
         final file = File(media.path);
         final int fileSizeInBytes = file.lengthSync();
-        final double fileSizeInMB =
-            fileSizeInBytes / (1024 * 1024); // convert to MB
+        final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
 
-        if (media.path.toLowerCase().endsWith(".mp4") ||
-            media.path.toLowerCase().endsWith(".mov")) {
+        final isVideo = media.path.toLowerCase().endsWith(".mp4") ||
+            media.path.toLowerCase().endsWith(".mov");
+        if (isVideo) {
           if (fileSizeInMB > 50) {
             Get.snackbar(
               "Video too large",
@@ -39,15 +41,38 @@ class CameraView extends GetView<CameraControllerX> {
           }
 
           Get.to(
-            () => VideoPlayerScreen(
+                () => VideoPlayerScreen(
               videoPath: media.path,
               statusRepository: controller.statusRepository,
             ),
           );
-        } else {
+          return;
+        }
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: media.path,
+          compressQuality: 80,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Cropper',
+              toolbarColor: Colors.deepOrange,
+              toolbarWidgetColor: Colors.white,
+              statusBarColor: Colors.deepOrange,
+              activeControlsWidgetColor: Colors.deepOrange,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.square,
+              ],
+            ),
+            IOSUiSettings(
+              title: 'Crop Image',
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
           Get.to(
-            () => PreviewScreen(
-              imagePath: media.path,
+                () => PreviewScreen(
+              imagePath: croppedFile.path,
               statusRepository: controller.statusRepository,
             ),
           );
@@ -59,7 +84,7 @@ class CameraView extends GetView<CameraControllerX> {
       final ImagePicker picker = ImagePicker();
 
       final XFile? video = await picker.pickVideo(
-        source: ImageSource.gallery, // Gallery only
+        source: ImageSource.gallery,
       );
 
       if (video == null) return;
@@ -79,7 +104,7 @@ class CameraView extends GetView<CameraControllerX> {
       }
 
       Get.to(
-        () => VideoPlayerScreen(
+            () => VideoPlayerScreen(
           videoPath: video.path,
           statusRepository: controller.statusRepository,
         ),
@@ -124,7 +149,7 @@ class CameraView extends GetView<CameraControllerX> {
                   children: [
                     // Gallery
                     GestureDetector(
-                      onTap: openGallery,
+                      onTap: () => openGallery(),
                       child: const Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -170,13 +195,14 @@ class CameraView extends GetView<CameraControllerX> {
                     GestureDetector(
                       onTap: () async {
                         final path = await controller.capturePhoto();
-                        if (path != null)
+                        if (path != null) {
                           Get.to(
-                            () => PreviewScreen(
+                                () => PreviewScreen(
                               imagePath: path,
                               statusRepository: controller.statusRepository,
                             ),
                           );
+                        }
                       },
                       // onLongPressStart: (_) async => await controller.startVideoRecording(),
                       // onLongPressEnd: (_) async {
@@ -184,7 +210,7 @@ class CameraView extends GetView<CameraControllerX> {
                       //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
                       // },
                       child: Obx(
-                        () => AnimatedContainer(
+                            () => AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           width: controller.isRecording.value ? 80 : 70,
                           height: controller.isRecording.value ? 80 : 70,
@@ -213,7 +239,7 @@ class CameraView extends GetView<CameraControllerX> {
                         GestureDetector(
                           onTap: () async {
                             final result = await Get.to(
-                              () => TextStatusScreen(
+                                  () => TextStatusScreen(
                                 statusRepository: controller.statusRepository,
                               ),
                             );

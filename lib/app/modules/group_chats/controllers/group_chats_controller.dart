@@ -584,7 +584,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         .whereType<String>()
         .toList();
 
-    // Step 2: Separate saved and unsaved contacts
     final savedNames = <String>[];
     final unsavedNumbers = <String>[];
 

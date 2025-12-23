@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
 import 'package:get/get.dart';
 
@@ -8,6 +9,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
 import 'package:genchatapp/app/data/repositories/status/status_repository.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class CameraControllerX extends GetxController {
   CameraController? cameraController;
@@ -83,8 +85,42 @@ class CameraControllerX extends GetxController {
     isCapturing.value = true;
 
     try {
+      // Capture image
       final pic = await cameraController!.takePicture();
-      return pic.path;
+      final String originalPath = pic.path;
+
+      // ───────────────────────────────
+      // OPEN CROPPER
+      // ───────────────────────────────
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: originalPath,
+        compressQuality: 80,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            statusBarColor: Colors.deepOrange,
+            activeControlsWidgetColor: Colors.deepOrange,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+          ),
+        ],
+      );
+
+      // If user cropped → return cropped path
+      if (croppedFile != null) {
+        return croppedFile.path;
+      }
+
+      // If user cancels cropper → return original
+      return originalPath;
+
     } catch (e) {
       Get.snackbar("Error", "Failed to capture photo: $e");
       return null;

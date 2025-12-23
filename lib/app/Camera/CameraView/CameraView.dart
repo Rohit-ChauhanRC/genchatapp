@@ -17,7 +17,6 @@ class CameraView extends GetView<CameraControllerX> {
   @override
   Widget build(BuildContext context) {
     final ImagePicker picker = ImagePicker();
-    final filePicker = FilePickerService();
     Future<void> openGallery() async {
       final XFile? media = await picker.pickImage(source: ImageSource.gallery);
 
@@ -26,7 +25,8 @@ class CameraView extends GetView<CameraControllerX> {
         final int fileSizeInBytes = file.lengthSync();
         final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
 
-        final isVideo = media.path.toLowerCase().endsWith(".mp4") ||
+        final isVideo =
+            media.path.toLowerCase().endsWith(".mp4") ||
             media.path.toLowerCase().endsWith(".mov");
         if (isVideo) {
           if (fileSizeInMB > 50) {
@@ -41,7 +41,7 @@ class CameraView extends GetView<CameraControllerX> {
           }
 
           Get.to(
-                () => VideoPlayerScreen(
+            () => VideoPlayerScreen(
               videoPath: media.path,
               statusRepository: controller.statusRepository,
             ),
@@ -63,15 +63,13 @@ class CameraView extends GetView<CameraControllerX> {
                 CropAspectRatioPreset.square,
               ],
             ),
-            IOSUiSettings(
-              title: 'Crop Image',
-            ),
+            IOSUiSettings(title: 'Crop Image'),
           ],
         );
 
         if (croppedFile != null) {
           Get.to(
-                () => PreviewScreen(
+            () => PreviewScreen(
               imagePath: croppedFile.path,
               statusRepository: controller.statusRepository,
             ),
@@ -83,9 +81,7 @@ class CameraView extends GetView<CameraControllerX> {
     Future<void> pickVideoFromGallery() async {
       final ImagePicker picker = ImagePicker();
 
-      final XFile? video = await picker.pickVideo(
-        source: ImageSource.gallery,
-      );
+      final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
 
       if (video == null) return;
 
@@ -104,7 +100,7 @@ class CameraView extends GetView<CameraControllerX> {
       }
 
       Get.to(
-            () => VideoPlayerScreen(
+        () => VideoPlayerScreen(
           videoPath: video.path,
           statusRepository: controller.statusRepository,
         ),
@@ -160,7 +156,7 @@ class CameraView extends GetView<CameraControllerX> {
                           ),
                           SizedBox(height: 5),
                           Text(
-                            "Gallery",
+                              "Gallery",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -197,7 +193,7 @@ class CameraView extends GetView<CameraControllerX> {
                         final path = await controller.capturePhoto();
                         if (path != null) {
                           Get.to(
-                                () => PreviewScreen(
+                            () => PreviewScreen(
                               imagePath: path,
                               statusRepository: controller.statusRepository,
                             ),
@@ -210,7 +206,7 @@ class CameraView extends GetView<CameraControllerX> {
                       //   if (path != null) Get.to(() => VideoPlayerScreen(videoPath: path));
                       // },
                       child: Obx(
-                            () => AnimatedContainer(
+                        () => AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           width: controller.isRecording.value ? 80 : 70,
                           height: controller.isRecording.value ? 80 : 70,
@@ -239,7 +235,7 @@ class CameraView extends GetView<CameraControllerX> {
                         GestureDetector(
                           onTap: () async {
                             final result = await Get.to(
-                                  () => TextStatusScreen(
+                              () => TextStatusScreen(
                                 statusRepository: controller.statusRepository,
                               ),
                             );

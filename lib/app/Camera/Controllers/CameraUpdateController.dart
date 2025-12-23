@@ -18,7 +18,7 @@ class CameraControllerX extends GetxController {
   RxBool isCapturing = false.obs;
   RxInt recordingDuration = 0.obs;
 
-  late List<CameraDescription> deviceCameras;  // FIXED NAME
+  late List<CameraDescription> deviceCameras; // FIXED NAME
 
   int selectedCameraIndex = 0;
 
@@ -37,7 +37,7 @@ class CameraControllerX extends GetxController {
 
       // Choose back camera
       selectedCameraIndex = deviceCameras.indexWhere(
-            (c) => c.lensDirection == CameraLensDirection.back,
+        (c) => c.lensDirection == CameraLensDirection.back,
       );
 
       if (selectedCameraIndex == -1) selectedCameraIndex = 0;
@@ -80,7 +80,8 @@ class CameraControllerX extends GetxController {
   Future<String?> capturePhoto() async {
     if (cameraController == null ||
         !cameraController!.value.isInitialized ||
-        isCapturing.value) return null;
+        isCapturing.value)
+      return null;
 
     isCapturing.value = true;
 
@@ -88,10 +89,6 @@ class CameraControllerX extends GetxController {
       // Capture image
       final pic = await cameraController!.takePicture();
       final String originalPath = pic.path;
-
-      // ───────────────────────────────
-      // OPEN CROPPER
-      // ───────────────────────────────
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: originalPath,
         compressQuality: 80,
@@ -107,9 +104,7 @@ class CameraControllerX extends GetxController {
               CropAspectRatioPreset.square,
             ],
           ),
-          IOSUiSettings(
-            title: 'Crop Image',
-          ),
+          IOSUiSettings(title: 'Crop Image'),
         ],
       );
 
@@ -120,7 +115,6 @@ class CameraControllerX extends GetxController {
 
       // If user cancels cropper → return original
       return originalPath;
-
     } catch (e) {
       Get.snackbar("Error", "Failed to capture photo: $e");
       return null;
@@ -135,4 +129,3 @@ class CameraControllerX extends GetxController {
     super.onClose();
   }
 }
-

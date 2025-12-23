@@ -28,15 +28,21 @@ class SelectContactsController extends GetxController {
   final socketService = Get.find<SocketService>();
 
   final RxBool _isContactRefreshed = true.obs;
+
   bool get isContactRefreshed => _isContactRefreshed.value;
+
   set isContactRefreshed(bool v) => _isContactRefreshed.value = v;
 
   final RxList<UserList> _contacts = <UserList>[].obs;
+
   List<UserList> get contacts => _contacts;
+
   set contacts(List<UserList> value) => _contacts.assignAll(value);
 
   final RxString _searchQuery = ''.obs;
+
   String get searchQuery => _searchQuery.value;
+
   set searchQuery(String value) => _searchQuery.value = value;
 
   List<UserList> get filteredContacts {

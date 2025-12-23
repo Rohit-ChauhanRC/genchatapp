@@ -53,30 +53,62 @@ class CreateProfileView extends GetView<CreateProfileController> {
                                       controller.photoUrl == ""
                                   ? const UserAvatar()
                                   : controller.image != null
-                                  ? CircleAvatar(
-                                      backgroundColor: greyColor.withOpacity(
-                                        0.4,
-                                      ),
-                                      backgroundImage: FileImage(
+                                  ? ClipOval(
+                                      child: Image.file(
                                         controller.image!,
+                                        width: 140,
+                                        height: 140,
+                                        fit: BoxFit.cover,
                                       ),
-                                      radius: 64,
                                     )
+                                  // CircleAvatar(
+                                  //     backgroundColor: greyColor.withOpacity(
+                                  //       0.4,
+                                  //     ),
+                                  //     backgroundImage: FileImage(
+                                  //       controller.image!,
+                                  //     ),
+                                  //     radius: 70,
+                                  //   )
                                   : CachedNetworkImage(
                                       imageUrl: controller.photoUrl,
-                                      imageBuilder: (context, image) {
-                                        return CircleAvatar(
-                                          backgroundColor: greyColor
-                                              .withOpacity(0.4),
-                                          radius: 64,
-                                          backgroundImage: image,
+                                      imageBuilder: (context, imageProvider) {
+                                        return ClipOval(
+                                          child: Image(
+                                            image: imageProvider,
+                                            width: 140,
+                                            height: 140,
+                                            fit: BoxFit.cover,
+                                          ),
                                         );
                                       },
                                       placeholder: (context, url) =>
-                                          const CircularProgressIndicator(),
+                                          const SizedBox(
+                                            width: 140,
+                                            height: 140,
+                                            child: Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          ),
                                       errorWidget: (context, url, error) =>
                                           const Icon(Icons.error),
                                     ),
+                              // CachedNetworkImage(
+                              //     imageUrl: controller.photoUrl,
+                              //     imageBuilder: (context, image) {
+                              //       return CircleAvatar(
+                              //         backgroundColor: greyColor
+                              //             .withOpacity(0.4),
+                              //         radius: 70,
+                              //         backgroundImage: image,
+                              //       );
+                              //     },
+                              //     placeholder: (context, url) =>
+                              //         const CircularProgressIndicator(),
+                              //     errorWidget: (context, url, error) =>
+                              //         const Icon(Icons.error),
+                              //   ),
                             ),
                           ),
                           const SizedBox(height: 20),

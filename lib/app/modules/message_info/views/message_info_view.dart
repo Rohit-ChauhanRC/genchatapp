@@ -147,8 +147,7 @@ class MessageInfoView extends GetView<MessageInfoController> {
                             .userInfo!
                             .displayPictureUrl;
 
-                        return userInfo.eventName == "sent" &&
-                                userInfo.eventEmitted
+                        return userInfo.eventName == "sent"
                             ? _userTitle(
                                 (userName ?? userPhoneNumber).toString(),
                                 userInfo.sentAt,

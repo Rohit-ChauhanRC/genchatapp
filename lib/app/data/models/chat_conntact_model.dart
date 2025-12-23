@@ -48,7 +48,9 @@ class ChatConntactModel extends Equatable {
       profilePic: map['profilePic'] as String,
       contactId: map['contactId'] as String,
       timeSent: map['timeSent'],
-      lastMessage: map['lastMessage'] as String,
+      lastMessage: map['lastMessage'] != null
+          ? map['lastMessage'] as String
+          : "",
       lastMessageId: map['lastMessageId'],
       uid: map['uid'] as String,
       unreadCount: map["unreadCount"],
@@ -102,6 +104,7 @@ class ChatConntactModel extends Equatable {
     isBlocked,
   ];
 }
+
 String parseLastMessage(String? lastMessage) {
   if (lastMessage == null || lastMessage.isEmpty) return '';
 
@@ -113,13 +116,9 @@ String parseLastMessage(String? lastMessage) {
 
       if (fullName != null) {
         return '👤 $fullName';
-
       }
     }
-  }
-  catch (_) {
-  }
+  } catch (_) {}
 
   return lastMessage;
 }
-

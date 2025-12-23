@@ -5,7 +5,7 @@ import 'package:genchatapp/app/common/widgets/user_avatar.dart';
 import 'package:genchatapp/app/constants/colors.dart' as AppColors;
 import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
-import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';       
+import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
 import 'package:genchatapp/app/modules/group_name/widget/vanish_mode_group.dart';
 
 import 'package:get/get.dart';

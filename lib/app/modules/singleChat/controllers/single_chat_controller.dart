@@ -10,6 +10,7 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
+import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:genchatapp/app/data/models/message_reply.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/block_user_model.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/contact_response_model.dart';
@@ -2256,5 +2257,112 @@ class SingleChatController extends GetxController
       ..phones = [Phone(phone)];
 
     await contact.insert();
+  }
+
+  void showSaveContactDialog(BuildContext context, String mobile) async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController mobileController = TextEditingController(
+      text: mobile,
+    );
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text("Save Contact"),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Name Field
+                TextFormField(
+                  controller: nameController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: "Name",
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Enter name";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Mobile Number Field
+                TextFormField(
+                  controller: mobileController,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  decoration: const InputDecoration(
+                    labelText: "Mobile Number",
+                    prefixIcon: Icon(Icons.phone),
+                    border: OutlineInputBorder(),
+                    counterText: "",
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Enter mobile number";
+                    }
+                    if (value.length != 10) {
+                      return "Enter valid 10-digit number";
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final name = nameController.text.trim();
+                  final mobile = mobileController.text.trim();
+
+                  // TODO: Save contact logic
+                  print("Name: $name, Mobile: $mobile");
+
+                  saveContact(
+                    name: nameController.text,
+                    phone: mobileController.text,
+                  );
+
+                  await chatConectTable.insertOrUpdateGroupChat(
+                    ChatConntactModel(
+                      uid: receiverUserData!.userId.toString(),
+                      isGroup: 1,
+                      profilePic: receiverUserData?.displayPictureUrl ?? '',
+                      timeSent: receiverUserData?.lastSeenTime ?? "",
+                      name: nameController.text,
+                      contactId: receiverUserData!.userId.toString(),
+                      lastMessage: "",
+                      lastMessageId: 0,
+                      unreadCount: 0,
+                    ),
+                  );
+
+                  Get.back();
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

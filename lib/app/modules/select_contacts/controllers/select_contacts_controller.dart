@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
@@ -93,79 +94,165 @@ class SelectContactsController extends GetxController {
     _isContactRefreshed.value = true;
   }
 
+  // Future<void> syncContactsWithServer() async {
+  //   try {
+  //     if (await FlutterContacts.requestPermission()) {
+  //       final phoneContacts = await FlutterContacts.getContacts(
+  //         withProperties: true,
+  //         // deduplicateProperties: false,
+  //       );
+
+  //       final Map<String, String> localContactMap = {};
+  //       for (var contact in phoneContacts) {
+  //         if (contact.phones.isNotEmpty) {
+  //           // var rawNumber = '';
+  //           for (var i in contact.phones) {
+  //             final rawNumber = i.number;
+  //             final sanitized = rawNumber
+  //                 .replaceAll(RegExp(r'[\s\-\(\)]'), '')
+  //                 .replaceAll(RegExp(r'^\+91'), '')
+  //                 .replaceAll(RegExp(r'^0'), '');
+  //             localContactMap[sanitized] = contact.displayName;
+  //           }
+  //           // final rawNumber = contact.phones.first.number;
+  //         }
+  //       }
+
+  //       final phoneNumbers = localContactMap.keys.toList();
+  //       final serverUsers = await contactRepository.fetchAppUsersFromContacts(
+  //         phoneNumbers,
+  //       );
+
+  //       final enrichedUsers = serverUsers.map((user) {
+  //         final userNumber = user.phoneNumber
+  //             ?.replaceAll(RegExp(r'[\s\-\(\)]'), '')
+  //             .replaceAll(RegExp(r'^\+91'), '')
+  //             .replaceAll(RegExp(r'^0'), '');
+
+  //         final localName =
+  //             localContactMap[userNumber ?? ''] ??
+  //             ''; // leave empty if not found
+
+  //         return user.copyWith(localName: localName); // only assign localName
+  //       }).toList();
+
+  //       await contactsTable.createBulk(enrichedUsers);
+  //       final updatedList = await contactsTable.fetchAll();
+  //       for (var user in updatedList) {
+  //         final isGroup = await chatConectTable.isGroupContact(
+  //           user.userId.toString(),
+  //         );
+  //         if (user.displayPictureUrl != null &&
+  //             user.displayPicture != null &&
+  //             user.displayPictureUrl!.isNotEmpty &&
+  //             user.displayPicture!.isNotEmpty) {
+  //           await _downloadAndCacheProfileImage(
+  //             user.displayPictureUrl!,
+  //             user.displayPicture!,
+  //           );
+  //         }
+  //         if (!isGroup) {
+  //           await chatConectTable.updateContact(
+  //             uid: user.userId.toString(),
+  //             profilePic: user.displayPictureUrl,
+  //             name: user.localName == "" || user.localName == null
+  //                 ? user.phoneNumber
+  //                 : user.localName,
+  //             isGroup: 0,
+  //             isBlocked: user.isBlocked == true ? 1 : 0,
+  //           );
+  //           // Download and save profile image using the same name
+  //         }
+  //       }
+  //       contacts = enrichedUsers;
+  //     }
+  //   } catch (e) {
+  //     // debugPrint('Error syncing contacts: $e');
+  //   }
+  // }
   Future<void> syncContactsWithServer() async {
     try {
-      if (await FlutterContacts.requestPermission()) {
-        final phoneContacts = await FlutterContacts.getContacts(
-          withProperties: true,
-        );
+      if (!await FlutterContacts.requestPermission()) return;
 
-        final Map<String, String> localContactMap = {};
-        for (var contact in phoneContacts) {
-          if (contact.phones.isNotEmpty) {
-            // var rawNumber = '';
-            for (var i in contact.phones) {
-              final rawNumber = i.number;
-              final sanitized = rawNumber
-                  .replaceAll(RegExp(r'[\s\-\(\)]'), '')
-                  .replaceAll(RegExp(r'^\+91'), '')
-                  .replaceAll(RegExp(r'^0'), '');
-              localContactMap[sanitized] = contact.displayName;
-            }
-            // final rawNumber = contact.phones.first.number;
-          }
-        }
+      final phoneContacts = await FlutterContacts.getContacts(
+        withProperties: true,
+      );
 
-        final phoneNumbers = localContactMap.keys.toList();
-        final serverUsers = await contactRepository.fetchAppUsersFromContacts(
-          phoneNumbers,
-        );
+      final Map<String, String> localContactMap = {};
 
-        final enrichedUsers = serverUsers.map((user) {
-          final userNumber = user.phoneNumber
-              ?.replaceAll(RegExp(r'[\s\-\(\)]'), '')
+      for (var contact in phoneContacts) {
+        for (var phone in contact.phones) {
+          final sanitized = phone.number
+              .replaceAll(RegExp(r'[\s\-\(\)]'), '')
               .replaceAll(RegExp(r'^\+91'), '')
               .replaceAll(RegExp(r'^0'), '');
 
-          final localName =
-              localContactMap[userNumber ?? ''] ??
-              ''; // leave empty if not found
-
-          return user.copyWith(localName: localName); // only assign localName
-        }).toList();
-
-        await contactsTable.createBulk(enrichedUsers);
-        final updatedList = await contactsTable.fetchAll();
-        for (var user in updatedList) {
-          final isGroup = await chatConectTable.isGroupContact(
-            user.userId.toString(),
-          );
-          if (user.displayPictureUrl != null &&
-              user.displayPicture != null &&
-              user.displayPictureUrl!.isNotEmpty &&
-              user.displayPicture!.isNotEmpty) {
-            await _downloadAndCacheProfileImage(
-              user.displayPictureUrl!,
-              user.displayPicture!,
-            );
-          }
-          if (!isGroup) {
-            await chatConectTable.updateContact(
-              uid: user.userId.toString(),
-              profilePic: user.displayPictureUrl,
-              name: user.localName == "" || user.localName == null
-                  ? user.phoneNumber
-                  : user.localName,
-              isGroup: 0,
-              isBlocked: user.isBlocked == true ? 1 : 0,
-            );
-            // Download and save profile image using the same name
+          if (sanitized.isNotEmpty) {
+            localContactMap[sanitized] = contact.displayName;
           }
         }
-        contacts = enrichedUsers;
       }
-    } catch (e) {
-      // debugPrint('Error syncing contacts: $e');
+
+      final phoneNumbers = localContactMap.keys.toList();
+
+      /// 🔹 Split into batches of 1000
+      final batches = chunkList(phoneNumbers, 1000);
+
+      final List<UserList> allServerUsers = [];
+
+      for (final batch in batches) {
+        final serverUsers = await contactRepository.fetchAppUsersFromContacts(
+          batch,
+        );
+        allServerUsers.addAll(serverUsers);
+      }
+
+      /// 🔹 Enrich with local names
+      final enrichedUsers = allServerUsers.map((user) {
+        final userNumber = user.phoneNumber!
+            .replaceAll(RegExp(r'[\s\-\(\)]'), '')
+            .replaceAll(RegExp(r'^\+91'), '')
+            .replaceAll(RegExp(r'^0'), '');
+
+        return user.copyWith(
+          localName: localContactMap[userNumber ?? ''] ?? '',
+        );
+      }).toList();
+
+      await contactsTable.createBulk(enrichedUsers);
+
+      final updatedList = await contactsTable.fetchAll();
+
+      for (var user in updatedList) {
+        final isGroup = await chatConectTable.isGroupContact(
+          user.userId.toString(),
+        );
+
+        if (user.displayPictureUrl?.isNotEmpty == true &&
+            user.displayPicture?.isNotEmpty == true) {
+          await _downloadAndCacheProfileImage(
+            user.displayPictureUrl!,
+            user.displayPicture!,
+          );
+        }
+
+        if (!isGroup) {
+          await chatConectTable.updateContact(
+            uid: user.userId.toString(),
+            profilePic: user.displayPictureUrl,
+            name: user.localName?.isNotEmpty == true
+                ? user.localName
+                : user.phoneNumber,
+            isGroup: 0,
+            isBlocked: user.isBlocked == true ? 1 : 0,
+          );
+        }
+      }
+
+      contacts = enrichedUsers;
+    } catch (e, st) {
+      debugPrint('Error syncing contacts: $e');
+      debugPrintStack(stackTrace: st);
     }
   }
 
@@ -193,6 +280,7 @@ class SelectContactsController extends GetxController {
       }
     });
   }
+
   Future<List<ContactInfo>> getDeviceContacts() async {
     final permission = await Permission.contacts.request();
 
@@ -211,6 +299,7 @@ class SelectContactsController extends GetxController {
 
     return contacts;
   }
+
   Future<void> _downloadAndCacheProfileImage(
     String imageUrl,
     String fileName,
@@ -270,5 +359,18 @@ class SelectContactsController extends GetxController {
         print("❌ Silent crop failed: $e");
       }
     }
+  }
+
+  List<List<T>> chunkList<T>(List<T> list, int chunkSize) {
+    final List<List<T>> chunks = [];
+    for (var i = 0; i < list.length; i += chunkSize) {
+      chunks.add(
+        list.sublist(
+          i,
+          i + chunkSize > list.length ? list.length : i + chunkSize,
+        ),
+      );
+    }
+    return chunks;
   }
 }

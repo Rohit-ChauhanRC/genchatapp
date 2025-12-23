@@ -44,3 +44,4 @@ const viewContact = "View Contact";
 const statusDb = "statusDb";
 const messageInfo = "Message Info";
 const messageInfoTable = "messageInfoTable";
+const saveContact = "saveContact";

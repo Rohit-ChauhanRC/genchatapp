@@ -63,6 +63,7 @@ class SelectContactsView extends GetView<SelectContactsController> {
               // Search Input
               TextFormField(
                 onChanged: (value) => controller.searchQuery = value,
+                controller: controller.searchQueryController,
                 decoration: const InputDecoration(
                   isDense: true,
                   filled: true,
@@ -80,12 +81,12 @@ class SelectContactsView extends GetView<SelectContactsController> {
               InkWell(
                 onTap: () {
                   // controller.selectContact(contact);
-                  controller.searchQuery="";
+
+                  controller.searchQueryController.clear();
                   controller.loadInitialContacts();
                   Get.toNamed(
                     Routes.SEARCH_NEW_CONTACT,
                     arguments: controller.filteredContacts,
-
                   );
                 },
                 child: Container(
@@ -116,6 +117,8 @@ class SelectContactsView extends GetView<SelectContactsController> {
                   if (filteredContacts.isEmpty) {
                     return const Center(child: Text("No contacts found."));
                   }
+                  // print(controller.searchQuery);
+
                   return ListView.builder(
                     itemCount: filteredContacts.length,
                     itemBuilder: (context, i) {

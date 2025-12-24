@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_contacts_service/flutter_contacts_service.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
@@ -55,9 +56,12 @@ class SelectContactsController extends GetxController {
     }).toList();
   }
 
+  final TextEditingController searchQueryController = TextEditingController();
+
   @override
   void onInit() {
     super.onInit();
+    print(searchQuery);
     // contactsTable.deleteTable();
     loadInitialContacts();
     bindSocketEvents();

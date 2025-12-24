@@ -1,8 +1,8 @@
-const appName = "GenChat";
+const appName = "Genchat";
 const appPackageName = "com.genmak.genchat";
 const poweredBy = "Powered by";
 const genmak = "Genmak";
-const welcomeToGenchat = "WELCOME TO GENCHAT";
+const welcomeToGenchat = "WELCOME TO Genchat";
 const tapAgreeAndContinue = "Tap 'Agree and continue' to accept the";
 const genmakTermsOfServices = " Genmak Terms of\nService and Privacy Policy";
 const agreeAndContinue = "AGREE AND CONTINUE";

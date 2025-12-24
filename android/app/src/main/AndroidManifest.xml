@@ -27,7 +27,7 @@
 
 
     <application
-        android:label="GenChat"
+        android:label="Genchat"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true"

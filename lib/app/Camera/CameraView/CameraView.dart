@@ -57,7 +57,9 @@ class CameraView extends GetView<CameraControllerX> {
                 CropAspectRatioPreset.square,
               ],
             ),
-            IOSUiSettings(title: 'Crop Image'),
+            IOSUiSettings(title: 'Crop Image'
+
+            ),
           ],
         );
 
@@ -85,7 +87,7 @@ class CameraView extends GetView<CameraControllerX> {
             }
 
              await updatesController.getStatus();
-            Get.back(); // Close preview
+            Get.back();
           },
         ),
       );

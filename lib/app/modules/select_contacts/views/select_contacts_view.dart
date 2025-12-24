@@ -80,9 +80,12 @@ class SelectContactsView extends GetView<SelectContactsController> {
               InkWell(
                 onTap: () {
                   // controller.selectContact(contact);
+                  controller.searchQuery="";
+                  controller.loadInitialContacts();
                   Get.toNamed(
                     Routes.SEARCH_NEW_CONTACT,
                     arguments: controller.filteredContacts,
+
                   );
                 },
                 child: Container(

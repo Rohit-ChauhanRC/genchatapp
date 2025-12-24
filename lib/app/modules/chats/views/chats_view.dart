@@ -42,7 +42,7 @@ class ChatsView extends GetView<ChatsController> {
                   icon: Icon(Symbols.close, color: AppColors.whiteColor),
                 ),
               Text(
-                selectedCount > 0 ? "$selectedCount selected" : 'GENCHAT',
+                selectedCount > 0 ? "$selectedCount selected" : 'Genchat',
                 style: TextStyle(
                   fontSize: 20,
                   color: whiteColor,
@@ -127,6 +127,14 @@ class ChatsView extends GetView<ChatsController> {
               ],
             );
           }),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Image.asset(
+              "assets/images/genMakLogo.png",
+              height: 35,
+              width: 35,
+            ),
+          ),
         ],
       ),
       body: GradientContainer(
@@ -282,7 +290,7 @@ class ChatsView extends GetView<ChatsController> {
                                           ),
                                         );
                                       },
-                                      child: ClipRRect (
+                                      child: ClipRRect(
                                         borderRadius: BorderRadius.circular(25),
                                         child:
                                             // (chatConntactModel.profilePic ==

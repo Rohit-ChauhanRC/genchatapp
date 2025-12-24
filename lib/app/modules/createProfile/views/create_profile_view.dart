@@ -19,7 +19,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
           controller.restoreProgress.value > 0 &&
           controller.restoreProgress.value < 1;
       return WillPopScope(
-        onWillPop: () async => !isRestoring, // Disable back if restoring
+        onWillPop: () async => !isRestoring,
         child: Stack(
           children: [
             Scaffold(

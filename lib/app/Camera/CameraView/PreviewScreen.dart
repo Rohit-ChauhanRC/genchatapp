@@ -11,7 +11,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'VIdeoPlayerScreen.dart';
 
 class PreviewScreen extends StatelessWidget {
-  final String? imagePath;
+  final List<String>? imagePaths;
   final String? videoPath;
   final StatusRepository statusRepository;
 
@@ -20,7 +20,7 @@ class PreviewScreen extends StatelessWidget {
 
   PreviewScreen({
     super.key,
-    this.imagePath,
+    this.imagePaths,
     this.videoPath,
     required this.statusRepository,
   });
@@ -32,15 +32,25 @@ class PreviewScreen extends StatelessWidget {
       body: Stack(
         children: [
           Center(
-            child: imagePath != null
-                ? Image.file(File(imagePath!))
+            child: imagePaths != null && imagePaths!.isNotEmpty
+                ? ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: imagePaths!.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.file(File(imagePaths![index])),
+                );
+              },
+            )
                 : (videoPath != null
-                      ? VideoPlayerScreen(
-                          videoPath: videoPath!,
-                          statusRepository: statusRepository,
-                        )
-                      : const SizedBox()),
+                ? VideoPlayerScreen(
+              videoPath: videoPath!,
+              statusRepository: statusRepository,
+            )
+                : const SizedBox()),
           ),
+
           Positioned(
             bottom: 30,
             right: 30,
@@ -48,30 +58,38 @@ class PreviewScreen extends StatelessWidget {
               return FloatingActionButton(
                 backgroundColor: textBarColor,
                 onPressed: isUploading.value
-                    ? null // 🚫 Disable multiple clicks
+                    ? null
                     : () async {
-                        isUploading.value = true;
+                  isUploading.value = true;
 
-                        try {
-                          final uploadResponse = await statusRepository
-                              .uploadStatus(
-                                imageFile: imagePath != null
-                                    ? File(imagePath!)
-                                    : File(videoPath!),
-                                isAssets: true,
-                                onProgress: (int sent, int total) {},
-                                text: "",
-                              );
+                  try {
+                    if (imagePaths != null && imagePaths!.isNotEmpty) {
+                      // Upload all images
+                      for (String path in imagePaths!) {
+                        await statusRepository.uploadStatus(
+                          imageFile: File(path),
+                          isAssets: true,
+                          onProgress: (_, __) {},
+                          text: "",
+                        );
+                      }
+                    } else if (videoPath != null) {
+                      // Upload video
+                      await statusRepository.uploadStatus(
+                        imageFile: File(videoPath!),
+                        isAssets: true,
+                        onProgress: (_, __) {},
+                        text: "",
+                      );
+                    }
 
-                          if (uploadResponse != null &&
-                              uploadResponse.statusCode == 200) {
-                            await updatesController.getStatus();
-                            Get.close(2);
-                          }
-                        } finally {
-                          isUploading.value = false;
-                        }
-                      },
+                    await updatesController.getStatus();
+                    Get.close(2);
+                  } finally {
+                    isUploading.value = false;
+                  }
+                },
+
                 child: isUploading.value
                     ? const SizedBox(
                         width: 22,

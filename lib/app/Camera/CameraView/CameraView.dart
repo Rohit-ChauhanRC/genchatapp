@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../config/services/filePickerService.dart';
+import '../../modules/singleChat/mediaPickerFiles/media_preview_screen.dart';
+import '../../modules/updates/controllers/updates_controller.dart';
 import '../Controllers/CameraUpdateController.dart';
 import '../TextWriter.dart';
 import 'PreviewScreen.dart';
@@ -14,42 +16,34 @@ import 'VIdeoPlayerScreen.dart';
 class CameraView extends GetView<CameraControllerX> {
   const CameraView({super.key});
 
+
   @override
   Widget build(BuildContext context) {
+    final UpdatesController updatesController = Get.find();
+
     final ImagePicker picker = ImagePicker();
     Future<void> openGallery() async {
-      final XFile? media = await picker.pickImage(source: ImageSource.gallery);
+      final List<XFile> pickedImages = await picker.pickMultiImage();
 
-      if (media != null) {
-        final file = File(media.path);
-        final int fileSizeInBytes = file.lengthSync();
-        final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+      if (pickedImages.isEmpty) return;
 
-        final isVideo =
-            media.path.toLowerCase().endsWith(".mp4") ||
-            media.path.toLowerCase().endsWith(".mov");
-        if (isVideo) {
-          if (fileSizeInMB > 50) {
-            Get.snackbar(
-              "Video too large",
-              "Maximum allowed size is 50 MB",
-              snackPosition: SnackPosition.BOTTOM,
-              colorText: Colors.white,
-              backgroundColor: Colors.red,
-            );
-            return;
-          }
+      if (pickedImages.length > 5) {
+        Get.snackbar(
+          "Limit Exceeded",
+          "You can select a maximum of 5 images at once.",
+          snackPosition: SnackPosition.TOP,
+          colorText: Colors.white,
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
 
-          Get.to(
-            () => VideoPlayerScreen(
-              videoPath: media.path,
-              statusRepository: controller.statusRepository,
-            ),
-          );
-          return;
-        }
-        final croppedFile = await ImageCropper().cropImage(
-          sourcePath: media.path,
+      List<String> finalPaths = [];
+
+      // Crop each image
+      for (final img in pickedImages) {
+        final cropped = await ImageCropper().cropImage(
+          sourcePath: img.path,
           compressQuality: 80,
           uiSettings: [
             AndroidUiSettings(
@@ -67,15 +61,35 @@ class CameraView extends GetView<CameraControllerX> {
           ],
         );
 
-        if (croppedFile != null) {
-          Get.to(
-            () => PreviewScreen(
-              imagePath: croppedFile.path,
-              statusRepository: controller.statusRepository,
-            ),
-          );
+        if (cropped != null) {
+          finalPaths.add(cropped.path);
         }
       }
+
+      if (finalPaths.isEmpty) return;
+
+      final List<File> files = finalPaths.map((e) => File(e)).toList();
+
+      Get.to(
+            () => MediaPreviewScreen(
+          files: files,
+          fileType: "image",
+          onSend: (List<File> selectedFiles) async {
+            for (var file in selectedFiles) {
+              await controller.statusRepository.uploadStatus(
+                imageFile: file,
+                isAssets: true,
+                onProgress: (sent, total) {},
+                text: "",
+              );
+            }
+
+             await updatesController.getStatus();
+            Get.back(); // Close preview
+          },
+        ),
+      );
+
     }
 
     Future<void> pickVideoFromGallery() async {
@@ -194,7 +208,7 @@ class CameraView extends GetView<CameraControllerX> {
                         if (path != null) {
                           Get.to(
                             () => PreviewScreen(
-                              imagePath: path,
+                              imagePaths: [path],
                               statusRepository: controller.statusRepository,
                             ),
                           );

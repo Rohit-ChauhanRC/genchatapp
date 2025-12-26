@@ -149,7 +149,6 @@ class SocketService extends GetxService {
       bool existsLocally = await messageTable.messageExists(messageId);
       //
 
-
       if (!existsLocally) {
         print("message not found");
         final newMessage = NewMessageModel(

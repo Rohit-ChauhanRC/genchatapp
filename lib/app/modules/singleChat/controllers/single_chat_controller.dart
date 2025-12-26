@@ -284,6 +284,8 @@ class SingleChatController extends GetxController
 
   final IContactRepository contactRepository = Get.find<IContactRepository>();
 
+  RxBool userExist = false.obs;
+
   @override
   void onInit() async {
     super.onInit();
@@ -336,6 +338,7 @@ class SingleChatController extends GetxController
     await clearFilePickerCache();
 
     await initRecorder();
+    await checkUserExistOrNot();
   }
 
   @override
@@ -2262,12 +2265,21 @@ class SingleChatController extends GetxController
     await contact.insert();
   }
 
-  void showSaveContactDialog(BuildContext context, String mobile) {
+  void showSaveContactDialog(BuildContext context) {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController mobileController = TextEditingController(
-      text: mobile,
+      text: receiverUserData!.phoneNumber,
     );
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    final focusNode = FocusNode();
+
+    // Delay focus AFTER dialog is built
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (context.mounted) {
+        FocusScope.of(context).requestFocus(focusNode);
+      }
+    });
 
     showDialog(
       context: context,
@@ -2285,6 +2297,7 @@ class SingleChatController extends GetxController
               children: [
                 // Name Field
                 TextFormField(
+                  autofocus: true,
                   controller: nameController,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
@@ -2374,5 +2387,12 @@ class SingleChatController extends GetxController
         );
       },
     );
+  }
+
+  Future<void> checkUserExistOrNot() async {
+    // RxBool userExist = false.obs;
+    if (receiverUserData!.localName!.isNumericOnly) {
+      userExist.value = true;
+    }
   }
 }

@@ -203,20 +203,20 @@ class SingleChatView extends GetView<SingleChatController> {
                 await controller.blockUser();
               } else if (value == unBlock) {
                 await controller.unblockUser();
-              } else if (value == saveContact) {
-                final focusNode = FocusNode();
-
-                // Delay focus AFTER dialog is built
-                Future.delayed(const Duration(milliseconds: 200), () {
-                  if (context.mounted) {
-                    FocusScope.of(context).requestFocus(focusNode);
-                  }
-                });
-                controller.showSaveContactDialog(
-                  Get.context!,
-                  controller.receiverUserData!.phoneNumber.toString(),
-                );
               }
+              // else if (value == saveContact) {
+              //   final focusNode = FocusNode();
+
+              //   // Delay focus AFTER dialog is built
+              //   Future.delayed(const Duration(milliseconds: 200), () {
+              //     if (context.mounted) {
+              //       FocusScope.of(context).requestFocus(focusNode);
+              //     }
+              //   });
+              //   controller.showSaveContactDialog(
+              //     Get.context!,
+              //   );
+              // }
             },
 
             itemBuilder: (context) {
@@ -225,7 +225,7 @@ class SingleChatView extends GetView<SingleChatController> {
                   (controller.blockedByMe.value == 1 ||
                       controller.blockedByMe.value == 2);
 
-              final user = controller.receiverUserData;
+              // final user = controller.receiverUserData;
 
               return [
                 PopupMenuItem(
@@ -273,24 +273,6 @@ class SingleChatView extends GetView<SingleChatController> {
                 ),
 
                 // user
-                if (user!.localName!.isEmpty)
-                  const PopupMenuItem(
-                    value: saveContact,
-                    child: Row(
-                      children: [
-                        Icon(Icons.person, size: 20, color: Colors.blueGrey),
-                        SizedBox(width: 12),
-                        Text(
-                          saveContact,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
               ];
             },
           ),

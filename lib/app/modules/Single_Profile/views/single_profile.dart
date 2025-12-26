@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/colors.dart';
+import 'package:genchatapp/app/constants/constants.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../common/widgets/gradient_container.dart';
@@ -147,11 +148,30 @@ class SingleUserProfileView extends StatelessWidget {
                           subtitle: "About",
                           icon: Icons.info_outline,
                         ),
+
+                      Obx(
+                        () => (controller.userExist.value)
+                            ? _tile(
+                                title: saveContact,
+                                subtitle: "Save Contact",
+                                icon: Icons.person,
+                                //  trailing: GestureDetector(
+                                //     onTap: () => Get.back(),
+
+                                //      child: const Icon(Icons.message),
+                                //   ),
+                                onTap: () {
+                                  controller.showSaveContactDialog(context);
+                                },
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                     ],
                   ),
 
                   const SizedBox(height: 12),
 
+                  //
                   const SizedBox(height: 12),
 
                   // Settings: Mute, Wall

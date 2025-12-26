@@ -12,8 +12,8 @@ import '../../singleChat/controllers/single_chat_controller.dart';
 import '../../singleChat/views/single_chat_view.dart';
 
 class SingleUserProfileView extends StatelessWidget {
-  final UserList user;
-  const SingleUserProfileView({super.key, required this.user});
+  final UserList? user;
+  const SingleUserProfileView({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +50,20 @@ class SingleUserProfileView extends StatelessWidget {
 
                       // color: AppColors.greyColor
                       //     .withOpacity(0.4),
-                      child: user.displayPictureUrl!.isNotEmpty
+                      child:
+                          controller
+                              .receiverUserData!
+                              .displayPictureUrl!
+                              .isNotEmpty
                           // &&
                           //     (!controller.blocked.value ||
                           //         (controller.blocked.value &&
                           //             controller.blockedByMe.value == 1))
                           ? CachedNetworkImage(
-                              imageUrl: user.displayPictureUrl.toString(),
+                              imageUrl: controller
+                                  .receiverUserData!
+                                  .displayPictureUrl
+                                  .toString(),
                               imageBuilder: (context, image) {
                                 return Container(
                                   decoration: BoxDecoration(
@@ -122,17 +129,20 @@ class SingleUserProfileView extends StatelessWidget {
                     children: [
                       _tile(
                         title:
-                            (user.localName != null &&
-                                user.localName!.isNotEmpty)
-                            ? user.localName!
-                            : "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
+                            (controller.receiverUserData!.localName != null &&
+                                controller
+                                    .receiverUserData!
+                                    .localName!
+                                    .isNotEmpty)
+                            ? controller.receiverUserData!.localName!
+                            : "+${controller.receiverUserData!.countryCode ?? ''} ${controller.receiverUserData!.phoneNumber ?? ''}",
                         subtitle: "Name",
                         icon: Icons.person,
                       ),
 
                       _tile(
                         title:
-                            "+${user.countryCode ?? ''} ${user.phoneNumber ?? ''}",
+                            "+${controller.receiverUserData!.countryCode ?? ''} ${controller.receiverUserData!.phoneNumber ?? ''}",
                         subtitle: "Phone Number",
                         icon: Icons.phone,
                         trailing: GestureDetector(
@@ -141,10 +151,14 @@ class SingleUserProfileView extends StatelessWidget {
                           child: const Icon(Icons.message),
                         ),
                       ),
-                      if (user.userDescription != null &&
-                          user.userDescription!.isNotEmpty)
+                      if (controller.receiverUserData!.userDescription !=
+                              null &&
+                          controller
+                              .receiverUserData!
+                              .userDescription!
+                              .isNotEmpty)
                         _tile(
-                          title: user.userDescription!,
+                          title: controller.receiverUserData!.userDescription!,
                           subtitle: "About",
                           icon: Icons.info_outline,
                         ),
@@ -161,7 +175,9 @@ class SingleUserProfileView extends StatelessWidget {
                                 //      child: const Icon(Icons.message),
                                 //   ),
                                 onTap: () {
-                                  controller.showSaveContactDialog(context);
+                                  controller.showSaveContactDialog(
+                                    Get.context!,
+                                  );
                                 },
                               )
                             : const SizedBox.shrink(),
@@ -187,8 +203,8 @@ class SingleUserProfileView extends StatelessWidget {
 
                         return _tile(
                           title: isBlocked
-                              ? "Unblock ${user.localName ?? ''}"
-                              : "Block ${user.localName ?? ''}",
+                              ? "Unblock ${controller.receiverUserData!.localName ?? ''}"
+                              : "Block ${controller.receiverUserData!.localName ?? ''}",
                           icon: isBlocked ? Icons.lock_open : Icons.block,
                           titleColor: isBlocked ? Colors.green : Colors.red,
                           iconColor: isBlocked ? Colors.green : Colors.red,

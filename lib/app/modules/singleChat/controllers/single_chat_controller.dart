@@ -2297,7 +2297,7 @@ class SingleChatController extends GetxController
               children: [
                 // Name Field
                 TextFormField(
-                  autofocus: true,
+                  // autofocus: true,
                   controller: nameController,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
@@ -2372,12 +2372,14 @@ class SingleChatController extends GetxController
                   );
                   receiverUserData = receiverUserData!.copyWith(
                     name: nameController.text,
-                    phoneNumber: mobileController.text,
+                    phoneNumber: mobileController.text.isEmpty
+                        ? mobile
+                        : mobileController.text,
                   );
                   if (connectivityService.isConnected.value) {
                     selectedContactController.syncContactsWithServer();
                   }
-
+                  userExist.value = true;
                   Get.back();
                 }
               },

@@ -203,20 +203,17 @@ class SingleChatView extends GetView<SingleChatController> {
                 await controller.blockUser();
               } else if (value == unBlock) {
                 await controller.unblockUser();
-              }
-              // else if (value == saveContact) {
-              //   final focusNode = FocusNode();
+              } else if (value == saveContact) {
+                final focusNode = FocusNode();
 
-              //   // Delay focus AFTER dialog is built
-              //   Future.delayed(const Duration(milliseconds: 200), () {
-              //     if (context.mounted) {
-              //       FocusScope.of(context).requestFocus(focusNode);
-              //     }
-              //   });
-              //   controller.showSaveContactDialog(
-              //     Get.context!,
-              //   );
-              // }
+                // Delay focus AFTER dialog is built
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (context.mounted) {
+                    FocusScope.of(context).requestFocus(focusNode);
+                  }
+                });
+                controller.showSaveContactDialog(Get.context!);
+              }
             },
 
             itemBuilder: (context) {
@@ -273,6 +270,24 @@ class SingleChatView extends GetView<SingleChatController> {
                 ),
 
                 // user
+                if (controller.userExist.value)
+                  const PopupMenuItem(
+                    value: saveContact,
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, size: 20, color: Colors.blueGrey),
+                        SizedBox(width: 12),
+                        Text(
+                          saveContact,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ];
             },
           ),

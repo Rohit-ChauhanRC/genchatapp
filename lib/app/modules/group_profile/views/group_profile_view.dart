@@ -788,6 +788,8 @@ class GroupProfileView extends GetView<GroupProfileController> {
     UserGroupInfo? perm,
     bool isCreator,
   ) {
+    final items = _buildStyledPopupItems(user, perm, isCreator);
+    if(items.isEmpty)return;
     final renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero) & renderBox.size;
 

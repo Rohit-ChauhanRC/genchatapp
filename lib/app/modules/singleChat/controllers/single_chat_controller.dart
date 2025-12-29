@@ -20,7 +20,7 @@ import 'package:genchatapp/app/data/models/new_models/response_model/verify_otp_
 import 'package:genchatapp/app/data/repositories/chat/chat_repository.dart';
 import 'package:genchatapp/app/data/repositories/profile/profile_repository.dart';
 import 'package:genchatapp/app/data/repositories/select_contacts/select_contact_repository.dart';
-import 'package:genchatapp/app/modules/Single_Profile/views/single_profile.dart';
+import 'package:genchatapp/app/modules/singleChat/widgets/single_profile.dart';
 import 'package:genchatapp/app/modules/chats/controllers/chats_controller.dart';
 import 'package:genchatapp/app/modules/select_contacts/controllers/select_contacts_controller.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -75,7 +75,8 @@ class SingleChatController extends GetxController
   final EncryptionService encryptionService = Get.find();
 
   final selectedContactController = Get.find<SelectContactsController>();
-
+  final RxString saveName = ''.obs;
+  final RxString savePhone = ''.obs;
   // final ChatsController chatsController = Get.find();
 
   var hasScrolledInitially = false.obs;
@@ -289,7 +290,8 @@ class SingleChatController extends GetxController
   @override
   void onInit() async {
     super.onInit();
-
+    savePhone.value = receiverUserData?.phoneNumber ?? '';
+    saveName.value = receiverUserData?.localName ?? '';
     FocusManager.instance.primaryFocus?.unfocus();
 
     SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -1423,12 +1425,32 @@ class SingleChatController extends GetxController
         return;
       }
     } else if (fileType == MessageType.document.value && Platform.isIOS) {
-      await pickAndSendDocuments((selectedFiles) async {
-        for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
-          await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        }
-      });
+      final files = await FilePickerService().pickDocuments();
+
+      final completer = Completer<bool>();
+
+      // ((selectedFiles) async {
+      // showAlertMessageWithAction(
+      //   message: "Do you want to send ${files.length} document(s)?",
+      //   confirmText: "Send",
+      //   cancelText: "Cancel",
+      //   onCancel: () {
+      //     // Get.back(); // close dialog
+      //     completer.complete(false); // complete with false
+      //   },
+      //   onConfirm: () {
+      //     // Get.back(); // close dialog
+      //     completer.complete(true); // complete with true
+      //   },
+      //   showCancel: true,
+      //   title: 'Genchat',
+      //   context: Get.context!,
+      // );
+      for (File file in files) {
+        print("Yes Getting back all files:---> $file");
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
+      }
+      // });
       cancelReply();
     } else if (fileType == MessageType.browseDocx.value) {
       await pickAndSendDocuments((selectedFiles) async {
@@ -2270,21 +2292,20 @@ class SingleChatController extends GetxController
     final TextEditingController mobileController = TextEditingController(
       text: receiverUserData!.phoneNumber,
     );
+
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-    final focusNode = FocusNode();
-
-    // Delay focus AFTER dialog is built
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (context.mounted) {
-        FocusScope.of(context).requestFocus(focusNode);
-      }
-    });
+    final FocusNode nameFocusNode = FocusNode();
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (nameFocusNode.canRequestFocus) {
+            nameFocusNode.requestFocus();
+          }
+        });
+
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -2295,10 +2316,11 @@ class SingleChatController extends GetxController
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Name Field
+                // ✅ Name Field
                 TextFormField(
-                  // autofocus: true,
                   controller: nameController,
+                  focusNode: nameFocusNode,
+                  autofocus: false,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: "Name",
@@ -2340,7 +2362,7 @@ class SingleChatController extends GetxController
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancel"),
             ),
             TextButton(
@@ -2349,36 +2371,35 @@ class SingleChatController extends GetxController
                   final name = nameController.text.trim();
                   final mobile = mobileController.text.trim();
 
-                  // TODO: Save contact logic
-                  print("Name: $name, Mobile: $mobile");
-
-                  saveContact(
-                    name: nameController.text,
-                    phone: mobileController.text,
-                  );
+                  saveContact(name: name, phone: mobile);
 
                   await chatConectTable.insertOrUpdateGroupChat(
                     ChatConntactModel(
                       uid: receiverUserData!.userId.toString(),
                       isGroup: 1,
-                      profilePic: receiverUserData?.displayPictureUrl ?? '',
-                      timeSent: receiverUserData?.lastSeenTime ?? "",
-                      name: nameController.text,
-                      contactId: receiverUserData!.userId.toString(),
+                      profilePic:
+                      receiverUserData?.displayPictureUrl ?? '',
+                      timeSent:
+                      receiverUserData?.lastSeenTime ?? "",
+                      name: name,
+                      contactId:
+                      receiverUserData!.userId.toString(),
                       lastMessage: "",
                       lastMessageId: 0,
                       unreadCount: 0,
                     ),
                   );
+
                   receiverUserData = receiverUserData!.copyWith(
-                    name: nameController.text,
-                    phoneNumber: mobileController.text.isEmpty
-                        ? mobile
-                        : mobileController.text,
+                    name: name,
+                    phoneNumber: mobile,
                   );
+
                   if (connectivityService.isConnected.value) {
-                    selectedContactController.syncContactsWithServer();
+                    selectedContactController
+                        .syncContactsWithServer();
                   }
+
                   userExist.value = true;
                   Get.back();
                 }
@@ -2386,6 +2407,93 @@ class SingleChatController extends GetxController
               child: const Text("Save"),
             ),
           ],
+        );
+      },
+
+    ).whenComplete(() {
+      nameController.dispose();
+      mobileController.dispose();
+      nameFocusNode.dispose();
+    });
+  }
+  void showSaveContactBottomSheet(BuildContext context) {
+    final nameController = TextEditingController(
+      text: receiverUserData?.localName ?? '',
+    );
+    final phoneController = TextEditingController(
+      text: receiverUserData?.phoneNumber ?? '',
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Save Contact",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: nameController,
+                autofocus: true, // ✅ THIS is enough
+                decoration: const InputDecoration(
+                  labelText: "Name",
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                decoration: const InputDecoration(
+                  labelText: "Mobile Number",
+                  prefixIcon: Icon(Icons.phone),
+                  counterText: "",
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    final phone = phoneController.text.trim();
+
+                    if (name.isEmpty || phone.length != 10) {
+                      Get.snackbar("Error", "Enter valid details");
+                      return;
+                    }
+
+                    await saveContact(name: name, phone: phone);
+                    userExist.value = true;
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Save"),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

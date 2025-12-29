@@ -1478,12 +1478,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         return;
       }
     } else if (fileType == MessageType.document.value && Platform.isIOS) {
-      await pickAndSendDocuments((selectedFiles) async {
-        for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
-          await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        }
-      });
+      final files = await FilePickerService().pickDocuments();
+      for (File file in files) {
+        print("Yes Getting back all files:---> $file");
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
+      }
       cancelReply();
     }
   }

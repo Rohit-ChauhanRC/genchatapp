@@ -377,7 +377,7 @@ class ChatsView extends GetView<ChatsController> {
                                                   localName:
                                                       chatConntactModel.name ??
                                                       user.name,
-                                                  phoneNumber: user.phoneNumber,
+                                                  phoneNumber: user.phoneNumber ?? chatConntactModel.name,
                                                 ),
                                               );
                                             } else if (chatConntactModel

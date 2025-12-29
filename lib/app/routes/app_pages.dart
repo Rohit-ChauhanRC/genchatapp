@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../Camera/CameraView/CameraView.dart';
 import '../Camera/Camera_binding.dart';
+import '../modules/singleChat/widgets/single_profile.dart';
 import '../modules/addParticipentsInGroup/bindings/add_participents_in_group_binding.dart';
 import '../modules/addParticipentsInGroup/views/add_participents_in_group_view.dart';
 import '../modules/audio_record/bindings/audio_record_binding.dart';
@@ -169,5 +170,10 @@ class AppPages {
       page: () => const MessageInfoView(),
       binding: MessageInfoBinding(),
     ),
+    // GetPage(
+    //   name:_Paths.SINGLE_PROFILE,
+    //   page: () => SingleUserProfileView(),
+    //   binding: SingleUserProfileBinding(),
+    // ),
   ];
 }

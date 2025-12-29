@@ -871,7 +871,7 @@ class SocketService extends GetxService {
           )
           .userInfo
           ?.phoneNumber;
-    }
+  }
 
     // 🔄 Step 3: Update typing map
     final groupMap = typingGroupUsersMap[groupId] ?? {};

@@ -84,5 +84,10 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.genmak.genchat.refresh</string>
+		<string>com.genmak.genchat.processing</string>
+	</array>
 </dict>
 </plist>

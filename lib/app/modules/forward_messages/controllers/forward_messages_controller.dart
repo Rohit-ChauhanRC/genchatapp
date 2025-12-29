@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:genchatapp/app/data/local_database/groups_table.dart';
+import 'package:genchatapp/app/data/models/new_models/response_model/create_group_model.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
@@ -79,9 +81,12 @@ class ForwardMessagesController extends GetxController {
   UserData? get senderuserData => _senderuserData.value;
   set senderuserData(UserData? userData) => _senderuserData.value = (userData);
 
+  final RxList<GroupData> groupsList = <GroupData>[].obs;
+
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    await fetchGroup();
     fetchData();
     senderuserData = sharedPreferenceService.getUserData();
   }
@@ -98,25 +103,86 @@ class ForwardMessagesController extends GetxController {
     selectedUserNames.clear();
   }
 
+  Future<void> fetchGroup() async {
+    groupsList.value = await GroupsTable().fetchAllGroups();
+  }
+
+  // Future<void> fetchData() async {
+  //   isLoading.value = true;
+
+  //   // Replace with your methods to get recent chats and contacts
+  //   final recentRaw = await chatConectTable.fetchAll();
+  //   final allContacts = await contactsTable.fetchAll();
+
+  //   // Convert ChatConntactModel to UserList format
+
+  //   // (chatConntactModel.isGroup ==1)
+  //   // List<ChatConntactModel> recentRaw
+  //   final recent = recentRaw.map((chat) {
+  //     final bool isGroup = chat.isGroup == 1;
+
+  //     if (isGroup) {
+  //       // groupsList.value how to get group with id
+  //       //    final bool isReadOnly =
+  //       // isGroup && groupData.value?.group?.isReadOnly == true;
+
+  //    final group   = await GroupsTable().getGroupById(int.parse(chat.uid!));
+  //       // final group = groupsList.firstWhereOrNull(
+  //       //   (g) => g.group?.id.toString() == chat.uid.toString(),
+  //       // );
+
+  //       final bool isReadOnly = group?.group?.isReadOnly == true;
+
+  //       return UserList(
+  //         userId: int.parse(chat.uid.toString()),
+  //         phoneNumber: chat.name,
+  //         displayPictureUrl: chat.profilePic,
+  //         localName: chat.name,
+  //         isBlocked: isReadOnly ? true : chat.isBlocked == 1,
+  //       );
+  //     } else {
+  //       return UserList(
+  //         userId: int.parse(chat.uid.toString()),
+  //         phoneNumber: chat.name,
+  //         displayPictureUrl: chat.profilePic,
+  //         localName: chat.name,
+  //         isBlocked: chat.isBlocked == 1 ? true : false,
+  //       );
+  //     }
+  //   }).toList();
+  //   recentChats.assignAll(recent);
+  //   contacts.assignAll(allContacts);
+  //   isLoading.value = false;
+  // }
   Future<void> fetchData() async {
     isLoading.value = true;
 
-    // Replace with your methods to get recent chats and contacts
     final recentRaw = await chatConectTable.fetchAll();
     final allContacts = await contactsTable.fetchAll();
 
-    // Convert ChatConntactModel to UserList format
-    final recent = recentRaw
-        .map(
-          (chat) => UserList(
-            userId: int.parse(chat.uid.toString()),
-            phoneNumber: chat.name,
-            displayPictureUrl: chat.profilePic,
-            localName: chat.name,
-            isBlocked: chat.isBlocked == 1 ? true : false,
-          ),
-        )
-        .toList();
+    final List<UserList> recent = [];
+
+    for (final chat in recentRaw) {
+      final bool isGroup = chat.isGroup == 1;
+      bool isReadOnly = false;
+
+      if (isGroup) {
+        final group = await GroupsTable().getGroupById(int.parse(chat.uid!));
+
+        isReadOnly = group?.group?.isReadOnly == true;
+      }
+
+      recent.add(
+        UserList(
+          userId: int.parse(chat.uid.toString()),
+          phoneNumber: chat.name,
+          displayPictureUrl: chat.profilePic,
+          localName: chat.name,
+          isBlocked: isReadOnly ? true : chat.isBlocked == 1,
+        ),
+      );
+    }
+
     recentChats.assignAll(recent);
     contacts.assignAll(allContacts);
     isLoading.value = false;

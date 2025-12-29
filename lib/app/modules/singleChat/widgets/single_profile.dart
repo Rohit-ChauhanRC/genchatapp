@@ -8,17 +8,21 @@ import '../../../common/widgets/gradient_container.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../data/models/new_models/response_model/contact_response_model.dart';
 import '../../../routes/app_pages.dart';
-import '../../singleChat/controllers/single_chat_controller.dart';
-import '../../singleChat/views/single_chat_view.dart';
+import '../controllers/single_chat_controller.dart';
+import '../views/single_chat_view.dart';
+import 'SaveContacts.dart';
 
 class SingleUserProfileView extends StatelessWidget {
+  final SingleChatController controller = Get.find<SingleChatController>();
+
   final UserList? user;
-  const SingleUserProfileView({super.key, this.user});
+  SingleUserProfileView({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
-    final SingleChatController controller = Get.find<SingleChatController>();
+    // final focusNode = FocusNode();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal.shade700,
 
       body: GradientContainer(
@@ -119,6 +123,7 @@ class SingleUserProfileView extends StatelessWidget {
             ),
 
             // CONTENT
+
             SliverToBoxAdapter(
               child: Column(
                 children: [
@@ -163,31 +168,46 @@ class SingleUserProfileView extends StatelessWidget {
                           icon: Icons.info_outline,
                         ),
 
-                      Obx(
-                        () => (controller.userExist.value)
-                            ? _tile(
-                                title: saveContact,
-                                subtitle: "Save Contact",
-                                icon: Icons.person,
-                                //  trailing: GestureDetector(
-                                //     onTap: () => Get.back(),
-
-                                //      child: const Icon(Icons.message),
-                                //   ),
-                                onTap: () {
-                                  controller.showSaveContactDialog(
-                                    Get.context!,
-                                  );
-                                },
-                              )
-                            : const SizedBox.shrink(),
-                      ),
+                      // Obx(
+                      //
+                      //   () => (controller.userExist.value)
+                      //       ? _tile(
+                      //           title: saveContact,
+                      //           subtitle: "Save Contact",
+                      //           icon: Icons.person,
+                      //           //  trailing: GestureDetector(
+                      //           //     onTap: () => Get.back(),
+                      //
+                      //           //      child: const Icon(Icons.message),
+                      //           //   ),
+                      //
+                      //           // onTap: () {
+                      //           //   final focusNode = FocusNode();
+                      //           //
+                      //           //   // Delay focus AFTER dialog is built
+                      //           //   // Future.delayed(const Duration(milliseconds: 200), () {
+                      //           //   //   if (context.mounted) {
+                      //           //   //     FocusScope.of(context).requestFocus(focusNode);
+                      //           //   //   }
+                      //           //   // });
+                      //           //   controller. showSaveContactBottomSheet(context);
+                      //           //
+                      //           // },
+                      //     onTap: () async {
+                      //       Get.delete<SingleChatController>(force: true);
+                      //       final saved = await Get.to(
+                      //             () => SaveContactScreen(user: controller.receiverUserData!),
+                      //       );
+                      //
+                      //       if (saved == true) {
+                      //         controller.userExist.value = true;
+                      //       }
+                      //     },
+                      //         )
+                      //       : const SizedBox.shrink(),
+                      // ),
                     ],
                   ),
-
-                  const SizedBox(height: 12),
-
-                  //
                   const SizedBox(height: 12),
 
                   // Settings: Mute, Wall

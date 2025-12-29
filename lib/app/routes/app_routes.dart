@@ -16,6 +16,7 @@ abstract class Routes {
   static const SINGLE_CHAT = _Paths.SINGLE_CHAT;
   static const SELECT_CONTACTS = _Paths.SELECT_CONTACTS;
   static const SETTINGS = _Paths.SETTINGS;
+
   static const FORWARD_MESSAGES = _Paths.FORWARD_MESSAGES;
   static const CHAT_BACKUP = _Paths.CHAT_BACKUP;
   static const CREATE_GROUP = _Paths.CREATE_GROUP;
@@ -26,6 +27,8 @@ abstract class Routes {
   static const AUDIO_RECORD = _Paths.AUDIO_RECORD;
   static const ADD_PARTICIPENTS_IN_GROUP = _Paths.ADD_PARTICIPENTS_IN_GROUP;
   static const MESSAGE_INFO = _Paths.MESSAGE_INFO;
+  static const SINGLE_PROFILE = _Paths.SINGLE_PROFILE;
+
 }
 
 abstract class _Paths {
@@ -36,6 +39,7 @@ abstract class _Paths {
   static const VERIFY_PHONE_NUMBER = '/verify-phone-number';
   static const OTP = '/otp';
   static const CREATE_PROFILE = '/create-profile';
+  static const SINGLE_PROFILE='/single-user-profile';
   static const CHATS = '/chats';
   static const UPDATES = '/updates';
   static const CALL = '/call';

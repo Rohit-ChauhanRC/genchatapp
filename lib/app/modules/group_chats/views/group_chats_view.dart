@@ -370,6 +370,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
               onTap: () {
                 controller.sendTextMessage();
                 controller.cancelReply();
+
               },
             );
           }),

@@ -1,4 +1,4 @@
-const appName = "Genchat";
+const appName = "GenChat";
 const appPackageName = "com.genmak.genchat";
 const poweredBy = "Powered by";
 const genmak = "Genmak";

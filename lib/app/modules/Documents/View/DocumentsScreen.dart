@@ -98,6 +98,7 @@ class DocumentPickerScreen extends StatelessWidget {
               }
 
               Navigator.pop(context);
+              chatController.cancelReply();
             },
             child: const Text(
               "Browse Documents",

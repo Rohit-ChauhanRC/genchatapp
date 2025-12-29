@@ -300,7 +300,6 @@ extension BackupRestore on DataBaseService {
     await MessageTable().deleteQueueMessageTable();
     await GroupsTable().deleteGroupsTable();
     await StatusTable().deleteTable();
-    await StatusTable().deleteTable();
     await MessageInfoTable().deleteQueueMessageTable();
   }
 

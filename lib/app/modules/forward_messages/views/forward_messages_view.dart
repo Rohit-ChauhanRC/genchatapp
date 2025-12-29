@@ -177,7 +177,7 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
           ),
           title: Text(
             user.isBlocked == true
-                ? "${user.localName} (This user is blocked by you!)"
+                ? "${user.localName} (You cannot send messages!)"
                 : user.localName ?? user.phoneNumber ?? '',
             style: const TextStyle(fontSize: 16),
           ),

@@ -1423,12 +1423,32 @@ class SingleChatController extends GetxController
         return;
       }
     } else if (fileType == MessageType.document.value && Platform.isIOS) {
-      await pickAndSendDocuments((selectedFiles) async {
-        for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
-          await sendFileMessage(file: file, messageEnum: getMessageType(file));
-        }
-      });
+      final files = await FilePickerService().pickDocuments();
+
+      final completer = Completer<bool>();
+
+      // ((selectedFiles) async {
+      // showAlertMessageWithAction(
+      //   message: "Do you want to send ${files.length} document(s)?",
+      //   confirmText: "Send",
+      //   cancelText: "Cancel",
+      //   onCancel: () {
+      //     // Get.back(); // close dialog
+      //     completer.complete(false); // complete with false
+      //   },
+      //   onConfirm: () {
+      //     // Get.back(); // close dialog
+      //     completer.complete(true); // complete with true
+      //   },
+      //   showCancel: true,
+      //   title: 'Genchat',
+      //   context: Get.context!,
+      // );
+      for (File file in files) {
+        print("Yes Getting back all files:---> $file");
+        await sendFileMessage(file: file, messageEnum: getMessageType(file));
+      }
+      // });
       cancelReply();
     } else if (fileType == MessageType.browseDocx.value) {
       await pickAndSendDocuments((selectedFiles) async {

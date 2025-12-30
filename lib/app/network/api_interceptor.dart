@@ -44,7 +44,6 @@ class ApiInterceptor extends Interceptor {
     print(
       "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}",
     );
-    print("📥 Response Data: ${response.data}");
 
     return handler.next(response);
   }
@@ -54,9 +53,7 @@ class ApiInterceptor extends Interceptor {
     print(
       "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}",
     );
-    print("🔴 Error Message: ${err.message}");
     if (err.response != null) {
-      print("🔴 Response Data: ${err.response?.data}");
     }
 
     if (err.response?.statusCode == 401) {
@@ -102,7 +99,6 @@ class ApiInterceptor extends Interceptor {
     );
 
     if (refreshToken == null || userId == null) {
-      print("🔴 No refresh token or user ID found!");
       return false;
     }
 
@@ -133,7 +129,6 @@ class ApiInterceptor extends Interceptor {
         // String newRefreshToken =
         //     response.data['data']['refreshToken']; // ✅ Corrected key
 
-        print("New Access Token: $newAccessToken\n");
         await sharedPreference.remove(UserDefaultsKeys.accessToken);
         // await sharedPreference.remove(UserDefaultsKeys.refreshToken);
         await sharedPreference.setString(
@@ -143,15 +138,11 @@ class ApiInterceptor extends Interceptor {
         // await sharedPreference.setString(
         //     UserDefaultsKeys.refreshToken, newRefreshToken);
 
-        print("✅ Token refreshed successfully!");
         return true;
       } else {
-        print("🔴 Token refresh failed: ${response.data}");
       }
     } catch (e) {
-      print("🔴 Refresh token request failed: $e");
     }
-    print("🔴 Refresh token invalid, logging out...");
 
     // await sharedPreference.clear().then((onValue) {
     //   Get.offAllNamed(Routes.LANDING);

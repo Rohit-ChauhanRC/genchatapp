@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/utils/utils.dart';
@@ -156,7 +157,8 @@ class FilePickerService {
     if (result == null || result.files.isEmpty) return [];
 
     final startTime = DateTime.now();
-    print("Compression started at: $startTime");
+    if (kDebugMode) {
+    }
 
     final pickedFiles = result.paths
         .whereType<String>()
@@ -184,10 +186,12 @@ class FilePickerService {
         }
       } else if (type == MessageType.video) {
         final endTime = DateTime.now();
-        print("Compression ended at: $endTime");
+        if (kDebugMode) {
+        }
 
         final totalSeconds = endTime.difference(startTime).inSeconds;
-        print("Compression duration: $totalSeconds seconds");
+        if (kDebugMode) {
+        }
         final sizeInBytes = await file.length();
         final sizeInMB = sizeInBytes / (1024 * 1024);
 
@@ -211,15 +215,18 @@ class FilePickerService {
             );
 
             final endTime = DateTime.now();
-            print("Compression ended at: $endTime");
+            if (kDebugMode) {
+            }
 
             final totalSeconds = endTime.difference(startTime).inSeconds;
-            print("Compression duration: $totalSeconds seconds");
+            if (kDebugMode) {
+            }
             final sizeInBytes1 = await File(
               compressed!.compressedFilePath,
             ).length();
             final sizeInMB1 = sizeInBytes1 / (1024 * 1024);
-            print(sizeInMB1);
+            if (kDebugMode) {
+            }
 
             if (sizeInMB1 >= 50) {
               showSnackBar(
@@ -244,8 +251,7 @@ class FilePickerService {
         } else {
           _imageFiles.add(file); // small → no compression
         }
-      }
-      else {
+      } else {
         _imageFiles.add(file);
       }
     }

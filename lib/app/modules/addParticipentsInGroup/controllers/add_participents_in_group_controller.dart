@@ -33,17 +33,17 @@ class AddParticipentsInGroupController extends GetxController {
   List<UserList> get filteredRecents => recentChats
       .where(
         (u) => (u.localName ?? '').toLowerCase().contains(
-      searchQuery.toLowerCase(),
-    ),
-  )
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get filteredContacts => contacts
       .where(
         (u) => (u.localName ?? '').toLowerCase().contains(
-      searchQuery.toLowerCase(),
-    ),
-  )
+          searchQuery.toLowerCase(),
+        ),
+      )
       .toList();
 
   List<UserList> get nonRecentFilteredContacts {
@@ -81,8 +81,9 @@ class AddParticipentsInGroupController extends GetxController {
     final args = Get.arguments as Map<String, dynamic>?;
 
     if (args != null) {
-      existingMemberIds.value =
-      List<int>.from(args['existingMemberIds'] ?? <int>[]);
+      existingMemberIds.value = List<int>.from(
+        args['existingMemberIds'] ?? <int>[],
+      );
       groupId.value = args['groupId'] ?? 0;
     }
 
@@ -113,12 +114,12 @@ class AddParticipentsInGroupController extends GetxController {
     final recent = recentRaw
         .map(
           (chat) => UserList(
-        userId: int.parse(chat.uid.toString()),
-        phoneNumber: chat.name,
-        displayPictureUrl: chat.profilePic,
-        localName: chat.name,
-      ),
-    )
+            userId: int.parse(chat.uid.toString()),
+            phoneNumber: chat.name,
+            displayPictureUrl: chat.profilePic,
+            localName: chat.name,
+          ),
+        )
         .toList();
     recentChats.assignAll(recent);
     contacts.assignAll(allContacts);
@@ -139,11 +140,14 @@ class AddParticipentsInGroupController extends GetxController {
 
   Future<void> addParticipants() async {
     if (selectedUserIds.isEmpty && groupId.value == 0) return;
-    try{
-      final uploadResponse = await groupRepo.addUsers(userId: selectedUserIds, groupId: groupId.value);
+    try {
+      final uploadResponse = await groupRepo.addUsers(
+        userId: selectedUserIds,
+        groupId: groupId.value,
+      );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ User Added in Group: ${uploadResponse.data}");
+        debugPrint("✅ User Added in Group: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -158,7 +162,7 @@ class AddParticipentsInGroupController extends GetxController {
       } else {
         showAlertMessage('Failed to Add in Group.');
       }
-    }catch(e){
+    } catch (e) {
       showAlertMessage("Getting error adding group user: $e");
     }
 

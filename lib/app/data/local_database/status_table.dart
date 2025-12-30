@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/new_models/response_model/status_model.dart';
@@ -11,7 +12,7 @@ class StatusTable {
   // set statusTime(int i) => statusTime = i;
 
   Future<void> createTable(Database database) async {
-    print("Creating Status Table...");
+    debugPrint("Creating Status Table...");
 
     await database.execute("""
     CREATE TABLE IF NOT EXISTS $tableName (
@@ -27,7 +28,7 @@ class StatusTable {
     );
     """);
 
-    print("✅ Status table created (or already exists)");
+    debugPrint("✅ Status table created (or already exists)");
   }
 
   // Add missing onUpgrade to add localPath column
@@ -39,7 +40,7 @@ class StatusTable {
 
       if (!columns.contains("localPath")) {
         await db.execute("ALTER TABLE $tableName ADD COLUMN localPath TEXT;");
-        print("🆕 Added localPath column to $tableName");
+        debugPrint("🆕 Added localPath column to $tableName");
       }
     }
   }
@@ -47,7 +48,7 @@ class StatusTable {
   Future<void> saveAllStatuses(List<Statusmodel> list) async {
     final db = await DataBaseService().database;
 
-    print("💾 Saving ${list.length} statuses into SQLite...");
+    debugPrint("💾 Saving ${list.length} statuses into SQLite...");
 
     // (Optional) Clear old data
     // await db.delete(tableName);
@@ -55,7 +56,7 @@ class StatusTable {
     final batch = db.batch();
 
     for (var s in list) {
-      print(
+      debugPrint(
         " Inserting Status -> id=${s.id}, userId=${s.userId}, url=${s.assetUrl}, local=${s.localPath}",
       );
 
@@ -73,7 +74,7 @@ class StatusTable {
     }
 
     await batch.commit(noResult: true);
-    print("All statuses inserted successfully!");
+    debugPrint("All statuses inserted successfully!");
   }
 
   Future<List<Statusmodel>> getAllStatuses({required int? statusTime}) async {
@@ -104,7 +105,7 @@ class StatusTable {
   Future<void> clearTable() async {
     final db = await DataBaseService().database;
     await db.delete(tableName);
-    print("🧹 Cleared all data from $tableName");
+    debugPrint("🧹 Cleared all data from $tableName");
   }
 
   Future<void> deleteMissingStatuses(List<int> apiIds) async {
@@ -113,7 +114,7 @@ class StatusTable {
     if (apiIds.isEmpty) {
       // API returned nothing → clear table
       await db.delete(tableName);
-      print("🧹 Cleared (API returned 0 items)");
+      debugPrint("🧹 Cleared (API returned 0 items)");
       return;
     }
 
@@ -121,7 +122,7 @@ class StatusTable {
 
     await db.rawDelete("DELETE FROM $tableName WHERE id NOT IN ($idsString)");
 
-    print("🗑 Removed missing statuses (not in API list)");
+    debugPrint("🗑 Removed missing statuses (not in API list)");
   }
 
   Future<void> syncStatuses(List<Statusmodel> apiList) async {
@@ -134,7 +135,7 @@ class StatusTable {
     // 3. Delete entries NOT present in API
     await deleteMissingStatuses(apiIds);
 
-    print("🔄 Status sync completed!");
+    debugPrint("🔄 Status sync completed!");
   }
 
   // Future<void> deleteExpiredStatuses() async {
@@ -153,7 +154,7 @@ class StatusTable {
   //     whereArgs: [cutoffString],
   //   );
 
-  //   print("🗑 Deleted $count expired statuses (older than 24 hours)");
+  //   debugPrint("🗑 Deleted $count expired statuses (older than 24 hours)");
   // }
 
   Future<void> deleteExpiredStatuses({required int statusTime}) async {
@@ -170,7 +171,7 @@ class StatusTable {
       whereArgs: [cutoff],
     );
 
-    print(
+    debugPrint(
       "🗑 Deleted $count expired statuses (older than $statusTime minutes)",
     );
   }

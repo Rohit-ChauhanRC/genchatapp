@@ -146,30 +146,23 @@ class UpdatesController extends GetxController
       // final hasInternet = connectivityResult != ConnectivityResult.none;
 
       if (!connectivityService.isConnected.value) {
-        print("📛 No internet → Loading local saved statuses only...");
         await getLocalSaveSatus(); // ⭐ LOAD ONLY FROM DB
         return;
       }
 
-      print("🌐 Internet available → Fetching from API");
 
       if (contacts.isEmpty) {
-        print(" No contacts → Skipping API");
         return;
       }
 
-      print("Fetching statuses for User IDs: $userIdList");
 
       final response = await statusRepository.fetchStatus(userIds: userIdList);
 
       if (response == null || response.statusCode != 200) {
-        print(" API error → loading local DB instead");
         await getLocalSaveSatus(); // ⭐ FALLBACK
         return;
       }
 
-      print(" API response OK");
-      print("Raw response: ${response.data}");
 
       // ---------- PARSE MODEL ----------
       List<dynamic> raw = response.data['data'];
@@ -199,9 +192,7 @@ class UpdatesController extends GetxController
       print("✅ getStatus() finished with ONLINE mode");
     } catch (e, st) {
       print("🔥 ERROR in getStatus(): $e");
-      print(st);
 
-      print(" Falling back to local DB...");
       await getLocalSaveSatus(); // ALWAYS fallback in errors
     }
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -56,7 +57,9 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
-    print("🔧 NotificationService.init() called");
+    if (kDebugMode) {
+      print("🔧 NotificationService.init() called");
+    }
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/launcher_icon');
 
@@ -85,13 +88,14 @@ class NotificationService {
   }
 
   static Future<void> _handleForegroundMessage(RemoteMessage msg) async {
-    print("🟢 [Foreground] Handling FCM");
-    print("🟢 Title: ${msg.notification?.title}");
-    print("🟢 Body: ${msg.notification?.body}");
-    print("🟢 Raw Data: ${msg.data}");
+    if (kDebugMode) {
+    }
+    debugPrint("🟢 Title: ${msg.notification?.title}");
+    debugPrint("🟢 Body: ${msg.notification?.body}");
+    debugPrint("🟢 Raw Data: ${msg.data}");
 
     final String? rawData = msg.data['data'];
-    print("🔍 [FG] rawData: $rawData");
+    debugPrint("🔍 [FG] rawData: $rawData");
 
     Map<String, dynamic>? decoded;
     String messageId = msg.messageId ?? '';
@@ -100,20 +104,20 @@ class NotificationService {
       try {
         decoded = Map<String, dynamic>.from(jsonDecode(rawData));
         messageId = decoded['messageId']?.toString() ?? messageId;
-        print("🆔 [FG] Extracted messageId: $messageId");
+        debugPrint("🆔 [FG] Extracted messageId: $messageId");
       } catch (e) {
-        print("❌ [FG] Error decoding rawData: $e");
+        debugPrint("❌ [FG] Error decoding rawData: $e");
       }
     }
 
     final shownIds = await getShownMessageIds();
-    print("📦 [Dedup Check] Stored IDs: $shownIds");
-    print("📦 [Dedup Check] Incoming ID: $messageId");
+    debugPrint("📦 [Dedup Check] Stored IDs: $shownIds");
+    debugPrint("📦 [Dedup Check] Incoming ID: $messageId");
     if (shownIds.contains(messageId)) {
       debugPrint('⚠️ Duplicate notification ignored: $messageId');
       return;
     }
-    print("🔔 [FG] Showing notification for messageId: $messageId");
+    debugPrint("🔔 [FG] Showing notification for messageId: $messageId");
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'foreground_channel_id',
@@ -184,7 +188,7 @@ class NotificationService {
 
     for (String topic in cleanedTopics) {
       await FirebaseMessaging.instance.subscribeToTopic(topic);
-      print("✅ Subscribed to topic: $topic");
+      debugPrint("✅ Subscribed to topic: $topic");
     }
 
     // Save subscribed topics in SharedPreferenceService, avoiding duplicates
@@ -203,7 +207,7 @@ class NotificationService {
     if (topics != null) {
       for (String topic in topics) {
         await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-        print("❌ Unsubscribed from topic: $topic");
+        debugPrint("❌ Unsubscribed from topic: $topic");
       }
       await prefs.remove(subscribedTopics); // Clear stored topics
     }

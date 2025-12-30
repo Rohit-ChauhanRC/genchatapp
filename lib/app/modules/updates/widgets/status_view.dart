@@ -89,7 +89,6 @@ class _StatusViewState extends State<StatusView> {
 
     // SAFETY
     if (status.media.isEmpty) {
-      print(" ERROR: media list empty for this status");
       return;
     }
 
@@ -149,7 +148,6 @@ class _StatusViewState extends State<StatusView> {
       return;
     }
 
-    print("Unknown media type: $type");
   }
 
   void _onVideoTick() {
@@ -306,7 +304,6 @@ class _StatusViewState extends State<StatusView> {
                         media["url"];
 
                     if (path == null || path.toString().isEmpty) {
-                      print(" ERROR: No valid image path found: $media");
                       return const Center(child: Text("Image unavailable"));
                     }
 

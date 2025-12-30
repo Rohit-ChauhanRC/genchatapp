@@ -50,7 +50,6 @@ class FolderCreation {
             await dir.create(recursive: true);
           } else {
             if (kDebugMode) {
-              print(dir.path);
             }
           }
         }
@@ -295,14 +294,15 @@ class FolderCreation {
                     file.path.endsWith('.mp4') ||
                     file.path.endsWith('.mp3'))) {
               await file.delete();
-              print('Deleted: ${file.path}');
+              if (kDebugMode) {
+              }
             } else {
-              print('Media directory does not exist.');
+              if (kDebugMode) {
+              }
             }
           }
         } else {
           if (kDebugMode) {
-            print(dir.path);
           }
         }
       }
@@ -313,7 +313,6 @@ class FolderCreation {
 
       // Check if the directory exists
     } catch (e) {
-      print('Error clearing media files: $e');
     }
   }
 
@@ -335,14 +334,17 @@ class FolderCreation {
       final File file = File(filePath);
       if (await file.exists()) {
         await file.delete();
-        print('Deleted file: $filePath');
+        if (kDebugMode) {
+        }
         return true;
       } else {
-        print('File not found: $filePath');
+        if (kDebugMode) {
+        }
         return false;
       }
     } catch (e) {
-      print('Error deleting file: $e');
+      if (kDebugMode) {
+      }
       return false;
     }
   }

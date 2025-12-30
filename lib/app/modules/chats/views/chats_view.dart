@@ -205,7 +205,7 @@ class ChatsView extends GetView<ChatsController> {
                                   UserList(), // or return a dummy/empty model
                             );
 
-                            print(user);
+                            // debugPrint(user.toString());
 
                             final typingStatusText = controller
                                 .getTypingStatusText(
@@ -272,7 +272,7 @@ class ChatsView extends GetView<ChatsController> {
                                         final filePath =
                                             '${thumDir.path}/$pngFileName';
 
-                                        print(filePath);
+                                        // print(filePath);
                                         showDialog(
                                           context: context,
                                           builder: (_) => ProfileImageDialog(
@@ -377,7 +377,9 @@ class ChatsView extends GetView<ChatsController> {
                                                   localName:
                                                       chatConntactModel.name ??
                                                       user.name,
-                                                  phoneNumber: user.phoneNumber ?? chatConntactModel.name,
+                                                  phoneNumber:
+                                                      user.phoneNumber ??
+                                                      chatConntactModel.name,
                                                 ),
                                               );
                                             } else if (chatConntactModel

@@ -50,10 +50,10 @@ class VideoPlayerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // _generateThumbnail();
-    print(localFilePath);
-    final thumbnailFile = File(!localFilePath.contains(".")
-        ? "$localFilePath.jpg"
-        : localFilePath);
+    // print(localFilePath);
+    final thumbnailFile = File(
+      !localFilePath.contains(".") ? "$localFilePath.jpg" : localFilePath,
+    );
     return GestureDetector(
       onTap: () => isReply ? null : _downloadAndOpenFile(context),
       child: SizedBox(
@@ -65,26 +65,31 @@ class VideoPlayerItem extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   thumbnailFile.existsSync()
-                      ?ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.file(
-                      thumbnailFile,
-                      width: 280,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ): Container(
-                      width: 280,
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, size: 50),
-                  ),
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            thumbnailFile,
+                            width: 280,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          width: 280,
+                          height: 200,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.broken_image, size: 50),
+                        ),
                   Container(
                     decoration: BoxDecoration(
-                        color: Colors.black38,
-                        borderRadius: BorderRadius.circular(30)),
-                    child: Icon(Icons.play_circle_filled,
-                        color: Colors.white, size: isReply ? 32 : 64),
+                      color: Colors.black38,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Icon(
+                      Icons.play_circle_filled,
+                      color: Colors.white,
+                      size: isReply ? 32 : 64,
+                    ),
                   ),
                 ],
               ),

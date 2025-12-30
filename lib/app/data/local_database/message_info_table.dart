@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/models/message_info_model.dart';
@@ -431,7 +432,7 @@ class MessageInfoTable {
         'deleteState': isDeleteFromEveryone ? 1 : 0,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e) {
-      print("Error marking message for deletion: $e");
+      debugPrint("Error marking message for deletion: $e");
     }
   }
 

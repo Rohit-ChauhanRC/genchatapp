@@ -65,7 +65,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     await socketService.initSocket(
       userId!,
       onConnected: () {
-        print(
+        debugPrint(
           'Initial socket connection established in HomeController: UserId for socket connection: $userId',
         );
       },
@@ -93,7 +93,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        print('📱 App Resumed: Trying to reconnect socket...');
+        debugPrint('📱 App Resumed: Trying to reconnect socket...');
         if (connectivityService.isConnected.value) {
           // await setUserOnline();
           await connectSocket();
@@ -106,7 +106,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.paused:
-        print('📴 App Backgrounded: Disposing socket...');
+        debugPrint('📴 App Backgrounded: Disposing socket...');
         await disConnectSocket();
 
         break;
@@ -205,7 +205,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       final file = File(filePath);
 
       if (file.existsSync()) {
-        print("file exist already!");
+        debugPrint("file exist already!");
       } else {
         final response = await http.get(Uri.parse(imageUrl));
         if (response.statusCode != 200) {
@@ -218,10 +218,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
         await file.writeAsBytes(img.encodePng(originalImage));
 
-        print("✅ Circular PNG with transparency saved: $filePath");
+        debugPrint("✅ Circular PNG with transparency saved: $filePath");
       }
     } catch (e) {
-      print("❌ Silent crop failed: $e");
+      debugPrint("❌ Silent crop failed: $e");
     }
   }
 

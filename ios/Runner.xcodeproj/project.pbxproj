@@ -506,6 +506,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9Q5C62N593;
 				ENABLE_BITCODE = NO;
+				FLUTTER_BUILD_NUMBER = 2;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GenchatApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -706,6 +707,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9Q5C62N593;
 				ENABLE_BITCODE = NO;
+				FLUTTER_BUILD_NUMBER = 2;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GenchatApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -742,6 +744,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 9Q5C62N593;
 				ENABLE_BITCODE = NO;
+				FLUTTER_BUILD_NUMBER = 2;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GenchatApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";

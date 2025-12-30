@@ -18,7 +18,6 @@ class MessageIdStorage {
       final List<dynamic> jsonList = jsonDecode(contents);
       return jsonList.map((e) => e.toString()).toList();
     } catch (e) {
-      print("❌ [MessageIdStorage] Load failed: $e");
       return [];
     }
   }
@@ -28,7 +27,6 @@ class MessageIdStorage {
       final file = await _getFile();
       await file.writeAsString(jsonEncode(ids));
     } catch (e) {
-      print("❌ [MessageIdStorage] Save failed: $e");
     }
   }
 

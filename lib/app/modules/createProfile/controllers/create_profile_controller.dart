@@ -109,7 +109,6 @@ class CreateProfileController extends GetxController {
 
       final permissionGranted = await Get.dialog<bool>(
         WillPopScope(
-
           onWillPop: () async => false,
           child: AlertDialog(
             title: Text(
@@ -195,7 +194,7 @@ class CreateProfileController extends GetxController {
       ); // Set before accessing DB
       await dbService.database; // Ensures DB is initialized
     } else {
-      print("⚠️ No user ID found, DB not initialized.");
+      debugPrint("⚠️ No user ID found, DB not initialized.");
     }
   }
 

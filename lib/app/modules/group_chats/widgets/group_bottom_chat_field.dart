@@ -260,14 +260,14 @@ class GroupBottomChatField extends StatelessWidget {
                                   // } else {
                                   //   singleChatController.isShowSendButton = false;
                                   // }
-                                  print(v.length);
+                                  debugPrint(v.length.toString());
                                   groupChatsController.onTextChanged(v);
                                   if (v.length >= 800) {
                                     // You could show a SnackBar, error, or shake animation here
                                     showAlertMessage(
                                       "This message is too long, Please shorter the message.",
                                     );
-                                    print("Max character limit reached");
+                                    debugPrint("Max character limit reached");
                                   }
                                 },
                                 controller:
@@ -349,7 +349,7 @@ class GroupBottomChatField extends StatelessWidget {
                                                 ),
                                             icon: const Icon(
                                               Icons.attach_file,
-                                                color: greyMsgColor,
+                                              color: greyMsgColor,
                                             ),
                                           ),
 
@@ -440,7 +440,7 @@ class GroupBottomChatField extends StatelessWidget {
                             .startRecordingAudioWaveform();
                       } else if (!groupChatsController.isShowSendButton &&
                           groupChatsController.isPreviewing.value) {
-                        print("send audio");
+                        debugPrint("send audio");
                         groupChatsController.sendAudioMessage();
                       }
                     },

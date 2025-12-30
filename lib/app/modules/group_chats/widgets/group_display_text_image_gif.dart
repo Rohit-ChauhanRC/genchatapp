@@ -102,7 +102,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
           final isDownloaded = controller.isDownloaded[message] ?? false;
           final isDownloading = controller.isDownloading[message] ?? false;
 
-          print(
+          debugPrint(
             "🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe",
           );
 
@@ -366,7 +366,7 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     MessageType type,
     String fileName,
   ) async {
-    print(
+    debugPrint(
       "🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
     );
 
@@ -377,14 +377,14 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
 
-      print(
+      debugPrint(
         "🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
       );
 
       if (exists && size > 0) {
         // File exists locally, mark as downloaded immediately
         controller.isDownloaded[fileName] = true;
-        print(
+        debugPrint(
           "✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName",
         );
         return;
@@ -392,13 +392,13 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
         // File doesn't exist locally, clean up any corrupt file
         if (exists) await file.delete();
         controller.isDownloaded[fileName] = false;
-        print(
+        debugPrint(
           "❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName",
         );
       }
     } else {
       // For received messages, use the standard check
-      print(
+      debugPrint(
         "📥 [GroupDisplayTextImageGIF] Using standard check for received message",
       );
       await controller.checkIfFileExists(type, fileName);

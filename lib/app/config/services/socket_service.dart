@@ -81,11 +81,11 @@ class SocketService extends GetxService {
   Future<void> initSocket(String userId, {Function()? onConnected}) async {
     if (_socket != null) {
       if (_socket!.connected) {
-        print('⚠️ Socket already connected, skipping init.');
+        debugPrint('⚠️ Socket already connected, skipping init.');
         return;
       } else {
         // Socket is present but disconnected — dispose and reconnect
-        print('🔄 Disposing stale socket and reinitializing...');
+        debugPrint('🔄 Disposing stale socket and reinitializing...');
         await disposeSocket();
       }
     }
@@ -104,16 +104,16 @@ class SocketService extends GetxService {
     );
     _registerSocketListeners(onConnected, userId);
     _socket?.connect();
-    print('🔌 Socket initialized');
-    print("Socket base url : ${ApiEndpoints.socketBaseUrl}");
-    print(
+    debugPrint('🔌 Socket initialized');
+    debugPrint("Socket base url : ${ApiEndpoints.socketBaseUrl}");
+    debugPrint(
       "sharedPreferenceService.getString(UserDefaultsKeys.accessToken): ${sharedPreferenceService.getString(UserDefaultsKeys.accessToken)}",
     );
   }
 
   void _registerSocketListeners(Function()? onConnected, String userId) {
     _socket?.onConnect((_) async {
-      print('✅ Socket connected');
+      debugPrint('✅ Socket connected');
       // _isConnected.value = true;
       await retryPendingDeletions();
       await syncPendingMessages(loginUserId: int.parse(userId));
@@ -126,31 +126,31 @@ class SocketService extends GetxService {
     });
 
     _socket?.onDisconnect((_) {
-      print('❌ Socket disconnected');
+      debugPrint('❌ Socket disconnected');
       // _isConnected.value = false;
       _clearSocketListeners();
     });
 
     _socket?.onError((data) {
-      print('⚠️ Socket error: $data');
+      debugPrint('⚠️ Socket error: $data');
       _clearSocketListeners();
     });
 
     _socket?.onReconnect((_) {
-      print('Socket reconnection.');
+      debugPrint('Socket reconnection.');
       _clearSocketListeners();
       _registerSocketListeners(onConnected, userId);
     });
 
     // Add your custom events here
     _socket?.on('message-event', (data) async {
-      print('📩 Message received: $data');
+      debugPrint('📩 Message received: $data');
       int messageId = data["messageId"];
       bool existsLocally = await messageTable.messageExists(messageId);
       //
 
       if (!existsLocally) {
-        print("message not found");
+        debugPrint("message not found");
         final newMessage = NewMessageModel(
           message: data["message"],
           senderId: data["senderId"],
@@ -212,7 +212,7 @@ class SocketService extends GetxService {
               messageTimer > 0 &&
               isMessageExpired(sentTime, messageTimer)) {
             _socket?.emit('message-seen', {"messageId": messageId});
-            print("⏱ Message expired before save. Skipping DB insert.");
+            debugPrint("⏱ Message expired before save. Skipping DB insert.");
             return;
           } else {
             messageTable.insertMessage(
@@ -263,7 +263,9 @@ class SocketService extends GetxService {
           saveChatContacts(chatContactMessage);
         }
       } else {
-        print("⚠️ Message $messageId found in locally, Skipping reinserting.");
+        debugPrint(
+          "⚠️ Message $messageId found in locally, Skipping reinserting.",
+        );
       }
     });
 
@@ -343,7 +345,7 @@ class SocketService extends GetxService {
     // });
 
     _socket?.on('message-acknowledgement', (data) async {
-      print('✅ Message Ack: $data');
+      debugPrint('✅ Message Ack: $data');
       if (data["state"] == 1) {
         messageTable.updateAckMessage(
           clientSystemMessageId: data["clientSystemMessageId"].toString(),
@@ -367,7 +369,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('user-connection-status', (data) async {
-      print('✅ user connection status: $data');
+      debugPrint('✅ user connection status: $data');
       final int userId = int.parse(data['userId']);
       final bool isOnlineBool = data['isOnline'];
       final int isOnline = isOnlineBool ? 1 : 0;
@@ -385,7 +387,7 @@ class SocketService extends GetxService {
         lastSeenTime ?? '', // Pass empty string if user is online
       );
 
-      print(
+      debugPrint(
         success
             ? "✅    User status updated successfully: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime"
             : "⚠️ No user found with that ID to update: UserID: $userId Is Online: $isOnline Last Seen Time: $lastSeenTime",
@@ -393,8 +395,8 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('typing', (data) {
-      print('✅ user is typing: $data');
-      print('📝 Typing event received: $data');
+      debugPrint('✅ user is typing: $data');
+      debugPrint('📝 Typing event received: $data');
 
       final String senderId = data["userId"].toString();
       final bool isTyping = data["isTyping"] == true;
@@ -406,8 +408,8 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-user-typing', (data) async {
-      print('✅ Group user is typing: $data');
-      print('📝 Group user Typing event received: $data');
+      debugPrint('✅ Group user is typing: $data');
+      debugPrint('📝 Group user Typing event received: $data');
       final String senderId = data["userId"].toString();
       final String groupId = data["groupId"].toString();
       final bool isTyping = data["isTyping"] == true;
@@ -423,7 +425,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('message-delete', (data) async {
-      print('✅ Message Deleted: $data');
+      debugPrint('✅ Message Deleted: $data');
       final int messageId = data['messageId'];
       final bool isDeleteFromEveryOne = data['deleteState'];
 
@@ -491,12 +493,14 @@ class SocketService extends GetxService {
           }
         }
       } else {
-        print("⚠️ Message ID $messageId not found locally. Skipping deletion.");
+        debugPrint(
+          "⚠️ Message ID $messageId not found locally. Skipping deletion.",
+        );
       }
     });
 
     _socket?.on('user-update', (data) async {
-      print('✅ User Details Update: $data');
+      debugPrint('✅ User Details Update: $data');
       UserData userDetails = UserData.fromJson(data["userData"]);
       updateContactUser.value = userDetails;
       // print("userData after json to model: $userDetails");
@@ -517,7 +521,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-updated', (data) async {
-      print('✅ Group Details Updated: $data');
+      debugPrint('✅ Group Details Updated: $data');
       final responseModel = CreateGroupModel.fromJson(data);
       // print("after Parsing: ${responseModel.toJson()}");
       if (responseModel.status == true && responseModel.data != null) {
@@ -537,7 +541,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-created', (data) async {
-      print('✅ New Group created: $data');
+      debugPrint('✅ New Group created: $data');
       final responseModel = CreateGroupModel.fromJson(data);
       // print("after Parsing: ${responseModel.toJson()}");
       if (responseModel.status == true && responseModel.data != null) {
@@ -561,7 +565,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-user-added', (data) async {
-      print('✅ New User added in group: $data');
+      debugPrint('✅ New User added in group: $data');
       final groupMap = data["group"];
       final usersData = data["users"];
 
@@ -578,7 +582,7 @@ class SocketService extends GetxService {
       final isGroupExists = await groupsTable.isGroupExists(group.id!);
 
       if (!isGroupExists) {
-        print("group not found:----> Going to inserted");
+        debugPrint("group not found:----> Going to inserted");
         final responseModel = CreateGroupModel(
           status: true,
           message: "",
@@ -587,7 +591,7 @@ class SocketService extends GetxService {
         );
         await groupsTable.insertOrUpdateGroup(responseModel.data!);
         final data = responseModel.data;
-        print("New group inserted:---> $data");
+        debugPrint("New group inserted:---> $data");
         final groupId = data?.group?.id ?? 0;
         await chatConectTable.insert(
           contact: ChatConntactModel(
@@ -602,11 +606,11 @@ class SocketService extends GetxService {
             unreadCount: 0,
           ),
         );
-        print("Group inserted Sucessfully: $groupId");
+        debugPrint("Group inserted Sucessfully: $groupId");
       } else {
         // Handle both list & single map
 
-        print('Adding users in group:----> $usersList');
+        debugPrint('Adding users in group:----> $usersList');
 
         for (var user in usersList) {
           final userInfo = user.userInfo!;
@@ -632,7 +636,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-user-removed', (data) async {
-      print('✅ User removed in group: $data');
+      debugPrint('✅ User removed in group: $data');
 
       final groupMap = data["group"];
       final userMap = data["users"];
@@ -660,7 +664,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-admin-toggled', (data) async {
-      print('✅ Admin toggled in group: $data');
+      debugPrint('✅ Admin toggled in group: $data');
 
       // Parse the data manually if you're not using CreateGroupModel anymore
       final groupMap = data["group"];
@@ -689,7 +693,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('group-deleted', (data) async {
-      print("✅ Group deleted: $data");
+      debugPrint("✅ Group deleted: $data");
       final responseModel = CreateGroupModel.fromJson(data);
       if (responseModel.status == true && responseModel.data != null) {
         await groupsTable.insertOrUpdateGroup(responseModel.data!);
@@ -706,7 +710,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('custom-error', (data) async {
-      print('🚫 Custom Error: $data');
+      debugPrint('🚫 Custom Error: $data');
       final statusCode = data['statusCode'];
       if (statusCode == 401) {
         showAlertMessage("Your session has expired. Please log in again.");
@@ -717,7 +721,7 @@ class SocketService extends GetxService {
     });
 
     _socket?.on('user-blocked', (data) async {
-      print(data);
+      debugPrint(data);
 
       incomBlockUser.value = BlockUserModel(
         blockedBy: data["blockedBy"],
@@ -741,12 +745,12 @@ class SocketService extends GetxService {
         );
       }
 
-      print(data);
+      debugPrint(data);
     });
 
     // group israedonly chg
     _socket?.on('group-state-toggled', (data) async {
-      print(data);
+      debugPrint(data);
 
       groupsTable.updateGroupReadOnly(
         data["groupId"],
@@ -760,7 +764,7 @@ class SocketService extends GetxService {
     });
     //  vanish mode
     _socket?.on('group-message-autodelete-toggled', (data) async {
-      print(data);
+      debugPrint(data);
       // groupId, userId,autoDeleteMessages
 
       groupsTable.updateAutoDeleteMessages(
@@ -871,7 +875,7 @@ class SocketService extends GetxService {
           )
           .userInfo
           ?.phoneNumber;
-  }
+    }
 
     // 🔄 Step 3: Update typing map
     final groupMap = typingGroupUsersMap[groupId] ?? {};
@@ -910,7 +914,7 @@ class SocketService extends GetxService {
     _clearSocketListeners();
     _socket?.dispose();
     _socket = null;
-    print('🔌 Socket disposed manually');
+    debugPrint('🔌 Socket disposed manually');
   }
 
   Future<void> saveChatContacts(NewMessageModel data) async {
@@ -1174,7 +1178,7 @@ class SocketService extends GetxService {
   // }
 
   Future<void> sendBase64(File data) async {
-    print(data.length);
+    debugPrint(data.length.toString());
     _socket?.emit('asset-start');
 
     // final base64String = await convertImageToBase64(data);
@@ -1186,7 +1190,7 @@ class SocketService extends GetxService {
 
     await for (final chunk in stream) {
       // Option A: send raw binary (best)int
-      print("chunk: $chunk");
+      debugPrint("chunk: $chunk");
       _socket?.emit("asset-chunk", chunk);
 
       // Option B: send base64 if your server requires text
@@ -1270,7 +1274,7 @@ class SocketService extends GetxService {
     if (delay.isNegative) return;
 
     Future.delayed(delay, () async {
-      print("🗑 Auto deleting message $messageId");
+      debugPrint("🗑 Auto deleting message $messageId");
       await messageTable.deleteMessage(messageId);
     });
   }

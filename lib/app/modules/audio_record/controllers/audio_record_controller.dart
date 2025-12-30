@@ -50,14 +50,15 @@ class AudioRecordController extends GetxController {
       thumDir = await getApplicationDocumentsDirectory();
     }
 
-    final String rootFolderPath = '${thumDir.path}/$appPackageName/GenChat/Audio';
+    final String rootFolderPath =
+        '${thumDir.path}/$appPackageName/GenChat/Audio';
 
     final Directory dirThum = Directory(rootFolderPath);
     if (!await dirThum.exists()) {
       await dirThum.create(recursive: true);
     } else {
       if (kDebugMode) {
-        print(dirThum.path);
+        debugPrint(dirThum.path);
       }
     }
     final thumbnailPath = dirThum.path;
@@ -102,7 +103,7 @@ class AudioRecordController extends GetxController {
       recordingComplete.value = false;
       singleChatController.recordedPath.value = '';
     } catch (e) {
-      print('Cancel error: $e');
+      debugPrint('Cancel error: $e');
     }
   }
 

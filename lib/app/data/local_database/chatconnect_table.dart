@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/data/models/chat_conntact_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -65,7 +66,6 @@ class ChatConectTable {
       limit: 1, // Limit to 1 result for efficiency
     );
 
-
     // If a result is found, return the ContactModel, otherwise return null
     if (result.isNotEmpty) {
       return ChatConntactModel.fromMap(result.first);
@@ -116,7 +116,7 @@ class ChatConectTable {
     if (isGroup != null) updatedValues["isGroup"] = isGroup;
     // isBlocked
     if (isBlocked != null) updatedValues["isBlocked"] = isBlocked;
-    print(
+    debugPrint(
       '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues',
     );
 
@@ -128,7 +128,7 @@ class ChatConectTable {
         whereArgs: [uid, isGroup],
       );
     } else {
-      print('⚠️ [updateContact] No values to update for uid=$uid');
+      debugPrint('⚠️ [updateContact] No values to update for uid=$uid');
     }
   }
 
@@ -193,7 +193,7 @@ class ChatConectTable {
     // final db = await database;
     await db.execute('DROP TABLE IF EXISTS $tableName');
     await createTable(db);
-    // print('Table "$tableName" deleted successfully.');
+    // debugPrint('Table "$tableName" deleted successfully.');
   }
 
   void onUpgrade(Database db, int oldVersion, int newVersion) {

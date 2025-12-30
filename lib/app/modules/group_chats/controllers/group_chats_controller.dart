@@ -364,7 +364,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        print('💬 SingleChatController resumed.');
+        debugPrint('💬 SingleChatController resumed.');
         if (connectivityService.isConnected.value &&
             socketService.isConnected) {
           checkUserOnline(receiverUserData);
@@ -414,7 +414,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         }
       });
     } else {
-      print('Original message not currently visible');
+      debugPrint('Original message not currently visible');
       checkMessageInList(repliedId);
     }
   }
@@ -429,7 +429,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   void handleDeletedMessage(NewMessageModel msg) {
     // You can still show a greyed-out bubble in the chat
-    print("Message '${msg.message}' was deleted.");
+    debugPrint("Message '${msg.message}' was deleted.");
     // Get.snackbar(
     //   "Original message deleted",
     //   "The message you're replying to has been deleted.",
@@ -464,10 +464,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         // All pages scanned, messae not found. Check if it existed and is deleted
         final deletedMsg = await MessageTable().fetchMessageById(repliedId);
         if (deletedMsg != null) {
-          print("Message existed but was deleted.");
+          debugPrint("Message existed but was deleted.");
           handleDeletedMessage(deletedMsg);
         } else {
-          print("Message never existed.");
+          debugPrint("Message never existed.");
           handleMessageNotExist(repliedId);
         }
         break;
@@ -960,7 +960,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           : messageReply.recipientUserId,
       assetThumbnail: "",
     );
-    print("Message All details Request: ${newMessage.toMap()}");
+    debugPrint("Message All details Request: ${newMessage.toMap()}");
 
     messageList.add(newMessage);
     await MessageTable().insertMessage(newMessage).then((onValue) {
@@ -1028,12 +1028,12 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
       if (kDebugMode) {
-        print("Message removed from list:------> ${message.toMap()}");
+        debugPrint("Message removed from list:------> ${message.toMap()}");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        print("Message added to list:------> ${message.toMap()}");
+        debugPrint("Message added to list:------> ${message.toMap()}");
       }
     }
     updateForwardAvailability();
@@ -1250,7 +1250,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         onProgress: (sent, total) {
           if (total > 0) {
             percent.value = (sent / total) * 100;
-            print(
+            debugPrint(
               "📤 [GroupChat] Upload progress: ${percent.value.toStringAsFixed(0)}%",
             );
             if (percent.value >= 100) {
@@ -1264,7 +1264,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (response?.statusCode == 200) {
         final result = UploadFileModel.fromJson(response?.data);
         if (result.status == true) {
-          print("response of upload Files:----> ${result.data?.toJson()}");
+          debugPrint("response of upload Files:----> ${result.data?.toJson()}");
           return result;
         } else {
           // showAlertMessage('Upload failed: Invalid response status.');
@@ -1311,7 +1311,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
-      print(
+      debugPrint(
         "[GroupChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}",
       );
 
@@ -1354,19 +1354,19 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             ? senderuserData?.userId
             : receiverUserData?.group?.id,
       );
-      print(
+      debugPrint(
         "[GroupChat] sendFileMessage -> created local message: ${newMessage.toMap()}",
       );
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      print("[GroupChat] sendFileMessage -> starting upload to server");
+      debugPrint("[GroupChat] sendFileMessage -> starting upload to server");
       final fileData = await uploadFileToServer(f.values.first!);
 
       if (fileData != null &&
           fileData.statusCode == 200 &&
           fileData.status == true) {
-        print(
+        debugPrint(
           "[GroupChat] sendFileMessage -> upload success: ${fileData.data?.url}",
         );
         final updatedMessage = newMessage.copyWith(
@@ -1388,13 +1388,15 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           socketService.saveChatContacts(updatedMessage);
         }
       } else {
-        print("[GroupChat] sendFileMessage -> upload failed or null response");
+        debugPrint(
+          "[GroupChat] sendFileMessage -> upload failed or null response",
+        );
         // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
-        print("[GroupChat] Error sending file message: $e");
+        debugPrint("[GroupChat] Error sending file message: $e");
       }
     }
     cancelReply();
@@ -1423,7 +1425,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     } else if (fileType == MessageType.video.value) {
       final selectedFiles = await pickVideo();
       for (final file in selectedFiles) {
-        print("[GroupChat] selectFile -> sending picked video: $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
       }
       cancelReply();
@@ -1431,7 +1432,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       //  final selectedFile = await pickAudio();
       await pickAndSendAudios((selectedFiles) async {
         for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
           await sendFileMessage(file: file, messageEnum: getMessageType(file));
         }
       });
@@ -1480,7 +1480,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     } else if (fileType == MessageType.document.value && Platform.isIOS) {
       final files = await FilePickerService().pickDocuments();
       for (File file in files) {
-        print("Yes Getting back all files:---> $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
       }
       cancelReply();
@@ -1538,7 +1537,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   void selectGif() async {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
-      print(
+      debugPrint(
         "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}",
       );
       final fileName =
@@ -1569,7 +1568,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       final fileType = messageType?.toTitleCase;
       final fileName = messages.assetServerName;
       final file = File("$rootPaths$fileType/$fileName");
-      print("Full file name with path: $file");
+      debugPrint("Full file name with path: $file");
       update();
       final result = await uploadFileToServer(file);
       if (result != null) {
@@ -1579,7 +1578,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           assetUrl: result.data?.url,
         );
         if (socketService.isConnected) {
-          print("updatedMessage:----> ${updatedMessage.toMap()}");
+          debugPrint("updatedMessage:----> ${updatedMessage.toMap()}");
           await MessageTable().updateMessageByClientId(updatedMessage);
           socketService.sendMessageSync(updatedMessage);
         }
@@ -1638,7 +1637,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             ? senderuserData?.userId
             : receiverUserData?.group!.id,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      debugPrint("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
@@ -1649,7 +1648,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
+        debugPrint("Error sending file message: $e");
       }
     }
   }
@@ -1866,7 +1865,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         await dirThum.create(recursive: true);
       } else {
         if (kDebugMode) {
-          print(dirThum.path);
+          debugPrint(dirThum.path);
         }
       }
       final thumbnailPath = dirThum.path;
@@ -1881,7 +1880,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error starting recorder: $e");
+      debugPrint("Error starting recorder: $e");
     }
   }
 
@@ -1891,7 +1890,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       await recorderController.stop();
       isRecording.value = false;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -1905,7 +1904,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -1918,7 +1917,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -1936,7 +1935,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       stopPlayback();
     } catch (e) {
-      print("Error canceling recorder: $e");
+      debugPrint("Error canceling recorder: $e");
     }
   }
 
@@ -1949,7 +1948,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (req.isGranted) {
         final file = File(recordedPath.value);
         if (!file.existsSync() || file.lengthSync() < 1000) {
-          print("Audio file too short or corrupted");
+          debugPrint("Audio file too short or corrupted");
           return;
         }
         await Future.delayed(const Duration(milliseconds: 500));
@@ -1960,10 +1959,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
           playerController.onCompletion.listen((_) {
             playAudio.value = false;
-            print("Playback completed");
+            debugPrint("Playback completed");
           });
         } catch (e) {
-          print("Playback error: $e");
+          debugPrint("Playback error: $e");
         }
 
         // });
@@ -2013,7 +2012,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         "/",
       )[recordedPath.value.toString().split("/").length - 1];
 
-      print(serverName);
+      debugPrint(serverName);
 
       final fileData = await uploadFileToServer(
         File(recordedPath.value.toString()),
@@ -2056,7 +2055,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
             ? senderuserData?.userId
             : receiverUserData?.group!.id,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      debugPrint("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
       recordedPath.value = "";
@@ -2065,7 +2064,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         receiverId: receiverUserData!.group!.id!,
         senderId: senderuserData!.userId!,
       );
-      print(getmes);
+      if (kDebugMode) {
+      }
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
           socketService.sendMessage(newMessage);
@@ -2077,7 +2077,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
       }
     }
   }

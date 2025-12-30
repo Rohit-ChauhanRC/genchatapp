@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -15,7 +16,6 @@ import 'VIdeoPlayerScreen.dart';
 
 class CameraView extends GetView<CameraControllerX> {
   const CameraView({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +57,7 @@ class CameraView extends GetView<CameraControllerX> {
                 CropAspectRatioPreset.square,
               ],
             ),
-            IOSUiSettings(title: 'Crop Image'
-
-            ),
+            IOSUiSettings(title: 'Crop Image'),
           ],
         );
 
@@ -73,7 +71,7 @@ class CameraView extends GetView<CameraControllerX> {
       final List<File> files = finalPaths.map((e) => File(e)).toList();
 
       Get.to(
-            () => MediaPreviewScreen(
+        () => MediaPreviewScreen(
           files: files,
           fileType: "image",
           onSend: (List<File> selectedFiles) async {
@@ -86,12 +84,11 @@ class CameraView extends GetView<CameraControllerX> {
               );
             }
 
-             await updatesController.getStatus();
+            await updatesController.getStatus();
             Get.back();
           },
         ),
       );
-
     }
 
     Future<void> pickVideoFromGallery() async {
@@ -172,7 +169,7 @@ class CameraView extends GetView<CameraControllerX> {
                           ),
                           SizedBox(height: 5),
                           Text(
-                              "Gallery",
+                            "Gallery",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -257,8 +254,10 @@ class CameraView extends GetView<CameraControllerX> {
                             );
                             if (result != null) {
                               // You can handle the text & color here
-                              print("Text: ${result['text']}");
-                              print("Color: ${result['color']}");
+                              if (kDebugMode) {
+                              }
+                              if (kDebugMode) {
+                              }
                               // Navigate to a preview or post screen if you want
                             }
                           },

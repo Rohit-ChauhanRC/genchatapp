@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/data/local_database/groups_table.dart';
 import 'package:genchatapp/app/data/local_database/message_info_table.dart';
 import 'package:genchatapp/app/data/local_database/status_table.dart';
@@ -312,20 +313,20 @@ extension BackupRestore on DataBaseService {
     final file = File(path);
     if (await file.exists()) {
       await file.delete();
-      print("🗑Database file deleted: $path");
+      debugPrint("🗑Database file deleted: $path");
     } else {
-      print("No database file found to delete.");
+      debugPrint("No database file found to delete.");
     }
   }
 
   Future<void> resetDatabase() async {
-    print("Resetting database...");
+    debugPrint("Resetting database...");
 
     await clearUserData(); // Drop all tables
     await deleteDatabaseFile(); // Remove DB file
 
     _database = null; // Ensure it reinitializes on next access
 
-    print("Database fully reset.");
+    debugPrint("Database fully reset.");
   }
 }

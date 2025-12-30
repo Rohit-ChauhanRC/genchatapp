@@ -93,7 +93,7 @@ class DocumentPickerScreen extends StatelessWidget {
                     messageEnum: type,
                   );
                 } catch (e, s) {
-                  print(s);
+                  debugPrint(s.toString());
                 }
               }
 
@@ -260,7 +260,6 @@ class DocumentPickerScreen extends StatelessWidget {
               chatController.cancelReply();
               Get.back();
             } catch (e, s) {
-              print(s);
             }
           },
         );

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/new_models/response_model/contact_response_model.dart';
@@ -85,14 +86,16 @@ class ContactsTable {
 
     // 5. Logging
     if (clearedLocalNames.isNotEmpty) {
-      print(
+      debugPrint(
         '🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames',
       );
     } else {
-      print('✅ No contacts were removed from phone, nothing to clear.');
+      debugPrint('✅ No contacts were removed from phone, nothing to clear.');
     }
 
-    print('📥 Inserted/Updated ${insertedUsers.length} users: $insertedUsers');
+    debugPrint(
+      '📥 Inserted/Updated ${insertedUsers.length} users: $insertedUsers',
+    );
   }
 
   Future<List<UserList>> fetchAll() async {
@@ -202,12 +205,12 @@ class ContactsTable {
       updateFields['displayPictureUrl'] = displayPictureUrl;
     }
 
-    print(
+    debugPrint(
       '📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields',
     );
 
     if (updateFields.isEmpty) {
-      print('⚠️ No fields to update for userId=$userId');
+      debugPrint('⚠️ No fields to update for userId=$userId');
       return;
     }
 
@@ -220,7 +223,7 @@ class ContactsTable {
         whereArgs: [userId],
       );
     } else {
-      print('⚠️ [updateContact] No values to update for uid=$userId');
+      debugPrint('⚠️ [updateContact] No values to update for uid=$userId');
     }
     // if (rowsAffected == 0) {
     //   print('ℹ️ No user found with userId=$userId. Skipping update.');

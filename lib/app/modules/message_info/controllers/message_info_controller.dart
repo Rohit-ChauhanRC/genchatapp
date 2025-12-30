@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/message_info_table.dart';
@@ -90,7 +91,8 @@ class MessageInfoController extends GetxController {
           messageInfoList.assignAll(message);
         }
 
-        print(messageInfoList);
+        if (kDebugMode) {
+        }
       }
     } catch (e) {
       // showAlertMessage("Something went wrong: $e");

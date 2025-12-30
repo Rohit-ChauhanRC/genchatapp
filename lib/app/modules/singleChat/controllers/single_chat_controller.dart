@@ -375,7 +375,7 @@ class SingleChatController extends GetxController
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        print('💬 SingleChatController resumed.');
+        debugPrint('💬 SingleChatController resumed.');
         if (connectivityService.isConnected.value) {
           socketService.runWhenConnected(() {
             checkUserOnline(receiverUserData);
@@ -417,7 +417,8 @@ class SingleChatController extends GetxController
         receiverUserData!.phoneNumber.toString(),
       ]);
 
-      print(serverUsers);
+      if (kDebugMode) {
+      }
 
       // serverUsers.first.blockedByMe;
       blocked.value = serverUsers.first.isBlocked!;
@@ -535,7 +536,6 @@ class SingleChatController extends GetxController
       blockedByMe.value = blockedByMeI;
     } else {
       if (kDebugMode) {
-        print("ℹ️ User not found in DB");
       }
     }
   }
@@ -578,7 +578,7 @@ class SingleChatController extends GetxController
         }
       });
     } else {
-      print('Original message not currently visible');
+      debugPrint('Original message not currently visible');
       checkMessageInList(repliedId);
     }
   }
@@ -633,7 +633,7 @@ class SingleChatController extends GetxController
 
   void handleDeletedMessage(NewMessageModel msg) {
     // You can still show a greyed-out bubble in the chat
-    print("Message '${msg.message}' was deleted.");
+    debugPrint("Message '${msg.message}' was deleted.");
     // Get.snackbar(
     //   "Original message deleted",
     //   "The message you're replying to has been deleted.",
@@ -667,10 +667,10 @@ class SingleChatController extends GetxController
         // All pages scanned, message not found. Check if it existed and is deleted
         final deletedMsg = await MessageTable().fetchMessageById(repliedId);
         if (deletedMsg != null) {
-          print("Message existed but was deleted.");
+          debugPrint("Message existed but was deleted.");
           handleDeletedMessage(deletedMsg);
         } else {
-          print("Message never existed.");
+          debugPrint("Message never existed.");
           handleMessageNotExist(repliedId);
         }
         break;
@@ -1047,7 +1047,7 @@ class SingleChatController extends GetxController
           ? senderuserData?.userId
           : receiverUserData?.userId,
     );
-    print("Message All details Request: ${newMessage.toMap()}");
+    debugPrint("Message All details Request: ${newMessage.toMap()}");
 
     messageList.add(newMessage);
     await MessageTable().insertMessage(newMessage).then((onValue) async {
@@ -1142,12 +1142,12 @@ class SingleChatController extends GetxController
     if (selectedMessages.contains(message)) {
       selectedMessages.remove(message);
       if (kDebugMode) {
-        print("Message removed from list:------> $message");
+        debugPrint("Message removed from list:------> $message");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        print("Message added to list:------> $message");
+        debugPrint("Message added to list:------> $message");
       }
     }
     updateForwardAvailability();
@@ -1346,7 +1346,7 @@ class SingleChatController extends GetxController
   }
 
   void selectFile(String fileType) async {
-    print("🔥 FILE TYPE RECEIVED: $fileType");
+    debugPrint("🔥 FILE TYPE RECEIVED: $fileType");
     if (fileType == MessageType.image.value) {
       final files = await FilePickerService().pickImagesFromGalleryWithCrop();
 
@@ -1396,7 +1396,7 @@ class SingleChatController extends GetxController
       // pickAndSendAudios
       await pickAndSendAudios((selectedFiles) async {
         for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
+          debugPrint("Yes Getting back all files:---> $file");
           await sendFileMessage(file: file, messageEnum: getMessageType(file));
         }
       });
@@ -1413,7 +1413,7 @@ class SingleChatController extends GetxController
             }
             cancelReply();
 
-            print("calling cancel reply ${cancelReply()}");
+            debugPrint("calling cancel reply ${cancelReply()}");
           },
           chatController: Get.find<SingleChatController>(),
         ),
@@ -1447,7 +1447,7 @@ class SingleChatController extends GetxController
       //   context: Get.context!,
       // );
       for (File file in files) {
-        print("Yes Getting back all files:---> $file");
+        debugPrint("Yes Getting back all files:---> $file");
         await sendFileMessage(file: file, messageEnum: getMessageType(file));
       }
       // });
@@ -1455,7 +1455,7 @@ class SingleChatController extends GetxController
     } else if (fileType == MessageType.browseDocx.value) {
       await pickAndSendDocuments((selectedFiles) async {
         for (File file in selectedFiles) {
-          print("Yes Getting back all files:---> $file");
+          debugPrint("Yes Getting back all files:---> $file");
           await sendFileMessage(file: file, messageEnum: getMessageType(file));
         }
       });
@@ -1565,7 +1565,7 @@ class SingleChatController extends GetxController
           : "";
 
       final fileWithExtensions = "$fileName.${f.keys.first}";
-      print(
+      debugPrint(
         "[SingleChat] sendFileMessage -> local saved: $localFilePath, name: $fileWithExtensions, type: ${messageEnum.value}",
       );
 
@@ -1610,19 +1610,19 @@ class SingleChatController extends GetxController
         isUploading: true.obs,
         uploadProgress: 0.0.obs,
       );
-      print(
+      debugPrint(
         "[SingleChat] sendFileMessage -> created local message: ${newMessage.toMap()}",
       );
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
-      print("[SingleChat] sendFileMessage -> starting upload to server");
+      debugPrint("[SingleChat] sendFileMessage -> starting upload to server");
       final fileData = await uploadFileToServer(f.values.first!);
 
       if (fileData != null &&
           fileData.statusCode == 200 &&
           fileData.status == true) {
-        print(
+        debugPrint(
           "[SingleChat] sendFileMessage -> upload success: ${fileData.data?.url}",
         );
         final updatedMessage = newMessage.copyWith(
@@ -1644,13 +1644,14 @@ class SingleChatController extends GetxController
           socketService.saveChatContacts(updatedMessage);
         }
       } else {
-        print("[SingleChat] sendFileMessage -> upload failed or null response");
+        debugPrint(
+          "[SingleChat] sendFileMessage -> upload failed or null response",
+        );
         // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
       if (kDebugMode) {
-        print("[SingleChat] Error sending file message: $e");
       }
     }
   }
@@ -1664,10 +1665,10 @@ class SingleChatController extends GetxController
           : Directory('${appDir.path}/picked_images');
       if (tempDir.existsSync()) {
         tempDir.deleteSync(recursive: true);
-        print("Temp directory cleared.");
+        debugPrint("Temp directory cleared.");
       }
     } catch (e) {
-      print("Failed to clear temp directory: $e");
+      debugPrint("Failed to clear temp directory: $e");
     }
   }
 
@@ -1677,7 +1678,9 @@ class SingleChatController extends GetxController
         imageFile,
         onProgress: (sent, total) {
           percent.value = (sent / total) * 100;
-          print("📤 Upload progress: ${percent.value.toStringAsFixed(0)}%");
+          debugPrint(
+            "📤 Upload progress: ${percent.value.toStringAsFixed(0)}%",
+          );
           if (percent.value == 100) {
             percent.value = 0.0;
           }
@@ -1687,7 +1690,7 @@ class SingleChatController extends GetxController
       if (response?.statusCode == 200) {
         final result = UploadFileModel.fromJson(response?.data);
         if (result.status == true) {
-          print("response of upload Files:----> ${result.data?.toJson()}");
+          debugPrint("response of upload Files:----> ${result.data?.toJson()}");
           return result;
         } else {
           // showAlertMessage('Upload failed: Invalid response status.');
@@ -1711,7 +1714,7 @@ class SingleChatController extends GetxController
       final fileType = messageType?.toTitleCase;
       final fileName = messages.assetServerName;
       final file = File("$rootPaths$fileType/$fileName");
-      print("Full file name with path: $file");
+      debugPrint("Full file name with path: $file");
       update();
       final result = await uploadFileToServer(file);
       if (result != null) {
@@ -1721,7 +1724,7 @@ class SingleChatController extends GetxController
           assetUrl: result.data?.url,
         );
         if (socketService.isConnected) {
-          print("updatedMessage:----> ${updatedMessage.toMap()}");
+          debugPrint("updatedMessage:----> ${updatedMessage.toMap()}");
           await MessageTable().updateMessageByClientId(updatedMessage);
           socketService.sendMessageSync(updatedMessage);
         }
@@ -1735,7 +1738,7 @@ class SingleChatController extends GetxController
   void selectGif() async {
     TenorResult? gif = await pickGIF(Get.context!);
     if (gif != null) {
-      print(
+      debugPrint(
         "gif URL:---->  ${gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url}",
       );
       final fileName =
@@ -1805,7 +1808,7 @@ class SingleChatController extends GetxController
             ? senderuserData?.userId
             : receiverUserData?.userId,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      debugPrint("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
 
@@ -1816,7 +1819,6 @@ class SingleChatController extends GetxController
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
       }
     }
   }
@@ -2039,7 +2041,6 @@ class SingleChatController extends GetxController
         await dirThum.create(recursive: true);
       } else {
         if (kDebugMode) {
-          print(dirThum.path);
         }
       }
       final thumbnailPath = dirThum.path;
@@ -2054,7 +2055,7 @@ class SingleChatController extends GetxController
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error starting recorder: $e");
+      debugPrint("Error starting recorder: $e");
     }
   }
 
@@ -2064,7 +2065,7 @@ class SingleChatController extends GetxController
       await recorderController.stop();
       isRecording.value = false;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -2078,7 +2079,7 @@ class SingleChatController extends GetxController
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -2091,7 +2092,7 @@ class SingleChatController extends GetxController
 
       isPreviewing.value = true;
     } catch (e) {
-      print("Error stopping recorder: $e");
+      debugPrint("Error stopping recorder: $e");
     }
   }
 
@@ -2109,7 +2110,7 @@ class SingleChatController extends GetxController
 
       stopPlayback();
     } catch (e) {
-      print("Error canceling recorder: $e");
+      debugPrint("Error canceling recorder: $e");
     }
   }
 
@@ -2122,7 +2123,7 @@ class SingleChatController extends GetxController
       if (req.isGranted) {
         final file = File(recordedPath.value);
         if (!file.existsSync() || file.lengthSync() < 1000) {
-          print("Audio file too short or corrupted");
+          debugPrint("Audio file too short or corrupted");
           return;
         }
         await Future.delayed(const Duration(milliseconds: 500));
@@ -2133,10 +2134,10 @@ class SingleChatController extends GetxController
 
           playerController.onCompletion.listen((_) {
             playAudio.value = false;
-            print("Playback completed");
+            debugPrint("Playback completed");
           });
         } catch (e) {
-          print("Playback error: $e");
+          debugPrint("Playback error: $e");
         }
 
         // });
@@ -2187,7 +2188,7 @@ class SingleChatController extends GetxController
         "/",
       )[recordedPath.value.toString().split("/").length - 1];
 
-      print(serverName);
+      debugPrint(serverName);
 
       final fileData = await uploadFileToServer(
         File(recordedPath.value.toString()),
@@ -2230,7 +2231,7 @@ class SingleChatController extends GetxController
             ? senderuserData?.userId
             : receiverUserData?.userId,
       );
-      print("Message All details Request: ${newMessage.toMap()}");
+      debugPrint("Message All details Request: ${newMessage.toMap()}");
       await MessageTable().insertMessage(newMessage);
       messageList.add(newMessage);
       recordedPath.value = "";
@@ -2246,7 +2247,6 @@ class SingleChatController extends GetxController
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error sending file message: $e");
       }
     }
     cancelReply();
@@ -2377,13 +2377,10 @@ class SingleChatController extends GetxController
                     ChatConntactModel(
                       uid: receiverUserData!.userId.toString(),
                       isGroup: 1,
-                      profilePic:
-                      receiverUserData?.displayPictureUrl ?? '',
-                      timeSent:
-                      receiverUserData?.lastSeenTime ?? "",
+                      profilePic: receiverUserData?.displayPictureUrl ?? '',
+                      timeSent: receiverUserData?.lastSeenTime ?? "",
                       name: name,
-                      contactId:
-                      receiverUserData!.userId.toString(),
+                      contactId: receiverUserData!.userId.toString(),
                       lastMessage: "",
                       lastMessageId: 0,
                       unreadCount: 0,
@@ -2396,8 +2393,7 @@ class SingleChatController extends GetxController
                   );
 
                   if (connectivityService.isConnected.value) {
-                    selectedContactController
-                        .syncContactsWithServer();
+                    selectedContactController.syncContactsWithServer();
                   }
 
                   userExist.value = true;
@@ -2409,13 +2405,13 @@ class SingleChatController extends GetxController
           ],
         );
       },
-
     ).whenComplete(() {
       nameController.dispose();
       mobileController.dispose();
       nameFocusNode.dispose();
     });
   }
+
   void showSaveContactBottomSheet(BuildContext context) {
     final nameController = TextEditingController(
       text: receiverUserData?.localName ?? '',

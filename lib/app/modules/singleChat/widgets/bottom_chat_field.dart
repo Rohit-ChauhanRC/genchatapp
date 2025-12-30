@@ -128,14 +128,14 @@ class BottomChatField extends StatelessWidget {
                                 // } else {
                                 //   singleChatController.isShowSendButton = false;
                                 // }
-                                print(v.length);
+                                // debugPrint(v.length);
                                 singleChatController.onTextChanged(v);
                                 if (v.length >= 800) {
                                   // You could show a SnackBar, error, or shake animation here
                                   showAlertMessage(
                                     "This message is too long, Please shorter the message.",
                                   );
-                                  print("Max character limit reached");
+                                  debugPrint("Max character limit reached");
                                 }
                               },
                               controller:
@@ -197,8 +197,8 @@ class BottomChatField extends StatelessWidget {
                                                   singleChatController
                                                       .selectFile(
                                                         MessageType
-                                                            .camera.value
-                                                            ,
+                                                            .camera
+                                                            .value,
                                                       );
                                                 },
                                                 icon: const Icon(
@@ -304,7 +304,7 @@ class BottomChatField extends StatelessWidget {
                       await singleChatController.startRecordingAudioWaveform();
                     } else if (!singleChatController.isShowSendButton &&
                         singleChatController.isPreviewing.value) {
-                      print("send audio");
+                      // print("send audio");
                       singleChatController.sendAudioMessage();
                     }
                     // Get.to(AudioRecordView());

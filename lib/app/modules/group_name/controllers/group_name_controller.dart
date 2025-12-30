@@ -136,7 +136,7 @@ class GroupNameController extends GetxController {
             await isVanishModeGroup();
           }
 
-          print("✅ Create group response: $data");
+          debugPrint("✅ Create group response: $data");
           Get.offAllNamed(Routes.HOME);
           // Get.until((route) => route.settings.name == Routes.HOME);
         }
@@ -159,7 +159,7 @@ class GroupNameController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ Group icon uploaded: ${uploadResponse.data}");
+        debugPrint("✅ Group icon uploaded: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {

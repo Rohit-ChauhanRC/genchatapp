@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:genchatapp/app/routes/app_pages.dart';
@@ -55,7 +57,7 @@ class SettingsView extends GetView<SettingsController> {
                                 backgroundColor: greyColor.withOpacity(0.4),
                                 radius: 30,
                                 backgroundImage: image,
-                               );
+                              );
                             },
                             placeholder: (context, url) =>
                                 const CircularProgressIndicator(),
@@ -112,16 +114,17 @@ class SettingsView extends GetView<SettingsController> {
                       Get.toNamed(Routes.CREATE_GROUP);
                     },
                   ),
-                  const SizedBox(height: 10),
-                  _settingsItemWidget(
-                    title: "Chat backup",
-                    description:
-                        "Back up your chats to your local device storage.",
-                    icon: Symbols.backup_rounded,
-                    onTap: () {
-                      Get.toNamed(Routes.CHAT_BACKUP);
-                    },
-                  ),
+                  if (Platform.isAndroid) const SizedBox(height: 10),
+                  if (Platform.isAndroid)
+                    _settingsItemWidget(
+                      title: "Chat backup",
+                      description:
+                          "Back up your chats to your local device storage.",
+                      icon: Symbols.backup_rounded,
+                      onTap: () {
+                        Get.toNamed(Routes.CHAT_BACKUP);
+                      },
+                    ),
                   const SizedBox(height: 10),
                   // _settingsItemWidget(
                   //     title: "Delete Account",

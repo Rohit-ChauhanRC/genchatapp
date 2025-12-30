@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:genchatapp/app/network/api_client.dart';
 import 'package:genchatapp/app/network/api_endpoints.dart';
 import 'package:genchatapp/app/services/shared_preference_service.dart';
@@ -22,10 +23,10 @@ class StatusRepository {
       return await apiClient.post(ApiEndpoints.fetchStatus, param);
     } catch (e) {
       if (e == "404_NOT_FOUND") {
-        print("Group not found.");
+        debugPrint("Group not found.");
         // showAlertMessage("Group not found.");
       } else {
-        print("Error in fetchGroup: $e");
+        debugPrint("Error in fetchGroup: $e");
         // showAlertMessage("Error: $e");
       }
       return null;
@@ -87,83 +88,83 @@ class StatusRepository {
     );
   }
 
-// Future<Response?> updateGroupNameAndDescription({
-//   required bool isEditingGroupName,
-//   int? groupId,
-//   String? groupName,
-//   String? groupDescription,
-// }) async {
-//   try {
-//     final param = {
-//       'groupId': groupId,
-//       if (isEditingGroupName)
-//         'groupName': groupName
-//       else
-//         'groupDescription': groupDescription,
-//     };
-//     return await apiClient.post(ApiEndpoints.updateGroup, param);
-//   } catch (e) {
-//     // print('Error in verifyOTPAPI: $e');
-//     showAlertMessage("Error: $e");
-//     return null;
-//   }
-// }
+  // Future<Response?> updateGroupNameAndDescription({
+  //   required bool isEditingGroupName,
+  //   int? groupId,
+  //   String? groupName,
+  //   String? groupDescription,
+  // }) async {
+  //   try {
+  //     final param = {
+  //       'groupId': groupId,
+  //       if (isEditingGroupName)
+  //         'groupName': groupName
+  //       else
+  //         'groupDescription': groupDescription,
+  //     };
+  //     return await apiClient.post(ApiEndpoints.updateGroup, param);
+  //   } catch (e) {
+  //     // print('Error in verifyOTPAPI: $e');
+  //     showAlertMessage("Error: $e");
+  //     return null;
+  //   }
+  // }
 
-// Future<Response?> makeNewAdmin({
-//   required int userId,
-//   required int groupId,
-// }) async {
-//   try {
-//     final param = {'groupId': groupId, 'userId': userId};
-//     return await apiClient.post(ApiEndpoints.makeAdmin, param);
-//   } catch (e) {
-//     // print('Error in verifyOTPAPI: $e');
-//     showAlertMessage("Error: $e");
-//     return null;
-//   }
-// }
+  // Future<Response?> makeNewAdmin({
+  //   required int userId,
+  //   required int groupId,
+  // }) async {
+  //   try {
+  //     final param = {'groupId': groupId, 'userId': userId};
+  //     return await apiClient.post(ApiEndpoints.makeAdmin, param);
+  //   } catch (e) {
+  //     // print('Error in verifyOTPAPI: $e');
+  //     showAlertMessage("Error: $e");
+  //     return null;
+  //   }
+  // }
 
-// Future<Response?> removeAdmin({
-//   required int userId,
-//   required int groupId,
-// }) async {
-//   try {
-//     final param = {'groupId': groupId, 'userId': userId};
-//     return await apiClient.post(ApiEndpoints.removeAdmin, param);
-//   } catch (e) {
-//     // print('Error in verifyOTPAPI: $e');
-//     showAlertMessage("Error: $e");
-//     return null;
-//   }
-// }
+  // Future<Response?> removeAdmin({
+  //   required int userId,
+  //   required int groupId,
+  // }) async {
+  //   try {
+  //     final param = {'groupId': groupId, 'userId': userId};
+  //     return await apiClient.post(ApiEndpoints.removeAdmin, param);
+  //   } catch (e) {
+  //     // print('Error in verifyOTPAPI: $e');
+  //     showAlertMessage("Error: $e");
+  //     return null;
+  //   }
+  // }
 
-// Future<Response?> removeUser({
-//   required int userId,
-//   required int groupId,
-// }) async {
-//   try {
-//     final param = {'groupId': groupId, 'userId': userId};
-//     return await apiClient.post(ApiEndpoints.removeUser, param);
-//   } catch (e) {
-//     // print('Error in verifyOTPAPI: $e');
-//     showAlertMessage("Error: $e");
-//     return null;
-//   }
-// }
+  // Future<Response?> removeUser({
+  //   required int userId,
+  //   required int groupId,
+  // }) async {
+  //   try {
+  //     final param = {'groupId': groupId, 'userId': userId};
+  //     return await apiClient.post(ApiEndpoints.removeUser, param);
+  //   } catch (e) {
+  //     // print('Error in verifyOTPAPI: $e');
+  //     showAlertMessage("Error: $e");
+  //     return null;
+  //   }
+  // }
 
-// Future<Response?> addUsers({
-//   required List<int> userId,
-//   required int groupId,
-// }) async {
-//   try {
-//     final param = {'groupId': groupId, 'userIdsArray': userId};
-//     return await apiClient.post(ApiEndpoints.addUser, param);
-//   } catch (e) {
-//     // print('Error in verifyOTPAPI: $e');
-//     showAlertMessage("Error: $e");
-//     return null;
-//   }
-// }
+  // Future<Response?> addUsers({
+  //   required List<int> userId,
+  //   required int groupId,
+  // }) async {
+  //   try {
+  //     final param = {'groupId': groupId, 'userIdsArray': userId};
+  //     return await apiClient.post(ApiEndpoints.addUser, param);
+  //   } catch (e) {
+  //     // print('Error in verifyOTPAPI: $e');
+  //     showAlertMessage("Error: $e");
+  //     return null;
+  //   }
+  // }
 
-// /// Upload Profile Picture (Multipart FormData)
+  // /// Upload Profile Picture (Multipart FormData)
 }

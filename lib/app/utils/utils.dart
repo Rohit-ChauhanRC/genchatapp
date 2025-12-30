@@ -667,7 +667,6 @@ Future<File?> compressImage(File file, String extension) async {
     );
     return File(result!.path);
   } catch (e) {
-    print("Image compression failed: $e");
     return null;
   }
 }
@@ -695,7 +694,6 @@ Future<String?> getThumbnail(File videoFile) async {
     await dirThum.create(recursive: true);
   } else {
     if (kDebugMode) {
-      print(dirThum.path);
     }
   }
   final thumbnailPath = dirThum.path;

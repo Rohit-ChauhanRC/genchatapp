@@ -49,7 +49,8 @@ class GroupProfileController extends GetxController {
   final Rx<UserGroupInfo?> _currentUserPermission = Rx<UserGroupInfo?>(null);
 
   UserGroupInfo? get currentUserPermission => _currentUserPermission.value;
-  final ConnectivityService connectivityService = Get.find<ConnectivityService>();
+  final ConnectivityService connectivityService =
+      Get.find<ConnectivityService>();
   set currentUserPermission(UserGroupInfo? info) =>
       _currentUserPermission.value = info;
 
@@ -118,7 +119,7 @@ class GroupProfileController extends GetxController {
     final groupDetail = await groupTable.getGroupById(groupId);
     if (groupDetail != null) {
       groupDetails = groupDetail;
-      print(
+      debugPrint(
         "Data Fetched for GroupId: $groupId\nGroupDetails: ${groupDetail.toJson()}",
       );
       final userDetail = await contactsTable.getUserById(
@@ -137,7 +138,7 @@ class GroupProfileController extends GetxController {
       );
       currentUserPermission = currentUserInfo?.userGroupInfo;
     } else {
-      print("Group Data are not fetched for GroupId: $groupId");
+      debugPrint("Group Data are not fetched for GroupId: $groupId");
     }
   }
 
@@ -151,6 +152,7 @@ class GroupProfileController extends GetxController {
     final contact = await contactsTable.getUserById(userId!);
     return contact!.isBlocked ?? false;
   }
+
   //Internet check
   bool ensureInternetOrShowError() {
     if (!connectivityService.isConnected.value) {
@@ -160,14 +162,13 @@ class GroupProfileController extends GetxController {
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade600,
         colorText: Colors.white,
-
-
       );
 
       return false;
     }
     return true;
   }
+
   Future<void> selectImage() async {
     showImagePicker(
       onGetImage: (img) async {
@@ -222,7 +223,7 @@ class GroupProfileController extends GetxController {
           );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ Group name updated: ${uploadResponse.data}");
+        debugPrint("✅ Group name updated: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -258,7 +259,7 @@ class GroupProfileController extends GetxController {
           );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ Group description updated: ${uploadResponse.data}");
+        debugPrint("✅ Group description updated: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -292,7 +293,7 @@ class GroupProfileController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ Make Group admin: ${uploadResponse.data}");
+        debugPrint("✅ Make Group admin: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -319,7 +320,7 @@ class GroupProfileController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ remove Group admin: ${uploadResponse.data}");
+        debugPrint("✅ remove Group admin: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -346,7 +347,7 @@ class GroupProfileController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ remove Group user: ${uploadResponse.data}");
+        debugPrint("✅ remove Group user: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -387,7 +388,7 @@ class GroupProfileController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ left Group user: ${uploadResponse.data}");
+        debugPrint("✅ left Group user: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {
@@ -415,7 +416,7 @@ class GroupProfileController extends GetxController {
       );
 
       if (uploadResponse != null && uploadResponse.statusCode == 200) {
-        print("✅ delete Group: ${uploadResponse.data}");
+        debugPrint("✅ delete Group: ${uploadResponse.data}");
         final responseModel = CreateGroupModel.fromJson(uploadResponse.data);
 
         if (responseModel.status == true && responseModel.data != null) {

@@ -237,7 +237,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
         //
         int? messageTime = int.parse(
-          (response.data['data']['statusDuration']).toString(),
+          (response.data['data']['messageDuration']).toString(),
         );
 
         if (modelList != null) {

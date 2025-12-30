@@ -150,11 +150,9 @@ class UpdatesController extends GetxController
         return;
       }
 
-
       if (contacts.isEmpty) {
         return;
       }
-
 
       final response = await statusRepository.fetchStatus(userIds: userIdList);
 
@@ -162,7 +160,6 @@ class UpdatesController extends GetxController
         await getLocalSaveSatus(); // ⭐ FALLBACK
         return;
       }
-
 
       // ---------- PARSE MODEL ----------
       List<dynamic> raw = response.data['data'];
@@ -189,9 +186,9 @@ class UpdatesController extends GetxController
       // ---------- LOAD FROM DB ----------
       await getLocalSaveSatus();
 
-      print("✅ getStatus() finished with ONLINE mode");
+      debugPrint("✅ getStatus() finished with ONLINE mode");
     } catch (e, st) {
-      print("🔥 ERROR in getStatus(): $e");
+      debugPrint("🔥 ERROR in getStatus(): $e");
 
       await getLocalSaveSatus(); // ALWAYS fallback in errors
     }

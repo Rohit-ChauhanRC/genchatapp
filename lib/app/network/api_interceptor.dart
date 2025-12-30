@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/common/user_defaults/user_defaults_keys.dart';
 import 'package:genchatapp/app/config/services/notification_service.dart';
 import 'package:genchatapp/app/modules/settings/controllers/settings_controller.dart';
@@ -41,7 +42,7 @@ class ApiInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     // Debugging response logs
-    print(
+    debugPrint(
       "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}",
     );
 
@@ -50,11 +51,10 @@ class ApiInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    print(
+    debugPrint(
       "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}",
     );
-    if (err.response != null) {
-    }
+    if (err.response != null) {}
 
     if (err.response?.statusCode == 401) {
       // final isFormData = err.requestOptions.data is FormData;
@@ -94,7 +94,7 @@ class ApiInterceptor extends Interceptor {
     //     sharedPreference.getString(UserDefaultsKeys.refreshToken);
     int? userId = sharedPreference.getUserData()?.userId;
 
-    print(
+    debugPrint(
       "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
     );
 
@@ -121,7 +121,7 @@ class ApiInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
-        print(
+        debugPrint(
           "🔁 Refresh token response: ${response.statusCode} ${response.data}",
         );
         String newAccessToken =
@@ -139,10 +139,8 @@ class ApiInterceptor extends Interceptor {
         //     UserDefaultsKeys.refreshToken, newRefreshToken);
 
         return true;
-      } else {
-      }
-    } catch (e) {
-    }
+      } else {}
+    } catch (e) {}
 
     // await sharedPreference.clear().then((onValue) {
     //   Get.offAllNamed(Routes.LANDING);
@@ -157,13 +155,13 @@ class ApiInterceptor extends Interceptor {
       requestOptions.headers['Authorization'] = 'Bearer $token';
     }
 
-    print(
+    debugPrint(
       "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}",
     );
 
     // 💥 If original request was multipart/form-data, you CANNOT reuse the body
     if (requestOptions.data is FormData) {
-      print(
+      debugPrint(
         "⚠️ Skipping retry for FormData. Let the repository handle retry manually.",
       );
       throw DioException(

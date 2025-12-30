@@ -74,7 +74,7 @@ class _StatusViewState extends State<StatusView> {
   }
 
   Future<void> _loadMedia() async {
-    print(
+    debugPrint(
       "Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index",
     );
 
@@ -147,7 +147,6 @@ class _StatusViewState extends State<StatusView> {
 
       return;
     }
-
   }
 
   void _onVideoTick() {

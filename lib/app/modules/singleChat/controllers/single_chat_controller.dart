@@ -1140,14 +1140,14 @@ class SingleChatController extends GetxController
 
   void toggleMessageSelection(NewMessageModel message) {
     if (selectedMessages.contains(message)) {
-      selectedMessages.remove(message);
+      selectedMessages.remove(message);        debugPrint("Message added to list:------> $message");
+
       if (kDebugMode) {
         debugPrint("Message removed from list:------> $message");
       }
     } else {
       selectedMessages.add(message);
       if (kDebugMode) {
-        debugPrint("Message added to list:------> $message");
       }
     }
     updateForwardAvailability();

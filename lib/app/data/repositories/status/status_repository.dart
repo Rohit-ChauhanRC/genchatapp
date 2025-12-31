@@ -23,10 +23,10 @@ class StatusRepository {
       return await apiClient.post(ApiEndpoints.fetchStatus, param);
     } catch (e) {
       if (e == "404_NOT_FOUND") {
-        debugPrint("Group not found.");
+        // debugPrint("Group not found.");
         // showAlertMessage("Group not found.");
       } else {
-        debugPrint("Error in fetchGroup: $e");
+        // debugPrint("Error in fetchGroup: $e");
         // showAlertMessage("Error: $e");
       }
       return null;

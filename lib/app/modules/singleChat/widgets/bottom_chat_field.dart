@@ -135,7 +135,7 @@ class BottomChatField extends StatelessWidget {
                                   showAlertMessage(
                                     "This message is too long, Please shorter the message.",
                                   );
-                                  debugPrint("Max character limit reached");
+                                  // debugPrint("Max character limit reached");
                                 }
                               },
                               controller:

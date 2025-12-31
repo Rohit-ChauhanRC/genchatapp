@@ -68,7 +68,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
       await playerController.preparePlayer(path: widget.audioPath);
     } catch (e) {
-      debugPrint("preparePlayer error: $e");
     }
   }
 
@@ -97,7 +96,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
     final file = File(widget.audioPath);
     if (!file.existsSync() || file.lengthSync() < 1000) {
-      debugPrint("Audio file too short or corrupted");
+      // debugPrint("Audio file too short or corrupted");
       return;
     }
 
@@ -118,7 +117,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         await playerController.seekTo(0);
       });
     } catch (e) {
-      debugPrint("Playback error: $e");
+      // debugPrint("Playback error: $e");
     }
   }
 

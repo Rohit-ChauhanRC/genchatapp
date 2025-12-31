@@ -102,9 +102,9 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
           final isDownloaded = controller.isDownloaded[message] ?? false;
           final isDownloading = controller.isDownloading[message] ?? false;
 
-          debugPrint(
-            "🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe",
-          );
+          // debugPrint(
+          //   "🔍 [GroupDisplayTextImageGIF] Display check - message: $message, isDownloaded: $isDownloaded, isDownloading: $isDownloading, isSentByMe: $isSentByMe",
+          // );
 
           if (!isDownloaded) {
             return GestureDetector(
@@ -366,9 +366,9 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
     MessageType type,
     String fileName,
   ) async {
-    debugPrint(
-      "🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
-    );
+    // debugPrint(
+    //   "🔍 [GroupDisplayTextImageGIF] Checking file availability for: $fileName, isSentByMe: $isSentByMe",
+    // );
 
     // For sent messages, check if file exists locally first
     if (isSentByMe == true) {
@@ -377,30 +377,30 @@ class GroupDisplayTextImageGIF extends StatelessWidget {
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
 
-      debugPrint(
-        "🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
-      );
+      // debugPrint(
+      //   "🔍 [GroupDisplayTextImageGIF] File path: $path, exists: $exists, size: $size",
+      // );
 
       if (exists && size > 0) {
         // File exists locally, mark as downloaded immediately
         controller.isDownloaded[fileName] = true;
-        debugPrint(
-          "✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName",
-        );
+        // debugPrint(
+        //   "✅ [GroupDisplayTextImageGIF] File marked as downloaded: $fileName",
+        // );
         return;
       } else {
         // File doesn't exist locally, clean up any corrupt file
         if (exists) await file.delete();
         controller.isDownloaded[fileName] = false;
-        debugPrint(
-          "❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName",
-        );
+        // debugPrint(
+        //   "❌ [GroupDisplayTextImageGIF] File not found or empty: $fileName",
+        // );
       }
     } else {
       // For received messages, use the standard check
-      debugPrint(
-        "📥 [GroupDisplayTextImageGIF] Using standard check for received message",
-      );
+      // debugPrint(
+      //   "📥 [GroupDisplayTextImageGIF] Using standard check for received message",
+      // );
       await controller.checkIfFileExists(type, fileName);
     }
   }

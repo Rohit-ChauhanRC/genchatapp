@@ -245,7 +245,7 @@ class FilePickerService {
               _imageFiles.add(file);
             }
           } catch (e) {
-            debugPrint("Compression failed: $e");
+            // debugPrint("Compression failed: $e");
             _imageFiles.add(file);
           }
         } else {
@@ -366,7 +366,7 @@ class FilePickerService {
             finalFiles.add(file);
           }
         } catch (e) {
-          debugPrint("Compression failed: $e");
+          // debugPrint("Compression failed: $e");
           finalFiles.add(file);
         }
       }

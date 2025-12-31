@@ -202,7 +202,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       // Handle menu item selection
                       switch (value) {
                         case messageInfo:
-                          debugPrint("clear text in group:$messageInfo");
+                          // debugPrint("clear text in group:$messageInfo");
                           // await controller.deleteTextMessage();
                           // Get.to(
                           //   MessageInfo(
@@ -246,7 +246,7 @@ class GroupChatsView extends GetView<GroupChatsController> {
                       // Handle menu item selection
                       switch (value) {
                         case clearText:
-                          debugPrint("clear text in group:$clearText");
+                          // debugPrint("clear text in group:$clearText");
                           await controller.deleteTextMessage();
                           break;
                         default:

@@ -42,18 +42,18 @@ class ApiInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     // Debugging response logs
-    debugPrint(
-      "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}",
-    );
+    // debugPrint(
+    //   "✅ [API Response]: ${response.requestOptions.method} ${response.requestOptions.uri}",
+    // );
 
     return handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    debugPrint(
-      "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}",
-    );
+    // debugPrint(
+    //   "❌ [API Error]: ${err.requestOptions.method} ${err.requestOptions.uri}",
+    // );
     if (err.response != null) {}
 
     if (err.response?.statusCode == 401) {
@@ -94,9 +94,9 @@ class ApiInterceptor extends Interceptor {
     //     sharedPreference.getString(UserDefaultsKeys.refreshToken);
     int? userId = sharedPreference.getUserData()?.userId;
 
-    debugPrint(
-      "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
-    );
+    // debugPrint(
+    //   "🔄 Refreshing Token...\n🔑 RefreshToken: $refreshToken\n👤 UserId: $userId",
+    // );
 
     if (refreshToken == null || userId == null) {
       return false;
@@ -121,9 +121,9 @@ class ApiInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200 && response.data['status'] == true) {
-        debugPrint(
-          "🔁 Refresh token response: ${response.statusCode} ${response.data}",
-        );
+        // debugPrint(
+        //   "🔁 Refresh token response: ${response.statusCode} ${response.data}",
+        // );
         String newAccessToken =
             response.data['data']['authToken']; // ✅ Corrected key
         // String newRefreshToken =
@@ -155,15 +155,15 @@ class ApiInterceptor extends Interceptor {
       requestOptions.headers['Authorization'] = 'Bearer $token';
     }
 
-    debugPrint(
-      "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}",
-    );
+    // debugPrint(
+    //   "🔄 Retrying request: ${requestOptions.method} ${requestOptions.uri}",
+    // );
 
     // 💥 If original request was multipart/form-data, you CANNOT reuse the body
     if (requestOptions.data is FormData) {
-      debugPrint(
-        "⚠️ Skipping retry for FormData. Let the repository handle retry manually.",
-      );
+      // debugPrint(
+      //   "⚠️ Skipping retry for FormData. Let the repository handle retry manually.",
+      // );
       throw DioException(
         requestOptions: requestOptions,
         error:

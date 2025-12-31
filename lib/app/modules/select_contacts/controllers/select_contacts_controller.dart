@@ -61,7 +61,7 @@ class SelectContactsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    debugPrint(searchQuery);
+    // debugPrint(searchQuery);
     // contactsTable.deleteTable();
     loadInitialContacts();
     bindSocketEvents();
@@ -78,14 +78,14 @@ class SelectContactsController extends GetxController {
     _isContactRefreshed.value = false;
     try {
       final localContacts = await contactsTable.fetchAll();
-      debugPrint("local contacts number----> ${localContacts.isEmpty}");
+      // debugPrint("local contacts number----> ${localContacts.isEmpty}");
       if (localContacts.isNotEmpty) {
         contacts = localContacts;
       } else {
         await refreshSync(); // First-time fetch from API
       }
     } catch (e) {
-      debugPrint("❌ loadInitialContacts error: $e");
+      // debugPrint("❌ loadInitialContacts error: $e");
     } finally {
       _isContactRefreshed.value = true; // ✅ always end loading
     }
@@ -261,8 +261,8 @@ class SelectContactsController extends GetxController {
 
       contacts = enrichedUsers;
     } catch (e, st) {
-      debugPrint('Error syncing contacts: $e');
-      debugPrintStack(stackTrace: st);
+      // debugPrint('Error syncing contacts: $e');
+      // debugPrintStack(stackTrace: st);
     }
   }
 
@@ -325,7 +325,7 @@ class SelectContactsController extends GetxController {
     final file = File(filePath);
 
     if (file.existsSync()) {
-      debugPrint("file exist already!");
+      // debugPrint("file exist already!");
     } else {
       try {
         final response = await http.get(Uri.parse(imageUrl));
@@ -364,9 +364,9 @@ class SelectContactsController extends GetxController {
 
         await file.writeAsBytes(img.encodePng(circular));
 
-        debugPrint("✅ Circular PNG with transparency saved: $filePath");
+        // debugPrint("✅ Circular PNG with transparency saved: $filePath");
       } catch (e) {
-        debugPrint("❌ Silent crop failed: $e");
+        // debugPrint("❌ Silent crop failed: $e");
       }
     }
   }

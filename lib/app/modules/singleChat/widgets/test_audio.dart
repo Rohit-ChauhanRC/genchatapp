@@ -48,13 +48,13 @@ class _HomeState extends State<Home> {
         _recordedPath = await _recorderController.stop(false);
         if (_recordedPath != null) {
           _recordingComplete = true;
-          debugPrint("Recording saved at $_recordedPath");
+          // debugPrint("Recording saved at $_recordedPath");
         }
       } else {
         await _recorderController.record(path: _recordedPath);
       }
     } catch (e) {
-      debugPrint("Recording error: $e");
+      // debugPrint("Recording error: $e");
     } finally {
       if (_recorderController.hasPermission) {
         setState(() => _isRecording = !_isRecording);

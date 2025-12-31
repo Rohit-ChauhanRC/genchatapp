@@ -74,9 +74,9 @@ class _StatusViewState extends State<StatusView> {
   }
 
   Future<void> _loadMedia() async {
-    debugPrint(
-      "Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index",
-    );
+    // debugPrint(
+    //   "Loading media for statusIndex=$currentStatusIndex, mediaIndex=$index",
+    // );
 
     // Reset previous controller
     _videoListener?.cancel();

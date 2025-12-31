@@ -86,16 +86,16 @@ class ContactsTable {
 
     // 5. Logging
     if (clearedLocalNames.isNotEmpty) {
-      debugPrint(
-        '🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames',
-      );
+      // debugPrint(
+      //   '🧹 Cleared localName for userIds (deleted from phone): $clearedLocalNames',
+      // );
     } else {
-      debugPrint('✅ No contacts were removed from phone, nothing to clear.');
+      // debugPrint('✅ No contacts were removed from phone, nothing to clear.');
     }
 
-    debugPrint(
-      '📥 Inserted/Updated ${insertedUsers.length} users: $insertedUsers',
-    );
+    // debugPrint(
+    //   '📥 Inserted/Updated ${insertedUsers.length} users: $insertedUsers',
+    // );
   }
 
   Future<List<UserList>> fetchAll() async {
@@ -204,13 +204,13 @@ class ContactsTable {
     if (displayPictureUrl != null) {
       updateFields['displayPictureUrl'] = displayPictureUrl;
     }
-
-    debugPrint(
-      '📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields',
-    );
+    //
+    // debugPrint(
+    //   '📥 [UpdateContactsTable] Updating contacts (userId=$userId) with values: $updateFields',
+    // );
 
     if (updateFields.isEmpty) {
-      debugPrint('⚠️ No fields to update for userId=$userId');
+      // debugPrint('⚠️ No fields to update for userId=$userId');
       return;
     }
 
@@ -223,7 +223,7 @@ class ContactsTable {
         whereArgs: [userId],
       );
     } else {
-      debugPrint('⚠️ [updateContact] No values to update for uid=$userId');
+      // debugPrint('⚠️ [updateContact] No values to update for uid=$userId');
     }
     // if (rowsAffected == 0) {
     //   print('ℹ️ No user found with userId=$userId. Skipping update.');

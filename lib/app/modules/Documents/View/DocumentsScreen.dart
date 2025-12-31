@@ -93,7 +93,7 @@ class DocumentPickerScreen extends StatelessWidget {
                     messageEnum: type,
                   );
                 } catch (e, s) {
-                  debugPrint(s.toString());
+                  // debugPrint(s.toString());
                 }
               }
 

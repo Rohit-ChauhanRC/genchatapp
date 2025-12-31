@@ -186,9 +186,9 @@ class UpdatesController extends GetxController
       // ---------- LOAD FROM DB ----------
       await getLocalSaveSatus();
 
-      debugPrint("✅ getStatus() finished with ONLINE mode");
+      // debugPrint("✅ getStatus() finished with ONLINE mode");
     } catch (e, st) {
-      debugPrint("🔥 ERROR in getStatus(): $e");
+      // debugPrint("🔥 ERROR in getStatus(): $e");
 
       await getLocalSaveSatus(); // ALWAYS fallback in errors
     }

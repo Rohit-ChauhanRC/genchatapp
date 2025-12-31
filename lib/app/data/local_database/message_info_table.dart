@@ -432,7 +432,7 @@ class MessageInfoTable {
         'deleteState': isDeleteFromEveryone ? 1 : 0,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e) {
-      debugPrint("Error marking message for deletion: $e");
+      // debugPrint("Error marking message for deletion: $e");
     }
   }
 

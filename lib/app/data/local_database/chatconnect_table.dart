@@ -116,9 +116,9 @@ class ChatConectTable {
     if (isGroup != null) updatedValues["isGroup"] = isGroup;
     // isBlocked
     if (isBlocked != null) updatedValues["isBlocked"] = isBlocked;
-    debugPrint(
-      '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues',
-    );
+    // debugPrint(
+    //   '📥 [updateContact] Updating contact (uid=$uid) with values: $updatedValues',
+    // );
 
     if (updatedValues.isNotEmpty) {
       await db.update(
@@ -128,7 +128,7 @@ class ChatConectTable {
         whereArgs: [uid, isGroup],
       );
     } else {
-      debugPrint('⚠️ [updateContact] No values to update for uid=$uid');
+      // debugPrint('⚠️ [updateContact] No values to update for uid=$uid');
     }
   }
 

@@ -313,20 +313,20 @@ extension BackupRestore on DataBaseService {
     final file = File(path);
     if (await file.exists()) {
       await file.delete();
-      debugPrint("🗑Database file deleted: $path");
+      // debugPrint("🗑Database file deleted: $path");
     } else {
-      debugPrint("No database file found to delete.");
+      // debugPrint("No database file found to delete.");
     }
   }
 
   Future<void> resetDatabase() async {
-    debugPrint("Resetting database...");
+    // debugPrint("Resetting database...");
 
     await clearUserData(); // Drop all tables
     await deleteDatabaseFile(); // Remove DB file
 
     _database = null; // Ensure it reinitializes on next access
 
-    debugPrint("Database fully reset.");
+    // debugPrint("Database fully reset.");
   }
 }

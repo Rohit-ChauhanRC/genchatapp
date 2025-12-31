@@ -52,7 +52,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           _videoController?.play();
         });
     } catch (e) {
-      debugPrint("Video caching error: $e");
+      // debugPrint("Video caching error: $e");
       setState(() => isLoading = false);
     }
   }

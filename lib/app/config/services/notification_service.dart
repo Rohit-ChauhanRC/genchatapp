@@ -20,7 +20,7 @@ import 'encryption_service.dart';
 Future<void> onNotificationBackgroundResponse(
   NotificationResponse response,
 ) async {
-  debugPrint("📲 [BG Callback] Payload: ${response.payload}");
+  // debugPrint("📲 [BG Callback] Payload: ${response.payload}");
 
   if (response.payload != null && response.payload!.isNotEmpty) {
     await NotificationService.removeShownMessageId(response.payload!);
@@ -35,18 +35,18 @@ class NotificationService {
 
   static Future<List<String>> getShownMessageIds() async {
     final ids = await MessageIdStorage.load();
-    debugPrint("📦 [Prefs] Cleaned shownMessageIds: $ids");
+    // debugPrint("📦 [Prefs] Cleaned shownMessageIds: $ids");
     return ids;
   }
 
   static Future<void> addShownMessageId(String id) async {
     await MessageIdStorage.add(id);
-    debugPrint("✅ [Prefs] Added messageId to shown list: $id");
+    // debugPrint("✅ [Prefs] Added messageId to shown list: $id");
   }
 
   static Future<void> removeShownMessageId(String id) async {
     await MessageIdStorage.remove(id);
-    debugPrint("🧹 Removed messageId: $id from shownIds");
+    // debugPrint("🧹 Removed messageId: $id from shownIds");
   }
 
   static Future<void> clearAllShownMessageIds() async {
@@ -71,7 +71,7 @@ class NotificationService {
     await _localNotificationsPlugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (response) {
-        debugPrint("📲 [Foreground Tap] Payload: ${response.payload}");
+        // debugPrint("📲 [Foreground Tap] Payload: ${response.payload}");
         _onNotificationTapOrDismiss(response);
       },
       onDidReceiveBackgroundNotificationResponse:
@@ -80,7 +80,7 @@ class NotificationService {
 
     // iOS is ignored because you only want Android foreground support
     FirebaseMessaging.onMessage.listen((msg) {
-      debugPrint("📨 [onMessage.listen] Message received");
+      // debugPrint("📨 [onMessage.listen] Message received");
       if (Platform.isAndroid) {
         _handleForegroundMessage(msg);
       }
@@ -90,12 +90,12 @@ class NotificationService {
   static Future<void> _handleForegroundMessage(RemoteMessage msg) async {
     if (kDebugMode) {
     }
-    debugPrint("🟢 Title: ${msg.notification?.title}");
-    debugPrint("🟢 Body: ${msg.notification?.body}");
-    debugPrint("🟢 Raw Data: ${msg.data}");
+    // debugPrint("🟢 Title: ${msg.notification?.title}");
+    // debugPrint("🟢 Body: ${msg.notification?.body}");
+    // debugPrint("🟢 Raw Data: ${msg.data}");
 
     final String? rawData = msg.data['data'];
-    debugPrint("🔍 [FG] rawData: $rawData");
+    // debugPrint("🔍 [FG] rawData: $rawData");
 
     Map<String, dynamic>? decoded;
     String messageId = msg.messageId ?? '';
@@ -104,20 +104,20 @@ class NotificationService {
       try {
         decoded = Map<String, dynamic>.from(jsonDecode(rawData));
         messageId = decoded['messageId']?.toString() ?? messageId;
-        debugPrint("🆔 [FG] Extracted messageId: $messageId");
+        // debugPrint("🆔 [FG] Extracted messageId: $messageId");
       } catch (e) {
-        debugPrint("❌ [FG] Error decoding rawData: $e");
+        // debugPrint("❌ [FG] Error decoding rawData: $e");
       }
     }
 
     final shownIds = await getShownMessageIds();
-    debugPrint("📦 [Dedup Check] Stored IDs: $shownIds");
-    debugPrint("📦 [Dedup Check] Incoming ID: $messageId");
+    // debugPrint("📦 [Dedup Check] Stored IDs: $shownIds");
+    // debugPrint("📦 [Dedup Check] Incoming ID: $messageId");
     if (shownIds.contains(messageId)) {
-      debugPrint('⚠️ Duplicate notification ignored: $messageId');
+      // debugPrint('⚠️ Duplicate notification ignored: $messageId');
       return;
     }
-    debugPrint("🔔 [FG] Showing notification for messageId: $messageId");
+    // debugPrint("🔔 [FG] Showing notification for messageId: $messageId");
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'foreground_channel_id',
@@ -146,8 +146,8 @@ class NotificationService {
     NotificationResponse response,
   ) async {
     final payload = response.payload;
-    debugPrint('📲 [Tap/Dismiss] Type: ${response.notificationResponseType}');
-    debugPrint('📲 [Tap/Dismiss] Payload: $payload');
+    // debugPrint('📲 [Tap/Dismiss] Type: ${response.notificationResponseType}');
+    // debugPrint('📲 [Tap/Dismiss] Payload: $payload');
 
     if (payload != null && payload.isNotEmpty) {
       await removeShownMessageId(payload);
@@ -188,7 +188,7 @@ class NotificationService {
 
     for (String topic in cleanedTopics) {
       await FirebaseMessaging.instance.subscribeToTopic(topic);
-      debugPrint("✅ Subscribed to topic: $topic");
+      // debugPrint("✅ Subscribed to topic: $topic");
     }
 
     // Save subscribed topics in SharedPreferenceService, avoiding duplicates
@@ -207,7 +207,7 @@ class NotificationService {
     if (topics != null) {
       for (String topic in topics) {
         await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-        debugPrint("❌ Unsubscribed from topic: $topic");
+        // debugPrint("❌ Unsubscribed from topic: $topic");
       }
       await prefs.remove(subscribedTopics); // Clear stored topics
     }

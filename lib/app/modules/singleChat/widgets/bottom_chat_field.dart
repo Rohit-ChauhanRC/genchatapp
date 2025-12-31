@@ -182,60 +182,50 @@ class BottomChatField extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                suffixIcon: Obx(
-                                  () => SizedBox(
-                                    width:
-                                        !singleChatController.isShowSendButton
-                                        ? 150
-                                        : 50,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        !singleChatController.isShowSendButton
-                                            ? IconButton(
-                                                onPressed: () {
-                                                  singleChatController
-                                                      .selectFile(
-                                                        MessageType
-                                                            .camera
-                                                            .value,
-                                                      );
-                                                },
-                                                icon: const Icon(
-                                                  Symbols.camera_alt_rounded,
-                                                  size: 20,
-                                                  color: greyMsgColor,
-                                                ),
-                                              )
-                                            : const SizedBox.shrink(),
-
-                                        IconButton(
-                                          onPressed: () => showAttachmentSheet(
-                                            context,
-                                            singleChatController,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.attach_file,
-                                            color: greyMsgColor,
-                                          ),
+                                suffixIcon: SizedBox(
+                                  width: 100,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          singleChatController.selectFile(
+                                            MessageType.camera.value,
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Symbols.camera_alt_rounded,
+                                          size: 20,
+                                          color: greyMsgColor,
                                         ),
+                                      ),
 
-                                        // IconButton(
-                                        //   onPressed: () {
-                                        //     // singleChatController.selectVideo();
-                                        //     singleChatController.cancelReply();
-                                        //     // Get.to(() => AttachmentPopupDemo());
-                                        //     singleChatController.selectFile(
-                                        //       MessageType.document.value,
-                                        //     );
-                                        //   },
-                                        //   icon: const Icon(
-                                        //     Icons.attach_file,
-                                        //     color: greyMsgColor,
-                                        //   ),
-                                        // ),
-                                      ],
-                                    ),
+                                      IconButton(
+                                        onPressed: () => showAttachmentSheet(
+                                          context,
+                                          singleChatController,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.attach_file,
+                                          color: greyMsgColor,
+                                        ),
+                                      ),
+
+                                      // IconButton(
+                                      //   onPressed: () {
+                                      //     // singleChatController.selectVideo();
+                                      //     singleChatController.cancelReply();
+                                      //     // Get.to(() => AttachmentPopupDemo());
+                                      //     singleChatController.selectFile(
+                                      //       MessageType.document.value,
+                                      //     );
+                                      //   },
+                                      //   icon: const Icon(
+                                      //     Icons.attach_file,
+                                      //     color: greyMsgColor,
+                                      //   ),
+                                      // ),
+                                    ],
                                   ),
                                 ),
                                 hintText: 'message ...',

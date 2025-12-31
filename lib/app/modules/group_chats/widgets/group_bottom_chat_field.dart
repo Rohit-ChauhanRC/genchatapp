@@ -314,62 +314,51 @@ class GroupBottomChatField extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  suffixIcon: Obx(
-                                    () => SizedBox(
-                                      width:
-                                          !groupChatsController.isShowSendButton
-                                          ? 100
-                                          : 50,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          !groupChatsController.isShowSendButton
-                                              ? IconButton(
-                                                  onPressed: () {
-                                                    groupChatsController
-                                                        .selectFile(
-                                                          MessageType
-                                                              .camera
-                                                              .value,
-                                                        );
-                                                  },
-                                                  icon: const Icon(
-                                                    Symbols.camera_alt_rounded,
-                                                    size: 20,
-                                                    color: greyMsgColor,
-                                                  ),
-                                                )
-                                              : const SizedBox.shrink(),
-                                          IconButton(
-                                            onPressed: () =>
-                                                showAttachmentSheetGroup(
-                                                  context,
-                                                  groupChatsController,
-                                                ),
-                                            icon: const Icon(
-                                              Icons.attach_file,
-                                              color: greyMsgColor,
-                                            ),
+                                  suffixIcon: SizedBox(
+                                    width: 100,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {
+                                            groupChatsController.selectFile(
+                                              MessageType.camera.value,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Symbols.camera_alt_rounded,
+                                            size: 20,
+                                            color: greyMsgColor,
                                           ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () =>
+                                              showAttachmentSheetGroup(
+                                                context,
+                                                groupChatsController,
+                                              ),
+                                          icon: const Icon(
+                                            Icons.attach_file,
+                                            color: greyMsgColor,
+                                          ),
+                                        ),
 
-                                          // IconButton(
-                                          //   onPressed: () {
-                                          //     // singleChatController.selectVideo();
-                                          //     groupChatsController
-                                          //         .cancelReply();
-                                          //     // Get.to(() => AttachmentPopupDemo());
-                                          //     groupChatsController.selectFile(
-                                          //       MessageType.document.value,
-                                          //     );
-                                          //   },
-                                          //   icon: const Icon(
-                                          //     Icons.attach_file,
-                                          //     color: greyMsgColor,
-                                          //   ),
-                                          // ),
-                                        ],
-                                      ),
+                                        // IconButton(
+                                        //   onPressed: () {
+                                        //     // singleChatController.selectVideo();
+                                        //     groupChatsController
+                                        //         .cancelReply();
+                                        //     // Get.to(() => AttachmentPopupDemo());
+                                        //     groupChatsController.selectFile(
+                                        //       MessageType.document.value,
+                                        //     );
+                                        //   },
+                                        //   icon: const Icon(
+                                        //     Icons.attach_file,
+                                        //     color: greyMsgColor,
+                                        //   ),
+                                        // ),
+                                      ],
                                     ),
                                   ),
                                   hintText: 'Message!',

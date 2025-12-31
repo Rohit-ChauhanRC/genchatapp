@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
@@ -25,12 +27,33 @@ class EncryptionService extends GetxService {
     return encrypted.base64;
   }
 
-  String decryptText(String base64CipherText) {
-    // if(base64CipherText != "This message was deleted"){}
-    final decrypted = base64CipherText != "This message was deleted"
-        ? _encrypter.decrypt64(base64CipherText, iv: _iv)
-        : base64CipherText;
-    return decrypted;
+  String decryptText(String text) {
+    if (text.isEmpty) return "";
+
+    // System / non-encrypted messages
+    if (text == "This message was deleted") {
+      return text;
+    }
+
+    // Prevent Base64 crash
+    if (!_isValidBase64(text)) {
+      return text; // return as plain text
+    }
+
+    try {
+      return _encrypter.decrypt64(text, iv: _iv);
+    } catch (e) {
+      // Fallback safety
+      return text;
+    }
+  }
+  bool _isValidBase64(String value) {
+    try {
+      base64.decode(value);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   bool isEncryptedMessage(String message) {

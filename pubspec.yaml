@@ -38,7 +38,7 @@ dependencies:
   encrypt: ^5.0.3
   flutter_dotenv: ^5.2.1
   material_symbols_icons: ^4.2815.0
-  file_picker: ^9.0.0
+  file_picker: 9.0.0
   video_thumbnail: ^0.5.6
   open_file: ^3.5.10
   video_player: ^2.10.0
@@ -51,7 +51,7 @@ dependencies:
   easy_image_viewer: ^1.5.1
   image: ^4.5.4
 #  awesome_notifications: ^0.10.1
-  flutter_local_notifications: ^19.3.0
+  flutter_local_notifications: 19.3.0
   firebase_crashlytics: ^4.3.9
   camera: ^0.11.2+1
   path: ^1.9.1

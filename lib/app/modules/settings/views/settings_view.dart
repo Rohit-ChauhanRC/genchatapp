@@ -126,6 +126,18 @@ class SettingsView extends GetView<SettingsController> {
                       },
                     ),
                   const SizedBox(height: 10),
+                  // Version and Update Section
+                  Obx(
+                        () => _settingsItemWidget(
+                      title: "App Version",
+                      description: controller.currentVersion.value.isEmpty
+                          ? "Version 1.0.1 (2)"
+                          : "Version ${controller.currentVersion.value}"
+                          "${controller.updateAvailable.value ? ' (Update available)' : ''}",
+                      icon: Icons.system_update,
+                      onTap: () {},
+                    ),
+                  ),                  const SizedBox(height: 10),
                   // _settingsItemWidget(
                   //     title: "Delete Account",
                   //     description: "Your account will be deleted forever.",
@@ -242,6 +254,12 @@ class SettingsView extends GetView<SettingsController> {
               ],
             ),
           ),
+          if (controller.isCheckingForUpdate)
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
         ],
       ),
     );

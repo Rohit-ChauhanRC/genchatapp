@@ -156,8 +156,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return "Email is required!";
-                              } else if (value.contains("@") ||
-                                  value.contains(".")) {
+                              } else if (value.contains("@")) {
                                 return "Please enter a valid email!";
                               }
                               return null;

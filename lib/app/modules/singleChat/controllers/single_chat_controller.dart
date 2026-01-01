@@ -417,8 +417,7 @@ class SingleChatController extends GetxController
         receiverUserData!.phoneNumber.toString(),
       ]);
 
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
 
       // serverUsers.first.blockedByMe;
       blocked.value = serverUsers.first.isBlocked!;
@@ -535,8 +534,7 @@ class SingleChatController extends GetxController
       blocked.value = blockedI!;
       blockedByMe.value = blockedByMeI;
     } else {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -1652,8 +1650,7 @@ class SingleChatController extends GetxController
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -1819,8 +1816,7 @@ class SingleChatController extends GetxController
         socketService.saveChatContacts(newMessage);
       }
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -2041,8 +2037,7 @@ class SingleChatController extends GetxController
       if (!await dirThum.exists()) {
         await dirThum.create(recursive: true);
       } else {
-        if (kDebugMode) {
-        }
+        if (kDebugMode) {}
       }
       final thumbnailPath = dirThum.path;
 
@@ -2247,8 +2242,7 @@ class SingleChatController extends GetxController
         isPreviewing.value = false;
       }
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
     cancelReply();
   }
@@ -2281,14 +2275,18 @@ class SingleChatController extends GetxController
       return;
     }
 
-    final contact = Contact()
-      ..name.first = name
-      ..phones = [Phone(phone)];
+    // final contact = Contact()
+    //   ..name.first = name
+    //   ..phones = [Phone(phone)];
 
-    await contact.insert();
+    // await contact.insert();
+    await FlutterContacts.openExternalInsert(
+      Contact(displayName: name, phones: [Phone(phone)]),
+    );
+    await selectedContactController.syncContactsWithServer();
   }
 
-  void showSaveContactDialog(BuildContext context) {
+  void showSaveContactDialog(BuildContext context) async {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController mobileController = TextEditingController(
       text: receiverUserData!.phoneNumber,

@@ -126,6 +126,8 @@ class ChatList extends StatelessWidget {
                     showHeader = true;
                   }
                 }
+                final messageKey =
+                    messages.messageId ?? messages.clientSystemMessageId;
 
                 return Column(
                   children: [
@@ -160,7 +162,7 @@ class ChatList extends StatelessWidget {
                             highlightId == messages.messageId.toString();
 
                         return InkWell(
-                          key: UniqueKey(),
+                          key: ValueKey(messageKey),
                           onLongPress: () => singleChatController
                               .toggleMessageSelection(messages),
                           onTap: () {

@@ -156,13 +156,13 @@ class GroupProfileController extends GetxController {
   //Internet check
   bool ensureInternetOrShowError() {
     if (!connectivityService.isConnected.value) {
-      Get.snackbar(
-        "No Internet",
-        "Please turn on internet to perform this action",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
-      );
+      // Get.snackbar(
+      //   "No Internet",
+      //   "Please turn on internet to perform this action",
+      //   snackPosition: SnackPosition.TOP,
+      //   backgroundColor: Colors.red.shade600,
+      //   colorText: Colors.white,
+      // );
 
       return false;
     }

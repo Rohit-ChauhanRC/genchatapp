@@ -93,9 +93,9 @@ class SelectContactsController extends GetxController {
 
   Future<void> refreshSync() async {
     if (connectivityService.isConnected.value == false) {
-      showAlertMessage(
-        "No Internet Connection!\nPlease check your connection and try again.",
-      );
+      // showAlertMessage(
+      //   "No Internet Connection!\nPlease check your connection and try again.",
+      // );
       return;
     }
 
@@ -182,7 +182,13 @@ class SelectContactsController extends GetxController {
   // }
   Future<void> syncContactsWithServer() async {
     try {
-      if (!await FlutterContacts.requestPermission()) return;
+      final hasPermission = await FlutterContacts.requestPermission();
+
+      if (!hasPermission) {
+        await FlutterContacts.requestPermission();
+        // Permission denied → stop execution
+        return;
+      }
 
       final phoneContacts = await FlutterContacts.getContacts(
         withProperties: true,

@@ -341,11 +341,11 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                       );
                                     }
                                   : () {
-                                      Get.snackbar(
-                                        "No Internet",
-                                        "Please turn on internet to change permissions",
-                                        snackPosition: SnackPosition.BOTTOM,
-                                      );
+                                      // Get.snackbar(
+                                      //   "No Internet",
+                                      //   "Please turn on internet to change permissions",
+                                      //   snackPosition: SnackPosition.BOTTOM,
+                                      // );
                                     },
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -789,7 +789,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
     bool isCreator,
   ) {
     final items = _buildStyledPopupItems(user, perm, isCreator);
-    if(items.isEmpty)return;
+    if (items.isEmpty) return;
     final renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero) & renderBox.size;
 

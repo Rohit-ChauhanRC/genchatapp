@@ -132,6 +132,10 @@ class GroupChatList extends StatelessWidget {
                     showHeader = true;
                   }
                 }
+
+                final messageKey =
+                    messages.messageId ?? messages.clientSystemMessageId;
+
                 return Column(
                   children: [
                     if (showHeader)
@@ -165,7 +169,7 @@ class GroupChatList extends StatelessWidget {
                             highlightId == messages.messageId.toString();
 
                         return InkWell(
-                          key: UniqueKey(),
+                          key: ValueKey(messageKey),
                           onLongPress: () => groupChatsController
                               .toggleMessageSelection(messages),
                           onTap: () {

@@ -13,6 +13,7 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
@@ -331,6 +332,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     closeKeyboard();
     await loadInitialMessages();
+    await sendSyncMsg();
     bindSocketEvents();
     monitorScrollPosition();
     isInCurrentChat = true;
@@ -855,7 +857,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       // messageList.insertAll(0, messages);
 
       // ✅ Existing sync/seen logic...
-      for (var i in messages) {
+      for (var i in messages1) {
         if ((i.state == MessageState.sent ||
                 i.state == MessageState.unsent ||
                 i.state == MessageState.delivered) &&
@@ -893,6 +895,42 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       hasMoreMessages = false;
     }
     isPaginating = false;
+  }
+
+  Future<void> sendSyncMsg() async {
+    final messages1 = await MessageTable().fetchGroupMessagesWithoutPaginated(
+      receiverId: receiverUserData?.group?.id ?? 0,
+    );
+    for (var i in messages1) {
+      if ((i.state == MessageState.sent ||
+              i.state == MessageState.unsent ||
+              i.state == MessageState.delivered) &&
+          i.messageId != null) {
+        if (receiverUserData!.group?.id == i.recipientId &&
+            socketService.isConnected) {
+          if (i.senderId != senderuserData?.userId &&
+              i.state != MessageState.read) {
+            socketService.sendMessageSeen(i.messageId!);
+          }
+        }
+      } else if (senderuserData!.userId == i.senderId &&
+          i.syncStatus == SyncStatus.pending &&
+          i.messageId == null) {
+        if (socketService.isConnected) {
+          if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+            socketService.sendMessageSync(i);
+          }
+        }
+      } else if (senderuserData!.userId == i.senderId &&
+          i.syncStatus == SyncStatus.pending &&
+          i.messageId != null) {
+        if (socketService.isConnected) {
+          if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+            socketService.sendMessageSync(i);
+          }
+        }
+      }
+    }
   }
 
   void _startLoadingTimer() {
@@ -1260,23 +1298,25 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> copySelectedMessage() async {
     if (selectedMessages.isEmpty || selectedMessages.length != 1) return;
-    
+
     final message = selectedMessages.first;
     if (message.messageType != MessageType.text) return;
-    
+
     try {
-      final decryptedText = encryptionService.decryptText(message.message ?? '');
+      final decryptedText = encryptionService.decryptText(
+        message.message ?? '',
+      );
       await Clipboard.setData(ClipboardData(text: decryptedText));
-      
+
       Get.snackbar(
         'Copied',
         'Message copied to clipboard',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
+        backgroundColor: textBarColor,
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-      
+
       clearSelectedMessages();
     } catch (e) {
       Get.snackbar(

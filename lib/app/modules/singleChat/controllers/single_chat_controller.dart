@@ -332,6 +332,8 @@ class SingleChatController extends GetxController
     // _startLoadingTimer();
     // bindMessageStream();
     await loadInitialMessages();
+    await sendSyncMsg();
+
     bindSocketEvents();
     monitorScrollPosition();
     isInCurrentChat = true;
@@ -981,6 +983,33 @@ class SingleChatController extends GetxController
     isPaginating = false;
   }
 
+  Future<void> sendSyncMsg() async {
+    final messages1 = await MessageTable().fetchSingleMessagesWithoutPaginated(
+      receiverId: receiverUserData!.userId!,
+      senderId: senderuserData!.userId!,
+    );
+    for (var i in messages1) {
+      if ((i.state == MessageState.sent ||
+              i.state == MessageState.unsent ||
+              i.state == MessageState.delivered) &&
+          i.messageId != null) {
+        if (receiverUserData!.userId == i.senderId &&
+            socketService.isConnected) {
+          socketService.sendMessageSeen(i.messageId!);
+        }
+      } else if (senderuserData!.userId == i.senderId &&
+          i.syncStatus == SyncStatus.pending &&
+          i.messageId == null &&
+          i.isAsset == false) {
+        if (socketService.isConnected) {
+          if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+            socketService.sendMessageSync(i);
+          }
+        }
+      }
+    }
+  }
+
   void _startLoadingTimer() {
     Timer(const Duration(seconds: 3), () {
       isLoading = false; // Stop loading after 3 seconds
@@ -1138,15 +1167,15 @@ class SingleChatController extends GetxController
 
   void toggleMessageSelection(NewMessageModel message) {
     if (selectedMessages.contains(message)) {
-      selectedMessages.remove(message);        debugPrint("Message added to list:------> $message");
+      selectedMessages.remove(message);
+      debugPrint("Message added to list:------> $message");
 
       if (kDebugMode) {
         debugPrint("Message removed from list:------> $message");
       }
     } else {
       selectedMessages.add(message);
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
     updateForwardAvailability();
     selectedMessages.refresh();
@@ -1345,14 +1374,16 @@ class SingleChatController extends GetxController
 
   Future<void> copySelectedMessage() async {
     if (selectedMessages.isEmpty || selectedMessages.length != 1) return;
-    
+
     final message = selectedMessages.first;
     if (message.messageType != MessageType.text) return;
-    
+
     try {
-      final decryptedText = encryptionService.decryptText(message.message ?? '');
+      final decryptedText = encryptionService.decryptText(
+        message.message ?? '',
+      );
       await Clipboard.setData(ClipboardData(text: decryptedText));
-      
+
       // Show success feedback
       Get.snackbar(
         'Copied',
@@ -1362,7 +1393,7 @@ class SingleChatController extends GetxController
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-      
+
       clearSelectedMessages();
     } catch (e) {
       Get.snackbar(

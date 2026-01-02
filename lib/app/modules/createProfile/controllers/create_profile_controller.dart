@@ -244,7 +244,11 @@ class CreateProfileController extends GetxController {
 
       if (!nameChanged && !emailChanged) {
         // navigateBack();
-        checkAndPromptForBackup();
+        if (Platform.isAndroid) {
+          checkAndPromptForBackup();
+        } else {
+          navigateBack();
+        }
         return;
       }
 
@@ -270,7 +274,11 @@ class CreateProfileController extends GetxController {
 
           showAlertMessage('Profile updated successfully!');
           // navigateBack();
-          checkAndPromptForBackup();
+          if (Platform.isAndroid) {
+            checkAndPromptForBackup();
+          } else {
+            navigateBack();
+          }
         } else {
           showAlertMessage('Failed to update profile.');
         }

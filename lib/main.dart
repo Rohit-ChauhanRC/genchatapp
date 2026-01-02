@@ -28,15 +28,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       final decoded = Map<String, dynamic>.from(jsonDecode(rawData));
       final messageId = decoded['messageId']?.toString();
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
       if (messageId != null && messageId.isNotEmpty) {
         // 🚨 Add this line to prevent repeat
         await NotificationService.addShownMessageId(messageId);
       }
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 }
@@ -68,14 +66,11 @@ void main() async {
   );
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    if (kDebugMode) {
-    }
+    if (kDebugMode) {}
   } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
-    if (kDebugMode) {
-    }
+    if (kDebugMode) {}
   } else {
-    if (kDebugMode) {
-    }
+    if (kDebugMode) {}
   }
 
   AppConfig.setEnvironment(AppEnvironment.dev);

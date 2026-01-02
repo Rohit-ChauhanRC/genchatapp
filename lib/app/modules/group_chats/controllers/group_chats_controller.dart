@@ -785,7 +785,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         UserDefaultsKeys.messageDurationKey,
       );
 
-      currentOffset += messages.length;
       // ✅ Cache sender names for newly loaded messages
       bool hasDeletedVanishMessages = false;
       for (var msg in messages) {
@@ -803,22 +802,50 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
           hasDeletedVanishMessages = true;
 
           // return;
-        } else {
-          final id = msg.senderId ?? 0;
-          final senderNumber = msg.senderPhoneNumber ?? "";
-          if (!senderNamesCache.containsKey(id)) {
-            var user = await contactsTable.getUserById(id);
+        }
+        // else {
+        //   final id = msg.senderId ?? 0;
+        //   final senderNumber = msg.senderPhoneNumber ?? "";
+        //   if (!senderNamesCache.containsKey(id)) {
+        //     var user = await contactsTable.getUserById(id);
 
-            if (user != null) {
-              final name = user.localName ?? user.name;
-              senderNamesCache[id] = name!;
-            } else {
-              senderNamesCache[id] = senderNumber;
-            }
+        //     if (user != null) {
+        //       final name = user.localName ?? user.name;
+        //       senderNamesCache[id] = name!;
+        //     } else {
+        //       senderNamesCache[id] = senderNumber;
+        //     }
+        //   }
+        //   messageList.add(msg);
+        // }
+      }
+
+      final messages1 = await MessageTable().fetchGroupMessagesPaginated(
+        receiverId: receiverUserData?.group?.id ?? 0,
+
+        offset: currentOffset,
+        limit: pageSize,
+      );
+      messageList.insertAll(0, messages1);
+
+      currentOffset += messages1.length;
+
+      for (var msg in messages1) {
+        final id = msg.senderId ?? 0;
+        final senderNumber = msg.senderPhoneNumber ?? "";
+        if (!senderNamesCache.containsKey(id)) {
+          var user = await contactsTable.getUserById(id);
+
+          if (user != null) {
+            final name = user.localName ?? user.name;
+            senderNamesCache[id] = name!;
+          } else {
+            senderNamesCache[id] = senderNumber;
           }
-          messageList.add(msg);
         }
       }
+
+      // messageList.assignAll(messages1);
 
       // ✅ Update last message in chat contact if vanish messages were deleted
       if (hasDeletedVanishMessages) {
@@ -2064,8 +2091,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         receiverId: receiverUserData!.group!.id!,
         senderId: senderuserData!.userId!,
       );
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
       if (fileData?.statusCode == 200 && fileData?.status == true) {
         if (socketService.isConnected) {
           socketService.sendMessage(newMessage);
@@ -2076,8 +2102,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         isPreviewing.value = false;
       }
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 

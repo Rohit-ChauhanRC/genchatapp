@@ -13,6 +13,7 @@ import 'package:genchatapp/app/utils/time_utils.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../constants/message_enum.dart';
 import '../controllers/group_chats_controller.dart';
 
 class GroupChatsView extends GetView<GroupChatsController> {
@@ -151,6 +152,11 @@ class GroupChatsView extends GetView<GroupChatsController> {
                         icon: const Icon(Symbols.delete, color: whiteColor),
                         onPressed: () => _showDeletePopup(context, controller),
                       ),
+                      if (controller.selectedMessages.first.messageType == MessageType.text && controller.selectedMessages.length==1)
+                        IconButton(
+                          icon: const Icon(Icons.copy, color: whiteColor),
+                          onPressed: () => controller.copySelectedMessage(),
+                        ),
                       if (controller.canForward)
                         IconButton(
                           icon: const Icon(

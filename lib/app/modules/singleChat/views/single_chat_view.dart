@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 
 import '../../../constants/colors.dart';
 import '../../../constants/constants.dart';
+import '../../../constants/message_enum.dart';
 import '../controllers/single_chat_controller.dart';
 
 class SingleChatView extends GetView<SingleChatController> {
@@ -151,6 +152,12 @@ class SingleChatView extends GetView<SingleChatController> {
                         icon: const Icon(Symbols.delete, color: whiteColor),
                         onPressed: () => _showDeletePopup(context, controller),
                       ),
+                      if (controller.selectedMessages.length == 1 &&
+                          controller.selectedMessages.first.messageType == MessageType.text)
+                        IconButton(
+                          icon:  Icon(Icons.copy, color: whiteColor),
+                          onPressed: () => controller.copySelectedMessage(),
+                        ),
                       if (controller.canForward)
                         IconButton(
                           icon: Icon(

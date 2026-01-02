@@ -1343,6 +1343,39 @@ class SingleChatController extends GetxController
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
   }
 
+  Future<void> copySelectedMessage() async {
+    if (selectedMessages.isEmpty || selectedMessages.length != 1) return;
+    
+    final message = selectedMessages.first;
+    if (message.messageType != MessageType.text) return;
+    
+    try {
+      final decryptedText = encryptionService.decryptText(message.message ?? '');
+      await Clipboard.setData(ClipboardData(text: decryptedText));
+      
+      // Show success feedback
+      Get.snackbar(
+        'Copied',
+        'Message copied to clipboard',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+      
+      clearSelectedMessages();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to copy message',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
   void selectFile(String fileType) async {
     // debugPrint("🔥 FILE TYPE RECEIVED: $fileType");
     if (fileType == MessageType.image.value) {

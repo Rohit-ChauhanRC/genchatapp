@@ -1218,7 +1218,6 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
-    // ❗ If even one selected message is deleted, disable forward
     final hasDeleted = selected.any(
       (msg) => msg.messageType == MessageType.deleted,
     );
@@ -1257,6 +1256,38 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     clearSelectedMessages();
     Get.toNamed(Routes.FORWARD_MESSAGES, arguments: messagesToForward);
     // Get.to(() => SelectUsersToForwardView(messages: messagesToForward));
+  }
+
+  Future<void> copySelectedMessage() async {
+    if (selectedMessages.isEmpty || selectedMessages.length != 1) return;
+    
+    final message = selectedMessages.first;
+    if (message.messageType != MessageType.text) return;
+    
+    try {
+      final decryptedText = encryptionService.decryptText(message.message ?? '');
+      await Clipboard.setData(ClipboardData(text: decryptedText));
+      
+      Get.snackbar(
+        'Copied',
+        'Message copied to clipboard',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+      
+      clearSelectedMessages();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to copy message',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 
   Future<List<File>> pickImageAndVideo() async {

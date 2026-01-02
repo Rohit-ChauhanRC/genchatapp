@@ -138,8 +138,15 @@ class ForwardMessagesView extends GetView<ForwardMessagesController> {
                             backgroundImage: image,
                           );
                         },
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
+                        placeholder: (context, url) => const CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
                         errorWidget: (context, url, error) =>
                             const CircleAvatar(
                               radius: 25,

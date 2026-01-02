@@ -55,10 +55,19 @@ class GroupSenderMessageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final replyText1 = repliedText.value.trim();
+    // final hasReply1 =
+    //     replyText1.isNotEmpty &&
+    //     replyText1.toLowerCase() != "null" &&
+    //     type != MessageType.deleted;
+
     final hasReply1 =
-        replyText1.isNotEmpty &&
-        replyText1.toLowerCase() != "null" &&
-        type != MessageType.deleted;
+        type != MessageType.deleted &&
+        ((repliedMessageType != MessageType.text &&
+                (repliedAssetServerName?.isNotEmpty ?? false)) ||
+            (repliedMessageType == MessageType.text &&
+                repliedText.value.trim().isNotEmpty &&
+                repliedText.value.trim().toLowerCase() != "null"));
+
     return SwipeTo(
       onRightSwipe: onRightSwipe,
       child: Align(
@@ -139,9 +148,7 @@ class GroupSenderMessageCard extends StatelessWidget {
                           ),
                         // Obx(
                         //   () =>
-                        type != MessageType.deleted &&
-                                repliedText.value.isNotEmpty &&
-                                repliedText.value != "null"
+                        hasReply1
                             ? Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(

@@ -10,19 +10,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'group_my_message_card.dart';
 import 'group_sender_message_card.dart';
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:genchatapp/app/config/theme/app_colors.dart';
-import 'package:genchatapp/app/constants/message_enum.dart';
-import 'package:genchatapp/app/modules/group_chats/controllers/group_chats_controller.dart';
-import 'package:genchatapp/app/modules/singleChat/widgets/typping_bubble.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
-import 'group_my_message_card.dart';
-import 'group_sender_message_card.dart';
-
 ///FOR DATE AT TOP
 
 String getChatHeaderLabel(DateTime date) {

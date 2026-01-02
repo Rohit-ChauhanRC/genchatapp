@@ -78,7 +78,7 @@ void main() async {
     }
   }
 
-  AppConfig.setEnvironment(AppEnvironment.prod);
+  AppConfig.setEnvironment(AppEnvironment.dev);
 
   runApp(const App());
 }

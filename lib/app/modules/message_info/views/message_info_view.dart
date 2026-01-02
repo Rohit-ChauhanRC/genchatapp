@@ -230,8 +230,15 @@ class MessageInfoView extends GetView<MessageInfoController> {
         imageUrl: pictureUrl,
         imageBuilder: (_, image) =>
             CircleAvatar(backgroundImage: image, radius: 24),
-        placeholder: (_, __) =>
-            const CircularProgressIndicator(strokeWidth: 1.5),
+        placeholder: (_, __) => const CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.grey,
+          child: Icon(
+            Icons.person,
+            color: Colors.white,
+            size: 26,
+          ),
+        ),
       ),
       title: SizedBox(
         child: Text(

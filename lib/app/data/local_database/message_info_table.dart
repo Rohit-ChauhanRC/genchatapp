@@ -117,31 +117,25 @@ class MessageInfoTable {
     int limit = 10,
   }) async {
     final db = await DataBaseService().database;
+
     final result = await db.query(
       tableName,
-      where: ' (isGroupMessage = 1 AND recipientId = ?)',
+      where: 'recipientId = ?',
       whereArgs: [receiverId],
-      orderBy: 'messageSentFromDeviceTime DESC',
+      orderBy: 'messageSentFromDeviceTime DESC', // 🔥 always DESC
       limit: limit,
       offset: offset,
     );
 
-    List<MessageInfoModel> messages = result
+    // newest → oldest (DB)
+    final messages = result
         .map((map) => MessageInfoModel.fromJson(map))
         .toList();
 
-    //  FILTER OUT OLD MESSAGES
-    // messages.removeWhere((m) => isOlderThanNow(m));
-
-    // //  DELETE EXPIRED FROM LOCAL DB
-    // for (var m in messages) {
-    //   if (isOlderThanNow(m)) {
-    //     await deleteMessage(m.messageId!);
-    //   }
-    // }
-
+    // oldest → newest (UI)
     return messages.reversed.toList();
   }
+
 
   // Insert a new message
   Future<void> insertMessage(MessageInfoModel message) async {

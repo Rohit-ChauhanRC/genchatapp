@@ -54,9 +54,8 @@ class DisplayTextImageGIF extends StatelessWidget {
           ? controller.encryptionService.decryptText(message)
           : message;
 
-      return SelectableLinkify(
+      return Linkify(
         text: displayText,
-        autofocus: true,
         maxLines: isReply == true ? 2 : null,
         style: TextStyle(
           fontSize: 16,

@@ -142,13 +142,13 @@ class SocketService extends GetxService {
 
     // Add your custom events here
     _socket?.on('message-event', (data) async {
-      // debugPrint('📩 Message received: $data');
+      debugPrint('📩 Message received: $data');
       int messageId = data["messageId"];
       bool existsLocally = await messageTable.messageExists(messageId);
       //
 
       if (!existsLocally) {
-        // debugPrint("message not found");
+        debugPrint("message not found");
         final newMessage = NewMessageModel(
           message: data["message"],
           senderId: data["senderId"],

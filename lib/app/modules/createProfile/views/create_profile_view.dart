@@ -92,7 +92,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                                             ),
                                           ),
                                       errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
+                                          const Icon(Icons.person),
                                     ),
                               // CachedNetworkImage(
                               //     imageUrl: controller.photoUrl,

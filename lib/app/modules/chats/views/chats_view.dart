@@ -337,7 +337,8 @@ class ChatsView extends GetView<ChatsController> {
                                                       const CircleAvatar(
                                                         radius: 25,
                                                         child: Icon(
-                                                          Icons.error,
+                                                          Icons.person,
+                                                           color: Colors.white,
                                                         ),
                                                       ),
                                             ),

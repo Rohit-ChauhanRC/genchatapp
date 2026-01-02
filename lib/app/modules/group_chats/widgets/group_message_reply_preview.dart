@@ -48,7 +48,10 @@ class GroupMessageReplyPreview extends StatelessWidget {
               Obx(
                 () => groupChatsController.messageReply.message != null
                     ? InkWell(
-                        child: const Icon(Icons.close, size: 20),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right:15.0),
+                          child:  Icon(Icons.close, size: 22,color: Colors.red),
+                        ),
                         onTap: () {
                           groupChatsController.cancelReply();
                         },

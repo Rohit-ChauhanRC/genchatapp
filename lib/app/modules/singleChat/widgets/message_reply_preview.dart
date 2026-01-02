@@ -53,9 +53,13 @@ class MessageReplyPreview extends StatelessWidget {
               Obx(
                 () => singleChatController.messageReply.message != null
                     ? InkWell(
-                        child: const Icon(
-                          Icons.close,
-                          size: 20,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right:18.0),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 25,
+                          ),
                         ),
                         onTap: () {
                           singleChatController.cancelReply();

@@ -356,7 +356,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "Send new messages",
+                                        "Read Only Mode",
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: isOnline

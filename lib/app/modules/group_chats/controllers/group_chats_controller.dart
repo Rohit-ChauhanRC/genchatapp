@@ -768,6 +768,10 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     hasMoreMessages = true;
     messageList.clear();
     await loadMoreMessages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom();
+      hasScrolledInitially.value = true;
+    });
   }
 
   Future<void> loadMoreMessages() async {
@@ -1045,9 +1049,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         socketService.saveChatContacts(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 100), () {
-          scrollToBottom(animated: true);
-        });
+        scrollToBottom(animated: true);;
       });
     });
 
@@ -1503,7 +1505,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         debugPrint("[GroupChat] Error sending file message: $e");
       }
     }
+
     cancelReply();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom(animated: true);
+    });
   }
 
   void selectFile(String fileType) async {
@@ -1755,6 +1761,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         debugPrint("Error sending file message: $e");
       }
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom(animated: true);;
+    });
   }
 
   void toggleEmojiKeyboardContainer() {
@@ -2181,6 +2190,9 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       if (kDebugMode) {}
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom(animated: true);;
+    });
   }
 
   //

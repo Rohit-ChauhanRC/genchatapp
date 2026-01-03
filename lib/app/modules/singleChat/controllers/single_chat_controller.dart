@@ -1115,9 +1115,8 @@ class SingleChatController extends GetxController
         }
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 100), () {
-          scrollToBottom();
-        });
+        scrollToBottom();
+
       });
     });
 
@@ -1713,9 +1712,14 @@ class SingleChatController extends GetxController
         // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
-    } catch (e) {
+    }
+    catch (e) {
       if (kDebugMode) {}
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom();
+
+    });
   }
 
   Future<void> clearFilePickerCache() async {
@@ -1882,6 +1886,9 @@ class SingleChatController extends GetxController
     } catch (e) {
       if (kDebugMode) {}
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom();
+    });
   }
 
   void toggleEmojiKeyboardContainer() {
@@ -2309,6 +2316,10 @@ class SingleChatController extends GetxController
       if (kDebugMode) {}
     }
     cancelReply();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom();
+
+    });
   }
 
   String getDisplayName() {

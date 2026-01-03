@@ -109,6 +109,7 @@ class MessageInfoView extends GetView<MessageInfoController> {
                                 (userName ?? userPhoneNumber).toString(),
                                 userInfo.sentAt,
                                 pictureUrl!,
+                                userId,
                               )
                             : const SizedBox.shrink();
                       },
@@ -152,6 +153,7 @@ class MessageInfoView extends GetView<MessageInfoController> {
                                 (userName ?? userPhoneNumber).toString(),
                                 userInfo.sentAt,
                                 pictureUrl!,
+                                userId,
                               )
                             : const SizedBox.shrink();
                       },
@@ -224,7 +226,12 @@ class MessageInfoView extends GetView<MessageInfoController> {
     );
   }
 
-  Widget _userTitle(String title, String subTitle, String pictureUrl) {
+  Widget _userTitle(
+    String title,
+    String subTitle,
+    String pictureUrl,
+    int userId,
+  ) {
     return ListTile(
       leading: pictureUrl.isNotEmpty
           ? CachedNetworkImage(
@@ -243,9 +250,18 @@ class MessageInfoView extends GetView<MessageInfoController> {
               child: Icon(Icons.person, color: Colors.white, size: 26),
             ),
       title: SizedBox(
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        // child: Text(
+        //   title,
+        //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        // ),
+        child: FutureBuilder<String>(
+          future: controller.getLocalName(userId, title),
+          builder: (_, snap) => Text(
+            snap.data != null && snap.data!.isNotEmpty
+                ? snap.data!
+                : "~ $title",
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
         ),
       ),
       subtitle: Text(

@@ -162,6 +162,41 @@ class MessageTable {
     return messages.reversed.toList();
   }
 
+  Future<List<NewMessageModel>> fetchGroupMessagesWithoutPaginated({
+    required int receiverId,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where: ' (isGroupMessage = 1 AND recipientId = ?)',
+      whereArgs: [receiverId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+    );
+
+    List<NewMessageModel> messages = result
+        .map((map) => NewMessageModel.fromMap(map))
+        .toList();
+
+    return messages.reversed.toList();
+  }
+
+  Future<List<NewMessageModel>> fetchSingleMessagesWithoutPaginated({
+    required int receiverId,
+    required int senderId,
+  }) async {
+    final db = await DataBaseService().database;
+    final result = await db.query(
+      tableName,
+      where:
+          '(senderId = ? AND recipientId = ? AND isGroupMessage = 0) OR (senderId = ? AND recipientId = ? AND isGroupMessage = 0)',
+      whereArgs: [senderId, receiverId, receiverId, senderId],
+      orderBy: 'messageSentFromDeviceTime DESC',
+    );
+
+    final messages = result.map((map) => NewMessageModel.fromMap(map)).toList();
+    return messages.reversed.toList();
+  }
+
   // Insert a new message
   Future<void> insertMessage(NewMessageModel message) async {
     final db = await DataBaseService().database;

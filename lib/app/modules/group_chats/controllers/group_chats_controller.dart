@@ -13,6 +13,7 @@ import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/config/services/encryption_service.dart';
 import 'package:genchatapp/app/config/services/folder_creation.dart';
 import 'package:genchatapp/app/config/services/socket_service.dart';
+import 'package:genchatapp/app/constants/colors.dart';
 import 'package:genchatapp/app/constants/constants.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
 import 'package:genchatapp/app/data/local_database/chatconnect_table.dart';
@@ -331,6 +332,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
     closeKeyboard();
     await loadInitialMessages();
+    await sendSyncMsg();
     bindSocketEvents();
     monitorScrollPosition();
     isInCurrentChat = true;
@@ -532,20 +534,20 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   void scrollToBottom({bool animated = false}) {
     if (itemScrollController.isAttached) {
       final lastIndex = messageList.length - 1;
-      if (animated) {
-        itemScrollController.scrollTo(
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        itemScrollController.scrollTo(
-          curve: Curves.easeInOut,
+      // if (animated) {
+      itemScrollController.scrollTo(
+        index: lastIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      // } else {
+      //   itemScrollController.scrollTo(
+      //     curve: Curves.easeInOut,
 
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-        );
-      }
+      //     index: lastIndex,
+      //     duration: const Duration(milliseconds: 300),
+      //   );
+      // }
     }
   }
 
@@ -642,6 +644,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
+        if (!showScrollToBottom.value) {
+          Future.delayed(const Duration(milliseconds: 60), () {
+            scrollToBottom();
+          });
+        }
         final id = message.senderId ?? 0;
         final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {
@@ -855,7 +862,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       // messageList.insertAll(0, messages);
 
       // ✅ Existing sync/seen logic...
-      for (var i in messages) {
+      for (var i in messages1) {
         if ((i.state == MessageState.sent ||
                 i.state == MessageState.unsent ||
                 i.state == MessageState.delivered) &&
@@ -893,6 +900,42 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       hasMoreMessages = false;
     }
     isPaginating = false;
+  }
+
+  Future<void> sendSyncMsg() async {
+    final messages1 = await MessageTable().fetchGroupMessagesWithoutPaginated(
+      receiverId: receiverUserData?.group?.id ?? 0,
+    );
+    for (var i in messages1) {
+      if ((i.state == MessageState.sent ||
+              i.state == MessageState.unsent ||
+              i.state == MessageState.delivered) &&
+          i.messageId != null) {
+        if (receiverUserData!.group?.id == i.recipientId &&
+            socketService.isConnected) {
+          if (i.senderId != senderuserData?.userId &&
+              i.state != MessageState.read) {
+            socketService.sendMessageSeen(i.messageId!);
+          }
+        }
+      } else if (senderuserData!.userId == i.senderId &&
+          i.syncStatus == SyncStatus.pending &&
+          i.messageId == null) {
+        if (socketService.isConnected) {
+          if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+            socketService.sendMessageSync(i);
+          }
+        }
+      } else if (senderuserData!.userId == i.senderId &&
+          i.syncStatus == SyncStatus.pending &&
+          i.messageId != null) {
+        if (socketService.isConnected) {
+          if (!_isAlreadyBeingSent(i.clientSystemMessageId.toString())) {
+            socketService.sendMessageSync(i);
+          }
+        }
+      }
+    }
   }
 
   void _startLoadingTimer() {
@@ -940,6 +983,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> sendTextMessage({bool isContact = false}) async {
     final message = messageController.text.trim();
+    isShowSendButton=false;
     if (message.isEmpty) return;
     if (message.length > 800) {
       showAlertMessage("This message is too long, Please shorter the message.");
@@ -1008,6 +1052,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     });
 
     messageController.clear();
+    isShowSendButton=false;
     var receiverUserId = receiverUserData?.group?.id.toString() ?? '';
     socketService.emitGroupTypingStatus(
       recipientId: receiverUserId,
@@ -1019,17 +1064,18 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   void onTextChanged(String text) {
     final receiverId = receiverUserData?.group?.id.toString() ?? "";
+    final Text = text.trim().isNotEmpty;
 
-    if (text.isNotEmpty) {
+    if (Text) {
       isShowSendButton = true;
 
-      // Emit isTyping: true
+      // Emit typing = true
       socketService.emitGroupTypingStatus(
         recipientId: receiverId,
         isTyping: true,
       );
 
-      // Debounce logic for isTyping: false
+      // Debounce typing false
       typingTimer?.cancel();
       typingTimer = Timer(const Duration(seconds: 2), () {
         socketService.emitGroupTypingStatus(
@@ -1040,15 +1086,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
     } else {
       isShowSendButton = false;
 
-      // Immediately emit false if field is cleared
+      // Emit typing = false immediately
       socketService.emitGroupTypingStatus(
         recipientId: receiverId,
         isTyping: false,
       );
       typingTimer?.cancel();
     }
-
-    // messageController.text = text;
   }
 
   void toggleMessageSelection(NewMessageModel message) {
@@ -1260,23 +1304,25 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> copySelectedMessage() async {
     if (selectedMessages.isEmpty || selectedMessages.length != 1) return;
-    
+
     final message = selectedMessages.first;
     if (message.messageType != MessageType.text) return;
-    
+
     try {
-      final decryptedText = encryptionService.decryptText(message.message ?? '');
+      final decryptedText = encryptionService.decryptText(
+        message.message ?? '',
+      );
       await Clipboard.setData(ClipboardData(text: decryptedText));
-      
+
       Get.snackbar(
         'Copied',
         'Message copied to clipboard',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
+        backgroundColor: textBarColor,
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-      
+
       clearSelectedMessages();
     } catch (e) {
       Get.snackbar(

@@ -63,6 +63,7 @@ class GroupProfileController extends GetxController {
   bool get isSuperAdmin =>
       groupDetails.group?.creatorId == currentUserPermission?.userId;
 
+  final RxBool permissionLoaded = false.obs;
   bool get isAdmin => currentUserPermission?.isAdmin == true && !isSuperAdmin;
 
   bool get isMember => currentUserPermission?.isAdmin != true && !isSuperAdmin;
@@ -80,11 +81,11 @@ class GroupProfileController extends GetxController {
   bool get canRemoveMember => isSuperAdmin || isAdmin;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     groupId = Get.arguments;
     if (groupId != null || groupId != 0) {
-      getGroupDetails(groupId: groupId);
+     await getGroupDetails(groupId: groupId);
     }
     bindSocketEvents();
   }
@@ -116,6 +117,7 @@ class GroupProfileController extends GetxController {
   }
 
   Future<void> getGroupDetails({required int groupId}) async {
+    permissionLoaded.value = false;
     final groupDetail = await groupTable.getGroupById(groupId);
     if (groupDetail != null) {
       groupDetails = groupDetail;
@@ -140,6 +142,8 @@ class GroupProfileController extends GetxController {
     } else {
       debugPrint("Group Data are not fetched for GroupId: $groupId");
     }
+    permissionLoaded.value = true;
+
   }
 
   Future<String> getLocalName(int? userId, String? name) async {

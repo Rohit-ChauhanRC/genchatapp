@@ -55,25 +55,16 @@ class GroupProfileView extends GetView<GroupProfileController> {
               backgroundColor: AppColors.textBarColor,
               leading: const BackButton(color: Colors.white),
               actions: [
-                if (controller.canEditGroup || controller.canAddParticipants)
-                  PopupMenuButton<String>(
-                    offset: const Offset(0, 40),
-                    elevation: 8,
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    onSelected: (value) {
-                      if (!controller.ensureInternetOrShowError()) return;
-                      if (value == 'edit') {
-                        _showEditGroupNameDialog(
-                          context,
-                          controller.groupDetails,
-                        );
-                      } else if (value == 'add') {
-                        controller.navigateToAddParticipant();
-                      }
-                    },
+                Obx(() {
+                  if (!controller.permissionLoaded.value) {
+                    return const SizedBox.shrink();
+                  }
+
+                  if (!controller.canEditGroup && !controller.canAddParticipants) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return PopupMenuButton<String>(
                     itemBuilder: (context) {
                       final items = <PopupMenuEntry<String>>[];
 
@@ -102,8 +93,12 @@ class GroupProfileView extends GetView<GroupProfileController> {
                       return items;
                     },
                     icon: const Icon(Icons.more_vert, color: Colors.white),
-                  ),
+                  );
+                }),
               ],
+
+
+
               flexibleSpace: LayoutBuilder(
                 builder: (context, constraints) {
                   final top = constraints.biggest.height;
@@ -176,9 +171,7 @@ class GroupProfileView extends GetView<GroupProfileController> {
                       children: [
                         const SizedBox(height: 20),
                         InkWell(
-                          onTap: controller.canEditGroup
-                              ? controller.selectImage
-                              : null,
+                          onTap: controller.canEditGroup ? controller.selectImage : null,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -186,47 +179,46 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                 if (controller.image == null &&
                                     (group?.displayPictureUrl ?? "").isEmpty) {
                                   return CircleAvatar(
-                                    backgroundColor: AppColors.greyColor
-                                        .withOpacity(0.4),
+                                    backgroundColor: AppColors.greyColor.withOpacity(0.4),
                                     radius: 64,
                                     child: Icon(
                                       Icons.group,
-                                      size: 80.0,
+                                      size: 80,
                                       color: AppColors.greyColor,
                                     ),
                                   );
                                 } else if (controller.image != null) {
                                   return CircleAvatar(
-                                    backgroundColor: AppColors.greyColor
-                                        .withOpacity(0.4),
-                                    backgroundImage: FileImage(
-                                      controller.image!,
-                                    ),
+                                    backgroundColor: AppColors.greyColor.withOpacity(0.4),
+                                    backgroundImage: FileImage(controller.image!),
                                     radius: 64,
                                   );
                                 } else {
                                   return CachedNetworkImage(
-                                    imageUrl: group!.displayPictureUrl
-                                        .toString(),
-                                    imageBuilder: (context, image) {
-                                      return CircleAvatar(
-                                        backgroundColor: AppColors.greyColor
-                                            .withOpacity(0.4),
-                                        backgroundImage: image,
-                                        radius: 64,
-                                      );
-                                    },
-                                    placeholder: (context, url) =>
-                                        const CircularProgressIndicator(),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error, size: 70),
+                                    imageUrl: group!.displayPictureUrl!,
+                                    imageBuilder: (_, image) => CircleAvatar(
+                                      backgroundColor: AppColors.greyColor.withOpacity(0.4),
+                                      backgroundImage: image,
+                                      radius: 64,
+                                    ),
+                                    placeholder: (_, __) =>
+                                    const CircularProgressIndicator(strokeWidth: 1.5),
+                                    errorWidget: (_, __, ___) =>
+                                    const Icon(Icons.error, size: 70),
                                   );
                                 }
                               }),
 
-                              // 👇 Add/Edit Icon Overlay
-                              if (controller.canEditGroup)
-                                const Positioned(
+                              Obx(() {
+                                if (!controller.permissionLoaded.value) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                if (!controller.canEditGroup) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return const Positioned(
                                   bottom: 6,
                                   right: 6,
                                   child: CircleAvatar(
@@ -238,10 +230,12 @@ class GroupProfileView extends GetView<GroupProfileController> {
                                       size: 16,
                                     ),
                                   ),
-                                ),
+                                );
+                              }),
                             ],
                           ),
                         ),
+
                         const SizedBox(height: 12),
                         Text(
                           group?.name ?? '',
@@ -323,89 +317,86 @@ class GroupProfileView extends GetView<GroupProfileController> {
                   const Divider(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: controller.canGivePermission
-                        ? Obx(() {
-                            final isOnline = controller
-                                .connectivityService
-                                .isConnected
-                                .value;
+                    child:
+                    Obx(() {
+                      // ⛔ Nothing shown until permissions are known
+                      if (!controller.permissionLoaded.value) {
+                        return const SizedBox.shrink();
+                      }
 
-                            return InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: isOnline
-                                  ? () {
-                                      controller.canSendMessages.value =
-                                          !controller.canSendMessages.value;
-                                      controller.isReadOnlyAdGroup(
-                                        controller.canSendMessages.value,
-                                      );
-                                    }
-                                  : () {
-                                      // Get.snackbar(
-                                      //   "No Internet",
-                                      //   "Please turn on internet to change permissions",
-                                      //   snackPosition: SnackPosition.BOTTOM,
-                                      // );
-                                    },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                      // ⛔ Normal users see NOTHING (no text, no toggle, no gap)
+                      if (!controller.isSuperAdmin) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final isOnline = controller.connectivityService.isConnected.value;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: isOnline
+                              ? () {
+                            controller.canSendMessages.value =
+                            !controller.canSendMessages.value;
+                            controller.isReadOnlyAdGroup(
+                              controller.canSendMessages.value,
+                            );
+                          }
+                              : null,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// Title + Toggle
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  /// Title + Toggle
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Read Only Mode",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: isOnline
-                                              ? AppColors.textBarColor
-                                              : Colors.grey,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-
-                                      Transform.scale(
-                                        scale: 0.75,
-                                        child: Switch(
-                                          value:
-                                              controller.canSendMessages.value,
-                                          activeColor: AppColors.textBarColor,
-                                          onChanged: isOnline
-                                              ? (val) {
-                                                  controller
-                                                          .canSendMessages
-                                                          .value =
-                                                      val;
-                                                  controller.isReadOnlyAdGroup(
-                                                    val,
-                                                  );
-                                                }
-                                              : null, // 👈 disables switch
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  /// Subtitle
                                   Text(
-                                    !isOnline
-                                        ? "Turn on internet to change this setting"
-                                        : controller.canSendMessages.value
-                                        ? "Only Super Admin can send messages"
-                                        : "Everyone can send messages",
+                                    "Read Only Mode",
                                     style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                      height: 1.3,
+                                      fontSize: 15,
+                                      color: isOnline
+                                          ? AppColors.textBarColor
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Transform.scale(
+                                    scale: 0.75,
+                                    child: Switch(
+                                      value: controller.canSendMessages.value,
+                                      activeColor: AppColors.textBarColor,
+                                      onChanged: isOnline
+                                          ? (val) {
+                                        controller.canSendMessages.value = val;
+                                        controller.isReadOnlyAdGroup(val);
+                                      }
+                                          : null,
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          })
-                        : const SizedBox.shrink(),
+
+                              /// Subtitle
+                              Text(
+                                !isOnline
+                                    ? "Turn on internet to change this setting"
+                                    : controller.canSendMessages.value
+                                    ? "Only Super Admin can send messages"
+                                    : "Everyone can send messages",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    })
+
+
                   ),
 
                   // const SizedBox(height: 8

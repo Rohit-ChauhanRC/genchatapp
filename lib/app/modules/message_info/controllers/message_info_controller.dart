@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:genchatapp/app/config/services/connectivity_service.dart';
 import 'package:genchatapp/app/constants/message_enum.dart';
+import 'package:genchatapp/app/data/local_database/contacts_table.dart';
 import 'package:genchatapp/app/data/local_database/message_info_table.dart';
 // import 'package:genchatapp/app/data/local_database/message_table.dart';
 import 'package:genchatapp/app/data/models/message_info_model.dart';
@@ -12,6 +13,7 @@ import 'package:get/get.dart';
 
 class MessageInfoController extends GetxController {
   //
+  final ContactsTable contactsTable = ContactsTable();
 
   final GroupRepository groupRepository = Get.put<GroupRepository>(
     GroupRepository(apiClient: Get.find(), sharedPreferences: Get.find()),
@@ -91,8 +93,7 @@ class MessageInfoController extends GetxController {
           messageInfoList.assignAll(message);
         }
 
-        if (kDebugMode) {
-        }
+        if (kDebugMode) {}
       }
     } catch (e) {
       // showAlertMessage("Something went wrong: $e");
@@ -126,5 +127,11 @@ class MessageInfoController extends GetxController {
         "${groupChatsController.rootPath}GIFs/${selectedMessages.value.assetThumbnail}";
     audioPath.value =
         "${groupChatsController.rootPath}Audio/${selectedMessages.value.assetThumbnail}";
+  }
+
+  Future<String> getLocalName(int? userId, String? name) async {
+    if (userId == null) return name ?? "";
+    final contact = await contactsTable.getUserById(userId);
+    return "${contact?.localName ?? name}${contact!.isBlocked! ? "  This user is blocked by you!" : ""}";
   }
 }

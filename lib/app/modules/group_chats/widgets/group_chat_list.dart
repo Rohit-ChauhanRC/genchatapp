@@ -65,7 +65,13 @@ class GroupChatList extends StatelessWidget {
 
           final isTyping = groupChatsController.typingDisplayText.isNotEmpty;
           final messageCount = groupChatsController.messageList.length;
-
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!groupChatsController.hasScrolledInitially.value &&
+                groupChatsController.messageList.isNotEmpty) {
+              groupChatsController.scrollToBottom();
+              groupChatsController.hasScrolledInitially.value = true;
+            }
+          });
           return RefreshIndicator(
             onRefresh: () async {
               await Future.delayed(const Duration(milliseconds: 500));

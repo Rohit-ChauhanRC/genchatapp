@@ -73,7 +73,7 @@ void main() async {
     if (kDebugMode) {}
   }
 
-  AppConfig.setEnvironment(AppEnvironment.dev);
+  AppConfig.setEnvironment(AppEnvironment.prod);
 
   runApp(const App());
 }

@@ -534,20 +534,20 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
   void scrollToBottom({bool animated = false}) {
     if (itemScrollController.isAttached) {
       final lastIndex = messageList.length - 1;
-      if (animated) {
-        itemScrollController.scrollTo(
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        itemScrollController.scrollTo(
-          curve: Curves.easeInOut,
+      // if (animated) {
+      itemScrollController.scrollTo(
+        index: lastIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      // } else {
+      //   itemScrollController.scrollTo(
+      //     curve: Curves.easeInOut,
 
-          index: lastIndex,
-          duration: const Duration(milliseconds: 300),
-        );
-      }
+      //     index: lastIndex,
+      //     duration: const Duration(milliseconds: 300),
+      //   );
+      // }
     }
   }
 
@@ -644,6 +644,11 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
       if (message != null && isFromCurrentChat(message)) {
         messageList.add(message);
+        if (!showScrollToBottom.value) {
+          Future.delayed(const Duration(milliseconds: 60), () {
+            scrollToBottom();
+          });
+        }
         final id = message.senderId ?? 0;
         final senderNumber = message.senderPhoneNumber ?? "";
         if (!senderNamesCache.containsKey(id)) {

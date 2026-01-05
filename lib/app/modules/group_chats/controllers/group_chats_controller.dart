@@ -987,7 +987,7 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
 
   Future<void> sendTextMessage({bool isContact = false}) async {
     final message = messageController.text.trim();
-    isShowSendButton=false;
+    isShowSendButton = false;
     if (message.isEmpty) return;
     if (message.length > 800) {
       showAlertMessage("This message is too long, Please shorter the message.");
@@ -1049,12 +1049,13 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
         socketService.saveChatContacts(newMessage);
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        scrollToBottom(animated: true);;
+        scrollToBottom(animated: true);
+        ;
       });
     });
 
     messageController.clear();
-    isShowSendButton=false;
+    isShowSendButton = false;
     var receiverUserId = receiverUserData?.group?.id.toString() ?? '';
     socketService.emitGroupTypingStatus(
       recipientId: receiverUserId,
@@ -1652,19 +1653,47 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       );
       final fileName =
           "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
-      downloadFile(
-        MessageType.gif,
-        fileName,
-        gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url,
-      );
-      sendGIFMessage(
-        gifUrl:
-            gif.media.tinyGif?.url ??
-            gif.media.tinyGifTransparent?.url ??
-            gif.url,
-        messageEnum: MessageType.gif,
-        fileName: fileName,
-      );
+      // downloadFile(
+      //   MessageType.gif,
+      //   fileName,
+      //   gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url,
+      // );
+      // sendGIFMessage(
+      //   gifUrl:
+      //       gif.media.tinyGif?.url ??
+      //       gif.media.tinyGifTransparent?.url ??
+      //       gif.url,
+      //   messageEnum: MessageType.gif,
+      //   fileName: fileName,
+      // );
+      if (gif.media.tinyGif?.url != null) {
+        downloadFile(
+          MessageType.gif,
+          fileName,
+          gif.media.tinyGif!.url.toString(),
+        );
+        Future.delayed(Duration(seconds: 1), () {
+          sendGIFMessage(
+            gifUrl: gif.media.tinyGif!.url.toString(),
+            messageEnum: MessageType.gif,
+            fileName: fileName,
+          );
+        });
+      } else if (gif.media.tinyGifTransparent?.url != null) {
+        downloadFile(
+          MessageType.gif,
+          fileName,
+
+          gif.media.tinyGifTransparent!.url,
+        );
+        Future.delayed(Duration(seconds: 1), () {
+          sendGIFMessage(
+            gifUrl: gif.media.tinyGifTransparent!.url.toString(),
+            messageEnum: MessageType.gif,
+            fileName: fileName,
+          );
+        });
+      }
       cancelReply();
     }
   }
@@ -1762,7 +1791,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       }
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollToBottom(animated: true);;
+      scrollToBottom(animated: true);
+      ;
     });
   }
 
@@ -2191,7 +2221,8 @@ class GroupChatsController extends GetxController with WidgetsBindingObserver {
       if (kDebugMode) {}
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollToBottom(animated: true);;
+      scrollToBottom(animated: true);
+      ;
     });
   }
 

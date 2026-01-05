@@ -290,6 +290,8 @@ class SingleChatController extends GetxController
   @override
   void onInit() async {
     super.onInit();
+    gifController = GifController(vsync: this);
+
     savePhone.value = receiverUserData?.phoneNumber ?? '';
     saveName.value = receiverUserData?.localName ?? '';
     FocusManager.instance.primaryFocus?.unfocus();
@@ -297,8 +299,6 @@ class SingleChatController extends GetxController
     SystemChannels.textInput.invokeMethod('TextInput.hide');
 
     WidgetsBinding.instance.addObserver(this);
-
-    gifController = GifController(vsync: this);
 
     senderuserData = sharedPreferenceService.getUserData();
 
@@ -1116,7 +1116,6 @@ class SingleChatController extends GetxController
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         scrollToBottom();
-
       });
     });
 
@@ -1134,7 +1133,7 @@ class SingleChatController extends GetxController
 
   void onTextChanged(String text) {
     final receiverId = receiverUserData?.userId.toString() ?? "";
-    final hasText=text.trim().isNotEmpty;
+    final hasText = text.trim().isNotEmpty;
     if (hasText) {
       isShowSendButton = true;
       isPreviewing.value = false;
@@ -1712,13 +1711,11 @@ class SingleChatController extends GetxController
         // Keep syncStatus as pending so it can be retried later
         socketService.saveChatContacts(newMessage);
       }
-    }
-    catch (e) {
+    } catch (e) {
       if (kDebugMode) {}
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToBottom();
-
     });
   }
 
@@ -1809,19 +1806,47 @@ class SingleChatController extends GetxController
       // );
       final fileName =
           "genchat_gif_${senderuserData!.userId.toString()}_${DateTime.now().millisecondsSinceEpoch}.gif";
-      downloadFile(
-        MessageType.gif,
-        fileName,
-        gif.media.tinyGif?.url ?? gif.media.tinyGifTransparent?.url ?? gif.url,
-      );
-      sendGIFMessage(
-        gifUrl:
-            gif.media.tinyGif?.url ??
-            gif.media.tinyGifTransparent?.url ??
-            gif.url,
-        messageEnum: MessageType.gif,
-        fileName: fileName,
-      );
+
+      if (gif.media.tinyGif?.url != null) {
+        downloadFile(
+          MessageType.gif,
+          fileName,
+          gif.media.tinyGif!.url.toString(),
+        );
+        Future.delayed(Duration(seconds: 1), () {
+          sendGIFMessage(
+            gifUrl: gif.media.tinyGif!.url.toString(),
+            messageEnum: MessageType.gif,
+            fileName: fileName,
+          );
+        });
+      } else if (gif.media.tinyGifTransparent?.url != null) {
+        downloadFile(
+          MessageType.gif,
+          fileName,
+
+          gif.media.tinyGifTransparent!.url,
+        );
+        Future.delayed(Duration(seconds: 1), () {
+          sendGIFMessage(
+            gifUrl: gif.media.tinyGifTransparent!.url.toString(),
+            messageEnum: MessageType.gif,
+            fileName: fileName,
+          );
+        });
+      }
+      //  else if (gif.url != null) {
+      //   downloadFile(MessageType.gif, fileName, gif.url);
+      // }
+
+      // sendGIFMessage(
+      //   gifUrl:
+      //       gif.media.tinyGif?.url ??
+      //       gif.media.tinyGifTransparent?.url ??
+      //       gif.url,
+      //   messageEnum: MessageType.gif,
+      //   fileName: fileName,
+      // );
       cancelReply();
     }
   }
@@ -2318,7 +2343,6 @@ class SingleChatController extends GetxController
     cancelReply();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToBottom();
-
     });
   }
 

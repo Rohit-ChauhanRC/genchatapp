@@ -7,7 +7,11 @@ import 'package:get/get.dart';
 import 'package:gif/gif.dart';
 
 class DisplayGifImage extends StatelessWidget {
-  DisplayGifImage({super.key, required this.filePath, required this.isReply});
+  const DisplayGifImage({
+    super.key,
+    required this.filePath,
+    required this.isReply,
+  });
 
   final String filePath;
   final bool isReply;
@@ -24,7 +28,7 @@ class DisplayGifImage extends StatelessWidget {
       child: Gif(
         // controller: singleChatController.gifController,
         image: Image.file(File(filePath)).image,
-        autostart: Autostart.loop,
+        autostart: Autostart.no,
         width: isReply ? 80 : 200,
         fit: BoxFit.fill,
         height: isReply ? 80 : 200,

@@ -28,7 +28,7 @@ class DisplayGifImage extends StatelessWidget {
       child: Gif(
         // controller: singleChatController.gifController,
         image: Image.file(File(filePath)).image,
-        autostart: Autostart.no,
+        autostart: Autostart.loop,
         width: isReply ? 80 : 200,
         fit: BoxFit.fill,
         height: isReply ? 80 : 200,

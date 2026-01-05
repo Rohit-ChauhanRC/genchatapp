@@ -131,7 +131,7 @@ class SettingsView extends GetView<SettingsController> {
                         () => _settingsItemWidget(
                       title: "App Version",
                       description: controller.currentVersion.value.isEmpty
-                          ? "Version 1.0.1  (3)"
+                          ? "Version 1.0.1(5)"
                           : "Version ${controller.currentVersion.value}"
                           "${controller.updateAvailable.value ? ' (Update available)' : ''}",
                       icon: Icons.system_update,

@@ -2471,19 +2471,19 @@ class SingleChatController extends GetxController
 
                   saveContact(name: name, phone: mobile);
 
-                  await chatConectTable.insertOrUpdateGroupChat(
-                    ChatConntactModel(
-                      uid: receiverUserData!.userId.toString(),
-                      isGroup: 1,
-                      profilePic: receiverUserData?.displayPictureUrl ?? '',
-                      timeSent: receiverUserData?.lastSeenTime ?? "",
-                      name: name,
-                      contactId: receiverUserData!.userId.toString(),
-                      lastMessage: "",
-                      lastMessageId: 0,
-                      unreadCount: 0,
-                    ),
-                  );
+                  // await chatConectTable.insertOrUpdateGroupChat(
+                  //   ChatConntactModel(
+                  //     uid: receiverUserData!.userId.toString(),
+                  //     isGroup: 1,
+                  //     profilePic: receiverUserData?.displayPictureUrl ?? '',
+                  //     timeSent: receiverUserData?.lastSeenTime ?? "",
+                  //     name: name,
+                  //     contactId: receiverUserData!.userId.toString(),
+                  //     lastMessage: "",
+                  //     lastMessageId: 0,
+                  //     unreadCount: 0,
+                  //   ),
+                  // );
 
                   receiverUserData = receiverUserData!.copyWith(
                     name: name,
